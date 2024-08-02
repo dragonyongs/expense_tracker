@@ -9,8 +9,35 @@ mongoose.connect('mongodb+srv://staradmin:StarRich@starconnect.294auud.mongodb.n
 
 app.use(express.json());
 
-app.get('/api/data', (req, res) => {
-    res.send({ message: 'Hello from Node.js!' });
+// User 스키마 및 모델 정의
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    password: { type: String, required: true },
+    phone: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    roles: { type: [String], default: [] },
+    company: { type: String, default: '' },
+    officePhones: { type: [String], default: [] },
+    workPhones: { type: [String], default: [] },
+    extensionNumbers: { type: [String], default: [] },
+    hireDate: { type: Date },
+    corporateCards: { type: [String], default: [] },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+    accessToken: { type: String },
+    refreshToken: { type: String }
+}, { timestamps: true });
+
+const User = mongoose.model('User', userSchema);
+
+// API 경로 설정 - /api/data
+app.get('/api/data', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 // 정적 파일 서빙 설정
