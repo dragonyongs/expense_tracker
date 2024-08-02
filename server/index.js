@@ -2,7 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 
-mongoose.connect('mongodb+srv://staradmin:StarRich@starconnect.294auud.mongodb.net/?retryWrites=true&w=majority&appName=starconnect', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb+srv://staradmin:StarRich@starconnect.294auud.mongodb.net/?retryWrites=true&w=majority&appName=starconnect', { useCreateIndex: true, useFindAndModify: false })
+        .then(() => console.log('MongoDB connected'))
+        .catch(err => console.log(err));
 
 app.use(express.json());
 
