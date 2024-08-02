@@ -4,10 +4,7 @@ const path = require('path');
 const User = require('./models/User');
 const app = express();
 
-mongoose.connect('mongodb+srv://staradmin:StarRich@starconnect.294auud.mongodb.net/?retryWrites=true&w=majority&appName=starconnect', {
-            serverSelectionTimeoutMS: 5000, // 타임아웃 시간 설정
-            socketTimeoutMS: 45000, // 소켓 타임아웃 설정
-        })
+mongoose.connect('mongodb+srv://staradmin:StarRich@starconnect.294auud.mongodb.net/?retryWrites=true&w=majority&appName=starconnect')
         .then(() => console.log('MongoDB connected'))
         .catch(err => console.log(err));
 
