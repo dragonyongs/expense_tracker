@@ -12,6 +12,14 @@ app.get('/api/data', (req, res) => {
     res.send({ message: 'Hello from Node.js!' });
 });
 
-app.listen(3001, () => {
-    console.log('Server is running on port 3001');
+// 정적 파일 서빙 설정
+app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+});
+
+const port = process.env.PORT || 3001;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
