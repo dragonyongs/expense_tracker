@@ -13,8 +13,8 @@ app.use(cors());
 const mongoURI = process.env.MONGO_URI || 'mongodb+srv://staradmin:StarRich@starconnect.294auud.mongodb.net/?retryWrites=true&w=majority&appName=starconnect';
 
 mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
     serverSelectionTimeoutMS: 30000, // 타임아웃 시간 설정 (30초)
     socketTimeoutMS: 45000, // 소켓 타임아웃 설정 (45초)
     connectTimeoutMS: 30000, // 연결 타임아웃 설정 (30초)
