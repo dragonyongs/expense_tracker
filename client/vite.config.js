@@ -7,6 +7,14 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        clientsClaim: true,
+        skipWaiting: true
+      },
+      injectRegister: 'auto',
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'Expense Tracker',
         short_name: 'Expense Tracker',

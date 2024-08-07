@@ -4,17 +4,20 @@ const cors = require('cors');
 const path = require('path');
 const User = require('./models/User');
 
+// 환경 변수 로드
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const app = express();
 
 // CORS 설정
 app.use(cors());
 
 // MongoDB 연결
-const mongoURI = process.env.MONGO_URI || 'mongodb+srv://staradmin:StarRich@starconnect.294auud.mongodb.net/?retryWrites=true&w=majority&appName=starconnect';
+const mongoURI = process.env.MONGO_URI;
 
 mongoose.connect(mongoURI, {
-    // useNewUrlParser: true,
-    // useUnifiedTopology: true,
     serverSelectionTimeoutMS: 30000, // 타임아웃 시간 설정 (30초)
     socketTimeoutMS: 45000, // 소켓 타임아웃 설정 (45초)
     connectTimeoutMS: 30000, // 연결 타임아웃 설정 (30초)
