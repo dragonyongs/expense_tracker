@@ -1,13 +1,14 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const path = require('path');
-const User = require('./models/User');
 
 // 환경 변수 로드
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path');
+const User = require('./models/User');
 
 const app = express();
 
@@ -16,7 +17,6 @@ app.use(cors());
 
 // MongoDB 연결
 const mongoURI = process.env.MONGO_URI;
-
 mongoose.connect(mongoURI, {
     serverSelectionTimeoutMS: 30000, // 타임아웃 시간 설정 (30초)
     socketTimeoutMS: 45000, // 소켓 타임아웃 설정 (45초)
@@ -39,16 +39,8 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
-// 정적 파일 서빙 설정
-app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
-
-// 모든 다른 경로를 index.html로 리디렉션
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
-});
-
 // 포트 설정
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3002;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
