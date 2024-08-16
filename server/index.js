@@ -30,6 +30,14 @@ app.use('/api/transactions', transactionRoutes);
 
 // MongoDB 연결
 const mongoURI = process.env.MONGO_URI;
+
+if (!mongoURI) {
+    console.error('MONGO_URI 환경 변수가 설정되지 않았습니다.');
+    process.exit(1);
+}
+
+console.log('MongoDB URI:', mongoURI);
+
 mongoose.connect(mongoURI, {
     serverSelectionTimeoutMS: 30000, // 타임아웃 시간 설정 (30초)
     socketTimeoutMS: 45000, // 소켓 타임아웃 설정 (45초)
