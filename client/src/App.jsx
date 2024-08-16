@@ -1,19 +1,23 @@
-import './App.css'
+import { useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './layouts/Layout';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 
-function App() {
-  return (
-    <>
-      <div className='-z-10 fixed bg-gradient-to-r from-sky-500 to-indigo-500 w-full h-full'>Background</div>
-      <div className='hidden z-10 fixed lg:flex items-center h-screen left-desktop'>
-        <div className='w-80 h-3/6 bg-slate-500'>Text</div>
-      </div>
-      <section className='lg:ml-mobile'>
-        <div className='md:max-w-xl mx-auto lg:mx-0 h-screen bg-white'>
-          <h1 className="text-3xl font-bold underline">Contents</h1>
-        </div>
-      </section>
-    </>
-  )
-}
+import { AuthContext } from './context/AuthProvider';
 
-export default App
+import './App.css';
+
+const App = () => {
+    const { isAuthenticated } = useContext(AuthContext);
+
+    return (
+        <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />} />
+            <Route path="/*" element={<NotFound />} />
+        </Routes>
+    );
+};
+
+export default App;

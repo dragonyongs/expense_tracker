@@ -7,6 +7,16 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: [
+        'favicon.svg', 
+        'favicon.ico', 
+        'robots.txt', 
+        'apple-touch-icon.png',
+        'android-chrome-192x192.png',
+        'android-chrome-512x512.png',
+        'favicon-16x16.png',
+        'favicon-32x32.png'
+      ],
       workbox: {
         clientsClaim: true,
         skipWaiting: true
@@ -27,26 +37,55 @@ export default defineConfig({
             type: 'image/x-icon'
           },
           {
-            src: 'logo192.png',
+            src: 'android-chrome-192x192.png',
             type: 'image/png',
             sizes: '192x192'
           },
           {
-            src: 'logo512.png',
+            src: 'android-chrome-512x512.png',
             type: 'image/png',
             sizes: '512x512'
+          },
+          {
+            src: 'apple-touch-icon.png',
+            type: 'image/png',
+            sizes: '180x180'
+          },
+          {
+            src: 'favicon-16x16.png',
+            type: 'image/png',
+            sizes: '16x16'
+          },
+          {
+            src: 'favicon-32x32.png',
+            type: 'image/png',
+            sizes: '32x32'
           }
         ]
       }
     })
   ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: 'http://localhost:5301',
+  //       changeOrigin: true,
+  //       secure: false,
+  //     },
+  //   },
+  // },
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'sw.js') {
+            return '/sw.js';
+          }
+          return assetInfo.name;
+        }
+      }
+    }
+  }
 });
