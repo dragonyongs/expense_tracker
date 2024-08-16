@@ -29,7 +29,7 @@ const Layout = () => {
                 <div className={`md:max-w-xl mx-auto lg:mx-0 h-screen bg-white flex flex-col ${!isAuthenticated ? 'justify-center' : ''}`}>
                     {isAuthenticated && <Header />}
                     <div className={`${isAuthenticated ? 'flex-grow overflow-y-auto shadow-md' : 'h-full flex items-center justify-center'}`}>
-                        <div className={`${isAuthenticated ? 'bg-slate-50 h-[calc(100vh-4rem-5.25rem)] p-4' : 'w-full p-4'}`}>
+                        <div className={`${isAuthenticated ? 'bg-slate-50 h-[calc(100vh-4rem-5.25rem)] p-4' : 'w-full p-10'}`}>
                             <Outlet />
                         </div>
                     </div>

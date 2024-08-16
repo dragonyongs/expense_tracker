@@ -16,12 +16,24 @@ const Login = () => {
 
     return (
         <>
-            <h1>로그인 페이지</h1>
+            <div>
+                <div>
+                    <h1 className='mb-7 text-4xl'>
+                        안녕하세요.<br />
+                        <span className='font-bold'>Expense Tracker</span> 입니다.
+                    </h1>
+                    <h4 className='text-lg text-slate-400'>스타리치 어드바이져 직원 전용 입니다.</h4>
+                </div>
+                <div>
+                    <input type="text" placeholder='이메일'/>
+                </div>
+            </div>
+            {/* <h1>로그인 페이지</h1>
             <form onSubmit={handleLogin}>
                 <input type="text" placeholder="아이디" required />
                 <input type="password" placeholder="비밀번호" required />
                 <button type="submit">로그인</button>
-            </form>
+            </form> */}
         </>
     );
 };
