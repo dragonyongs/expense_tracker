@@ -20,6 +20,11 @@ app.use(bodyParser.json());
 // CORS 설정
 app.use(cors());
 
+// Static files
+app.use(express.static(path.join(__dirname, '../client/dist'), {
+    maxAge: '0' // 캐시를 비활성화하거나 짧은 시간 동안만 캐시하도록 설정
+}));
+
 // Routes
 app.use('/api/members', memberRoutes);
 app.use('/api/teams', teamRoutes);
@@ -27,6 +32,10 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
 
 // MongoDB 연결
 const mongoURI = process.env.MONGO_URI;

@@ -5,6 +5,7 @@ services:
     rootDir: client
     buildCommand: npm install && npm run build
     startCommand: npm run start
+    publishDir: client/dist
     
   - type: web
     name: server
