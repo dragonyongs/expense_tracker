@@ -1,6 +1,13 @@
 services:
   - type: web
-    name: expense_tracker
+    name: client
+    env: node
+    rootDir: client
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    
+  - type: web
+    name: server
     env: node
     rootDir: server
     buildCommand: npm install

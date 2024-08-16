@@ -36,8 +36,6 @@ if (!mongoURI) {
     process.exit(1);
 }
 
-console.log('MongoDB URI:', mongoURI);
-
 mongoose.connect(mongoURI, {
     serverSelectionTimeoutMS: 30000, // 타임아웃 시간 설정 (30초)
     socketTimeoutMS: 45000, // 소켓 타임아웃 설정 (45초)
