@@ -6,14 +6,31 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path');
-const User = require('./models/User');
+
+const memberRoutes = require('./routes/memberRoutes');
+const teamRoutes = require('./routes/teamRoutes');
+const departmentRoutes = require('./routes/departmentRoutes');
+const cardRoutes = require('./routes/cardRoutes');
+const accountRoutes = require('./routes/accountRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
 
 const app = express();
 
+// Middleware
+app.use(bodyParser.json());
+
 // CORS 설정
 app.use(cors());
+
+// Routes
+app.use('/api/members', memberRoutes);
+app.use('/api/teams', teamRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/accounts', accountRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // MongoDB 연결
 const mongoURI = process.env.MONGO_URI;
@@ -27,17 +44,6 @@ mongoose.connect(mongoURI, {
     .catch(err => console.log('MongoDB connection error:', err));
 
 app.use(express.json());
-
-// API 경로 설정 - /api/data
-app.get('/api/data', async (req, res) => {
-    try {
-        const users = await User.find();
-        res.json(users);
-    } catch (err) {
-        console.error('Error fetching users:', err);
-        res.status(500).json({ message: err.message });
-    }
-});
 
 // 포트 설정
 const port = process.env.PORT || 3002;

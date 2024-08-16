@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true);
         }
     }, []);
-
+    
     const login = () => {
         setIsAuthenticated(true);
         // 로그인 후 토큰 저장 로직

@@ -15,14 +15,14 @@ const Login = () => {
     };
 
     return (
-        <div>
+        <>
             <h1>로그인 페이지</h1>
             <form onSubmit={handleLogin}>
                 <input type="text" placeholder="아이디" required />
                 <input type="password" placeholder="비밀번호" required />
                 <button type="submit">로그인</button>
             </form>
-        </div>
+        </>
     );
 };
 
