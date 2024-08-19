@@ -56,6 +56,14 @@ mongoose.connect(mongoURI, {
 
 app.use(express.json());
 
+// 정적 파일 제공 설정
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+// 모든 나머지 요청은 클라이언트 측 애플리케이션으로 리다이렉트
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
 // 포트 설정
 const port = process.env.PORT || 3002;
 app.listen(port, () => {
