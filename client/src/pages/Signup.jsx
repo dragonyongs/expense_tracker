@@ -120,7 +120,7 @@ const Signup = () => {
                 비밀번호를 작성해주세요.</h2>
             </div>
             <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">{errMsg}</p>
-            <form className="flex w-full flex-col gap-6 mb-14" onSubmit={handleSubmit}>
+            <form className="flex w-full flex-col gap-6" onSubmit={handleSubmit}>
                 <div>
                     <div className="flex items-center gap-x-4 mb-2">
                         <label htmlFor="email">이메일</label>
@@ -250,7 +250,7 @@ const Signup = () => {
                 </div>
                 <div className='flex flex-col gap-3'>
                     <button type="submit" className="w-full disabled:text-slate-500 text-white disabled:bg-slate-200 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" disabled={!validName || !validPwd || !validMatch || !validEmail ? true : false}>카드 지출 관리 시작하기</button>
-                    <button type="button" className='w-full text-slate-600' onClick={ () => { navigate(-1); } }>안할래요</button>
+                    <button type="button" className='w-full text-slate-600' onClick={ () => { navigate('/'); } }>안할래요</button>
                 </div>
             </form>
         </div>
