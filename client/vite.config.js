@@ -3,11 +3,6 @@ import react from '@vitejs/plugin-react-swc';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  define: {
-    'process.env': {
-      REACT_APP_DEV_BASE_URL: process.env.REACT_APP_DEV_BASE_URL,
-    }
-  },
   plugins: [
     react(),
     VitePWA({
@@ -16,7 +11,6 @@ export default defineConfig({
       includeAssets: [
         'favicon.svg', 
         'favicon.ico', 
-        // 'robots.txt', 
         'apple-touch-icon.png',
         'android-chrome-192x192.png',
         'android-chrome-512x512.png',
