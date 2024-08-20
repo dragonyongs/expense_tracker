@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 // CORS 설정
-app.use(cors());
+app.use(cors({ origin: 'https://expense-tracker-mhnw.onrender.com/' }));
 
 // Routes
 app.use('/api/auth', authRotes);
@@ -32,10 +32,6 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
 
 // MongoDB 연결
 const mongoURI = process.env.MONGO_URI;
