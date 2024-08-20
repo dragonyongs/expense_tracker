@@ -74,18 +74,4 @@ export default defineConfig({
       },
     },
   },
-  build: {
-    rollupOptions: {
-      output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'sw.js') {
-            return '/sw.js';
-          }
-          return assetInfo.name;
-        }
-      }
-    }
-  }
 });
