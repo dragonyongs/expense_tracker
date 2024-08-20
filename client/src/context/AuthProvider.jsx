@@ -52,7 +52,12 @@ export function AuthProvider({ children }) {
             const { data } = await axios.post('/api/auth/login', credentials);
             handleLoginSuccess(data);
         } catch (err) {
-            console.error(err);
+            // 서버로부터의 에러 응답이 존재하는 경우 해당 메시지를 추출
+            if (err.response && err.response.data && err.response.data.error) {
+                throw new Error(err.response.data.error);  // 에러 메시지를 추출하여 throw
+            } else {
+                throw new Error('로그인 중 문제가 발생했습니다. 다시 시도해주세요.');
+            }
         }
     };
 

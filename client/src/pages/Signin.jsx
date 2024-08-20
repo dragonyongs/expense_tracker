@@ -27,13 +27,13 @@ const Signin = () => {
         e.preventDefault();
         setErrorMessage(''); // 이전 에러 메시지 초기화
 
-        // 로그인 API 호출 로직
         try {
-            await login({ email, password }); // email과 password를 포함한 객체로 로그인
+            // 로그인 API 호출 시 에러 메시지를 화면에 표시
+            await login({ email, password });
             navigate('/'); // 로그인 성공 후 메인 페이지로 이동
         } catch (error) {
-            console.error('로그인 실패:', error);
-            setErrorMessage('이메일 또는 비밀번호가 올바르지 않습니다.'); // 에러 메시지 설정
+            // 서버에서 전달된 에러 메시지 설정
+            setErrorMessage(error.message);
         }
 
         // 이메일 기억 체크 박스 로직
