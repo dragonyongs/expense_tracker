@@ -1,7 +1,9 @@
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
+import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -19,6 +21,7 @@ const App = () => {
                     {/* public routes */}
                     <Route path="signin" element={<Signin />} />
                     <Route path="signup" element={<Signup />} />
+                    <Route path="pending" element={<Pending />} />
 
                      {/* protected routes */}
                     <Route path="/" element={

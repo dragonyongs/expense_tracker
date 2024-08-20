@@ -2,6 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
 export default defineConfig({
+  define: {
+    'process.env': {
+      REACT_APP_DEV_BASE_URL: process.env.REACT_APP_DEV_BASE_URL,
+    }
+  },
   plugins: [
     react(),
   ],

@@ -1,20 +1,16 @@
-import { Outlet } from 'react-router-dom'; //, Navigate, useLocation 
+import React, { useContext } from 'react';
+import { Outlet } from 'react-router-dom';
 import Header from '../components/Header';
 import Tab from '../components/Tab';
 import Side from '../components/Side';
-import { useContext } from 'react';
 import { AuthContext } from '../context/AuthProvider';
 
 const Layout = () => {
-    const { isAuthenticated } = useContext(AuthContext);
-    console.log('isAuthenticated', isAuthenticated);
-    // const location = useLocation();
+    const { isAuthenticated, user } = useContext(AuthContext);
 
-    // 로그인 여부를 확인하고 로그인되지 않은 경우 /login으로 리다이렉트
-    // if (!isAuthenticated && location.pathname !== '/signin' && location.pathname !== '/signup') {
-    //     return <Navigate to="/signin" />;
-    // }
-    
+    // 승인된 사용자 여부를 미리 계산합니다.
+    const isApprovedUser = isAuthenticated && user?.approval_status === 'approved';
+
     return (
         <>  
             {/* Background */}
@@ -27,14 +23,14 @@ const Layout = () => {
 
             {/* Mobile Layout */}
             <section className='lg:ml-mobile'>
-            <div className={`md:max-w-xl mx-auto lg:mx-0 h-screen bg-white flex flex-col ${!isAuthenticated ? 'justify-center' : ''}`}>
-                    {isAuthenticated && <Header />}
-                    <div className={`${isAuthenticated ? 'flex-grow overflow-y-auto shadow-md' : 'h-full flex items-center justify-center'}`}>
-                        <div className={`${isAuthenticated ? 'bg-slate-50 h-[calc(100vh-4rem-5.25rem)] p-4' : 'w-full p-6'}`}>
+                <div className={`md:max-w-xl mx-auto lg:mx-0 h-screen bg-white flex flex-col ${!isApprovedUser ? 'justify-center' : ''}`}>
+                    {isApprovedUser && <Header />}
+                    <div className={`${isApprovedUser ? 'flex-grow overflow-y-auto shadow-md' : 'h-full flex items-center justify-center'}`}>
+                        <div className={`${isApprovedUser ? 'bg-slate-50 h-[calc(100vh-4rem-5.25rem)] p-4' : 'w-full p-6'}`}>
                             <Outlet />
                         </div>
                     </div>
-                    {isAuthenticated && <Tab />}
+                    {isApprovedUser && <Tab />}
                 </div>
             </section>
         </>
