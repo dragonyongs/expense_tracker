@@ -6,11 +6,11 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      base: "/",
       registerType: 'autoUpdate',
       includeAssets: [
         'favicon.svg', 
         'favicon.ico', 
+        'robots.txt', 
         'apple-touch-icon.png',
         'android-chrome-192x192.png',
         'android-chrome-512x512.png',
