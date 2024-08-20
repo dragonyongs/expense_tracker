@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.instructions {
+    display: flex;
+    justify-content: start;
+    align-items: start;
+    gap: .5rem;
+    margin: .275rem 0 1rem 0;
+    font-size: 0.75rem;
+    border-radius: 0.5rem;
+    background: #000;
+    color: #fff;
+    padding: 0.5rem;
+    position: relative;
+    bottom: 0;
+}
+
+.instructions > svg {
+    margin-right: 0.25rem;
+}
+
+.offscreen {
+    position: absolute;
+    left: -9999px;
+}
+
+.errmsg {
+    background-color: #ffdfe4;
+    color: #e33939;
+    font-weight: bold;
+    margin: 0 0 1.25rem;
+    padding: .5rem;
+    border-radius: .5rem;
+}

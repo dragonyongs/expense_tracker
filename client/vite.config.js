@@ -3,14 +3,20 @@ import react from '@vitejs/plugin-react-swc';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  define: {
+    'process.env': {
+      REACT_APP_DEV_BASE_URL: process.env.REACT_APP_DEV_BASE_URL,
+    }
+  },
   plugins: [
     react(),
     VitePWA({
+      base: "/",
       registerType: 'autoUpdate',
       includeAssets: [
         'favicon.svg', 
         'favicon.ico', 
-        'robots.txt', 
+        // 'robots.txt', 
         'apple-touch-icon.png',
         'android-chrome-192x192.png',
         'android-chrome-512x512.png',
@@ -65,15 +71,15 @@ export default defineConfig({
       }
     })
   ],
-  // server: {
-  //   proxy: {
-  //     '/api': {
-  //       target: 'http://localhost:5301',
-  //       changeOrigin: true,
-  //       secure: false,
-  //     },
-  //   },
-  // },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5301',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {

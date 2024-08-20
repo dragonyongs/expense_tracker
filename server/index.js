@@ -1,11 +1,13 @@
 
 require('dotenv').config();
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 
+const authRotes = require('./routes/authRotes');
 const memberRoutes = require('./routes/memberRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
@@ -14,6 +16,7 @@ const accountRoutes = require('./routes/accountRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 
 const app = express();
+app.use(cookieParser());
 
 // Middleware
 app.use(bodyParser.json());
@@ -21,12 +24,8 @@ app.use(bodyParser.json());
 // CORS 설정
 app.use(cors());
 
-// Static files
-app.use(express.static(path.join(__dirname, '../client/dist'), {
-    maxAge: '0' // 캐시를 비활성화하거나 짧은 시간 동안만 캐시하도록 설정
-}));
-
 // Routes
+app.use('/api/auth', authRotes);
 app.use('/api/members', memberRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/departments', departmentRoutes);

@@ -1,12 +1,29 @@
+const bcrypt = require("bcrypt");
 const Member = require('../models/Member');
 
 // Create a new member
 exports.createMember = async (req, res) => {
     try {
-        const member = new Member(req.body);
-        console.log('member', member);
-        // await member.save();
-        // res.status(201).json(member);
+        const { member_name, password, email } = req.body;
+        if (!member_name || !password || !email) {
+            return res.status(400).json({ error: '이름, 비밀번호, 이메일은 필수 입력 사항입니다.' });
+        }
+
+        const existingUser = await Member.findOne({ email });
+        if (existingUser){
+            return res.status(409).json({ error: '이미 사용 중인 이메일입니다. '});
+        }
+
+        const slatRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, slatRounds);
+
+        const newMember = await Member.create({
+            member_name,
+            password: hashedPassword,
+            email
+        });
+
+        res.status(201).json(newMember);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }

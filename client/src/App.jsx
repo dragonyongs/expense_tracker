@@ -1,7 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './layouts/Layout';
-import Login from './pages/Login';
+import Signin from './pages/Signin';
+import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 import { AuthProvider } from './context/AuthProvider';
 
@@ -12,8 +15,17 @@ const App = () => {
     return (
         <AuthProvider>
             <Routes>
-                <Route path="/*" element={<Layout />}>
-                    <Route path="login" element={<Login />} />
+                <Route path="/" element={<Layout />}>
+                    {/* public routes */}
+                    <Route path="signin" element={<Signin />} />
+                    <Route path="signup" element={<Signup />} />
+
+                     {/* protected routes */}
+                    <Route path="/" element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    } />
                     
                     {/* catch all */}
                     <Route path="*" element={<NotFound />} />
