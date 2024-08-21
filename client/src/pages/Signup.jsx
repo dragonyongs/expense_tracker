@@ -85,7 +85,6 @@ const Signup = () => {
                 }
             );
 
-            console.log('response', response);
             setSuccess(true);
             
             // 입력 인풋 값 초기화

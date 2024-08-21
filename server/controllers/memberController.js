@@ -32,7 +32,10 @@ exports.createMember = async (req, res) => {
 // Get all members
 exports.getAllMembers = async (req, res) => {
     try {
-        const members = await Member.find().populate('team_id').populate('card_ids');
+        const members = await Member.find()
+            .populate('status_id')
+            .populate('team_id')
+            .populate('card_ids');
         res.json(members);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -42,7 +45,10 @@ exports.getAllMembers = async (req, res) => {
 // Get a member by ID
 exports.getMemberById = async (req, res) => {
     try {
-        const member = await Member.findById(req.params.id).populate('team_id').populate('card_ids');
+        const member = await Member.findById(req.params.id)
+            .populate('status_id')  // 승인 상태를 함께 가져옴
+            .populate('role_id')  // 역할 정보를 함께 가져옴
+            .populate('team_id');  // 팀 정보를 함께 가져옴;
         if (!member) return res.status(404).json({ error: 'Member not found' });
         res.json(member);
     } catch (err) {

@@ -14,6 +14,8 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const cardRoutes = require('./routes/cardRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const statusRoutes = require('./routes/statusRoutes');
+const roleRoutes = require('./routes/roleRoutes');
 
 const app = express();
 app.use(cookieParser());
@@ -32,6 +34,8 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/status', statusRoutes);
+app.use('/api/roles', roleRoutes);
 
 // MongoDB 연결
 const mongoURI = process.env.MONGO_URI;

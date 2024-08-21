@@ -21,7 +21,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({ error: '비밀번호가 일치하지 않습니다.' });
         }
 
-        const accessToken = jwt.sign({ id: member._id, email: member.email, name: member.member_name, approval_status: member.approval_status }, accessTokenSecret, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: member._id, email: member.email, name: member.member_name, status_id: member.status_id }, accessTokenSecret, { expiresIn: '1h' });
         const refreshToken = jwt.sign({ id: member._id }, refreshTokenSecret, { expiresIn: '1d' });
 
         refreshTokens[refreshToken] = member._id;
@@ -34,7 +34,7 @@ exports.login = async (req, res) => {
         });
 
         res.status(200).json({
-            user: { email: member.email, name: member.member_name, approval_status: member.approval_status },  // 사용자 정보를 반환
+            user: { email: member.email, name: member.member_name, status_id: member.status_id },  // 사용자 정보를 반환
             refreshToken
         });
     } catch (err) {
@@ -79,7 +79,7 @@ exports.refreshToken = async (req, res) => {
             id: updatedMember._id, 
             email: updatedMember.email, 
             name: updatedMember.member_name, 
-            approval_status: updatedMember.approval_status 
+            status: updatedMember.status_id.status_name 
         }, accessTokenSecret, { expiresIn: '1h' });
 
         // 클라이언트로 새로운 액세스 토큰 반환
@@ -114,11 +114,13 @@ exports.isAuthenticated = async (req, res) => {
             return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
         }
 
+        console.log('updatedMember', updatedMember);
+
         res.status(200).json({ 
             user: { 
                 email: updatedMember.email, 
                 name: updatedMember.member_name, 
-                approval_status: updatedMember.approval_status 
+                status_id: updatedMember.status_id 
             } 
         });
     });
@@ -141,7 +143,7 @@ exports.refreshToken = (req, res) => {
             return res.status(403).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
         }
 
-        const accessToken = jwt.sign({ id: member.id, email: member.email }, accessTokenSecret, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: member.id, email: member.email, status_id: member.status_id }, accessTokenSecret, { expiresIn: '1h' });
         res.cookie('accessToken', accessToken, { httpOnly: true });
         res.status(200).json({ accessToken });
     });

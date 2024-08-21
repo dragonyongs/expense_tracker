@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../components/Header';
-import Tab from '../components/Tab';
+import TabBar from '../components/TabBar';
 import Side from '../components/Side';
 import { AuthContext } from '../context/AuthProvider';
 
@@ -9,8 +9,8 @@ const Layout = () => {
     const { isAuthenticated, user } = useContext(AuthContext);
 
     // 승인된 사용자 여부를 미리 계산합니다.
-    const isApprovedUser = isAuthenticated && user?.approval_status === 'approved';
-
+    const isApprovedUser = isAuthenticated && user?.status === 'approved';
+    console.log('isApprovedUser', isApprovedUser);
     return (
         <>  
             {/* Background */}
@@ -30,7 +30,7 @@ const Layout = () => {
                             <Outlet />
                         </div>
                     </div>
-                    {isApprovedUser && <Tab />}
+                    {isApprovedUser && <TabBar />}
                 </div>
             </section>
         </>

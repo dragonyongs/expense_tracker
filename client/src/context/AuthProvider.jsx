@@ -1,5 +1,4 @@
 // context/AuthProvider.jsx
-
 import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -18,15 +17,25 @@ export function AuthProvider({ children }) {
                 const response = await axios.get('/api/auth/isAuthenticated');
                 const fetchedUser = response.data.user;
 
-                setUser(fetchedUser);
+                // status_id를 사용해 status_name 가져오기
+                const statusResponse = await axios.get(`/api/status/${fetchedUser.status_id}`);
+                const status = statusResponse.data.status_name;  // status_name 가져오기
+
+                setUser({ ...fetchedUser, status: status });  // user 상태에 status 추가
                 setIsAuthenticated(true);
 
                 // 승인 상태에 따라 리다이렉트
-                if (fetchedUser.approval_status === 'pending') {
-                    navigate('/pending');
+                if (status === 'pending') {
+                    if (location.pathname !== '/pending') {
+                        navigate('/pending');
+                    }
                 } else {
-                    navigate('/'); // 승인된 경우 홈으로 이동
+                    // 홈으로 이동할 조건을 현재 페이지가 홈이 아닌 경우로 제한
+                    if (location.pathname === '/pending') {
+                        navigate('/');
+                    }
                 }
+
             } catch (err) {
                 handleAuthError(err);
             } finally {
@@ -61,15 +70,19 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const handleLoginSuccess = (data) => {
+    const handleLoginSuccess = async (data) => {
         localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('approval_status', data.user.approval_status);
+        // status_id를 사용해 status_name 가져오기
+        const statusResponse = await axios.get(`/api/status/${data.user.status_id}`);
+        const status = statusResponse.data.status_name;
+
+        localStorage.setItem('status', status);
         axios.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
         setIsAuthenticated(true);
-        setUser(data.user);
+        setUser({ ...data.user, status: status });
 
         // 로그인 후 승인 상태에 따른 리다이렉트
-        if (data.user.approval_status === 'pending') {
+        if (status === 'pending') {
             navigate('/pending');
         } else {
             navigate('/'); // 승인된 경우 홈으로 이동

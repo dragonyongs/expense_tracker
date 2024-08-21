@@ -45,7 +45,7 @@ const Signin = () => {
     };
 
     return (
-        <div className='relative flex items-center w-full h-full px-10'>
+        <div className='relative flex items-center w-full h-full'>
             <div className='w-full'>
                 <div className='mb-28'>
                     <div className='flex justify-center items-center w-20 h-20 mb-10 rounded-full bg-newBlue text-white'>

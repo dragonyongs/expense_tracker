@@ -5,6 +5,7 @@ import Signin from './pages/Signin';
 import Signup from './pages/Signup';
 import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
+import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
@@ -27,6 +28,12 @@ const App = () => {
                     <Route path="/" element={
                         <ProtectedRoute>
                             <Dashboard />
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/admin" element={
+                        <ProtectedRoute>
+                            <Admin />
                         </ProtectedRoute>
                     } />
                     
