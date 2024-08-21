@@ -6,6 +6,7 @@ import Signup from './pages/Signup';
 import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
+import AdminMembers from './pages/AdminMembers';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
@@ -37,6 +38,12 @@ const App = () => {
                         </ProtectedRoute>
                     } />
                     
+                    <Route path="/admin/members" element={
+                        <ProtectedRoute>
+                            <AdminMembers />
+                        </ProtectedRoute>
+                    } />
+
                     {/* catch all */}
                     <Route path="*" element={<NotFound />} />
                 </Route>

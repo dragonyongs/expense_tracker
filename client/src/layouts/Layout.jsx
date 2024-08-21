@@ -26,7 +26,7 @@ const Layout = () => {
                 <div className={`md:max-w-xl mx-auto lg:mx-0 h-screen bg-white flex flex-col ${!isApprovedUser ? 'justify-center' : ''}`}>
                     {isApprovedUser && <Header />}
                     <div className={`${isApprovedUser ? 'flex-grow overflow-y-auto shadow-md' : 'h-full flex items-center justify-center'}`}>
-                        <div className={`${isApprovedUser ? 'bg-slate-50 h-[calc(100vh-4rem-5.25rem)] p-4' : 'w-full p-6'}`}>
+                        <div className={`${isApprovedUser ? 'relative bg-slate-50 h-full' : 'w-full p-6'}`}> {/* h-[calc(100vh-4rem-5.25rem)] */}
                             <Outlet />
                         </div>
                     </div>
