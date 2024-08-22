@@ -12,7 +12,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div>
+        <div className='p-6'>
             <h1>Dashboard</h1>
             {user ? (
                 <div>
