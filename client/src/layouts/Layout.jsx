@@ -22,8 +22,8 @@ const Layout = () => {
             </div>
 
             {/* Mobile Layout */}
-            <section className='lg:ml-mobile'>
-                <div className={`md:max-w-xl mx-auto lg:mx-0 h-screen min-h-safe-screen bg-white flex flex-col ${!isApprovedUser ? 'justify-center' : ''}`}>
+            <section className='lg:ml-mobile min-h-safe-screen'>
+                <div className={`md:max-w-xl mx-auto lg:mx-0 h-screen bg-white flex flex-col ${!isApprovedUser ? 'justify-center' : ''}`}>
                     {isApprovedUser && <Header />}
                     <div className={`${isApprovedUser ? 'flex-grow overflow-y-auto shadow-md bg-slate-50' : 'overflow-y-auto h-full flex items-center justify-center'}`}>
                         <div className={`${isApprovedUser ? 'relative' : 'w-full p-6'}`}> {/* h-[calc(100vh-4rem-5.25rem)] */}

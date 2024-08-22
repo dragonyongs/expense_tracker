@@ -35,8 +35,10 @@
     border-radius: .5rem;
 }
 
-body {  min-height: 100vh;   
+body {  
+    min-height: 100vh;   
     @supports (-webkit-touch-callout: none) {
         min-height: -webkit-fill-available;
+        height: -webkit-fill-available;
     }
 }
