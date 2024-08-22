@@ -7,6 +7,7 @@ import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import AdminMembers from './pages/AdminMembers';
+import AdminDepartments from './pages/AdminDepartments.jsx';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
@@ -41,6 +42,12 @@ const App = () => {
                     <Route path="/admin/members" element={
                         <ProtectedRoute>
                             <AdminMembers />
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/admin/departments" element={
+                        <ProtectedRoute>
+                            <AdminDepartments />
                         </ProtectedRoute>
                     } />
 

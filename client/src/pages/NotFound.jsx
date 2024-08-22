@@ -4,7 +4,7 @@ import lottieJson from '../../public/LottieNotFound.json';
 const NotFound = () => {
     return (
         <>
-            <div className="flex flex-col justify-center items-center w-full h-full">
+            <div className="flex flex-col justify-center items-center w-full min-h-safe-screen">
                 <div className="relative w-96">
                     <Lottie
                         loop

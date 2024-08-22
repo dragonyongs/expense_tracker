@@ -38,7 +38,7 @@ const Tab = () => {
                 </li>
                 <li className="me-2 flex-shrink-0">
                     <Link
-                        to="#"
+                        to="/admin/departments"
                         className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
                     >
                         본부관리
@@ -46,7 +46,7 @@ const Tab = () => {
                 </li>
                 <li className="me-2 flex-shrink-0">
                     <a
-                        href="#"
+                        href="/admin/teams"
                         className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
                     >
                         부서관리
@@ -54,7 +54,7 @@ const Tab = () => {
                 </li>
                 <li className="me-2 flex-shrink-0">
                     <Link
-                        to="#"
+                        to="/admin/account"
                         className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
                     >
                         계좌관리
@@ -62,6 +62,7 @@ const Tab = () => {
                 </li>
                 <li className="flex-shrink-0">
                     <Link
+                        to="/admin/cards"
                         className="inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed dark:text-gray-500"
                     >
                         카드관리

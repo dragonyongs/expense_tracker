@@ -72,7 +72,7 @@ const AdminMembers = () => {
         });
     };
 
-    const handleSave = async () => {
+    const handleUpdate = async () => {
         try {
             const memberDataToSave = {
                 ...selectedMember,
@@ -151,103 +151,101 @@ const AdminMembers = () => {
                             <MdClose className='text-2xl'/>
                         </button>
                     </div>
-                    <div className="p-4 h-[calc(100vh-44px)]">
-                        {selectedMember && (
-                            <form>
-                                <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
-                                    {/* Member Name */}
-                                    <div>
-                                        <label htmlFor="member_name">이름</label>
-                                        <input 
-                                            id="member_name"
-                                            name="member_name"
-                                            type="text" 
-                                            className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                            placeholder="사용자 이름 입력" 
-                                            value={selectedMember.member_name}
-                                            onChange={(e) => setSelectedMember({ ...selectedMember, member_name: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Member Email */}
-                                    <div>
-                                        <label htmlFor="email">이메일</label>
-                                        <input 
-                                            id="email"
-                                            name="email"
-                                            type="text" 
-                                            className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                            placeholder="이메일(아이디) 입력" 
-                                            value={selectedMember.email}
-                                            onChange={(e) => setSelectedMember({ ...selectedMember, email: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Member Position */}
-                                    <div>
-                                        <label htmlFor="position">직책</label>
-                                        <input 
-                                            id="position"
-                                            name="position"
-                                            type="text" 
-                                            className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                            placeholder="직책 입력" 
-                                            value={selectedMember.position || ''}
-                                            onChange={(e) => setSelectedMember({ ...selectedMember, position: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Member Rank */}
-                                    <div>
-                                        <label htmlFor="rank">직급</label>
-                                        <input 
-                                            id="rank"
-                                            name="rank"
-                                            type="text" 
-                                            className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                            placeholder="직급 입력" 
-                                            value={selectedMember.rank || ''}
-                                            onChange={(e) => setSelectedMember({ ...selectedMember, rank: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Member Status */}
-                                    <div>
-                                        <label htmlFor="status_id">상태</label>
-                                        <select
-                                            id="status_id"
-                                            name="status_id"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                            value={selectedMember?.status_id?._id || ""}  // 현재 상태의 _id 값 설정
-                                            onChange={handleStatusChange}
-                                        >
-                                            <option value="" disabled>상태 선택</option>
-                                            {statuses.map(status => (
-                                                <option key={status._id} value={status._id}>
-                                                    {status.status_description}
-                                                </option>
-                                            ))}
-                                        </select>
-
-                                    </div>
+                    {selectedMember && (
+                        <form className="p-4 h-[calc(100vh-44px)]">
+                            <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
+                                {/* Member Name */}
+                                <div>
+                                    <label htmlFor="member_name">이름</label>
+                                    <input 
+                                        id="member_name"
+                                        name="member_name"
+                                        type="text" 
+                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                                        placeholder="사용자 이름 입력" 
+                                        value={selectedMember.member_name}
+                                        onChange={(e) => setSelectedMember({ ...selectedMember, member_name: e.target.value })}
+                                        required
+                                    />
                                 </div>
-                                
-                                {/* Save Button */}
-                                <div className="flex flex-col gap-3 pt-4">
-                                    <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                                        수정
-                                    </button>
-                                    <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
-                                        안할래요
-                                    </button>
+
+                                {/* Member Email */}
+                                <div>
+                                    <label htmlFor="email">이메일</label>
+                                    <input 
+                                        id="email"
+                                        name="email"
+                                        type="text" 
+                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                                        placeholder="이메일(아이디) 입력" 
+                                        value={selectedMember.email}
+                                        onChange={(e) => setSelectedMember({ ...selectedMember, email: e.target.value })}
+                                        required
+                                    />
                                 </div>
-                            </form>
-                        )}
-                    </div>
+
+                                {/* Member Position */}
+                                <div>
+                                    <label htmlFor="position">직책</label>
+                                    <input 
+                                        id="position"
+                                        name="position"
+                                        type="text" 
+                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                                        placeholder="직책 입력" 
+                                        value={selectedMember.position || ''}
+                                        onChange={(e) => setSelectedMember({ ...selectedMember, position: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                {/* Member Rank */}
+                                <div>
+                                    <label htmlFor="rank">직급</label>
+                                    <input 
+                                        id="rank"
+                                        name="rank"
+                                        type="text" 
+                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                                        placeholder="직급 입력" 
+                                        value={selectedMember.rank || ''}
+                                        onChange={(e) => setSelectedMember({ ...selectedMember, rank: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                {/* Member Status */}
+                                <div>
+                                    <label htmlFor="status_id">상태</label>
+                                    <select
+                                        id="status_id"
+                                        name="status_id"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        value={selectedMember?.status_id?._id || ""}  // 현재 상태의 _id 값 설정
+                                        onChange={handleStatusChange}
+                                    >
+                                        <option value="" disabled>상태 선택</option>
+                                        {statuses.map(status => (
+                                            <option key={status._id} value={status._id}>
+                                                {status.status_description}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                </div>
+                            </div>
+                            
+                            {/* Save Button */}
+                            <div className="flex flex-col gap-3 pt-4">
+                                <button type="button" onClick={handleUpdate} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                    수정
+                                </button>
+                                <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                                    안할래요
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </Drawer>
             </div>
         </>

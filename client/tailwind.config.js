@@ -20,7 +20,7 @@ export default {
         'newBlue' : '#0532ff',
       },
       minHeight: {
-        'safe-screen': 'calc(100vh - env(safe-area-inset-bottom) - env(safe-area-inset-top))',
+        'safe-screen': 'calc(100vh - 148px - env(safe-area-inset-bottom) - env(safe-area-inset-top))',
       }
     },
   },
