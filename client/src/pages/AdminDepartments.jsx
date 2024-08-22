@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import axios from "../services/axiosInstance"; 
 import Tab from '../components/Tab';
-import { MdKeyboardArrowRight, MdClose } from "react-icons/md";
-import Drawer from 'react-modern-drawer';
-import 'react-modern-drawer/dist/index.css';
+import CommonDrawer from '../components/CommonDrawer'; // 공통 Drawer 컴포넌트 사용
+import InputField from '../components/InputField'; // 공통 Input 컴포넌트 사용
 
 const DEPARTMENTS_URL = '/api/departments';
 
@@ -93,47 +92,30 @@ const AdminDepartments = () => {
                     추가
                 </button>
             </div>
-            <Drawer
-                    open={isOpen}
-                    onClose={toggleDrawer}
-                    direction='right'
-                    size={'320px'}
-                >
-                    <div className="flex justify-between py-2 px-4">
-                        <h5 className="text-lg font-bold">{isEditing ? '본부 수정' : '본부 추가'}</h5>
-                        <button onClick={handleCloseDrawer}>
-                            <MdClose className='text-2xl'/>
-                        </button>
-                    </div>
-                    {selectedDepartment && (
-                        <form className="p-4 h-[calc(100vh-44px)]">
-                            <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
-                                <div>
-                                    <label htmlFor="department_name">본부 이름</label>
-                                    <input 
-                                        id="department_name"
-                                        name="department_name"
-                                        type="text" 
-                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                        placeholder="부서 이름 입력" 
-                                        value={selectedDepartment?.department_name || ''}
-                                        onChange={(e) => setSelectedDepartment({ ...selectedDepartment, department_name: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            {/* 저장 버튼 */}
-                            <div className="flex flex-col gap-3 pt-4">
-                                <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                                    {isEditing ? '수정' : '추가'}
-                                </button>
-                                <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
-                                    취소
-                                </button>
-                            </div>
-                        </form>
-                    )}
-            </Drawer>
+            <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '본부 수정' : '본부 추가'}>
+                {selectedDepartment && (
+                    <form className="p-4 h-[calc(100vh-44px)]">
+                        <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
+                            <InputField 
+                                label="본부 이름" 
+                                id="department_name" 
+                                value={selectedDepartment.department_name}
+                                onChange={(e) => setSelectedDepartment({ ...selectedDepartment, department_name: e.target.value })}
+                                placeholder="부서 이름 입력"
+                            />
+                        </div>
+                        {/* 저장 버튼 */}
+                        <div className="flex flex-col gap-3 pt-4">
+                            <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                {isEditing ? '수정' : '추가'}
+                            </button>
+                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                                취소
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </CommonDrawer>
         </>
     )
 }

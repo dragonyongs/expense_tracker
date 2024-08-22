@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { MdKeyboardArrowRight } from "react-icons/md";
 import Tab from '../components/Tab';
 import axios from "../services/axiosInstance"; // Make sure axios is correctly set up
-import { MdKeyboardArrowRight, MdClose } from "react-icons/md";
-import Drawer from 'react-modern-drawer';
-import 'react-modern-drawer/dist/index.css';
+import CommonDrawer from '../components/CommonDrawer';
+import InputField from '../components/InputField';
 
 const MEMBER_URL = '/api/members';
 const STATUS_URL = '/api/status';
@@ -13,26 +13,27 @@ const AdminMembers = () => {
     const [statuses, setStatuses] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+
+    const fetchMembers = async () => {
+        try {
+            const response = await axios.get(MEMBER_URL);
+            setMembers(response.data);
+        } catch (error) {
+            console.error('Error fetching members:', error);
+        }
+    };
+
+    const fetchStatuses = async () => {
+        try {
+            const response = await axios.get(STATUS_URL);
+            setStatuses(response.data);
+        } catch (error) {
+            console.error('Error fetching statuses:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchMembers = async () => {
-            try {
-                const response = await axios.get(MEMBER_URL);
-                setMembers(response.data);
-            } catch (error) {
-                console.error('Error fetching members:', error);
-            }
-        };
-
-        const fetchStatuses = async () => {
-            try {
-                const response = await axios.get(STATUS_URL);
-                setStatuses(response.data);
-            } catch (error) {
-                console.error('Error fetching statuses:', error);
-            }
-        };
-
         fetchMembers();
         fetchStatuses();
     }, []);
@@ -43,8 +44,16 @@ const AdminMembers = () => {
 
     const handleOpenDrawer = (member) => {
         setSelectedMember(member);
+        setIsEditing(true);
         setIsOpen(true);
     };
+
+    const handleAddDepartment = () => {
+        setSelectedMember({ member_name: '', email: '' });
+        setIsEditing(false);
+        setIsOpen(true);
+    };
+
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
@@ -72,21 +81,24 @@ const AdminMembers = () => {
         });
     };
 
-    const handleUpdate = async () => {
+    const handleSave = async () => {
         try {
-            const memberDataToSave = {
+            const memberData = {
                 ...selectedMember,
                 status_id: selectedMember.status_id._id
             };
 
-            // ID별로 회원을 업데이트하기 위해 PUT 요청
-            await axios.put(`${MEMBER_URL}/${selectedMember._id}`, memberDataToSave);
-
-            console.log("Member updated successfully:", memberDataToSave);
-
-            // 선택적으로 업데이트된 데이터를 반영하도록 멤버를 다시 호출
-            const response = await axios.get(MEMBER_URL);
-            setMembers(response.data);
+            if (isEditing) {
+                // 수정 모드일 때 PUT 요청
+                await axios.put(`${MEMBER_URL}/${selectedMember._id}`, memberData);
+                console.log("Department updated successfully:", memberData);
+            } else {
+                // 추가 모드일 때 POST 요청
+                await axios.post(MEMBER_URL, memberData);
+                console.log("Department added successfully:", memberData);
+            }
+            
+            await fetchMembers();
 
             handleCloseDrawer();
         } catch (error) {
@@ -139,80 +151,62 @@ const AdminMembers = () => {
                     </ul>
                 </div>
 
-                <Drawer
-                    open={isOpen}
+                <CommonDrawer
+                    isOpen={isOpen}
                     onClose={toggleDrawer}
-                    direction='right'
-                    size={'320px'}
+                    title={isEditing ? '회원 수정' : '회원 추가'}
                 >
-                    <div className="flex justify-between py-2 px-4">
-                        <h5 className="text-lg font-bold">회원 상세 정보</h5>
-                        <button onClick={handleCloseDrawer}>
-                            <MdClose className='text-2xl'/>
-                        </button>
-                    </div>
                     {selectedMember && (
-                        <form className="p-4 h-[calc(100vh-44px)]">
+                        <form>
                             <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
                                 {/* Member Name */}
-                                <div>
-                                    <label htmlFor="member_name">이름</label>
-                                    <input 
-                                        id="member_name"
-                                        name="member_name"
-                                        type="text" 
-                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                        placeholder="사용자 이름 입력" 
-                                        value={selectedMember.member_name}
-                                        onChange={(e) => setSelectedMember({ ...selectedMember, member_name: e.target.value })}
-                                        required
-                                    />
-                                </div>
+                                <InputField 
+                                    label="이름" 
+                                    id="member_name" 
+                                    value={selectedMember.member_name}
+                                    onChange={(e) => setSelectedMember({ ...selectedMember, member_name: e.target.value })}
+                                    placeholder="이름 입력"
+                                    required
+                                />
 
                                 {/* Member Email */}
-                                <div>
-                                    <label htmlFor="email">이메일</label>
-                                    <input 
-                                        id="email"
-                                        name="email"
-                                        type="text" 
-                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                        placeholder="이메일(아이디) 입력" 
-                                        value={selectedMember.email}
-                                        onChange={(e) => setSelectedMember({ ...selectedMember, email: e.target.value })}
-                                        required
-                                    />
-                                </div>
+                                <InputField 
+                                    label="이메일" 
+                                    id="email" 
+                                    value={selectedMember.email}
+                                    onChange={(e) => setSelectedMember({ ...selectedMember, email: e.target.value })}
+                                    placeholder="이메일(아이디) 입력" 
+                                    required
+                                />
+
+                                <InputField 
+                                    label="비밀번호" 
+                                    id="password"
+                                    type="password"
+                                    value={selectedMember.password}
+                                    onChange={(e) => setSelectedMember({ ...selectedMember, password: e.target.value })}
+                                    placeholder="패스워드 입력" 
+                                    required
+                                />
 
                                 {/* Member Position */}
-                                <div>
-                                    <label htmlFor="position">직책</label>
-                                    <input 
-                                        id="position"
-                                        name="position"
-                                        type="text" 
-                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                        placeholder="직책 입력" 
-                                        value={selectedMember.position || ''}
-                                        onChange={(e) => setSelectedMember({ ...selectedMember, position: e.target.value })}
-                                        required
-                                    />
-                                </div>
+                                <InputField 
+                                    label="직책" 
+                                    id="position" 
+                                    value={selectedMember.position || ''}
+                                    onChange={(e) => setSelectedMember({ ...selectedMember, position: e.target.value })}
+                                    placeholder="직책 입력"
+                                    required
+                                />
 
                                 {/* Member Rank */}
-                                <div>
-                                    <label htmlFor="rank">직급</label>
-                                    <input 
-                                        id="rank"
-                                        name="rank"
-                                        type="text" 
-                                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
-                                        placeholder="직급 입력" 
-                                        value={selectedMember.rank || ''}
-                                        onChange={(e) => setSelectedMember({ ...selectedMember, rank: e.target.value })}
-                                        required
-                                    />
-                                </div>
+                                <InputField 
+                                    name="rank"
+                                    value={selectedMember.rank || ''}
+                                    onChange={(e) => setSelectedMember({ ...selectedMember, rank: e.target.value })}
+                                    placeholder="직급 입력" 
+                                    required
+                                />
 
                                 {/* Member Status */}
                                 <div>
@@ -237,8 +231,8 @@ const AdminMembers = () => {
                             
                             {/* Save Button */}
                             <div className="flex flex-col gap-3 pt-4">
-                                <button type="button" onClick={handleUpdate} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                                    수정
+                                <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                    {isEditing ? '수정' : '추가'}
                                 </button>
                                 <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
                                     안할래요
@@ -246,7 +240,14 @@ const AdminMembers = () => {
                             </div>
                         </form>
                     )}
-                </Drawer>
+                </CommonDrawer>
+                {/* 추가 버튼 */}
+                <button 
+                    type="button" 
+                    onClick={handleAddDepartment} 
+                    className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                    추가
+                </button>
             </div>
         </>
     );
