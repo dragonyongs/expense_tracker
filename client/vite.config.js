@@ -2,11 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
 export default defineConfig({
-  build: {
-    rollupOptions: {
-      external: ['@mui/material'],
-    },
-  },
   define: {
     'process.env': {
       REACT_APP_DEV_BASE_URL: process.env.REACT_APP_DEV_BASE_URL,

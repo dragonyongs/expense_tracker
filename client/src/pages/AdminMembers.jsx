@@ -3,7 +3,6 @@ import Tab from '../components/Tab';
 import axios from "../services/axiosInstance";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { MdClose } from "react-icons/md";
-import { Drawer, Button, TextField } from '@mui/material'; // Material-UI의 Drawer, Button, TextField 가져오기
 
 const MEMBER_URL = '/api/members';
 const STATUS_URL = '/api/status';
@@ -122,7 +121,7 @@ const AdminMembers = () => {
                 </div>
 
                 {/* Drawer UI */}
-                <Drawer
+                {/* <Drawer
                     anchor="right"
                     open={drawerOpen}
                     onClose={handleCloseDrawer}
@@ -172,7 +171,7 @@ const AdminMembers = () => {
                             </>
                         )}
                     </div>
-                </Drawer>
+                </Drawer> */}
             </div>
         </>
     );
