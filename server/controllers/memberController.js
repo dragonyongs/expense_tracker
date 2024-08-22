@@ -59,7 +59,19 @@ exports.getMemberById = async (req, res) => {
 // Update a member by ID
 exports.updateMember = async (req, res) => {
     try {
-        const member = await Member.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const { member_name, email, password, rank, position } = req.body;
+
+        const slatRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, slatRounds);
+
+        const updateMemberData = {
+            member_name,
+            email,
+            rank,
+            position,
+            password: hashedPassword,
+        }
+        const member = await Member.findByIdAndUpdate(req.params.id, updateMemberData, { new: true });
         if (!member) return res.status(404).json({ error: 'Member not found' });
         res.json(member);
     } catch (err) {

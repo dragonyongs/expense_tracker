@@ -201,7 +201,8 @@ const AdminMembers = () => {
 
                                 {/* Member Rank */}
                                 <InputField 
-                                    name="rank"
+                                    label="직급" 
+                                    id="rank" 
                                     value={selectedMember.rank || ''}
                                     onChange={(e) => setSelectedMember({ ...selectedMember, rank: e.target.value })}
                                     placeholder="직급 입력" 
