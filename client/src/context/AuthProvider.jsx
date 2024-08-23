@@ -29,11 +29,8 @@ export function AuthProvider({ children }) {
                     if (location.pathname !== '/pending') {
                         navigate('/pending');
                     }
-                } else {
-                    // 홈으로 이동할 조건을 현재 페이지가 홈이 아닌 경우로 제한
-                    if (location.pathname === '/pending') {
-                        navigate('/');
-                    }
+                } else if (location.pathname === '/pending' && status === 'approved' || location.pathname === '/signin') {
+                    navigate('/');
                 }
 
             } catch (err) {

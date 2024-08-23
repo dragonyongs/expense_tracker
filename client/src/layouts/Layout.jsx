@@ -24,7 +24,7 @@ const Layout = () => {
                 <div className={`md:max-w-xl mx-auto lg:mx-0 bg-white flex flex-col ${!isApprovedUser ? 'justify-center' : ''}`}>
                     {isApprovedUser && <Header />}
                     <div className={`overflow-y-auto shadow-md bg-slate-50 ${isApprovedUser ? '' : 'h-full flex items-center justify-center'}`}>
-                        <div className={`${isApprovedUser ? 'relative h-[calc(100vh-190px)]' : 'w-full h-screen p-10'}`}>
+                        <div className={`min-h-safe-screen ${isApprovedUser ? 'relative' : 'w-full p-10'}`}>
                             <Outlet />
                         </div>
                     </div>

@@ -7,9 +7,10 @@ import Pending from './pages/Pending';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import AdminMembers from './pages/AdminMembers';
-import AdminDepartments from './pages/AdminDepartments.jsx';
+import AdminDepartments from './pages/AdminDepartments';
 import NotFound from './pages/NotFound';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
+import ProtectedRoute from './components/ProtectedRoute';
+import setScreenHeight from './utils/setScreenHeight';
 
 import { AuthProvider } from './context/AuthProvider';
 
@@ -17,6 +18,13 @@ import './App.css';
 
 const App = () => {
 
+    React.useEffect(() => {
+        setScreenHeight();
+        
+        window.addEventListener('resize', setScreenHeight);
+        return () => window.removeEventListener('resize', setScreenHeight);
+    }, []);
+    
     return (
         <AuthProvider>
             <Routes>

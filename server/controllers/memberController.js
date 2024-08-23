@@ -59,25 +59,34 @@ exports.getMemberById = async (req, res) => {
 // Update a member by ID
 exports.updateMember = async (req, res) => {
     try {
-        const { member_name, email, password, rank, position } = req.body;
+        const { password, ...otherData } = req.body;  // 패스워드를 분리하여 나머지 필드와 따로 관리
 
-        const slatRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, slatRounds);
+        let updateMemberData = { ...otherData };  // 나머지 데이터는 그대로 처리
 
-        const updateMemberData = {
-            member_name,
-            email,
-            rank,
-            position,
-            password: hashedPassword,
+        // 사용자가 패스워드를 입력했을 때만 해시 처리
+        if (password) {
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            updateMemberData.password = hashedPassword;  // 해시된 패스워드로 덮어쓰기
+        } else {
+            // 사용자가 패스워드를 수정하지 않았을 경우, 기존 패스워드를 유지
+            const existingMember = await Member.findById(req.params.id);
+            if (!existingMember) return res.status(404).json({ error: 'Member not found' });
+
+            updateMemberData.password = existingMember.password;  // 기존 해시된 패스워드 유지
         }
+
+        // DB 업데이트
         const member = await Member.findByIdAndUpdate(req.params.id, updateMemberData, { new: true });
         if (!member) return res.status(404).json({ error: 'Member not found' });
+
         res.json(member);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
 };
+
+
 
 // Delete a member by ID
 exports.deleteMember = async (req, res) => {
