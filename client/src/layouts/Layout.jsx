@@ -21,10 +21,10 @@ const Layout = () => {
 
             {/* Mobile Layout */}
             <section className='lg:ml-mobile'>
-                <div className={`md:max-w-xl mx-auto lg:mx-0 bg-white flex flex-col ${!isApprovedUser ? 'justify-center' : ''}`}>
+                <div className={`h-real-screen md:max-w-xl mx-auto lg:mx-0 bg-white flex flex-col ${!isApprovedUser ? '' : 'justify-center'}`}>
                     {isApprovedUser && <Header />}
                     <div className={`overflow-y-auto shadow-md bg-slate-50 ${isApprovedUser ? '' : 'h-full flex items-center justify-center'}`}>
-                        <div className={`min-h-safe-screen ${isApprovedUser ? 'relative' : 'w-full p-10'}`}>
+                        <div className={`min-h-real-screen ${isApprovedUser ? 'relative' : 'w-full p-10'}`}>
                             <Outlet />
                         </div>
                     </div>

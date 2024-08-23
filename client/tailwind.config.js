@@ -21,6 +21,10 @@ export default {
       },
       minHeight: {
         'safe-screen': 'calc(100vh - 148px - env(safe-area-inset-bottom) - env(safe-area-inset-top))',
+        'real-screen': 'calc(var(--vh, 1vh) * 100)',
+      },
+      height: {
+        'real-screen': 'calc(var(--vh, 1vh) * 100)',
       }
     },
   },

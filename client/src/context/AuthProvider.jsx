@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
                     if (location.pathname !== '/pending') {
                         navigate('/pending');
                     }
-                } else if (location.pathname === '/pending' && status === 'approved' || location.pathname === '/signin') {
+                } else if (location.pathname === '/pending' && status === 'approved' || location.pathname === '/signin' && status) {
                     navigate('/');
                 }
 
