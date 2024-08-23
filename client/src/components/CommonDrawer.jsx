@@ -5,7 +5,7 @@ import { MdClose } from 'react-icons/md';
 
 const CommonDrawer = ({ isOpen, onClose, title, children }) => {
     return (
-        <Drawer open={isOpen} onClose={onClose} direction='right' size='320px'>
+        <Drawer open={isOpen} onClose={onClose} className='h-real-screen' direction='right' size='320px'>
             <div className="flex justify-between py-2 px-4">
                 <h5 className="text-lg font-bold">{title}</h5>
                 <button onClick={onClose}>

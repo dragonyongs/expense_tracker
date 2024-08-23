@@ -7,10 +7,12 @@ import { IoAddCircleOutline } from "react-icons/io5";
 
 const MEMBER_URL = '/api/members';
 const STATUS_URL = '/api/status';
+const ROLES_URL = '/api/roles';
 
 const AdminMembers = () => {
     const [members, setMembers] = useState([]);
     const [statuses, setStatuses] = useState([]);
+    const [roles, setRoles] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -33,9 +35,19 @@ const AdminMembers = () => {
         }
     };
 
+    const fetchRoles = async () => {
+        try {
+            const response = await axios.get(ROLES_URL);
+            setRoles(response.data);
+        } catch (error) {
+            console.error('Error fetching statuses:', error);
+        }
+    };
+
     useEffect(() => {
         fetchMembers();
         fetchStatuses();
+        fetchRoles();
     }, []);
 
     const toggleDrawer = () => {
@@ -79,6 +91,25 @@ const AdminMembers = () => {
             }
         });
     };
+
+    const handleRoleChange = (e) => {
+        const selectedRoleId = e.target.value;
+        const selectedRole = roles.find(role => role._id === selectedRoleId);
+
+        if (!selectedRole) {
+            console.error('선택된 권한을 찾을 수 없습니다.');
+            return;
+        }
+
+        setSelectedMember({
+            ...selectedMember,
+            role_id: {
+                _id: selectedRole._id,
+                role_name: selectedRole.role_name,
+                role_description: selectedRole.role_description
+            }
+        });
+    }
 
     const handleSave = async () => {
         try {
@@ -229,7 +260,24 @@ const AdminMembers = () => {
                                             </option>
                                         ))}
                                     </select>
+                                </div>
 
+                                <div>
+                                <label htmlFor="role_id">권한</label>
+                                <select
+                                    id="role_id"
+                                    name="role_id"
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                    value={selectedMember?.role_id?._id || ""}
+                                    onChange={handleRoleChange}
+                                >
+                                    <option value="" disabled>권한 선택</option>
+                                    {roles.map(role => (
+                                        <option key={role._id} value={role._id}>
+                                            {role.role_description}
+                                        </option>
+                                    ))}
+                                </select>
                                 </div>
                             </div>
                             
