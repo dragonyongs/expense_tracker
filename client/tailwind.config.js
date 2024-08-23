@@ -25,6 +25,9 @@ export default {
       },
       height: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
+      },
+      zIndex: {
+        '110' : '110',
       }
     },
   },

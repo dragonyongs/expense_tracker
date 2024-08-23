@@ -7,7 +7,6 @@ import { IoAddCircleOutline } from "react-icons/io5";
 
 const ACCOUNT_URL = '/api/accounts';
 const MEMBER_URL = '/api/members';
-const TEAM_URL = '/api/teams';
 const CARD_URL = '/api/cards';
 
 const AdminCard = () => {
@@ -17,6 +16,7 @@ const AdminCard = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
     const fetchCards = async () => {
         try {
@@ -58,10 +58,9 @@ const AdminCard = () => {
     const handleAddCard = () => {
         setSelectedCard({ 
             card_number: '',
-            initial_limit: '',
-            current_limit: '',
+            limit: '',
             account_id: '',
-            user_id: ''
+            member_id: ''
         });
         setIsEditing(false);
         setIsOpen(true);
@@ -103,10 +102,32 @@ const AdminCard = () => {
         }
     };
 
+    const handleDeleteConfirm = () => {
+        setIsDeleteConfirmOpen(true);
+    };
+    
+    const handleDeleteCancel = () => {
+        setIsDeleteConfirmOpen(false);
+    };
+
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`${CARD_URL}/${selectedCard._id}`);
+            console.log("Card deleted successfully", selectedCard.card_number);
+            await fetchCards();
+            handleCloseDrawer();
+        } catch (error) {
+            console.error("Error deleting card:", error);
+        } finally {
+            setIsDeleteConfirmOpen(false);
+        }
+    };
+    
+
     const handleAccountChange = (e) => {
         const selectedAccountId = e.target.value;
         const selectedAccount = accounts.find(account => account._id === selectedAccountId);
-        
+
         if (!selectedAccount) {
             console.error('선택된 계좌를 찾을 수 없습니다.');
             return;
@@ -174,8 +195,32 @@ const AdminCard = () => {
                         </ul>
                     )}
                 </div>
-
+                
             </div>
+
+            {isDeleteConfirmOpen && (
+                <div className="fixed inset-0 z-110 flex items-center justify-center bg-gray-900 bg-opacity-50">
+                    <div className="bg-white rounded-lg p-6 w-11/12 md:w-96">
+                        <h3 className="text-lg font-semibold mb-4">정말로 삭제하시겠습니까?</h3>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                type="button"
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md"
+                                onClick={handleDeleteCancel}
+                            >
+                                취소
+                            </button>
+                            <button
+                                type="button"
+                                className="px-4 py-2 bg-red-600 text-white rounded-md"
+                                onClick={handleDelete}
+                            >
+                                삭제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '카드 수정' : '카드 추가'}>
                 {selectedCard && (
@@ -193,18 +238,9 @@ const AdminCard = () => {
                                 label="최초 한도" 
                                 id="initial_limit"
                                 type="number"
-                                value={selectedCard.initial_limit}
-                                onChange={(e) => setSelectedCard({ ...selectedCard, initial_limit: e.target.value })}
-                                placeholder="최초 한도 입력"
-                            />
-
-                            <InputField 
-                                label="현재 한도" 
-                                id="initial_limit"
-                                type="number"
-                                value={selectedCard.current_limit}
-                                onChange={(e) => setSelectedCard({ ...selectedCard, current_limit: e.target.value })}
-                                placeholder="현재 한도 입력"
+                                value={selectedCard.limit}
+                                onChange={(e) => setSelectedCard({ ...selectedCard, limit: e.target.value })}
+                                placeholder="한도 입력"
                             />
 
                             <div className="flex flex-col gap-2">
@@ -246,9 +282,17 @@ const AdminCard = () => {
                         </div>
                         {/* 저장 버튼 */}
                         <div className="flex flex-col gap-3 pt-4">
-                            <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                                {isEditing ? '수정' : '추가'}
-                            </button>
+                            <div className='flex justify-between gap-y-4 gap-x-2'>
+                                {!isEditing ? '' : <button
+                                    type="button" 
+                                    className='text-red-600 font-semibold text-sm border border-red-400 px-5 py-3 rounded-lg'
+                                    onClick={handleDeleteConfirm}
+                                >삭제</button>
+                                }
+                                <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                    {isEditing ? '수정' : '추가'}
+                                </button>
+                            </div>
                             <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
                                 취소
                             </button>
@@ -256,6 +300,7 @@ const AdminCard = () => {
                     </form>
                 )}
             </CommonDrawer>
+
         </>
     )
 }
