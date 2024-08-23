@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../components/Header';
+import Tab from '../components/Tab';
 import TabBar from '../components/TabBar';
 import Side from '../components/Side';
 import { AuthContext } from '../context/AuthProvider';
@@ -21,10 +22,11 @@ const Layout = () => {
 
             {/* Mobile Layout */}
             <section className='lg:ml-mobile'>
-                <div className={`h-real-screen md:max-w-xl mx-auto lg:mx-0 bg-white flex flex-col ${!isApprovedUser ? '' : 'justify-center'}`}>
+                <div className={`h-real-screen md:max-w-xl mx-auto lg:mx-0 bg-white flex flex-col ${!isApprovedUser ? '' : 'justify-between'}`}>
                     {isApprovedUser && <Header />}
-                    <div className={`overflow-y-auto shadow-md bg-slate-50 ${isApprovedUser ? '' : 'h-full flex items-center justify-center'}`}>
-                        <div className={`min-h-real-screen ${isApprovedUser ? 'relative' : 'w-full p-10'}`}>
+                    <div className={`overflow-y-auto shadow-md bg-slate-50 h-full ${isApprovedUser ? '' : 'flex items-center justify-center'}`}>
+                        <div className={`${isApprovedUser ? 'relative' : 'w-full p-10'}`}>
+                            {isApprovedUser ? <Tab /> : ''}
                             <Outlet />
                         </div>
                     </div>

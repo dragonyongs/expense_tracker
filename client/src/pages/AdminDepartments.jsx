@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import axios from "../services/axiosInstance"; 
-import Tab from '../components/Tab';
 import CommonDrawer from '../components/CommonDrawer'; // 공통 Drawer 컴포넌트 사용
 import InputField from '../components/InputField'; // 공통 Input 컴포넌트 사용
+import { MdKeyboardArrowRight } from "react-icons/md";
+import { IoAddCircleOutline } from "react-icons/io5";
 
 const DEPARTMENTS_URL = '/api/departments';
 
@@ -76,21 +77,33 @@ const AdminDepartments = () => {
 
     return (
         <>
-            <Tab />
             <div className='w-full mt-4 p-4 sm:p-8 dark:bg-gray-800'>
-                <div>Departments</div>
-                <ul>
-                    {departments.map(department => (
-                        <li key={department._id} onClick={() => handleOpenDrawer(department)}>{department.department_name}</li>
-                    ))}
-                </ul>
-                {/* 추가 버튼 */}
-                <button 
-                    type="button" 
-                    onClick={handleAddDepartment} 
-                    className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                    추가
-                </button>
+                <div className="flex items-center justify-between mb-4">
+                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">본부 목록</h5>
+                    <button
+                        type="button" 
+                        className='text-black font-semibold rounded-lg text-2xl'
+                        onClick={handleAddDepartment}
+                    ><IoAddCircleOutline /></button>
+                </div>
+                <div className='flow-root'>
+                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {departments.map(department => (
+                            <li key={department._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(department)}>
+                                <div className="flex items-center">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                            {department.department_name}
+                                        </p>
+                                    </div>
+                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                        <MdKeyboardArrowRight className='text-2xl' />
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '본부 수정' : '본부 추가'}>
                 {selectedDepartment && (

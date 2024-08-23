@@ -1,9 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Tab = () => {
     const tabRef = useRef(null);
     const [isOverflowing, setIsOverflowing] = useState(false);
+    const location = useLocation();  // 현재 경로 가져오기
+
+    const tabs = [
+        { path: '/admin/members', label: '회원관리' },
+        { path: '/admin/departments', label: '본부관리' },
+        { path: '/admin/teams', label: '팀관리' },
+        { path: '/admin/account', label: '계좌관리' },
+        { path: '/admin/cards', label: '카드관리', disabled: true },
+    ];
 
     const checkOverflow = () => {
         if (tabRef.current) {
@@ -20,54 +29,33 @@ const Tab = () => {
             window.removeEventListener('resize', checkOverflow);
         };
     }, []);
-    
+
     return (
         <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
             <ul
                 ref={tabRef}
                 className="flex flex-nowrap -mb-px overflow-x-auto scrollbar-hide"
             >
-                <li className="me-2 flex-shrink-0">
-                    <Link
-                        to="/admin/members"
-                        className="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                        aria-current="page"
-                    >
-                        회원관리
-                    </Link>
-                </li>
-                <li className="me-2 flex-shrink-0">
-                    <Link
-                        to="/admin/departments"
-                        className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
-                    >
-                        본부관리
-                    </Link>
-                </li>
-                <li className="me-2 flex-shrink-0">
-                    <a
-                        href="/admin/teams"
-                        className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
-                    >
-                        부서관리
-                    </a>
-                </li>
-                <li className="me-2 flex-shrink-0">
-                    <Link
-                        to="/admin/account"
-                        className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
-                    >
-                        계좌관리
-                    </Link>
-                </li>
-                <li className="flex-shrink-0">
-                    <Link
-                        to="/admin/cards"
-                        className="inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed dark:text-gray-500"
-                    >
-                        카드관리
-                    </Link>
-                </li>
+                {tabs.map((tab) => (
+                    <li key={tab.path} className="me-2 flex-shrink-0">
+                        {tab.disabled ? (
+                            <span className={`inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed`}>
+                                {tab.label}
+                            </span>
+                        ) : (
+                            <Link
+                                to={tab.path}
+                                className={`inline-block p-4 border-b-2 rounded-t-lg ${
+                                    location.pathname === tab.path
+                                        ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500'
+                                        : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'
+                                }`}
+                            >
+                                {tab.label}
+                            </Link>
+                        )}
+                    </li>
+                ))}
             </ul>
         </div>
     );

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { MdKeyboardArrowRight } from "react-icons/md";
-import Tab from '../components/Tab';
 import axios from "../services/axiosInstance"; // Make sure axios is correctly set up
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
+import { IoAddCircleOutline } from "react-icons/io5";
 
 const MEMBER_URL = '/api/members';
 const STATUS_URL = '/api/status';
@@ -53,7 +53,6 @@ const AdminMembers = () => {
         setIsEditing(false);
         setIsOpen(true);
     };
-
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
@@ -108,10 +107,14 @@ const AdminMembers = () => {
 
     return (
         <>
-            <Tab />
             <div className='w-full mt-4 p-4 sm:p-8 dark:bg-gray-800'>
                 <div className="flex items-center justify-between mb-4">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
+                    <button
+                        type="button" 
+                        className='text-black font-semibold rounded-lg text-2xl'
+                        onClick={handleAddDepartment}
+                    ><IoAddCircleOutline /></button>
                 </div>
                 <div className='flow-root'>
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -242,13 +245,6 @@ const AdminMembers = () => {
                         </form>
                     )}
                 </CommonDrawer>
-                {/* 추가 버튼 */}
-                <button 
-                    type="button" 
-                    onClick={handleAddDepartment} 
-                    className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                    추가
-                </button>
             </div>
         </>
     );

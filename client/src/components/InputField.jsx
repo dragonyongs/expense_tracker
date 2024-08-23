@@ -1,6 +1,6 @@
 const InputField = ({ label, id, value, onChange, placeholder, type = "text", required = false }) => {
     return (
-        <div>
+        <div className="flex flex-col gap-2">
             <label htmlFor={id}>{label}</label>
             <input 
                 id={id}

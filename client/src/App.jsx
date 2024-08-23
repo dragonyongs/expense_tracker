@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import AdminMembers from './pages/AdminMembers';
 import AdminDepartments from './pages/AdminDepartments';
+import AdminTeams from './pages/AdminTeams';
+import AdminAccount from './pages/AdminAccount';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
@@ -59,6 +61,18 @@ const App = () => {
                         </ProtectedRoute>
                     } />
 
+                    <Route path="/admin/teams" element={
+                        <ProtectedRoute>
+                            <AdminTeams />
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/admin/account" element={
+                        <ProtectedRoute>
+                            <AdminAccount />
+                        </ProtectedRoute>
+                    } />
+                    
                     {/* catch all */}
                     <Route path="*" element={<NotFound />} />
                 </Route>

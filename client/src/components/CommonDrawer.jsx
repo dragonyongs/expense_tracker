@@ -12,7 +12,7 @@ const CommonDrawer = ({ isOpen, onClose, title, children }) => {
                     <MdClose className='text-2xl'/>
                 </button>
             </div>
-            <div className="p-4 h-[calc(100vh-44px)]">
+            <div className="p-6">
                 {children} 
             </div>
         </Drawer>
