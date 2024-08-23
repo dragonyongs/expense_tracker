@@ -4,6 +4,8 @@ const Card = require('../models/Card');
 exports.createCard = async (req, res) => {
     try {
         const card = new Card(req.body);
+        console.log('card', card);
+        
         await card.save();
         res.status(201).json(card);
     } catch (err) {
@@ -14,7 +16,7 @@ exports.createCard = async (req, res) => {
 // Get all cards
 exports.getAllCards = async (req, res) => {
     try {
-        const cards = await Card.find().populate('account_id').populate('user_id');
+        const cards = await Card.find().populate('account_id').populate('member_id');
         res.json(cards);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -24,7 +26,7 @@ exports.getAllCards = async (req, res) => {
 // Get a card by ID
 exports.getCardById = async (req, res) => {
     try {
-        const card = await Card.findById(req.params.id).populate('account_id').populate('user_id');
+        const card = await Card.findById(req.params.id).populate('account_id').populate('member_id');
         if (!card) return res.status(404).json({ error: 'Card not found' });
         res.json(card);
     } catch (err) {

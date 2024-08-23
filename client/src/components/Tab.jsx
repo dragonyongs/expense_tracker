@@ -11,7 +11,7 @@ const Tab = () => {
         { path: '/admin/departments', label: '본부관리' },
         { path: '/admin/teams', label: '팀관리' },
         { path: '/admin/account', label: '계좌관리' },
-        { path: '/admin/cards', label: '카드관리', disabled: true },
+        { path: '/admin/card', label: '카드관리'}, //, disabled: true 
     ];
 
     const checkOverflow = () => {

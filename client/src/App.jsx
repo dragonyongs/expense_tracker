@@ -10,6 +10,7 @@ import AdminMembers from './pages/AdminMembers';
 import AdminDepartments from './pages/AdminDepartments';
 import AdminTeams from './pages/AdminTeams';
 import AdminAccount from './pages/AdminAccount';
+import AdminCard from './pages/AdminCard';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
@@ -70,6 +71,12 @@ const App = () => {
                     <Route path="/admin/account" element={
                         <ProtectedRoute>
                             <AdminAccount />
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/admin/card" element={
+                        <ProtectedRoute>
+                            <AdminCard />
                         </ProtectedRoute>
                     } />
                     

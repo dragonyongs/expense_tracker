@@ -5,7 +5,7 @@ const NotFound = () => {
     return (
         <>
             <div className="flex flex-col justify-center items-center w-full min-h-safe-screen">
-                <div className="relative w-96">
+                <div className="relative">
                     <Lottie
                         loop
                         animationData={lottieJson}

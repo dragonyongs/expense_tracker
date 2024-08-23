@@ -64,18 +64,18 @@ const AdminAccount = () => {
         const selectedTeamId = e.target.value; // 사용자가 선택한 status의 _id
         const selectedTeam = teams.find(team => team._id === selectedTeamId); // 선택한 status를 찾아서
     
-        // selectedStatus가 존재하는지 확인
+        // selectedTeam이 존재하는지 확인
         if (!selectedTeam) {
             console.error('선택된 팀을 찾을 수 없습니다.');
             return;
         }
     
-        // 선택된 상태가 있을 경우에만 selectedMember 업데이트
+        // 선택된 상태가 있을 경우에만 selectedTeam 업데이트
         setSelectedAccount({
             ...selectedAccount,
             team_id: {
                 _id: selectedTeam._id,  // 정확한 _id 설정
-                status_name: selectedTeam.team_name,
+                team_name: selectedTeam.team_name,
             }
         });
     };
@@ -127,7 +127,7 @@ const AdminAccount = () => {
                                     <div className="flex items-center">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
-                                                {account.account_number}
+                                                {account.account_number}<span className='inline-block border border-slate-300 ml-3 px-2 py-1 rounded-md'>{account.team_id.team_name}</span>
                                             </p>
                                         </div>
                                         <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
@@ -154,7 +154,7 @@ const AdminAccount = () => {
                                 placeholder="계좌번호 입력"
                             />
 
-                            <div>
+                            <div className="flex flex-col gap-2">
                                     <label htmlFor="team_id">사용 팀</label>
                                     <select
                                         id="team_id"
