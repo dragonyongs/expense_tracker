@@ -25,7 +25,7 @@ export default {
       },
       height: {
         'real-screen': 'calc(var(--vh, 1vh) * 100) !important',
-        'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 190px )',
+        'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 168px )',
       },
       zIndex: {
         '110' : '110',
