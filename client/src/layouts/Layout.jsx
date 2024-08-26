@@ -10,6 +10,8 @@ const Layout = () => {
     const { isAuthenticated, user } = useContext(AuthContext);
     const isApprovedUser = isAuthenticated && user?.status === 'approved';
 
+    const allowedRoles = ['admin', 'ms_admin', 'hr_admin'];
+
     return (
         <>  
             {/* Background */}
@@ -26,7 +28,7 @@ const Layout = () => {
                     {isApprovedUser && <Header />}
                     <div className={`overflow-y-auto shadow-md bg-slate-50 h-full ${isApprovedUser ? '' : 'flex items-center justify-center'}`}>
                         <div className={`${isApprovedUser ? 'relative' : 'w-full p-10'}`}>
-                            {isApprovedUser ? <Tab /> : ''}
+                            {allowedRoles.includes(user?.role) && ( <Tab /> )}
                             <Outlet />
                         </div>
                     </div>

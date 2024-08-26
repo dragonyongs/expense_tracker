@@ -12,14 +12,15 @@ const Pending = () => {
     };
 
     return (
-        <div className='relative flex items-center w-full h-full px-10'>
+        <div className='relative flex items-center w-full h-full'>
             <div className='w-full'>
                 <div className='mb-28'>
                     <div className='flex justify-center items-center w-20 h-20 mb-10 rounded-full bg-newBlue text-white'>
                         <img src="/pig-piggy-bank.svg" className='w-10 h-10'/>
                     </div>
-                    <h1 className='mb-7 text-3xl'>
-                    {user.name}님은 관리자의 승인을<br />
+                    <h1 className='mb-7 text-3xl leading-snug'>
+                        {user.name}님,<br />
+                        현재 관리자의 승인을<br />
                         기다리고 있습니다.
                     </h1>
                     <button 

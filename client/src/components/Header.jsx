@@ -3,7 +3,7 @@ import { GoBell } from "react-icons/go";
 const Header = () => {
     return (
         <header className='flex justify-between items-center p-4 bg-white shadow-md'>
-            <div className='text-xl font-bold'>Expense Tracker</div>
+            <div className='text-2xl font-bold'>Expense Tracker</div>
             <div className='relative leading-none'>
                 <button className="text-3xl">
                     <GoBell />

@@ -1,5 +1,4 @@
-// context/AuthProvider.jsx
-import React, { createContext, useState, useEffect, Suspense } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loading from '../components/Loading';
@@ -8,7 +7,7 @@ export const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
     const navigate = useNavigate();
-    const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);  // 기본 값 false
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -17,24 +16,37 @@ export function AuthProvider({ children }) {
             try {
                 const response = await axios.get('/api/auth/isAuthenticated');
                 const fetchedUser = response.data.user;
+                console.log('fetchedUser', fetchedUser);
+
+                // 사용자 상태 확인
                 const statusResponse = await axios.get(`/api/status/${fetchedUser.status_id}`);
                 const status = statusResponse.data.status_name;
 
-                setUser({ ...fetchedUser, status });
+                // role_id가 null일 경우 예외 처리
+                if (!fetchedUser.role_id) {
+                    throw new Error("User does not have a valid role_id.");
+                }
+
+                const roleResponse = await axios.get(`/api/roles/${fetchedUser.role_id}`);
+                const role = roleResponse.data.role_name;
+
+                // 사용자와 상태 정보 업데이트
+                setUser({ ...fetchedUser, status, role });
                 setIsAuthenticated(true);
 
+                // 상태에 따라 리디렉션
                 if (status === 'pending') {
                     if (window.location.pathname !== '/pending') {
                         navigate('/pending');
                     }
-                } else if (window.location.pathname === '/pending' && status === 'approved' || window.location.pathname === '/signin' && status) {
+                } else if (status === 'approved' && (window.location.pathname === '/pending' || window.location.pathname === '/signin')) {
                     navigate('/');
                 }
 
             } catch (err) {
                 handleAuthError(err);
             } finally {
-                setLoading(false);
+                setLoading(false);  // 로딩 상태 업데이트
             }
         };
 
@@ -46,7 +58,7 @@ export function AuthProvider({ children }) {
             setIsAuthenticated(false);
             setUser(null);
         } else {
-            console.error(err);
+            console.error('Auth Error: ', err);
         }
     };
 
@@ -61,14 +73,20 @@ export function AuthProvider({ children }) {
     };
 
     const handleLoginSuccess = async (data) => {
+        // 로그인 성공 후 토큰 저장 및 사용자 정보 업데이트
         localStorage.setItem('refreshToken', data.refreshToken);
         const statusResponse = await axios.get(`/api/status/${data.user.status_id}`);
         const status = statusResponse.data.status_name;
+
+        // 상태와 토큰 설정
         localStorage.setItem('status', status);
         axios.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+
+        // 인증 상태와 사용자 정보 업데이트
         setIsAuthenticated(true);
         setUser({ ...data.user, status });
 
+        // 상태에 따른 리디렉션
         navigate(status === 'pending' ? '/pending' : '/');
     };
 
@@ -78,8 +96,9 @@ export function AuthProvider({ children }) {
             localStorage.removeItem('refreshToken');
             setIsAuthenticated(false);
             setUser(null);
+            navigate('/signin');  // 로그아웃 후 로그인 페이지로 이동
         } catch (err) {
-            console.error(err);
+            console.error('Logout Error: ', err);
         }
     };
 

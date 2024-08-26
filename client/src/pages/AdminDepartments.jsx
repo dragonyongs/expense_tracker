@@ -92,7 +92,7 @@ const AdminDepartments = () => {
                             <li key={department._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(department)}>
                                 <div className="flex items-center">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                             {department.department_name}
                                         </p>
                                     </div>

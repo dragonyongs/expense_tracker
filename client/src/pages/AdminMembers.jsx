@@ -156,9 +156,9 @@ const AdminMembers = () => {
                                 onClick={() => handleOpenDrawer(member)}
                             >
                                 <div className="flex items-center">
-                                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-400 overflow-hidden flex items-center justify-center">
+                                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-400 overflow-hidden flex items-center justify-center">
                                         {member.photoUrl ? (
-                                            <img className="w-9 h-9" src={member.photoUrl} alt={member.member_name} />
+                                            <img className="w-10 h-10" src={member.photoUrl} alt={member.member_name} />
                                         ) : (
                                             <span className="text-white text-lg font-semibold">
                                                 {member.member_name.charAt(0)}
@@ -166,7 +166,7 @@ const AdminMembers = () => {
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0 ms-4">
-                                        <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                             {member.member_name} 
                                             <span className={`ml-2 p-2 text-xs font-semibold text-center rounded-lg ${member.status_id.status_name === 'pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-600'}`}>
                                                 {member.status_id.status_description}
@@ -217,10 +217,16 @@ const AdminMembers = () => {
                                     label="비밀번호" 
                                     id="password"
                                     type="password"
-                                    value=""
-                                    onChange={(e) => setSelectedMember({ ...selectedMember, password: e.target.value })}
+                                    value={selectedMember.newPassword || ''}  // 새로운 비밀번호는 항상 빈 문자열로 시작
+                                    onChange={(e) => {
+                                        const newPassword = e.target.value;
+                                        setSelectedMember({ 
+                                            ...selectedMember, 
+                                            newPassword: newPassword.length > 0 ? newPassword : null  // 입력이 없으면 null
+                                        });
+                                    }}
                                     placeholder="비밀번호 변경 없음" 
-                                    required
+                                    required={false}  // 비밀번호는 필수 입력이 아님
                                 />
 
                                 {/* Member Position */}
