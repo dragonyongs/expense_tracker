@@ -4,6 +4,7 @@ import Layout from './layouts/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
 import { AuthProvider } from './context/AuthProvider';
+import Loading from './components/Loading';
 
 import './App.css';
 
@@ -30,11 +31,7 @@ const App = () => {
     
     return (
         <AuthProvider>
-            <Suspense fallback={
-                <div className="flex items-center justify-center h-screen">
-                    <div>Loading...</div>
-                </div>
-            }>
+            <Suspense fallback={<Loading />}>
                 <Routes>
                     <Route path="/" element={<Layout />}>
                         {/* public routes */}
