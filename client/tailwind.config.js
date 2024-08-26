@@ -20,11 +20,10 @@ export default {
         'newBlue' : '#0532ff',
       },
       minHeight: {
-        'safe-screen': 'calc(100vh - 190px - env(safe-area-inset-bottom) - env(safe-area-inset-top))',
-        'real-screen': 'calc(var(--vh, 1vh) * 100) !important',
+        'real-screen': 'calc(var(--vh, 1vh) * 100)',
       },
       height: {
-        'real-screen': 'calc(var(--vh, 1vh) * 100) !important',
+        'real-screen': 'calc(var(--vh, 1vh) * 100)',
         'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 168px )',
       },
       zIndex: {
