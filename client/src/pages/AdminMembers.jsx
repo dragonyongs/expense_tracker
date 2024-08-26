@@ -191,8 +191,8 @@ const AdminMembers = () => {
                     title={isEditing ? '회원 수정' : '회원 추가'}
                 >
                     {selectedMember && (
-                        <form>
-                            <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
+                        <form className=''>
+                            <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                                 {/* Member Name */}
                                 <InputField 
                                     label="이름" 
@@ -263,26 +263,26 @@ const AdminMembers = () => {
                                 </div>
 
                                 <div>
-                                <label htmlFor="role_id">권한</label>
-                                <select
-                                    id="role_id"
-                                    name="role_id"
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    value={selectedMember?.role_id?._id || ""}
-                                    onChange={handleRoleChange}
-                                >
-                                    <option value="" disabled>권한 선택</option>
-                                    {roles.map(role => (
-                                        <option key={role._id} value={role._id}>
-                                            {role.role_description}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <label htmlFor="role_id">권한</label>
+                                    <select
+                                        id="role_id"
+                                        name="role_id"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        value={selectedMember?.role_id?._id || ""}
+                                        onChange={handleRoleChange}
+                                    >
+                                        <option value="" disabled>권한 선택</option>
+                                        {roles.map(role => (
+                                            <option key={role._id} value={role._id}>
+                                                {role.role_description}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                             
                             {/* Save Button */}
-                            <div className="flex flex-col gap-3 pt-4">
+                            <div className="flex flex-col gap-3 pt-4 p-6">
                                 <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                                     {isEditing ? '수정' : '추가'}
                                 </button>
