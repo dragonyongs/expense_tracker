@@ -21,10 +21,10 @@ export default {
       },
       minHeight: {
         'safe-screen': 'calc(100vh - 190px - env(safe-area-inset-bottom) - env(safe-area-inset-top))',
-        'real-screen': 'calc(var(--vh, 1vh) * 100)',
+        'real-screen': 'calc(var(--vh, 1vh) * 100) !important',
       },
       height: {
-        'real-screen': 'calc(var(--vh, 1vh) * 100)',
+        'real-screen': 'calc(var(--vh, 1vh) * 100) !important',
       },
       zIndex: {
         '110' : '110',
