@@ -107,8 +107,8 @@ const AdminDepartments = () => {
             </div>
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '본부 수정' : '본부 추가'}>
                 {selectedDepartment && (
-                    <form className="p-4 h-[calc(100vh-44px)]">
-                        <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
+                    <form>
+                        <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                             <InputField 
                                 label="본부 이름" 
                                 id="department_name" 
@@ -118,7 +118,7 @@ const AdminDepartments = () => {
                             />
                         </div>
                         {/* 저장 버튼 */}
-                        <div className="flex flex-col gap-3 pt-4">
+                        <div className="flex flex-col gap-3 pt-4 p-6">
                             <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 {isEditing ? '수정' : '추가'}
                             </button>

@@ -15,7 +15,7 @@ const TabBar = () => {
     }
 
     return (
-        <nav className='bg-white shadow-md p-4 flex justify-around'>
+        <nav className='z-50 bg-white shadow-md p-4 flex justify-around'>
             <button type="button" className='flex flex-col items-center' onClick={handleHome}>
                 <div className='flex items-center justify-center w-8 h-8'>
                     <GoHome className="text-2xl" />

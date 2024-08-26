@@ -191,7 +191,7 @@ const AdminMembers = () => {
                     title={isEditing ? '회원 수정' : '회원 추가'}
                 >
                     {selectedMember && (
-                        <form className=''>
+                        <form>
                             <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                                 {/* Member Name */}
                                 <InputField 

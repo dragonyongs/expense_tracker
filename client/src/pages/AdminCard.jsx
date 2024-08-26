@@ -224,8 +224,8 @@ const AdminCard = () => {
 
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '카드 수정' : '카드 추가'}>
                 {selectedCard && (
-                    <form className="h-[calc(100vh-44px)]">
-                        <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)] px-1">
+                    <form>
+                        <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                             <InputField 
                                 label="카드 번호" 
                                 id="card_number" 
@@ -281,7 +281,7 @@ const AdminCard = () => {
 
                         </div>
                         {/* 저장 버튼 */}
-                        <div className="flex flex-col gap-3 pt-4">
+                        <div className="flex flex-col gap-3 pt-4 p-6">
                             <div className='flex justify-between gap-y-4 gap-x-2'>
                                 {!isEditing ? '' : <button
                                     type="button" 

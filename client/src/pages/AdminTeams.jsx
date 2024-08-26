@@ -6,9 +6,11 @@ import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
 
 const TEAM_URL = '/api/teams';
+const DEPARTMENT_URL = '/api/departments';
 
 const AdminTeams = () => {
     const [teams, setTeams] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -22,8 +24,18 @@ const AdminTeams = () => {
         }
     }
 
+    const fetchDepartments = async () => {
+        try {
+            const response = await axios.get(DEPARTMENT_URL);
+            setDepartments(response.data);
+        } catch (error) {
+            console.error('Error fetching departments:', error);
+        }
+    }
+
     useEffect(() => {
         fetchTeams();
+        fetchDepartments();
     }, []);
 
     const toggleDrawer = () => {
@@ -31,7 +43,10 @@ const AdminTeams = () => {
     };
 
     const handleAddTeam = () => {
-        setSelectedTeam({ team_name: ''});
+        setSelectedTeam({ 
+            team_name: '',
+            department_id: ''
+        });
         setIsEditing(false);
         setIsOpen(true);
     };
@@ -39,13 +54,31 @@ const AdminTeams = () => {
     // 수정 모드로 모달 열기
     const handleOpenDrawer = (teams) => {
         setSelectedTeam(teams);
-        setIsEditing(true); // 수정 모드로 설정
+        setIsEditing(true);
         setIsOpen(true);
     };
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
         setSelectedTeam(null);
+    };
+
+    const handleDepartmentChange = (e) => {
+        const selectedDepartmentId = e.target.value;
+        const selectedDepartment = departments.find(department => department._id === selectedDepartmentId);
+
+        if (!selectedDepartment) {
+            console.error('선택된 본부를 찾을 수 없습니다.');
+            return;
+        }
+    
+        setSelectedTeam({
+            ...selectedTeam,
+            department_id: {
+                _id: selectedDepartment._id,
+                department_name: selectedDepartment.department_name
+            }
+        });
     };
 
     const handleSave = async () => {
@@ -111,8 +144,8 @@ const AdminTeams = () => {
 
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '팀 수정' : '팀 추가'}>
                 {selectedTeam && (
-                    <form className="p-4 h-[calc(100vh-44px)]">
-                        <div className="flex w-full flex-col gap-6 overflow-y-auto h-[calc(100vh-190px)]">
+                    <form>
+                        <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                             <InputField 
                                 label="팀 이름" 
                                 id="team_name" 
@@ -120,9 +153,28 @@ const AdminTeams = () => {
                                 onChange={(e) => setSelectedTeam({ ...selectedTeam, team_name: e.target.value })}
                                 placeholder="팀 이름 입력"
                             />
+
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="department_id">본부</label>
+                                <select
+                                    id="department_id"
+                                    name="department_id"
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                    value={selectedTeam?.department_id?._id || ""}
+                                    onChange={handleDepartmentChange}
+                                >
+                                    <option value="" disabled>본부 선택</option>
+                                    {departments.map(department => (
+                                        <option key={department._id} value={department._id}>
+                                            {department.department_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
+                        
                         {/* 저장 버튼 */}
-                        <div className="flex flex-col gap-3 pt-4">
+                        <div className="flex flex-col gap-3 pt-4 p-6">
                             <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 {isEditing ? '수정' : '추가'}
                             </button>
