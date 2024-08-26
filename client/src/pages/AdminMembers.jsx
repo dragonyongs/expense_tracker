@@ -217,9 +217,9 @@ const AdminMembers = () => {
                                     label="비밀번호" 
                                     id="password"
                                     type="password"
-                                    value={selectedMember.password}
+                                    value=""
                                     onChange={(e) => setSelectedMember({ ...selectedMember, password: e.target.value })}
-                                    placeholder="패스워드 입력" 
+                                    placeholder="비밀번호 변경 없음" 
                                     required
                                 />
 
