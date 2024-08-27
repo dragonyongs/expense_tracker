@@ -8,6 +8,9 @@ router.post('/', transactionController.createTransaction);
 // Get all transactions
 router.get('/', transactionController.getAllTransactions);
 
+// Get transactions by year and month
+router.get('/:year/:month', transactionController.getTransactionsByYearAndMonth);
+
 // Get a transaction by ID
 router.get('/:id', transactionController.getTransactionById);
 

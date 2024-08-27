@@ -37,7 +37,13 @@ exports.login = async (req, res) => {
         });
 
         res.status(200).json({
-            user: { email: member.email, name: member.member_name, status_id: member.status_id, role_id: member.role_id },  // 사용자 정보를 반환
+            user: { 
+                email: member.email, 
+                name: member.member_name, 
+                member_id: member._id, 
+                status_id: member.status_id,
+                role_id: member.role_id
+            }, 
             refreshToken
         });
     } catch (err) {
@@ -90,10 +96,11 @@ exports.refreshToken = async (req, res) => {
 
         // 새로운 액세스 토큰 발급
         const newAccessToken = jwt.sign({ 
-            id: updatedMember._id, 
             email: updatedMember.email, 
             name: updatedMember.member_name, 
-            status: updatedMember.status_id.status_name 
+            member_id: updatedMember._id, 
+            role_id: updatedMember.role_id,
+            status_id: updatedMember.status_id,
         }, accessTokenSecret, { expiresIn: '1h' });
 
         // 클라이언트로 새로운 액세스 토큰 반환
@@ -133,7 +140,8 @@ exports.isAuthenticated = async (req, res) => {
                 email: updatedMember.email, 
                 name: updatedMember.member_name, 
                 status_id: updatedMember.status_id,
-                role_id: updatedMember.role_id
+                role_id: updatedMember.role_id,
+                member_id: updatedMember._id
             } 
         });
     });

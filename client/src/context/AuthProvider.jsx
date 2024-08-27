@@ -16,7 +16,6 @@ export function AuthProvider({ children }) {
             try {
                 const response = await axios.get('/api/auth/isAuthenticated');
                 const fetchedUser = response.data.user;
-                console.log('fetchedUser', fetchedUser);
 
                 // 사용자 상태 확인
                 const statusResponse = await axios.get(`/api/status/${fetchedUser.status_id}`);

@@ -126,7 +126,7 @@ const AdminAccount = () => {
                                 <li key={account._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(account)}>
                                     <div className="flex items-center">
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                            <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                                 {account.account_number}<span className='inline-block border border-slate-300 ml-3 px-2 py-1 rounded-md'>{account.team_id.team_name}</span>
                                             </p>
                                         </div>

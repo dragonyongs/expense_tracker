@@ -4,11 +4,11 @@ import { PiPencilSimpleLine } from "react-icons/pi";
 import { GoNote } from "react-icons/go";
 import { LuFolderLock } from "react-icons/lu";
 import { useContext } from 'react';
-import { AuthContext } from '../context/AuthProvider';  // AuthContext에서 사용자 정보 가져오기
+import { AuthContext } from '../context/AuthProvider';
 
 const TabBar = () => {
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);  // 사용자 정보 가져오기
+    const { user } = useContext(AuthContext);
     
     const handleHome = () => {
         navigate('/');
@@ -16,8 +16,10 @@ const TabBar = () => {
     const handleAdmin = () => {
         navigate('/admin');
     };
+    const handleTransactions = () => {
+        navigate('/transactions')
+    }
 
-    // 관리 메뉴를 노출할 수 있는 역할
     const allowedRoles = ['admin', 'ms_admin', 'hr_admin'];
 
     return (
@@ -28,7 +30,7 @@ const TabBar = () => {
                 </div>
                 <span className="text-sm">홈</span>
             </button>
-            <button type="button" className='flex flex-col items-center'>
+            <button type="button" className='flex flex-col items-center' onClick={handleTransactions}>
                 <div className='flex items-center justify-center w-8 h-8'>
                     <PiPencilSimpleLine className="text-2xl" />
                 </div>

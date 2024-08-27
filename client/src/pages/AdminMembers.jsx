@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { MdKeyboardArrowRight } from "react-icons/md";
-import axios from "../services/axiosInstance"; // Make sure axios is correctly set up
+import axios from "../services/axiosInstance";
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { IoAddCircleOutline } from "react-icons/io5";
 
 const MEMBER_URL = '/api/members';
 const STATUS_URL = '/api/status';
-const ROLES_URL = '/api/roles';
+const ROLE_URL = '/api/roles';
+const TEAM_URL = '/api/teams';
 
 const AdminMembers = () => {
     const [members, setMembers] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [roles, setRoles] = useState([]);
+    const [teams, setTeams] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -35,12 +37,21 @@ const AdminMembers = () => {
         }
     };
 
+    const fetchTeams = async () => {
+        try {
+            const response = await axios.get(TEAM_URL);
+            setTeams(response.data);
+        } catch (error) {
+            console.error('Error fetching Teams:', error);
+        }
+    };
+
     const fetchRoles = async () => {
         try {
-            const response = await axios.get(ROLES_URL);
+            const response = await axios.get(ROLE_URL);
             setRoles(response.data);
         } catch (error) {
-            console.error('Error fetching statuses:', error);
+            console.error('Error fetching Roles:', error);
         }
     };
 
@@ -48,6 +59,7 @@ const AdminMembers = () => {
         fetchMembers();
         fetchStatuses();
         fetchRoles();
+        fetchTeams();
     }, []);
 
     const toggleDrawer = () => {
@@ -111,11 +123,30 @@ const AdminMembers = () => {
         });
     }
 
+    const handleTeamChange = (e) => {
+        const selectedTeamId = e.target.value;
+        const selectedTeam = teams.find(team => team._id === selectedTeamId);
+
+        if (!selectedTeam) {
+            console.error('선택된 팀을 찾을 수 없습니다.');
+            return;
+        }
+
+        setSelectedMember({
+            ...selectedMember,
+            team_id: {
+                _id: selectedTeam._id,
+                team_name: selectedTeam.team_name,
+            }
+        });
+    }
+
     const handleSave = async () => {
         try {
             const memberData = {
                 ...selectedMember,
-                status_id: selectedMember.status_id._id
+                status_id: selectedMember.status_id._id,
+                team_id: selectedMember.team_id._id
             };
 
             if (isEditing) {
@@ -239,6 +270,7 @@ const AdminMembers = () => {
                                     required
                                 />
 
+
                                 {/* Member Rank */}
                                 <InputField 
                                     label="직급" 
@@ -249,14 +281,31 @@ const AdminMembers = () => {
                                     required
                                 />
 
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="team_id">소속</label>
+                                    <select
+                                        id="team_id"
+                                        name="team_id"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        value={selectedMember?.team_id?._id || ""}
+                                        onChange={handleTeamChange}
+                                    >
+                                        <option value="" disabled>상태 선택</option>
+                                        {teams.map(team => (
+                                            <option key={team._id} value={team._id}>
+                                                {team.team_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                                 {/* Member Status */}
-                                <div>
+                                <div className="flex flex-col gap-2">
                                     <label htmlFor="status_id">상태</label>
                                     <select
                                         id="status_id"
                                         name="status_id"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                        value={selectedMember?.status_id?._id || ""}  // 현재 상태의 _id 값 설정
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        value={selectedMember?.status_id?._id || ""}
                                         onChange={handleStatusChange}
                                     >
                                         <option value="" disabled>상태 선택</option>
@@ -268,12 +317,12 @@ const AdminMembers = () => {
                                     </select>
                                 </div>
 
-                                <div>
+                                <div className="flex flex-col gap-2">
                                     <label htmlFor="role_id">권한</label>
                                     <select
                                         id="role_id"
                                         name="role_id"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                         value={selectedMember?.role_id?._id || ""}
                                         onChange={handleRoleChange}
                                     >
