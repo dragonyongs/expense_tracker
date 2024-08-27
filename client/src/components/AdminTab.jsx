@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const Tab = () => {
+const AdminTab = () => {
     const tabRef = useRef(null);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const location = useLocation();  // 현재 경로 가져오기
@@ -61,4 +61,4 @@ const Tab = () => {
     );
 };
 
-export default Tab;
+export default AdminTab;

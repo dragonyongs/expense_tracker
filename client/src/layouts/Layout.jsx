@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
-import Tab from '../components/Tab';
+import AdminTab from '../components/AdminTab';
 import TabBar from '../components/TabBar';
 import Side from '../components/Side';
 import { AuthContext } from '../context/AuthProvider';
@@ -9,8 +9,12 @@ import { AuthContext } from '../context/AuthProvider';
 const Layout = () => {
     const { isAuthenticated, user } = useContext(AuthContext);
     const isApprovedUser = isAuthenticated && user?.status === 'approved';
+    const location = useLocation();
 
     const allowedRoles = ['admin', 'ms_admin', 'hr_admin'];
+
+    // 현재 경로가 /admin인지 확인
+    const isAdminRoute = location.pathname.startsWith('/admin');
 
     return (
         <>  
@@ -28,7 +32,8 @@ const Layout = () => {
                     {isApprovedUser && <Header />}
                     <div className={`overflow-y-auto shadow-md bg-slate-50 h-full ${isApprovedUser ? '' : 'flex items-center justify-center'}`}>
                         <div className={`${isApprovedUser ? 'relative' : 'w-full p-10'}`}>
-                            {allowedRoles.includes(user?.role) && ( <Tab /> )}
+                            {/* /admin 경로일 때만 Tab 컴포넌트 렌더링 */}
+                            {isAdminRoute && allowedRoles.includes(user?.role) && <AdminTab />}
                             <Outlet />
                         </div>
                     </div>
