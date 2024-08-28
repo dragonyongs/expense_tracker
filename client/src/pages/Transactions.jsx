@@ -3,7 +3,6 @@ import { AuthContext } from '../context/AuthProvider';
 import axios from "../services/axiosInstance"; 
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
-import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
 
 const CARD_URL = '/api/cards';
@@ -12,6 +11,7 @@ const TRANSACTION_URL = '/api/transactions';
 const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
+    const [errMsg, setErrMsg] = useState('');
     const [transactions, setTransactions] = useState([]);
     const [selectedTransaction, setSelectedTransaction] = useState({
         card_id: "",
@@ -24,6 +24,11 @@ const Transactions = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
 
+    useEffect(() => {
+        setErrMsg('');
+    }, [transactions])
+
+
     // 카드와 트랜잭션 데이터 가져오기
     const fetchCards = async () => {
         try {
@@ -33,15 +38,6 @@ const Transactions = () => {
             console.error('Error fetching cards:', error);
         }
     }
-
-    // const fetchTransactions = async () => {
-    //     try {
-    //         const response = await axios.get(TRANSACTION_URL);
-    //         setTransactions(response.data);
-    //     } catch (error) {
-    //         console.error('Error fetching transactions:', error);
-    //     }
-    // }
 
     const fetchTransactionsForCurrentMonth = async () => {
         try {
@@ -60,7 +56,6 @@ const Transactions = () => {
         }
     }
     
-
     useEffect(() => {
         fetchTransactionsForCurrentMonth();
         fetchCards();
@@ -72,10 +67,8 @@ const Transactions = () => {
             // 사용자(member_id)가 소유한 카드만 필터링
             const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
             setUserCards(filteredCards);
-            console.log('filteredCards', filteredCards);
         }
     }, [cards, user]);
-
 
     // 트랜잭션 초기 상태 설정
     useEffect(() => {
@@ -136,6 +129,7 @@ const Transactions = () => {
 
     const handleSave = async () => {
         try {
+            setErrMsg('');
             const transactionData = {
                 card_id: selectedTransaction.card_id || userCards[0]._id,
                 transaction_date: selectedTransaction.transaction_date,
@@ -148,13 +142,51 @@ const Transactions = () => {
             await fetchTransactionsForCurrentMonth();
             handleCloseDrawer();
         } catch (error) {
-            console.error("Error saving transaction:", error);
+            const errorMessage = JSON.parse(error.request.response);
+            setErrMsg(errorMessage.error);
         }
+    }
+
+    // 카드별로 남은 한도 계산 함수
+    const calculateRemainingLimit = (card, transactions) => {
+        const totalSpent = transactions
+            .filter(tx => tx.card_id === card._id)
+            .reduce((sum, tx) => sum + tx.transaction_amount, 0);
+        
+        const totalLimit = card.limit + card.rollover_amount; // 한도 + 이월금액
+        const remainingLimit = totalLimit - totalSpent; // 남은 금액
+
+        return {
+            totalLimit,
+            totalSpent,
+            remainingLimit
+        };
     }
 
     return (
         <>
             <div className='w-full h-full p-4 sm:p-8 dark:bg-gray-800'>
+                {/* 카드 한도와 남은 금액 표시 */}
+                <div className="mb-6">
+                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">카드 한도 및 사용 정보</h5>
+                    <div className="space-y-4 mt-4">
+                        {userCards.map(card => {
+                            const { totalLimit, totalSpent, remainingLimit } = calculateRemainingLimit(card, transactions);
+
+                            return (
+                                <div key={card._id} className="p-4 border border-gray-200 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600">
+                                    <h6 className="text-lg font-semibold text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
+                                    <p className="text-gray-700 dark:text-gray-400">총 한도: {totalLimit.toLocaleString()} 원</p>
+                                    <p className="text-gray-700 dark:text-gray-400">이월 금액: {card.rollover_amount.toLocaleString()} 원</p>
+                                    <p className="text-gray-700 dark:text-gray-400">이달 사용 금액: {totalSpent.toLocaleString()} 원</p>
+                                    <p className={`font-semibold ${remainingLimit < 0 ? 'text-red-600' : 'text-green-600'}`}>남은 금액: {remainingLimit.toLocaleString()} 원</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* 트랜잭션 목록 */}
                 <div className="flex items-center justify-between mb-4">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">카드 사용 내역</h5>
                     <button
@@ -179,16 +211,16 @@ const Transactions = () => {
                                         </span>
                                     </div>
                                     <div className="flex-1 min-w-0 ms-4">
-                                            <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                {transaction.merchant_name} 
-                                            </p>
-                                            <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                                {transaction.transaction_date}
-                                            </p>
-                                        </div>
-                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                            {transaction.transaction_amount}
-                                        </div>
+                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                            {transaction.merchant_name} 
+                                        </p>
+                                        <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                                            {transaction.transaction_date}
+                                        </p>
+                                    </div>
+                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                        {transaction.transaction_amount}
+                                    </div>
                                 </div>
                             </li>
                         ))}
@@ -201,7 +233,9 @@ const Transactions = () => {
                     onClose={toggleDrawer}
                     title={isEditing ? '카드 사용 수정' : '카드 사용 추가'}
                 >
+
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
+                        {errMsg && <div className="text-red-600">{errMsg}</div>} {/* 에러 메시지 표시 */}
                         <InputField 
                             label="상호명" 
                             id="merchant_name" 
