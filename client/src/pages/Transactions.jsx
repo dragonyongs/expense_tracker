@@ -72,6 +72,7 @@ const Transactions = () => {
             // 사용자(member_id)가 소유한 카드만 필터링
             const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
             setUserCards(filteredCards);
+            console.log('filteredCards', filteredCards);
         }
     }, [cards, user]);
 

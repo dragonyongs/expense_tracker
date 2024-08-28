@@ -15,15 +15,64 @@ exports.getAllTransactions = async (req, res) => {
     }
 };
 
+// exports.createTransaction = async (req, res) => {
+//     try {
+//         const transaction = new Transaction(req.body);
+//         await transaction.save();
+//         res.status(201).json(transaction);
+//     } catch (error) {
+//         res.status(500).json({ message: 'Error creating transaction', error });
+//     }
+// };
+
+// 트랜잭션 생성 함수
 exports.createTransaction = async (req, res) => {
+    const { card_id, transaction_date, merchant_name, menu_name, transaction_amount } = req.body;
+
     try {
-        const transaction = new Transaction(req.body);
+        // 해당 카드 찾기
+        const card = await Card.findById(card_id);
+
+        if (!card) {
+            return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
+        }
+
+        // 이번 달의 트랜잭션 가져오기
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+        const transactionsThisMonth = await Transaction.find({
+            card_id: card_id,
+            transaction_date: { $gte: startOfMonth, $lte: endOfMonth }
+        });
+
+        // 이번 달 사용 금액 계산
+        const totalSpentThisMonth = transactionsThisMonth.reduce((total, transaction) => total + transaction.transaction_amount, 0);
+        const availableLimit = card.limit + card.rollover_amount; // 이번 달 사용 가능 금액
+
+        // 이번 달 남은 금액 계산 5298-0308-5276-1996
+        if (totalSpentThisMonth + transaction_amount > availableLimit) {
+            return res.status(400).json({ error: '이번 달 사용 한도를 초과했습니다.' });
+        }
+
+        // 트랜잭션 생성 및 저장
+        const transaction = new Transaction({
+            card_id,
+            transaction_date,
+            merchant_name,
+            menu_name,
+            transaction_amount
+        });
+
         await transaction.save();
+
         res.status(201).json(transaction);
+
     } catch (error) {
-        res.status(500).json({ message: 'Error creating transaction', error });
+        console.error('트랜잭션 생성 중 오류 발생:', error);
+        res.status(500).json({ error: '서버 오류가 발생했습니다.' });
     }
 };
+
 
 exports.getTransactionById = async (req, res) => {
     try {
@@ -69,16 +118,17 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
 
         // 3. 연도와 월에 맞는 트랜잭션을 해당 카드 ID로 필터링
         const startDate = new Date(`${year}-${month}-01`);
-        const endDate = new Date(startDate);
-        endDate.setMonth(endDate.getMonth() + 1);
+        const endDate = new Date(startDate);  // startDate로부터 새로운 객체 생성
+        endDate.setMonth(endDate.getMonth() + 1);  // 다음 달로 설정
 
         const transactions = await Transaction.find({
             card_id: { $in: cardIds },
             transaction_date: { $gte: startDate, $lt: endDate }
-        }).sort({ transaction_date: -1 });  // 최신순 정렬
+        }).sort({ transaction_date: -1 }); 
 
         res.status(200).json(transactions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching transactions by year and month', error });
     }
 };
+

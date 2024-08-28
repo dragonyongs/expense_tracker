@@ -83,6 +83,7 @@ exports.logout = (req, res) => {
 // Refresh Access Token
 exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
+    console.log('refreshToken', refreshToken);
 
     if (!refreshToken || !(refreshToken in refreshTokens)) {
         return res.status(403).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
@@ -94,7 +95,9 @@ exports.refreshToken = async (req, res) => {
         }
 
         // 데이터베이스에서 최신 사용자 정보를 가져옵니다.
-        const updatedMember = await Member.findById(member.id);
+        console.log('member', member);
+
+        const updatedMember = await Member.findById(member.member_id);
         console.log('refreshToken-updatedMember', updatedMember);
         
         if (!updatedMember) {
@@ -137,7 +140,7 @@ exports.isAuthenticated = async (req, res) => {
         }
 
         // 데이터베이스에서 최신 사용자 정보를 가져옵니다.
-        const updatedMember = await Member.findById(member.id);
+        const updatedMember = await Member.findById(member.member_id);
         if (!updatedMember) {
             return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
         }

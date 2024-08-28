@@ -3,13 +3,14 @@ import { GoHome } from "react-icons/go";
 import { PiPencilSimpleLine } from "react-icons/pi";
 import { GoNote } from "react-icons/go";
 import { LuFolderLock } from "react-icons/lu";
-import { useContext } from 'react';
+import { useContext, memo } from 'react';
 import { AuthContext } from '../context/AuthProvider';
 
-const TabBar = () => {
+const TabBarComponent = () => {
     const navigate = useNavigate();
     const { user } = useContext(AuthContext);
-    
+    console.log('user', user);
+
     const handleHome = () => {
         navigate('/');
     };
@@ -43,7 +44,6 @@ const TabBar = () => {
                 <span className="text-sm">내역</span>
             </button>
             
-            {/* 사용자 역할이 허용된 경우에만 관리 메뉴를 노출 */}
             {allowedRoles.includes(user?.role) && (
                 <button type="button" className='flex flex-col items-center' onClick={handleAdmin}>
                     <div className='flex items-center justify-center w-8 h-8'>
@@ -55,5 +55,10 @@ const TabBar = () => {
         </nav>
     );
 };
+
+const TabBar = memo(TabBarComponent);
+
+// displayName 설정
+TabBar.displayName = "TabBar";
 
 export default TabBar;
