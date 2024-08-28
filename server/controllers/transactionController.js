@@ -1,6 +1,20 @@
-const Transaction = require('../models/Transaction'); // 가정: 트랜잭션 모델을 불러옴
+const Transaction = require('../models/Transaction');
+const Card = require('../models/Card');
 
-// Create a new transaction
+exports.getAllTransactions = async (req, res) => {
+    try {
+        const userId = req.user.member_id;
+        const userCards = await Card.find({ member_id: userId });
+
+        const cardIds = userCards.map(card => card._id); 
+        const transactions = await Transaction.find({ card_id: { $in: cardIds } }).sort({ transaction_date: -1 });
+
+        res.status(200).json(transactions);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching transactions', error });
+    }
+};
+
 exports.createTransaction = async (req, res) => {
     try {
         const transaction = new Transaction(req.body);
@@ -11,17 +25,6 @@ exports.createTransaction = async (req, res) => {
     }
 };
 
-// Get all transactions
-exports.getAllTransactions = async (req, res) => {
-    try {
-        const transactions = await Transaction.find();
-        res.status(200).json(transactions);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching transactions', error });
-    }
-};
-
-// Get a transaction by ID
 exports.getTransactionById = async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id);
@@ -32,7 +35,6 @@ exports.getTransactionById = async (req, res) => {
     }
 };
 
-// Update a transaction by ID
 exports.updateTransaction = async (req, res) => {
     try {
         const updatedTransaction = await Transaction.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -43,7 +45,6 @@ exports.updateTransaction = async (req, res) => {
     }
 };
 
-// Delete a transaction by ID
 exports.deleteTransaction = async (req, res) => {
     try {
         const deletedTransaction = await Transaction.findByIdAndDelete(req.params.id);
@@ -54,23 +55,27 @@ exports.deleteTransaction = async (req, res) => {
     }
 };
 
-// Get transactions by year and month
+
 exports.getTransactionsByYearAndMonth = async (req, res) => {
     try {
         const { year, month } = req.params;
+        const userId = req.user.member_id;  // 요청한 사용자의 member_id
 
-        // 연도와 월로 필터링된 트랜잭션을 가져옴
+        // 1. 사용자가 소유한 카드 조회
+        const userCards = await Card.find({ member_id: userId });
+
+        // 2. 사용자의 카드들에 해당하는 트랜잭션만 가져옴
+        const cardIds = userCards.map(card => card._id);  // 사용자의 카드 ID 목록
+
+        // 3. 연도와 월에 맞는 트랜잭션을 해당 카드 ID로 필터링
         const startDate = new Date(`${year}-${month}-01`);
-        const endDate = new Date(`${year}-${month}-01`);
+        const endDate = new Date(startDate);
         endDate.setMonth(endDate.getMonth() + 1);
 
-        // startDate ~ endDate 사이의 거래 내역을 찾음
         const transactions = await Transaction.find({
-            transaction_date: {
-                $gte: startDate,
-                $lt: endDate
-            }
-        }).sort({ transaction_date: -1 }); // 최신순 정렬
+            card_id: { $in: cardIds },
+            transaction_date: { $gte: startDate, $lt: endDate }
+        }).sort({ transaction_date: -1 });  // 최신순 정렬
 
         res.status(200).json(transactions);
     } catch (error) {

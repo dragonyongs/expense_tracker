@@ -4,7 +4,7 @@ const Member = require('../models/Member');
 
 const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
-const refreshTokens = {}; // Store refresh tokens safely
+const refreshTokens = {};
 
 // Login
 exports.login = async (req, res) => {
@@ -22,12 +22,18 @@ exports.login = async (req, res) => {
             return res.status(401).json({ error: '비밀번호가 일치하지 않습니다.' });
         }
 
-        const accessToken = jwt.sign({ id: member._id, email: member.email, name: member.member_name, status_id: member.status_id, role_id: member.role_id }, accessTokenSecret, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ 
+            member_id: member._id, 
+            email: member.email, 
+            name: member.member_name, 
+            status_id: member.status_id, 
+            role_id: member.role_id 
+        }, accessTokenSecret, { expiresIn: '1h' });
         const refreshToken = jwt.sign({ id: member._id }, refreshTokenSecret, { expiresIn: '1d' });
 
         refreshTokens[refreshToken] = member._id;
-
-        // 쿠키 설정
+ 
+        // 쿠키에 Access Token 설정
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // 개발 환경에서는 false, 프로덕션에서는 true
@@ -50,6 +56,7 @@ exports.login = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 // Logout
 exports.logout = (req, res) => {

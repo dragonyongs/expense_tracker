@@ -53,7 +53,7 @@ const App = () => {
 
                         {/* 관리자만 접근 가능 */}
                         <Route path="/admin" element={
-                            <ProtectedRoute requiredRoles={['admin']}>
+                            <ProtectedRoute requiredRoles={['admin', 'hr_admin', 'ms_admin']}>
                                 <Admin />
                             </ProtectedRoute>
                         } />
