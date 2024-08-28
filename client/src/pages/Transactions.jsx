@@ -150,7 +150,7 @@ const Transactions = () => {
     // 카드별로 남은 한도 계산 함수
     const calculateRemainingLimit = (card, transactions) => {
     const totalSpent = transactions
-        .filter(tx => tx.card_id === card._id)
+        .filter(tx => tx.card_id._id === card._id)
         .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0); // transaction_amount를 숫자로 변환
 
     const totalLimit = card.limit + card.rollover_amount; // 한도 + 이월금액
