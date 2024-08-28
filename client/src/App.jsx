@@ -53,39 +53,39 @@ const App = () => {
 
                         {/* 관리자만 접근 가능 */}
                         <Route path="/admin" element={
-                            <ProtectedRoute requiredRoles={['admin', 'hr_admin', 'ms_admin']}>
+                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin', 'ms_admin']}>
                                 <Admin />
                             </ProtectedRoute>
                         } />
 
                         {/* 관리자와 인사관리자 접근 가능 */}
                         <Route path="/admin/members" element={
-                            <ProtectedRoute requiredRoles={['admin', 'hr_admin']}>
+                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
                                 <AdminMembers />
                             </ProtectedRoute>
                         } />
 
                         <Route path="/admin/departments" element={
-                            <ProtectedRoute requiredRoles={['admin', 'hr_admin']}>
+                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
                                 <AdminDepartments />
                             </ProtectedRoute>
                         } />
 
                         <Route path="/admin/teams" element={
-                            <ProtectedRoute requiredRoles={['admin', 'hr_admin']}>
+                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
                                 <AdminTeams />
                             </ProtectedRoute>
                         } />
 
                         {/* 관리자와 경지관리자 접근 가능 */}
                         <Route path="/admin/account" element={
-                            <ProtectedRoute requiredRoles={['admin', 'ms_admin']}>
+                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
                                 <AdminAccount />
                             </ProtectedRoute>
                         } />
 
                         <Route path="/admin/card" element={
-                            <ProtectedRoute requiredRoles={['admin', 'ms_admin']}>
+                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
                                 <AdminCard />
                             </ProtectedRoute>
                         } />

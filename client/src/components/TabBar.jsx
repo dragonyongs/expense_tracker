@@ -27,7 +27,7 @@ const TabBarComponent = () => {
     }
 
     const userRoles = ['admin', 'ms_admin', 'hr_admin']; 
-    const allowedAdminRoles = ['admin', 'ms_admin', 'hr_admin'];
+    const allowedAdminRoles = ['super_admin', 'admin', 'ms_admin', 'hr_admin'];
     const superAdminRole = ['super_admin'];
     
     return (
@@ -38,6 +38,7 @@ const TabBarComponent = () => {
                 </div>
                 <span className="text-sm">홈</span>
             </button>
+            
             {userRoles.includes(user?.role) && (
                 <button type="button" className='flex flex-col items-center' onClick={handleTransactions}>
                     <div className='flex items-center justify-center w-8 h-8'>

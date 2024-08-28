@@ -163,7 +163,17 @@ const Transactions = () => {
         };
     }
 
+    const groupedTransactions = transactions.reduce((acc, transaction) => {
+        const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+        if (!acc[transactionDate]) {
+            acc[transactionDate] = [];
+        }
+        acc[transactionDate].push(transaction);
+        return acc;
+    }, {});
+
     return (
+        
         <>
             <div className='w-full h-full p-4 sm:p-8 dark:bg-gray-800'>
                 {/* 카드 한도와 남은 금액 표시 */}
@@ -175,7 +185,7 @@ const Transactions = () => {
 
                             return (
                                 <div key={card._id} className="p-4 border border-gray-200 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600">
-                                    <h6 className="text-lg font-semibold text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
+                                    <h6 className="text-md font-semibold text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
                                     <p className="text-gray-700 dark:text-gray-400">총 한도: {totalLimit.toLocaleString()} 원</p>
                                     <p className="text-gray-700 dark:text-gray-400">이월 금액: {card.rollover_amount.toLocaleString()} 원</p>
                                     <p className="text-gray-700 dark:text-gray-400">이달 사용 금액: {totalSpent.toLocaleString()} 원</p>
@@ -196,34 +206,43 @@ const Transactions = () => {
                     ><IoAddCircleOutline /></button>
                 </div>
                 <div className='flow-root'>
-                    {transactions.length === 0 ? (
+                    {Object.keys(groupedTransactions).length === 0 ? (
                         <div className="flex justify-center items-center h-[calc(100vh-204px)] text-gray-500 dark:text-gray-400">
                             데이터가 없습니다.
                         </div>
                     ) : (
-                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {transactions.map(transaction => (
-                            <li key={transaction._id} onClick={() => handleOpenDrawer(transaction)}>
-                                <div className="flex items-center">
-                                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-400 overflow-hidden flex items-center justify-center">
-                                        <span className="text-white text-lg font-semibold">
-                                            {transaction.merchant_name.charAt(0)}
-                                        </span>
-                                    </div>
-                                    <div className="flex-1 min-w-0 ms-4">
-                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                            {transaction.merchant_name} 
-                                        </p>
+                        <ul role="list">
+                            {Object.entries(groupedTransactions).map(([date, transactions]) => (
+                                <li key={date} className="py-3">
+                                    <div>
                                         <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                            {transaction.transaction_date}
+                                            {date}
                                         </p>
                                     </div>
-                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                        {transaction.transaction_amount}
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
+                                    {transactions.map((transaction) => (
+                                        <div key={transaction._id} onClick={() => handleOpenDrawer(transaction)} >
+                                            <div className="flex items-center py-2">
+                                                <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
+                                                    <span className="text-slate-500 text-lg font-normal">
+                                                        {transaction.merchant_name.charAt(0)}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1 min-w-0 ms-4">
+                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                        {transaction.merchant_name} 
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                                        {transaction.menu_name}
+                                                    </p>
+                                                </div>
+                                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                    {transaction.transaction_amount.toLocaleString()}원
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </li>
+                            ))}
                         </ul>
                     )}
                 </div>
@@ -259,7 +278,7 @@ const Transactions = () => {
                             label="거래일" 
                             id="transaction_date" 
                             type='date'
-                            value={selectedTransaction?.transaction_date || ""}
+                            value={selectedTransaction?.transaction_date.split("T")[0] || ""}
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedTransaction({ ...selectedTransaction, transaction_date: e.target.value })}
                             placeholder=""

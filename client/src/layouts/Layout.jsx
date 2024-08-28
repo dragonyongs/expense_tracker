@@ -11,7 +11,7 @@ const Layout = () => {
     const isApprovedUser = isAuthenticated && user?.status === 'approved';
     const location = useLocation();
 
-    const allowedRoles = ['admin', 'ms_admin', 'hr_admin'];
+    const allowedRoles = ['super_admin', 'admin', 'ms_admin', 'hr_admin'];
 
     // 현재 경로가 /admin인지 확인
     const isAdminRoute = location.pathname.startsWith('/admin');

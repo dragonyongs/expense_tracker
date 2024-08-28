@@ -4,18 +4,19 @@ import { AuthContext } from '../context/AuthProvider';
 
 const AdminTab = () => {
     const { user } = useContext(AuthContext);
+    
     const tabRef = useRef(null);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const location = useLocation();  // 현재 경로 가져오기
 
-    const allowedRoles = ['admin', 'ms_admin', 'hr_admin'];
+    const allowedRoles = ['super_admin', 'admin', 'ms_admin', 'hr_admin'];
 
     const tabs = [
-        { path: '/admin/members', label: '회원관리', role: ['admin', 'hr_admin'] },
-        { path: '/admin/departments', label: '본부관리', role: ['admin', 'hr_admin'] },
-        { path: '/admin/teams', label: '팀관리', role: ['admin', 'hr_admin'] },
-        { path: '/admin/account', label: '계좌관리', role: ['admin', 'ms_admin'] },
-        { path: '/admin/card', label: '카드관리', role: ['admin', 'ms_admin']},
+        { path: '/admin/members', label: '회원관리', role: ['super_admin', 'admin', 'hr_admin'] },
+        { path: '/admin/departments', label: '본부관리', role: ['super_admin', 'admin', 'hr_admin'] },
+        { path: '/admin/teams', label: '팀관리', role: ['super_admin', 'admin', 'hr_admin'] },
+        { path: '/admin/account', label: '계좌관리', role: ['super_admin', 'admin', 'ms_admin'] },
+        { path: '/admin/card', label: '카드관리', role: ['super_admin', 'admin', 'ms_admin']},
     ];
 
     const checkOverflow = () => {
