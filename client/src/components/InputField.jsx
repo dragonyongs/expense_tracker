@@ -1,7 +1,10 @@
 const InputField = ({ label, id, value, onChange, placeholder, className = "bg-slate-100 border-0", type = "text", required = false, disabled = false }) => {
     return (
         <div className={`flex flex-col gap-2 ${type === 'hidden'? "hidden" : ""}`}>
-            <label htmlFor={id}>{label}</label>
+            <div className="flex justify-between">
+                <label htmlFor={id}>{label}</label>
+                {!required ? <span className="text-sm text-slate-400">(선택)</span> : ''}
+            </div>
             <input 
                 id={id}
                 name={id}

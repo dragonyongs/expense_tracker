@@ -179,7 +179,7 @@ const Transactions = () => {
                 {/* 카드 한도와 남은 금액 표시 */}
                 <div className="mb-6">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">카드 한도 및 사용 정보</h5>
-                    <div className="space-y-4 mt-4">
+                    <div className="space-y-4 mt-4 bg-white">
                         {userCards.map(card => {
                             const { totalLimit, totalSpent, remainingLimit } = calculateRemainingLimit(card, transactions);
 
@@ -232,7 +232,7 @@ const Transactions = () => {
                                                         {transaction.merchant_name} 
                                                     </p>
                                                     <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                        {transaction.menu_name}
+                                                        {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
                                                     </p>
                                                 </div>
                                                 <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">

@@ -99,7 +99,7 @@ exports.updateTransaction = async (req, res) => {
             ...(transaction_amount !== undefined && { transaction_amount }),
             ...(transaction_date !== undefined && { transaction_date }),
             ...(sanitizedMerchantName !== undefined && { merchant_name: sanitizedMerchantName }),
-            ...(sanitizedMenuName !== undefined && { menu_name: sanitizedMenuName }),
+            ...({ menu_name: sanitizedMenuName !== undefined ? sanitizedMenuName : '' }),
         };
 
         const updatedTransaction = await Transaction.findByIdAndUpdate(req.params.id, updateData, { new: true });
@@ -142,8 +142,11 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
         const transactions = await Transaction.find({
             card_id: { $in: cardIds },
             transaction_date: { $gte: startDate, $lt: endDate }
-        }).sort({ transaction_date: -1 }); 
+        })
+        .populate('card_id', 'card_number') // card_id를 통해 card_number를 가져옴
+        .sort({ transaction_date: -1 }); 
 
+        console.log(transactions);
         res.status(200).json(transactions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching transactions by year and month', error });
