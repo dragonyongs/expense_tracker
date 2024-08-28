@@ -149,19 +149,19 @@ const Transactions = () => {
 
     // 카드별로 남은 한도 계산 함수
     const calculateRemainingLimit = (card, transactions) => {
-        const totalSpent = transactions
-            .filter(tx => tx.card_id === card._id)
-            .reduce((sum, tx) => sum + tx.transaction_amount, 0);
-        
-        const totalLimit = card.limit + card.rollover_amount; // 한도 + 이월금액
-        const remainingLimit = totalLimit - totalSpent; // 남은 금액
+    const totalSpent = transactions
+        .filter(tx => tx.card_id === card._id)
+        .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0); // transaction_amount를 숫자로 변환
 
-        return {
-            totalLimit,
-            totalSpent,
-            remainingLimit
-        };
-    }
+    const totalLimit = card.limit + card.rollover_amount; // 한도 + 이월금액
+    const remainingLimit = totalLimit - totalSpent; // 남은 금액
+
+    return {
+        totalLimit,
+        totalSpent,
+        remainingLimit
+    };
+};
 
     const groupedTransactions = transactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
