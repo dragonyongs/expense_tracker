@@ -10,17 +10,18 @@ exports.createMember = async (req, res) => {
         }
 
         const existingUser = await Member.findOne({ email });
-        if (existingUser){
-            return res.status(409).json({ error: '이미 사용 중인 이메일입니다. '});
+        if (existingUser) {
+            return res.status(409).json({ error: '이미 사용 중인 이메일입니다.' });
         }
 
-        const slatRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, slatRounds);
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         const newMember = await Member.create({
             member_name,
             password: hashedPassword,
-            email
+            email,
+            role_id: mongoose.Types.ObjectId('66d00d41d4b33b5f82639c28') // 특정 ID 설정
         });
 
         res.status(201).json(newMember);
@@ -28,6 +29,7 @@ exports.createMember = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
+
 
 // Get all members
 exports.getAllMembers = async (req, res) => {

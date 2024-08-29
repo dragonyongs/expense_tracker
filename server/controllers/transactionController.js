@@ -126,27 +126,23 @@ exports.deleteTransaction = async (req, res) => {
 exports.getTransactionsByYearAndMonth = async (req, res) => {
     try {
         const { year, month } = req.params;
-        const userId = req.user.member_id;  // 요청한 사용자의 member_id
+        const userId = req.user.member_id;
 
-        // 1. 사용자가 소유한 카드 조회
         const userCards = await Card.find({ member_id: userId });
 
-        // 2. 사용자의 카드들에 해당하는 트랜잭션만 가져옴
-        const cardIds = userCards.map(card => card._id);  // 사용자의 카드 ID 목록
+        const cardIds = userCards.map(card => card._id);
 
-        // 3. 연도와 월에 맞는 트랜잭션을 해당 카드 ID로 필터링
         const startDate = new Date(`${year}-${month}-01`);
-        const endDate = new Date(startDate);  // startDate로부터 새로운 객체 생성
-        endDate.setMonth(endDate.getMonth() + 1);  // 다음 달로 설정
+        const endDate = new Date(startDate); 
+        endDate.setMonth(endDate.getMonth() + 1);
 
         const transactions = await Transaction.find({
             card_id: { $in: cardIds },
             transaction_date: { $gte: startDate, $lt: endDate }
         })
-        .populate('card_id', 'card_number') // card_id를 통해 card_number를 가져옴
+        .populate('card_id', 'card_number')
         .sort({ transaction_date: -1 }); 
 
-        console.log(transactions);
         res.status(200).json(transactions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching transactions by year and month', error });

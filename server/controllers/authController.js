@@ -32,7 +32,7 @@ exports.login = async (req, res) => {
         const refreshToken = jwt.sign({ id: member._id }, refreshTokenSecret, { expiresIn: '1d' });
 
         refreshTokens[refreshToken] = member._id;
- 
+
         // 쿠키에 Access Token 설정
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
@@ -59,35 +59,42 @@ exports.login = async (req, res) => {
 
 
 // Logout
-exports.logout = (req, res) => {
+exports.logout = async (req, res) => {
     console.log('Call logout!');
     const refreshToken = req.body.refreshToken;
 
+    if (!refreshToken) {
+        return res.status(401).json({ error: '리프레시 토큰이 필요합니다.' });
+    }
+
     if (refreshToken in refreshTokens) {
+        
         delete refreshTokens[refreshToken];
 
         // 쿠키 삭제
         res.clearCookie('accessToken', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // 설정된 secure 옵션과 동일하게 설정
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             path: '/'
         });
 
         res.status(200).json({ message: '로그아웃되었습니다.' });
     } else {
-        res.status(403).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
+        res.status(401).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
     }
 };
+
 
 // Refresh Access Token
 exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
-    console.log('refreshToken', refreshToken);
+
 
     if (!refreshToken || !(refreshToken in refreshTokens)) {
         return res.status(403).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
     }
+
 
     jwt.verify(refreshToken, refreshTokenSecret, async (err, member) => {
         if (err) {
@@ -95,10 +102,7 @@ exports.refreshToken = async (req, res) => {
         }
 
         // 데이터베이스에서 최신 사용자 정보를 가져옵니다.
-        console.log('member', member);
-
         const updatedMember = await Member.findById(member.member_id);
-        console.log('refreshToken-updatedMember', updatedMember);
         
         if (!updatedMember) {
             return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });

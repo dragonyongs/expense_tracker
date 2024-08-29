@@ -57,6 +57,7 @@ const Transactions = () => {
     }
     
     useEffect(() => {
+        console.log('Fetching transactions...');
         fetchTransactionsForCurrentMonth();
         fetchCards();
     }, []);
@@ -175,78 +176,76 @@ const Transactions = () => {
     return (
         
         <>
-            <div className='w-full h-full p-4 sm:p-8 dark:bg-gray-800'>
+            <div className='w-full p-4 sm:p-8 dark:bg-gray-800'>
                 {/* 카드 한도와 남은 금액 표시 */}
-                <div className="mb-6">
-                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">카드 한도 및 사용 정보</h5>
-                    <div className="space-y-4 mt-4 bg-white">
-                        {userCards.map(card => {
-                            const { totalLimit, totalSpent, remainingLimit } = calculateRemainingLimit(card, transactions);
+                <div className="space-y-4 mb-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
+                    <h5 className="text-md font-semibold leading-none text-gray-500 dark:text-white">카드정보</h5>
+                    {userCards.map(card => {
+                        const { totalLimit, totalSpent, remainingLimit } = calculateRemainingLimit(card, transactions);
 
-                            return (
-                                <div key={card._id} className="p-4 border border-gray-200 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600">
-                                    <h6 className="text-md font-semibold text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
-                                    <p className="text-gray-700 dark:text-gray-400">총 한도: {totalLimit.toLocaleString()} 원</p>
-                                    <p className="text-gray-700 dark:text-gray-400">이월 금액: {card.rollover_amount.toLocaleString()} 원</p>
-                                    <p className="text-gray-700 dark:text-gray-400">이달 사용 금액: {totalSpent.toLocaleString()} 원</p>
-                                    <p className={`font-semibold ${remainingLimit < 0 ? 'text-red-600' : 'text-green-600'}`}>남은 금액: {remainingLimit.toLocaleString()} 원</p>
-                                </div>
-                            );
-                        })}
-                    </div>
+                        return (
+                            <div key={card._id} className="">
+                                <h6 className="text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
+                                <p className="text-gray-700 dark:text-gray-400">한도 금액: {totalLimit.toLocaleString()} 원 (이월: {card.rollover_amount.toLocaleString()} 원)</p>
+                                <p className="text-gray-700 dark:text-gray-400">지출 금액: {totalSpent.toLocaleString()} 원</p>
+                                <p className={`font-semibold ${remainingLimit <= 0 ? 'text-red-600' : 'text-green-600'}`}>잔여 금액: {remainingLimit.toLocaleString()} 원</p>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* 트랜잭션 목록 */}
-                <div className="flex items-center justify-between mb-4">
-                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">카드 사용 내역</h5>
-                    <button
-                        type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl'
-                        onClick={handleAddTransaction}
-                    ><IoAddCircleOutline /></button>
-                </div>
-                <div className='flow-root'>
-                    {Object.keys(groupedTransactions).length === 0 ? (
-                        <div className="flex justify-center items-center h-[calc(100vh-204px)] text-gray-500 dark:text-gray-400">
-                            데이터가 없습니다.
-                        </div>
-                    ) : (
-                        <ul role="list">
-                            {Object.entries(groupedTransactions).map(([date, transactions]) => (
-                                <li key={date} className="py-3">
-                                    <div>
-                                        <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                            {date}
-                                        </p>
-                                    </div>
-                                    {transactions.map((transaction) => (
-                                        <div key={transaction._id} onClick={() => handleOpenDrawer(transaction)} >
-                                            <div className="flex items-center py-2">
-                                                <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
-                                                    <span className="text-slate-500 text-lg font-normal">
-                                                        {transaction.merchant_name.charAt(0)}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1 min-w-0 ms-4">
-                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                        {transaction.merchant_name} 
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                        {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
-                                                    </p>
-                                                </div>
-                                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                    {transaction.transaction_amount.toLocaleString()}원
+                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <h5 className="text-md font-semibold leading-none text-gray-500 dark:text-white">카드 사용 내역</h5>
+                        <button
+                            type="button" 
+                            className='text-black font-semibold rounded-lg text-2xl'
+                            onClick={handleAddTransaction}
+                        ><IoAddCircleOutline /></button>
+                    </div>
+                    <div className='flow-root'>
+                        {Object.keys(groupedTransactions).length === 0 ? (
+                            <div className="flex justify-center items-center h-[calc(100vh-204px)] text-gray-500 dark:text-gray-400">
+                                데이터가 없습니다.
+                            </div>
+                        ) : (
+                            <ul role="list">
+                                {Object.entries(groupedTransactions).map(([date, transactions]) => (
+                                    <li key={date} className="py-3">
+                                        <div>
+                                            <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                                                {date}
+                                            </p>
+                                        </div>
+                                        {transactions.map((transaction) => (
+                                            <div key={transaction._id} onClick={() => handleOpenDrawer(transaction)} >
+                                                <div className="flex items-center py-2">
+                                                    <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
+                                                        <span className="text-slate-500 text-lg font-normal">
+                                                            {transaction.merchant_name.charAt(0)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 ms-4">
+                                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                            {transaction.merchant_name} 
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                                            {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
+                                                        </p>
+                                                    </div>
+                                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                        {transaction.transaction_amount.toLocaleString()}원
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                                        ))}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
-
                 <CommonDrawer
                     isOpen={isOpen}
                     onClose={toggleDrawer}

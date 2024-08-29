@@ -44,19 +44,19 @@ const Signin = () => {
     return (
         <div className='relative flex items-center w-full h-full'>
             <div className='w-full'>
-                <div className='mb-28'>
+                <div className='mb-20'>
                     <div className='flex justify-center items-center w-20 h-20 mb-10 rounded-full bg-newBlue text-white'>
                         <img src="/pig-piggy-bank.svg" className='w-10 h-10'/>
                     </div>
-                    <h1 className='mb-7 text-3xl'>
+                    <h1 className='mb-7 text-3xl tracking-tight'>
                         안녕하세요.<br />
                         <span className='font-bold'>Expense Tracker</span> 입니다.
                     </h1>
-                    <h4 className='text-lg text-slate-400'>스타리치 어드바이져 직원 전용 입니다.</h4>
+                    <h4 className='text-lg text-slate-400'>스타리치 어드바이져 직원 전용</h4>
                 </div>
                 {errMsg && <div className="mb-4 text-red-600">{errMsg}</div>} {/* 에러 메시지 표시 */}
                 <form onSubmit={handleLogin}>
-                    <div className='flex flex-col gap-y-4 mb-5'>
+                    <div className='flex flex-col gap-y-3 mb-5'>
                         <div className="relative z-0 w-full mb-5 group">
                             <input type="email" name="email" id="email" onChange={(e) => setEmail(e.target.value)} value={email} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label htmlFor="email" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">이메일</label>
