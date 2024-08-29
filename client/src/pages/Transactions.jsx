@@ -4,6 +4,7 @@ import axios from "../services/axiosInstance";
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { IoAddCircleOutline } from "react-icons/io5";
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 const CARD_URL = '/api/cards';
 const TRANSACTION_URL = '/api/transactions';
@@ -176,7 +177,7 @@ const Transactions = () => {
     return (
         
         <>
-            <div className='w-full p-4 sm:p-8 dark:bg-gray-800'>
+            <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
                 {/* 카드 한도와 남은 금액 표시 */}
                 <div className="space-y-4 mb-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
                     <h5 className="text-md font-semibold leading-none text-gray-500 dark:text-white">카드정보</h5>
@@ -212,14 +213,14 @@ const Transactions = () => {
                         ) : (
                             <ul role="list">
                                 {Object.entries(groupedTransactions).map(([date, transactions]) => (
-                                    <li key={date} className="py-3">
+                                    <li key={date} className="py-3 cursor-pointer">
                                         <div>
                                             <p className="text-sm text-gray-500 truncate dark:text-gray-400">
                                                 {date}
                                             </p>
                                         </div>
                                         {transactions.map((transaction) => (
-                                            <div key={transaction._id} onClick={() => handleOpenDrawer(transaction)} >
+                                            <div key={transaction._id} onClick={() => handleOpenDrawer(transaction)} className="active:bg-slate-50">
                                                 <div className="flex items-center py-2">
                                                     <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
                                                         <span className="text-slate-500 text-lg font-normal">
@@ -234,8 +235,13 @@ const Transactions = () => {
                                                             {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
                                                         </p>
                                                     </div>
-                                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                        {transaction.transaction_amount.toLocaleString()}원
+                                                    <div className="inline-flex gap-x-3 items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                        <span>
+                                                            {transaction.transaction_amount.toLocaleString()}원
+                                                        </span>
+                                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                            <MdKeyboardArrowRight className='text-3xl' />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

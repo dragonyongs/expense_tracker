@@ -27,7 +27,7 @@ const TabBarComponent = () => {
     // const superAdminRole = ['super_admin'];
     
     return (
-        <nav className='z-50 bg-white shadow-md p-4 flex justify-between'>
+        <nav className='z-50 bg-white shadow-md pt-2 px-6 pb-4 flex justify-between'>
             <button type="button" className='flex flex-col items-center' onClick={handleHome}>
                 <div className='flex items-center justify-center w-8 h-8'>
                     <GoHome className="text-2xl" />
