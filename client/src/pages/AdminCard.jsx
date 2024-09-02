@@ -238,7 +238,7 @@ const AdminCard = () => {
                                 label="최초 한도" 
                                 id="initial_limit"
                                 type="number"
-                                value={selectedCard.limit}
+                                value={selectedCard.limit || 0}
                                 onChange={(e) => setSelectedCard({ ...selectedCard, limit: e.target.value })}
                                 placeholder="한도 입력"
                             />

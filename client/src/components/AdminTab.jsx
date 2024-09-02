@@ -17,6 +17,7 @@ const AdminTab = () => {
         { path: '/admin/teams', label: '팀관리', role: ['super_admin', 'admin', 'hr_admin'] },
         { path: '/admin/account', label: '계좌관리', role: ['super_admin', 'admin', 'ms_admin'] },
         { path: '/admin/card', label: '카드관리', role: ['super_admin', 'admin', 'ms_admin']},
+        { path: '/admin/banking', label: '입금관리', role: ['super_admin', 'admin', 'ms_admin']},
     ];
 
     const checkOverflow = () => {
