@@ -34,9 +34,7 @@ const Layout = () => {
                         <div className={`${isApprovedUser ? 'relative h-full' : 'w-full px-8'}`}>
                             {/* /admin 경로일 때만 Tab 컴포넌트 렌더링 */}
                             {isAdminRoute && allowedRoles.includes(user?.role) && <AdminTab />}
-                            <div className="flex flex-1 h-full items-center justify-center">
                                 <Outlet />
-                            </div>
                         </div>
                     </div>
                     {isApprovedUser && <TabBar />}

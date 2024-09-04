@@ -133,7 +133,7 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
         const cardIds = userCards.map(card => card._id);
 
         const startDate = new Date(`${year}-${month}-01`);
-        const endDate = new Date(startDate); 
+        const endDate = new Date(startDate);
         endDate.setMonth(endDate.getMonth() + 1);
 
         const transactions = await Transaction.find({
@@ -149,3 +149,49 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
     }
 };
 
+exports.depositToCard = async (req, res) => {
+    try {
+        const { card_id, deposit_amount } = req.body;
+        
+        // 카드 찾기
+        const card = await Card.findById(card_id);
+        if (!card) {
+            return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
+        }
+
+        const { limit, balance, rollover_amount } = card;
+        const totalLimit = limit + rollover_amount; // 총 사용 가능한 금액
+
+        // 현재 사용 가능한 잔액 (잔액 + 이월 금액을 포함한 최대 사용 가능 한도)
+        const currentTotal = balance;
+
+        // 입금 가능한 최대 금액 계산
+        const maxDeposit = totalLimit - currentTotal;
+        const actualDeposit = Math.min(deposit_amount, maxDeposit); // 입금할 수 있는 금액 (최대 한도 초과하지 않도록)
+
+        if (actualDeposit <= 0) {
+            return res.status(400).json({ error: '입금할 수 있는 금액이 없습니다. 이미 최대 한도에 도달했습니다.' });
+        }
+
+        // 카드 잔액 업데이트
+        card.balance += actualDeposit;
+
+        // 입금 트랜잭션 생성
+        const depositTransaction = new Transaction({
+            card_id,
+            transaction_date: new Date(),
+            merchant_name: '관리자 입금',
+            menu_name: '잔액 충전',
+            transaction_amount: actualDeposit,
+            transaction_type: '입금'  // 트랜잭션 타입을 명시적으로 구분
+        });
+
+        await card.save();  // 카드 모델에 잔액 저장
+        await depositTransaction.save();  // 입금 트랜잭션 저장
+
+        res.status(201).json({ message: '카드에 입금되었습니다.', card, transaction: depositTransaction });
+    } catch (error) {
+        console.error('입금 처리 중 오류 발생:', error);
+        res.status(500).json({ message: '입금 처리 중 서버 오류가 발생했습니다.', error });
+    }
+};

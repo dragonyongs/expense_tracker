@@ -19,6 +19,7 @@ const AdminDepartments = React.lazy(() => import('./pages/AdminDepartments'));
 const AdminTeams = React.lazy(() => import('./pages/AdminTeams'));
 const AdminAccount = React.lazy(() => import('./pages/AdminAccount'));
 const AdminCard = React.lazy(() => import('./pages/AdminCard'));
+const AdminDeposit = React.lazy(() => import('./pages/AdminDeposit'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 const App = () => {
@@ -90,6 +91,12 @@ const App = () => {
                             </ProtectedRoute>
                         } />
                         
+                        <Route path="/admin/deposit" element={
+                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
+                                <AdminDeposit />
+                            </ProtectedRoute>
+                        } />
+
                         {/* catch all */}
                         <Route path="*" element={<NotFound />} />
                     </Route>
