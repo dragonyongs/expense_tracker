@@ -2,19 +2,22 @@ const express = require('express');
 const router = express.Router();
 const cardController = require('../controllers/cardController');
 
-// Create a new card
+// 새로운 카드 생성
 router.post('/', cardController.createCard);
 
-// Get all cards
+// 전체 카드 조회
 router.get('/', cardController.getAllCards);
 
-// Get a card by ID
+// 카드 번호로 조회
 router.get('/:id', cardController.getCardById);
 
-// Update a card by ID
+// 사용자 member_id로 카드 목록 조회
+router.get('/member/:memberId', cardController.getCardsByMemberId);
+
+// 카드 정보 업데이트
 router.put('/:id', cardController.updateCard);
 
-// Delete a card by ID
+// 카드 삭제
 router.delete('/:id', cardController.deleteCard);
 
 module.exports = router;

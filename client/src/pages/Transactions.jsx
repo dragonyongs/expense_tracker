@@ -4,14 +4,16 @@ import axios from "../services/axiosInstance";
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { IoAddCircleOutline } from "react-icons/io5";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { MdOutlinePayment } from "react-icons/md";
+import { TbPigMoney } from "react-icons/tb";
 
-const CARD_URL = '/api/cards';
+const CARDS_URL = '/api/cards';
 const TRANSACTION_URL = '/api/transactions';
 
 const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
+    // const [balance, setBalance] = useState('');
     const [errMsg, setErrMsg] = useState('');
     const [transactions, setTransactions] = useState([]);
     const [selectedTransaction, setSelectedTransaction] = useState({
@@ -33,7 +35,7 @@ const Transactions = () => {
     // 카드와 트랜잭션 데이터 가져오기
     const fetchCards = async () => {
         try {
-            const response = await axios.get(CARD_URL);
+            const response = await axios.get(CARDS_URL);
             setCards(response.data);
         } catch (error) {
             console.error('Error fetching cards:', error);
@@ -47,9 +49,7 @@ const Transactions = () => {
             const month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더함
     
             const response = await axios.get(`${TRANSACTION_URL}/${year}/${month}`);
-            
-            // 날짜 기준으로 최신순 정렬 (transaction_date 내림차순)
-            const sortedTransactions = response.data.sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
+            const sortedTransactions = response.data.sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             setTransactions(sortedTransactions);
         } catch (error) {
@@ -66,7 +66,6 @@ const Transactions = () => {
     // 사용자의 카드만 필터링
     useEffect(() => {
         if (cards.length > 0 && user) {
-            // 사용자(member_id)가 소유한 카드만 필터링
             const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
             setUserCards(filteredCards);
         }
@@ -95,7 +94,8 @@ const Transactions = () => {
             transaction_date: new Date().toISOString().split('T')[0],
             merchant_name: "",
             menu_name: "",
-            transaction_amount: ""
+            transaction_amount: "",
+            transaction_type: "지출"
         });
         setIsEditing(false);
         setIsOpen(true);
@@ -104,7 +104,7 @@ const Transactions = () => {
     const handleCardChange = (e) => {
         setSelectedTransaction({
             ...selectedTransaction,
-            card_id: e.target.value
+            card_id: e.target.value,
         });
     };
 
@@ -115,7 +115,8 @@ const Transactions = () => {
             transaction_date: new Date().toISOString().split('T')[0],
             merchant_name: "",
             menu_name: "",
-            transaction_amount: ""
+            transaction_amount: "",
+            transaction_type: ""
         });
     };
 
@@ -132,38 +133,87 @@ const Transactions = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
+            
             const transactionData = {
                 card_id: selectedTransaction.card_id || userCards[0]._id,
                 transaction_date: selectedTransaction.transaction_date,
                 merchant_name: selectedTransaction.merchant_name,
                 menu_name: selectedTransaction.menu_name,
-                transaction_amount: selectedTransaction.transaction_amount
+                transaction_amount: selectedTransaction.transaction_amount,
+                transaction_type: "지출"
             };
-
+    
+            const card = cards.find(card => card._id === selectedTransaction.card_id || userCards[0]._id);
+            if (!card) {
+                throw new Error("해당 카드를 찾을 수 없습니다.");
+            }
+    
+            // 트랜잭션 수정 시 기존 금액과 새로운 금액의 차액 계산
+            const previousAmount = isEditing ? transactions.find(t => t._id === selectedTransaction._id)?.transaction_amount : 0;
+            const newAmount = selectedTransaction.transaction_amount;
+            const amountDifference = newAmount - previousAmount;  // 차액 계산
+    
+            // 트랜잭션 저장
             await saveTransaction(transactionData);
+    
+            // 카드 잔액 업데이트 (차액만큼 업데이트)
+            await updateCardBalance(selectedTransaction.card_id, amountDifference);
+    
             await fetchTransactionsForCurrentMonth();
             handleCloseDrawer();
         } catch (error) {
-            const errorMessage = JSON.parse(error.request.response);
-            setErrMsg(errorMessage.error);
+            // error 객체의 response가 있는지 먼저 확인
+            if (error.response) {
+                const errorMessage = error.response.data.error || "오류가 발생했습니다.";
+                setErrMsg(errorMessage);
+            } else if (error.request) {
+                setErrMsg("서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.");
+            } else {
+                setErrMsg(error.message || "알 수 없는 오류가 발생했습니다.");
+            }
         }
     }
+    
+    
+    const updateCardBalance = async (card_id, amountDifference) => {
+        try {
+            // card_id와 cards 배열이 제대로 초기화되어 있는지 확인
+            if (!card_id || cards.length === 0) {
+                throw new Error("카드 정보를 찾을 수 없습니다.");
+            }
+    
+            const card = cards.find(c => c._id === card_id);
+            
+            if (!card) {
+                throw new Error("해당 카드를 찾을 수 없습니다.");
+            }
+    
+            const newBalance = card.balance - amountDifference;
+            
+            // 서버에 카드의 잔액 업데이트 요청
+            await axios.put(`${CARDS_URL}/${card_id}`, { balance: newBalance });
+            
+            console.log('카드 잔액 업데이트 성공:', newBalance);
+        } catch (error) {
+            console.error('카드 잔액 업데이트 실패:', error);
+            setErrMsg(error.message || "카드 잔액을 업데이트할 수 없습니다.");
+        }
+    }
+    
 
     // 카드별로 남은 한도 계산 함수
-    const calculateRemainingLimit = (card, transactions) => {
-    const totalSpent = transactions
-        .filter(tx => tx.card_id._id === card._id)
-        .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0); // transaction_amount를 숫자로 변환
-
-    const totalLimit = card.limit + card.rollover_amount; // 한도 + 이월금액
-    const remainingLimit = totalLimit - totalSpent; // 남은 금액
-
-    return {
-        totalLimit,
-        totalSpent,
-        remainingLimit
+    const calculateRemainingBalance = (card, transactions) => {
+        const totalSpent = transactions
+            .filter(tx => tx.card_id._id === card._id && tx.transaction_type === '지출')
+            .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0);
+    
+        const balance = card.balance; // 잔액 표시
+        return {
+            totalSpent,
+            balance
+        };
     };
-};
+    
 
     const groupedTransactions = transactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
@@ -175,21 +225,21 @@ const Transactions = () => {
     }, {});
 
     return (
-        
         <>
             <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
                 {/* 카드 한도와 남은 금액 표시 */}
                 <div className="space-y-4 mb-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
                     <h5 className="text-md font-semibold leading-none text-gray-500 dark:text-white">카드정보</h5>
                     {userCards.map(card => {
-                        const { totalLimit, totalSpent, remainingLimit } = calculateRemainingLimit(card, transactions);
+                        const calculate = calculateRemainingBalance(card, transactions);
 
                         return (
                             <div key={card._id} className="">
                                 <h6 className="text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
-                                <p className="text-gray-700 dark:text-gray-400">한도 금액: {totalLimit.toLocaleString()} 원 (이월: {card.rollover_amount.toLocaleString()} 원)</p>
-                                <p className="text-gray-700 dark:text-gray-400">지출 금액: {totalSpent.toLocaleString()} 원</p>
-                                <p className={`font-semibold ${remainingLimit <= 0 ? 'text-red-600' : 'text-green-600'}`}>잔여 금액: {remainingLimit.toLocaleString()} 원</p>
+                                <p className="text-gray-700 dark:text-gray-400">지출 금액: {calculate.totalSpent.toLocaleString()} 원</p>
+                                <p className={`font-semibold ${card.balance <= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                    잔여 금액: {card.balance.toLocaleString()} 원
+                                </p>
                             </div>
                         );
                     })}
@@ -207,7 +257,7 @@ const Transactions = () => {
                     </div>
                     <div className='flow-root'>
                         {Object.keys(groupedTransactions).length === 0 ? (
-                            <div className="flex justify-center items-center h-[calc(100vh-204px)] text-gray-500 dark:text-gray-400">
+                            <div className="flex justify-center items-center min-h-[calc(100vh-47vh)] text-gray-500 dark:text-gray-400">
                                 데이터가 없습니다.
                             </div>
                         ) : (
@@ -220,16 +270,16 @@ const Transactions = () => {
                                             </p>
                                         </div>
                                         {transactions.map((transaction) => (
-                                            <div key={transaction._id} onClick={() => handleOpenDrawer(transaction)} className="active:bg-slate-50">
+                                            <div key={transaction._id} onClick={ transaction.transaction_type !== "입금" ? () => handleOpenDrawer(transaction) : null} className="active:bg-slate-50">
                                                 <div className="flex items-center py-2">
                                                     <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
                                                         <span className="text-slate-500 text-lg font-normal">
-                                                            {transaction.merchant_name.charAt(0)}
+                                                            {transaction.transaction_type !== "입금" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
                                                         </span>
                                                     </div>
                                                     <div className="flex-1 min-w-0 ms-4">
                                                         <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                            {transaction.merchant_name} 
+                                                            {transaction.merchant_name} {transaction.transaction_type}
                                                         </p>
                                                         <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                                             {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
@@ -239,9 +289,6 @@ const Transactions = () => {
                                                         <span>
                                                             {transaction.transaction_amount.toLocaleString()}원
                                                         </span>
-                                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                            <MdKeyboardArrowRight className='text-3xl' />
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

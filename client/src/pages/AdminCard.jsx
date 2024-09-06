@@ -232,6 +232,7 @@ const AdminCard = () => {
                                 value={selectedCard.card_number}
                                 onChange={(e) => setSelectedCard({ ...selectedCard, card_number: e.target.value })}
                                 placeholder="카드 입력"
+                                required
                             />
 
                             <InputField 
@@ -241,6 +242,16 @@ const AdminCard = () => {
                                 value={selectedCard.limit || 0}
                                 onChange={(e) => setSelectedCard({ ...selectedCard, limit: e.target.value })}
                                 placeholder="한도 입력"
+                            />
+
+                            <InputField 
+                                label="현재 잔액" 
+                                id="balance"
+                                type="number"
+                                value={selectedCard.balance || 0}
+                                placeholder=""
+                                disabled={true}
+                                required
                             />
 
                             <div className="flex flex-col gap-2">

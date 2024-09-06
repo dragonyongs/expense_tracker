@@ -9,6 +9,8 @@ router.post('/', authMiddleware, transactionController.createTransaction);
 // Get all transactions
 router.get('/', authMiddleware, transactionController.getAllTransactions);
 
+router.get('/deposits', authMiddleware, transactionController.getAllDeposits);
+
 // Get transactions by year and month
 router.get('/:year/:month', authMiddleware, transactionController.getTransactionsByYearAndMonth);
 
