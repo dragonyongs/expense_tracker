@@ -4,11 +4,7 @@ import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { IoAddCircleOutline } from "react-icons/io5";
 import { MdKeyboardArrowRight } from "react-icons/md";
-
-const TRANSACTION_URL = '/api/transactions';
-const DEPOSITS_URL = '/api/transactions/deposits';
-const MEMBERS_URL = '/api/members';
-const CARDS_URL = '/api/cards';
+import { API_URLS } from '../services/apiUrls';
 
 const AdminDeposit = () => {
     const [users, setUsers] = useState([]);
@@ -35,7 +31,7 @@ const AdminDeposit = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get(MEMBERS_URL);
+            const response = await axios.get(API_URLS.MEMBERS);
             setUsers(response.data);
         } catch (error) {
             setErrMsg("사용자 목록을 불러오지 못했습니다.");
@@ -44,7 +40,7 @@ const AdminDeposit = () => {
 
     const fetchDeposits = async () => {
         try {
-            const response = await axios.get(DEPOSITS_URL);
+            const response = await axios.get(API_URLS.DEPOSITS);
             setDeposits(response.data);
         } catch (error) {
             setErrMsg("입금 내역을 불러오지 못했습니다.");
@@ -73,7 +69,7 @@ const AdminDeposit = () => {
 
         try {
             // 선택한 사용자의 ID로 카드 목록 필터링
-            const response = await axios.get(`${CARDS_URL}/member/${selectedUserId}`);
+            const response = await axios.get(`${API_URLS.CARDS}/member/${selectedUserId}`);
             const userCards = response.data;
 
             if (userCards.length > 0) {
@@ -128,6 +124,7 @@ const AdminDeposit = () => {
     // 입금 저장 처리
     const handleSave = async () => {
         try {
+            console.log('API_URLS.CARDS', API_URLS.CARDS);
             setErrMsg('');
 
             const transactionData = {
@@ -142,14 +139,14 @@ const AdminDeposit = () => {
             console.log('transactionData: ', transactionData);
 
             // 트랜잭션 저장 (입금 처리)
-            const response = await axios.post(TRANSACTION_URL, transactionData);
+            const response = await axios.post(API_URLS.TRANSACTIONS, transactionData);
             console.log("입금 성공:", response.data);
 
             // 입금 후 카드 balance 업데이트 (기존 balance에 transaction_amount 더하기)
             const updatedBalance = parseFloat(balance) + parseFloat(selectedDeposit.transaction_amount);
 
             // 카드 balance 업데이트 API 호출
-            await axios.put(`${CARDS_URL}/${selectedCard}`, { balance: updatedBalance });
+            await axios.put(`${API_URLS.CARDS}/${selectedCard}`, { balance: updatedBalance });
 
             console.log("카드 잔액 업데이트 성공:", updatedBalance);
 

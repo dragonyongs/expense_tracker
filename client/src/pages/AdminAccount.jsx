@@ -4,9 +4,7 @@ import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
-
-const ACCOUNT_URL = '/api/accounts';
-const TEAM_URL = '/api/teams';
+import { API_URLS } from '../services/apiUrls';
 
 const AdminAccount = () => {
     const [accounts, setAccounts] = useState([]);
@@ -15,35 +13,24 @@ const AdminAccount = () => {
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
 
-    const fetchAccounts = async () => {
-        try {
-            const response = await axios.get(ACCOUNT_URL);
-            setAccounts(response.data);
-        } catch (error) {
-            console.error('Error fetching accounts:', error);
-        }
-    }
-
-    const fetchTeams = async () => {
-        try {
-            const response = await axios.get(TEAM_URL);
-            setTeams(response.data);
-        } catch (error) {
-            console.error('Error fetching accounts:', error);
-        }
-    }
-
     useEffect(() => {
-        fetchAccounts();
-        fetchTeams();
+        fetchData(API_URLS.ACCOUNTS, setAccounts);
+        fetchData(API_URLS.TEAMS, setTeams);
     }, []);
 
-    const toggleDrawer = () => {
-        setIsOpen((prevState) => !prevState);
-    };
+    const fetchData = async (url, setter) => {
+        try {
+            const response = await axios.get(url);
+            setter(response.data);
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+        }
+    }
+
+    const toggleDrawer = () => setIsOpen(prev => !prev);
 
     const handleAddAccount = () => {
-        setSelectedAccount({ account_number: ''});
+        setSelectedAccount({ account_number: '', bank_name: '', team_id: '' });
         setIsEditing(false);
         setIsOpen(true);
     };
@@ -57,7 +44,7 @@ const AdminAccount = () => {
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
-        setSelectedAccount(null);
+        setSelectedAccount({ account_number: '', bank_name: '', team_id: '' }); // Drawer가 닫힐 때 상태 초기화
     };
 
     const handleTeamChange = (e) => {
@@ -81,22 +68,20 @@ const AdminAccount = () => {
     };
 
     const handleSave = async () => {
-        try {
-            const accountData = {
-                ...selectedAccount,
-            };
+        const accountData = { ...selectedAccount };
 
+        try {
             if (isEditing) {
                 // 수정 모드일 때 PUT 요청
-                await axios.put(`${ACCOUNT_URL}/${selectedAccount._id}`, accountData);
+                await axios.put(`${API_URLS.ACCOUNTS}/${selectedAccount._id}`, accountData);
                 console.log("Account updated successfully:", accountData);
             } else {
                 // 추가 모드일 때 POST 요청
-                await axios.post(ACCOUNT_URL, accountData);
+                await axios.post(API_URLS.ACCOUNTS, accountData);
                 console.log("Account added successfully:", accountData);
             }
             
-            await fetchAccounts();
+            await fetchData(API_URLS.ACCOUNTS, setAccounts);
             
             handleCloseDrawer();
         } catch (error) {
@@ -106,43 +91,51 @@ const AdminAccount = () => {
 
     return (
         <>
-            <div className='w-full mt-4 p-4 sm:p-8 dark:bg-gray-800'>
-                <div className="flex items-center justify-between mb-4">
-                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
-                    <button
-                        type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl'
-                        onClick={handleAddAccount}
-                    ><IoAddCircleOutline /></button>
-                </div>
-                <div className='flow-root'>
-                    {accounts.length === 0 ? (
-                        <div className="py-4 text-center text-gray-500 dark:text-gray-400">
-                            데이터가 없습니다.
-                        </div>
-                    ) : (
-                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {accounts.map(account => (
-                                <li key={account._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(account)}>
-                                    <div className="flex items-center">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                {account.account_number}<span className='inline-block border border-slate-300 ml-3 px-2 py-1 rounded-md'>{account.team_id.team_name}</span>
-                                            </p>
-                                        </div>
-                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                            <MdKeyboardArrowRight className='text-2xl' />
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+            <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
+                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
+                        <button
+                            type="button" 
+                            className='text-black font-semibold rounded-lg text-2xl'
+                            onClick={handleAddAccount}
+                        ><IoAddCircleOutline /></button>
+                    </div>
+                    <div className='flow-root'>
+                        {accounts.length === 0 ? (
+                            <div className="py-4 text-center text-gray-500 dark:text-gray-400">
+                                데이터가 없습니다.
+                            </div>
+                        ) : (
+                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {accounts.map(account => (
+                                    <li key={account._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(account)}>
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
+                                                <span className="text-slate-500 text-sm font-normal">
+                                                    {account.bank_name}
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 min-w-0 ms-4">
+                                                <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                {account.bank_name} {account.account_number}
+                                                </p>
+                                                <p className="text-slate-700">{account.team_id.team_name}</p>
 
+                                            </div>
+                                            <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                <MdKeyboardArrowRight className='text-2xl' />
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '걔좌번호 수정' : '계좌번호 추가'}>
+            <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '계좌번호 수정' : '계좌번호 추가'}>
                 {selectedAccount && (
                     <form>
                         <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
@@ -152,6 +145,16 @@ const AdminAccount = () => {
                                 value={selectedAccount.account_number}
                                 onChange={(e) => setSelectedAccount({ ...selectedAccount, account_number: e.target.value })}
                                 placeholder="계좌번호 입력"
+                                required
+                            />
+
+                            <InputField
+                                label="은행명"
+                                id="bank_name"
+                                value={selectedAccount.bank_name}
+                                onChange={(e) => setSelectedAccount({ ...selectedAccount, bank_name: e.target.value })}
+                                placeholder="은행명 입력"
+                                required
                             />
 
                             <div className="flex flex-col gap-2">

@@ -15,6 +15,7 @@ const InputField = ({ label, id, value, onChange, placeholder, className = "bg-s
                 onChange={onChange}
                 required={required}
                 disabled={disabled}
+                autoComplete="off"
             />
         </div>
     );

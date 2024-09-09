@@ -162,40 +162,44 @@ const AdminCard = () => {
 
     return (
         <>
-            <div className='w-full mt-4 p-4 sm:p-8 dark:bg-gray-800'>
-                <div className="flex items-center justify-between mb-4">
-                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">카드 목록</h5>
-                    <button
-                        type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl'
+            <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
+                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">카드 목록</h5>
+                        <button
+                            type="button"
+                            className="text-black font-semibold rounded-lg text-2xl"
                         onClick={handleAddCard}
                     ><IoAddCircleOutline /></button>
-                </div>
-                <div className='flow-root'>
-                    {cards.length === 0 ? (
-                        <div className="py-4 text-center text-gray-500 dark:text-gray-400">
-                            데이터가 없습니다.
-                        </div>
-                    ) : (
-                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {cards.map(card => (
-                                <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
-                                    <div className="flex items-center">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                {card.card_number}<span className='inline-block border border-slate-300 ml-3 px-2 py-1 rounded-md'>{card.member_id.member_name}</span>
-                                            </p>
+                    </div>
+ 
+                    <div className='flow-root'>
+                        {cards.length === 0 ? (
+                            <div className="py-4 text-center text-gray-500 dark:text-gray-400">
+                                데이터가 없습니다.
+                            </div>
+                        ) : (
+                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {cards.map(card => (
+                                    <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
+                                        <div className="flex items-center">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                    {card.card_number}
+                                                </p>
+                                                <p className='inline-block'>{card.member_id.member_name}</p>
+                                            </div>
+                                            <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                <span className='font-bold tracking-tight'>{card.balance.toLocaleString()}</span>원
+                                                <MdKeyboardArrowRight className='text-2xl' />
+                                            </div>
                                         </div>
-                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                            <MdKeyboardArrowRight className='text-2xl' />
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
-                
             </div>
 
             {isDeleteConfirmOpen && (

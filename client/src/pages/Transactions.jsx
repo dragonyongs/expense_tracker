@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthProvider';
+import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance"; 
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
@@ -7,8 +8,8 @@ import { IoAddCircleOutline } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 
-const CARDS_URL = '/api/cards';
-const TRANSACTION_URL = '/api/transactions';
+// const CARDS_URL = '/api/cards';
+// const TRANSACTION_URL = '/api/transactions';
 
 const Transactions = () => {
     const { user } = useContext(AuthContext);
@@ -35,7 +36,7 @@ const Transactions = () => {
     // 카드와 트랜잭션 데이터 가져오기
     const fetchCards = async () => {
         try {
-            const response = await axios.get(CARDS_URL);
+            const response = await axios.get(API_URLS.CARDS);
             setCards(response.data);
         } catch (error) {
             console.error('Error fetching cards:', error);
@@ -48,7 +49,7 @@ const Transactions = () => {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더함
     
-            const response = await axios.get(`${TRANSACTION_URL}/${year}/${month}`);
+            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
             const sortedTransactions = response.data.sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             setTransactions(sortedTransactions);
@@ -56,48 +57,52 @@ const Transactions = () => {
             console.error('Error fetching transactions for the current month:', error);
         }
     }
-    
+
     useEffect(() => {
         console.log('Fetching transactions...');
         fetchTransactionsForCurrentMonth();
         fetchCards();
     }, []);
-
-    // 사용자의 카드만 필터링
+    
     useEffect(() => {
         if (cards.length > 0 && user) {
             const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
             setUserCards(filteredCards);
+            if (filteredCards.length > 0) {
+                setSelectedTransaction(prev => ({ ...prev, card_id: filteredCards[0]._id }));
+            }
         }
     }, [cards, user]);
-
-    // 트랜잭션 초기 상태 설정
-    useEffect(() => {
-        if (userCards.length > 0) {
-            setSelectedTransaction(prev => ({ ...prev, card_id: userCards[0]._id }));
-        }
-    }, [userCards]);
+    
 
     const toggleDrawer = () => {
         setIsOpen(!isOpen);
     };
 
+    const resetTransaction = () => ({
+        card_id: userCards[0]?._id || "",
+        transaction_date: new Date().toISOString().split('T')[0],
+        merchant_name: "",
+        menu_name: "",
+        transaction_amount: "",
+        transaction_type: ""
+    });
+    
+    const handleAddTransaction = () => {
+        setSelectedTransaction(resetTransaction());
+        setIsEditing(false);
+        setIsOpen(true);
+    };
+    
+    const handleCloseDrawer = () => {
+        setIsOpen(false);
+        setSelectedTransaction(resetTransaction());
+    };
+    
+
     const handleOpenDrawer = (transaction) => {
         setSelectedTransaction(transaction);
         setIsEditing(true);
-        setIsOpen(true);
-    };
-
-    const handleAddTransaction = () => {
-        setSelectedTransaction({
-            card_id: userCards[0]?._id || "",
-            transaction_date: new Date().toISOString().split('T')[0],
-            merchant_name: "",
-            menu_name: "",
-            transaction_amount: "",
-            transaction_type: "지출"
-        });
-        setIsEditing(false);
         setIsOpen(true);
     };
 
@@ -108,34 +113,33 @@ const Transactions = () => {
         });
     };
 
-    const handleCloseDrawer = () => {
-        setIsOpen(false);
-        setSelectedTransaction({
-            card_id: userCards[0]?._id || "",
-            transaction_date: new Date().toISOString().split('T')[0],
-            merchant_name: "",
-            menu_name: "",
-            transaction_amount: "",
-            transaction_type: ""
-        });
-    };
-
     const saveTransaction = async (transactionData) => {
         if (isEditing) {
-            await axios.put(`${TRANSACTION_URL}/${selectedTransaction._id}`, transactionData);
+            await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
             console.log("Transaction updated successfully:", transactionData);
         } else {
-            await axios.post(TRANSACTION_URL, transactionData);
+            await axios.post(API_URLS.TRANSACTIONS, transactionData);
             console.log("Transaction added successfully:", transactionData);
         }
     }
 
+    const handleError = (error) => {
+        if (error.response) {
+            return error.response.data.error || "오류가 발생했습니다.";
+        } else if (error.request) {
+            return "서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.";
+        } else {
+            return error.message || "알 수 없는 오류가 발생했습니다.";
+        }
+    };
+
     const handleSave = async () => {
         try {
             setErrMsg('');
-            
+
+            const cardId = selectedTransaction.card_id || userCards[0]._id;
             const transactionData = {
-                card_id: selectedTransaction.card_id || userCards[0]._id,
+                card_id: cardId,
                 transaction_date: selectedTransaction.transaction_date,
                 merchant_name: selectedTransaction.merchant_name,
                 menu_name: selectedTransaction.menu_name,
@@ -143,7 +147,7 @@ const Transactions = () => {
                 transaction_type: "지출"
             };
     
-            const card = cards.find(card => card._id === selectedTransaction.card_id || userCards[0]._id);
+            const card = cards.find(card => card._id === cardId);
             if (!card) {
                 throw new Error("해당 카드를 찾을 수 없습니다.");
             }
@@ -160,17 +164,11 @@ const Transactions = () => {
             await updateCardBalance(selectedTransaction.card_id, amountDifference);
     
             await fetchTransactionsForCurrentMonth();
+            await fetchCards();
+
             handleCloseDrawer();
         } catch (error) {
-            // error 객체의 response가 있는지 먼저 확인
-            if (error.response) {
-                const errorMessage = error.response.data.error || "오류가 발생했습니다.";
-                setErrMsg(errorMessage);
-            } else if (error.request) {
-                setErrMsg("서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.");
-            } else {
-                setErrMsg(error.message || "알 수 없는 오류가 발생했습니다.");
-            }
+            setErrMsg(handleError(error));
         }
     }
     
@@ -191,12 +189,11 @@ const Transactions = () => {
             const newBalance = card.balance - amountDifference;
             
             // 서버에 카드의 잔액 업데이트 요청
-            await axios.put(`${CARDS_URL}/${card_id}`, { balance: newBalance });
+            await axios.put(`${API_URLS.CARDS}/${card_id}`, { balance: newBalance });
             
             console.log('카드 잔액 업데이트 성공:', newBalance);
         } catch (error) {
-            console.error('카드 잔액 업데이트 실패:', error);
-            setErrMsg(error.message || "카드 잔액을 업데이트할 수 없습니다.");
+            setErrMsg(handleError(error));
         }
     }
     
@@ -238,7 +235,7 @@ const Transactions = () => {
                                 <h6 className="text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
                                 <p className="text-gray-700 dark:text-gray-400">지출 금액: {calculate.totalSpent.toLocaleString()} 원</p>
                                 <p className={`font-semibold ${card.balance <= 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                    잔여 금액: {card.balance.toLocaleString()} 원
+                                    잔여 금액: {calculate.balance.toLocaleString()} 원
                                 </p>
                             </div>
                         );
