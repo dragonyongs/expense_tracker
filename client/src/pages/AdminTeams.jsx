@@ -52,8 +52,8 @@ const AdminTeams = () => {
     };
 
     // 수정 모드로 모달 열기
-    const handleOpenDrawer = (teams) => {
-        setSelectedTeam(teams);
+    const handleOpenDrawer = (team) => {
+        setSelectedTeam(team);
         setIsEditing(true);
         setIsOpen(true);
     };
@@ -105,41 +105,60 @@ const AdminTeams = () => {
         }
     };
 
+    const groupTeamsByDepartment = () => {
+        return departments.reduce((grouped, department) => {
+            grouped[department.department_name] = teams.filter(team => team.department_id._id === department._id);
+            return grouped;
+        }, {});
+    };
+
+    const groupedTeams = groupTeamsByDepartment();
+
     return (
         <>
-            <div className='w-full mt-4 p-4 sm:p-8 dark:bg-gray-800'>
-                <div className="flex items-center justify-between mb-4">
-                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">팀 목록</h5>
-                    <button
-                        type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl'
+            <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
+                    <div className="flex items-center justify-between mb-4 px-4">
+                        <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">팀 목록</h5>
+                        <button
+                            type="button"
+                            className="text-black font-semibold rounded-lg text-2xl"
                         onClick={handleAddTeam}
-                    ><IoAddCircleOutline /></button>
-                </div>
-                <div className='flow-root'>
-                    {teams.length === 0 ? (
-                        <div className="py-4 text-center text-gray-500 dark:text-gray-400">
-                            데이터가 없습니다.
-                        </div>
-                    ) : (
-                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {teams.map(team => (
-                                <li key={team._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(team)}>
-                                    <div className="flex items-center">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                {team.team_name}
-                                            </p>
-                                        </div>
-                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                            <MdKeyboardArrowRight className='text-2xl' />
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+                        ><IoAddCircleOutline /></button>
+                    </div>
+                
+                    <div className='flow-root'>
+                        {teams.length === 0 ? (
+                            <div className="py-4 text-center text-gray-500 dark:text-gray-400">
+                                데이터가 없습니다.
+                            </div>
+                        ) : (
+                            Object.keys(groupedTeams).map(departmentName => (
+                                <div key={departmentName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700 mb-4">
+                                    <h6 className="text-sm font-bold text-gray-500 dark:text-white">{departmentName}</h6>
+                                    {groupedTeams[departmentName].length === 0 ? <p className="pb-3 text-center">소속된 팀이 없습니다.</p> : (
+
+                                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700 mt-2">
+                                        {groupedTeams[departmentName].map(team => (
+                                            <li key={team._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(team)}>
+                                                <div className="flex items-center">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                            {team.team_name}
+                                                        </p>
+                                                    </div>
+                                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                        <MdKeyboardArrowRight className='text-2xl' />
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+              
             </div>
 
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '팀 수정' : '팀 추가'}>

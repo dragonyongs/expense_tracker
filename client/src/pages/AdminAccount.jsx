@@ -6,12 +6,21 @@ import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { API_URLS } from '../services/apiUrls';
 
+const BANK_COLORS = {
+    '하나': 'bg-emerald-700',
+    'KB': 'bg-amber-600',
+    '신한': 'bg-blue-700',
+    '기업': 'bg-blue-800',
+    '기타': 'bg-slate-800'
+};
+
 const AdminAccount = () => {
     const [accounts, setAccounts] = useState([]);
     const [teams, setTeams] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [errMsg, setErrMsg] = useState('');
 
     useEffect(() => {
         fetchData(API_URLS.ACCOUNTS, setAccounts);
@@ -27,10 +36,14 @@ const AdminAccount = () => {
         }
     }
 
+    const resetTransaction = () => ({
+        account_number: '', bank_name: '', team_id: ''
+    });
+
     const toggleDrawer = () => setIsOpen(prev => !prev);
 
     const handleAddAccount = () => {
-        setSelectedAccount({ account_number: '', bank_name: '', team_id: '' });
+        setSelectedAccount(resetTransaction());
         setIsEditing(false);
         setIsOpen(true);
     };
@@ -41,10 +54,11 @@ const AdminAccount = () => {
         setIsEditing(true); // 수정 모드로 설정
         setIsOpen(true);
     };
+    
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
-        setSelectedAccount({ account_number: '', bank_name: '', team_id: '' }); // Drawer가 닫힐 때 상태 초기화
+        setSelectedAccount(resetTransaction());
     };
 
     const handleTeamChange = (e) => {
@@ -66,6 +80,16 @@ const AdminAccount = () => {
             }
         });
     };
+    
+    const handleError = (error) => {
+        if (error.response) {
+            return error.response.data.error || "오류가 발생했습니다.";
+        } else if (error.request) {
+            return "서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.";
+        } else {
+            return error.message || "알 수 없는 오류가 발생했습니다.";
+        }
+    };
 
     const handleSave = async () => {
         const accountData = { ...selectedAccount };
@@ -85,8 +109,12 @@ const AdminAccount = () => {
             
             handleCloseDrawer();
         } catch (error) {
-            console.error("Error updating member:", error);
+            setErrMsg(handleError(error));
         }
+    };
+
+    const getBankColor = (bankName) => {
+        return BANK_COLORS[bankName] || BANK_COLORS['기타'];  // 지정된 은행명이 없으면 기본색 적용
     };
 
     return (
@@ -94,7 +122,7 @@ const AdminAccount = () => {
             <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
                 <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                        <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
+                        <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
                         <button
                             type="button" 
                             className='text-black font-semibold rounded-lg text-2xl'
@@ -111,8 +139,8 @@ const AdminAccount = () => {
                                 {accounts.map(account => (
                                     <li key={account._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(account)}>
                                         <div className="flex items-center">
-                                            <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
-                                                <span className="text-slate-500 text-sm font-normal">
+                                            <div className={`flex-shrink-0 w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center ${getBankColor(account.bank_name)}`}>
+                                                <span className="text-white text-sm font-normal">
                                                     {account.bank_name}
                                                 </span>
                                             </div>
@@ -136,6 +164,7 @@ const AdminAccount = () => {
             </div>
 
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '계좌번호 수정' : '계좌번호 추가'}>
+                {errMsg && <div className="text-red-600">{errMsg}</div>}
                 {selectedAccount && (
                     <form>
                         <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">

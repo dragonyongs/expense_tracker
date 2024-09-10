@@ -169,8 +169,8 @@ const AdminMembers = () => {
 
     return (
         <>
-            <div className='w-full mt-4 p-4 sm:p-8 dark:bg-gray-800'>
-                <div className="flex items-center justify-between mb-4">
+            <div className='w-full mt-4 p-4 sm:p-6 dark:bg-gray-800'>
+                <div className="flex items-center justify-between mb-4 px-4">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
                     <button
                         type="button" 
@@ -178,7 +178,7 @@ const AdminMembers = () => {
                         onClick={handleAddDepartment}
                     ><IoAddCircleOutline /></button>
                 </div>
-                <div className='flow-root'>
+                <div className='flow-root space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700'>
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
                         {members.map(member => (
                             <li 
@@ -215,7 +215,6 @@ const AdminMembers = () => {
                         ))}
                     </ul>
                 </div>
-
                 <CommonDrawer
                     isOpen={isOpen}
                     onClose={toggleDrawer}

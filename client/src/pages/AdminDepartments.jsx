@@ -77,8 +77,8 @@ const AdminDepartments = () => {
 
     return (
         <>
-            <div className='w-full mt-4 p-4 sm:p-8 dark:bg-gray-800'>
-                <div className="flex items-center justify-between mb-4">
+            <div className='w-full mt-4 p-4 sm:p-6 dark:bg-gray-800'>
+                <div className="flex items-center justify-between mb-4 px-4">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">본부 목록</h5>
                     <button
                         type="button" 
@@ -86,23 +86,25 @@ const AdminDepartments = () => {
                         onClick={handleAddDepartment}
                     ><IoAddCircleOutline /></button>
                 </div>
-                <div className='flow-root'>
-                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {departments.map(department => (
-                            <li key={department._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(department)}>
-                                <div className="flex items-center">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                            {department.department_name}
-                                        </p>
+                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
+                    <div className='flow-root'>
+                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {departments.map(department => (
+                                <li key={department._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(department)}>
+                                    <div className="flex items-center">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                {department.department_name}
+                                            </p>
+                                        </div>
+                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                            <MdKeyboardArrowRight className='text-2xl' />
+                                        </div>
                                     </div>
-                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                        <MdKeyboardArrowRight className='text-2xl' />
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '본부 수정' : '본부 추가'}>

@@ -44,7 +44,7 @@ const TabBarComponent = () => {
                 </button>
             )}
 
-            {allowedAdminRoles.includes(user?.role) && (
+            {memberRoles.includes(user?.role) && (
                 <button type="button" className='flex flex-col items-center'>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <LuGlobe className="text-2xl" />
