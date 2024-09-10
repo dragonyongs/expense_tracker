@@ -4,17 +4,14 @@ import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance"; 
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
+import Card from '../components/Card';
 import { IoAddCircleOutline } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 
-// const CARDS_URL = '/api/cards';
-// const TRANSACTION_URL = '/api/transactions';
-
 const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
-    // const [balance, setBalance] = useState('');
     const [errMsg, setErrMsg] = useState('');
     const [transactions, setTransactions] = useState([]);
     const [selectedTransaction, setSelectedTransaction] = useState({
@@ -136,8 +133,8 @@ const Transactions = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
-
-            const cardId = selectedTransaction.card_id || userCards[0]._id;
+            
+            const cardId = selectedTransaction.card_id._id || userCards[0]._id;
             const transactionData = {
                 card_id: cardId,
                 transaction_date: selectedTransaction.transaction_date,
@@ -146,7 +143,7 @@ const Transactions = () => {
                 transaction_amount: selectedTransaction.transaction_amount,
                 transaction_type: "지출"
             };
-    
+
             const card = cards.find(card => card._id === cardId);
             if (!card) {
                 throw new Error("해당 카드를 찾을 수 없습니다.");
@@ -174,6 +171,9 @@ const Transactions = () => {
     
     
     const updateCardBalance = async (card_id, amountDifference) => {
+        // console.log('updateCardBalance-card_id', card_id);
+        // console.log('amountDifference', amountDifference);
+
         try {
             // card_id와 cards 배열이 제대로 초기화되어 있는지 확인
             if (!card_id || cards.length === 0) {
@@ -223,6 +223,7 @@ const Transactions = () => {
 
     return (
         <>
+
             <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
                 {/* 카드 한도와 남은 금액 표시 */}
                 <div className="space-y-4 mb-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
@@ -231,14 +232,22 @@ const Transactions = () => {
                         const calculate = calculateRemainingBalance(card, transactions);
 
                         return (
-                            <div key={card._id} className="">
-                                <h6 className="text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
-                                <p className="text-gray-700 dark:text-gray-400">지출 금액: {calculate.totalSpent.toLocaleString()} 원</p>
-                                <p className={`font-semibold ${card.balance <= 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                    잔여 금액: {calculate.balance.toLocaleString()} 원
-                                </p>
-                            </div>
-                        );
+                            <>
+                                <Card
+                                    cardNumber= {card.card_number}
+                                    totalSpent={calculate.totalSpent.toLocaleString()}
+                                    currentBalance={calculate.balance.toLocaleString()}
+                                />
+                                {/* <div key={card._id} className="">
+                                        <h6 className="text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
+                                        <p className="text-gray-700 dark:text-gray-400">지출 금액: {calculate.totalSpent.toLocaleString()} 원</p>
+                                        <p className={`font-semibold ${card.balance <= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                            잔여 금액: {calculate.balance.toLocaleString()} 원
+                                        </p>
+                                </div> */}
+                        </>
+                            );
+                    
                     })}
                 </div>
 
@@ -350,7 +359,7 @@ const Transactions = () => {
                                 value={selectedTransaction?.card_id || ""}
                                 onChange={handleCardChange}
                             >
-                                <option value="" disabled>카드 선택</option>
+                                <option value="">카드 선택</option>
                                 {userCards.map(card => (
                                     <option key={card._id} value={card._id}>
                                         {card.card_number}

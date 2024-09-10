@@ -37,16 +37,13 @@ exports.getCardById = async (req, res) => {
 // Get cards by member_id
 exports.getCardsByMemberId = async (req, res) => {
     try {
-
-        // console.log('req.params.memberId', req.params.memberId);
-        // 요청된 member_id를 기반으로 카드를 조회
         const cards = await Card.find({ member_id: req.params.memberId}).populate('account_id').populate('member_id');
         
         if (!cards || cards.length === 0) {
             return res.status(404).json({ error: 'No cards found for this member' });
         }
         
-        res.json(cards);
+        res.json(cards[0]);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }

@@ -1,15 +1,21 @@
-import { GoBell } from "react-icons/go";
+import { useContext } from 'react';
+import { useLocation } from 'react-router-dom';
+import { AuthContext } from '../context/AuthProvider';
+import Notification from './Notification';
 
 const Header = () => {
+    const { user } = useContext(AuthContext);
+    const location = useLocation();
+
+    const isDashBoard = location.pathname === '/';
+
     return (
-        <header className='flex justify-between items-center p-4 bg-white shadow-md'>
-            <div className='text-2xl font-bold'>Expense Tracker</div>
-            <div className='relative leading-none'>
-                <button className="text-3xl">
-                    <GoBell />
-                </button>
-                <span className='absolute top-0 -right-1 bg-red-500 text-white rounded-full text-xs px-1'>3</span>
+        <header className={`flex justify-between items-center py-4 px-8 shadow-md ${isDashBoard ? 'bg-[#0433FF] text-white' : ''}`}>
+            <div className='text-2xl' >
+                <span className='font-thin'>Hello,</span>
+                <span className="pl-2 font-semibold">{user.name.slice(1)}</span>
             </div>
+            <Notification isDashBoard = {isDashBoard} />
         </header>
     );
 };
