@@ -91,11 +91,22 @@ export function AuthProvider({ children }) {
 
     const logout = async () => {
         try {
+            // 서버에 로그아웃 요청
             await axios.post('/api/auth/logout', { refreshToken: localStorage.getItem('refreshToken') });
+            
+            // 로컬 스토리지에서 토큰 제거
             localStorage.removeItem('refreshToken');
+            localStorage.removeItem('status');
+
+            // 인증 상태와 사용자 정보 초기화
             setIsAuthenticated(false);
             setUser(null);
-            navigate('/signin');  // 로그아웃 후 로그인 페이지로 이동
+
+            // Axios 기본 헤더 제거
+            delete axios.defaults.headers.common['Authorization'];
+
+            // 로그인 페이지로 리디렉션
+            navigate('/signin');
         } catch (err) {
             console.error('Logout Error: ', err);
         }

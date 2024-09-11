@@ -114,7 +114,7 @@ const Signup = () => {
         
     }
     return (
-        <div className="w-full p-10">            
+        <div className="w-full">            
             <div className="mb-14">
                 <h2 className='text-3xl font-normal'>로그인에 사용할 이메일과<br />
                 비밀번호를 작성해주세요.</h2>
