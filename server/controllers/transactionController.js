@@ -101,7 +101,7 @@ exports.updateTransaction = async (req, res) => {
             return input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
         };
 
-        const { merchant_name, menu_name, transaction_amount, transaction_date } = req.body;
+        const { merchant_name, menu_name, transaction_amount, transaction_date, transaction_type } = req.body;
 
         // 제어 문자와 공백 제거
         const sanitizedMerchantName = sanitizeInput(merchant_name);
@@ -112,7 +112,7 @@ exports.updateTransaction = async (req, res) => {
             ...(transaction_amount !== undefined && { transaction_amount }),
             ...(transaction_date !== undefined && { transaction_date }),
             ...(sanitizedMerchantName !== undefined && { merchant_name: sanitizedMerchantName }),
-            ...(sanitizedMenuName !== undefined && { menu_name: sanitizedMenuName }),  // 수정: menu_name을 명확히 업데이트
+            ...(sanitizedMenuName !== undefined && { menu_name: sanitizedMenuName }),
         };
 
         const transaction = await Transaction.findById(req.params.id);
@@ -121,29 +121,40 @@ exports.updateTransaction = async (req, res) => {
         const card = await Card.findById(transaction.card_id);
         if (!card) return res.status(404).json({ message: 'Card not found' });
 
-        // 트랜잭션 금액의 차이 계산
+        // 이월 금액과 한도를 고려한 계산
+        const totalLimit = card.limit + card.rollover_amount;  // 한도 + 이월 금액
         const previousAmount = transaction.transaction_amount;
         const newAmount = transaction_amount !== undefined ? transaction_amount : previousAmount;
 
-        // 이월 금액 및 잔액 관련 로직 추가
-        const totalAvailableBalance = card.balance + card.rollover_amount;
-        const difference = newAmount - previousAmount;
+        if (transaction_type === '지출') {
+            // 트랜잭션 금액의 차이 계산
+            const difference = newAmount - previousAmount;
 
-        if (newAmount > totalAvailableBalance) {
-            return res.status(400).json({ error: '잔액이 부족합니다.' });
-        }
+            // 카드 잔액 업데이트
+            const updatedBalance = card.balance - difference;
 
-        // 카드 잔액 업데이트 (차액을 적용)
-        if (difference !== 0) {
-            // 기존 트랜잭션이 입금인지 지출인지 확인
-            if (transaction.transaction_type === '지출') {
-                card.balance -= difference;  // 지출인 경우 잔액에서 차감
-            } else if (transaction.transaction_type === '입금') {
-                // 입금 트랜잭션의 경우 별도의 처리가 필요 없을 수 있음 (관리자가 처리하는 입금)
+            // 사용 한도 초과 여부 확인
+            const transactionsThisMonth = await Transaction.find({
+                card_id: card._id,
+                transaction_type: '지출',
+                transaction_date: { 
+                    $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+                    $lt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
+                }
+            });
+
+            const totalSpentThisMonth = transactionsThisMonth.reduce((total, txn) => total + txn.transaction_amount, 0);
+            if (totalSpentThisMonth + difference > totalLimit) {
+                return res.status(400).json({ error: '이번 달 사용 한도를 초과했습니다.' });
             }
+
+            // 한도를 초과하지 않는 경우 잔액 저장
+            card.balance = updatedBalance;
+        } else if (transaction_type === '입금') {
+            // 입금 트랜잭션의 경우 잔액을 처리하지 않음
         }
 
-        // 카드 잔액 업데이트 저장
+        // 카드 정보 저장
         await card.save();
 
         // 트랜잭션 업데이트

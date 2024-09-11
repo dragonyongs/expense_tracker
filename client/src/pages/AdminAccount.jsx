@@ -143,7 +143,7 @@ const AdminAccount = () => {
                                             <div className="flex items-center">
                                                 <div className={`flex-shrink-0 w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center ${getBankColor(account.bank_name)}`}>
                                                     <span className="text-white text-sm font-normal">
-                                                        {account.bank_name}
+                                                        {account.bank_name.slice(0, 2)}
                                                     </span>
                                                 </div>
                                                 <div className="flex-1 min-w-0 ms-4">
@@ -167,10 +167,11 @@ const AdminAccount = () => {
             </div>
 
             <CommonDrawer isOpen={isOpen} onClose={toggleDrawer} title={isEditing ? '계좌번호 수정' : '계좌번호 추가'}>
-                {errMsg && <div className="text-red-600">{errMsg}</div>}
                 {selectedAccount && (
                     <form>
                         <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
+                            {errMsg && <div className="text-red-600">{errMsg}</div>}
+
                             <InputField 
                                 label="계좌 번호" 
                                 id="account_number" 

@@ -32,7 +32,22 @@ const AdminDeposit = () => {
     const fetchUsers = async () => {
         try {
             const response = await axios.get(API_URLS.MEMBERS);
-            setUsers(response.data);
+            let allMembers = response.data;
+
+            const filteredMembers = await Promise.all(allMembers.map( async (member) => {
+                const memberCardsResponse = await axios.get(`${API_URLS.CARDS}/member/${member._id}`);
+                const memberCards = memberCardsResponse.data;
+                
+                // 적어도 하나의 카드가 있고 그 카드에 card_number가 있는지 확인
+                const hasCardWithNumber = memberCards.some(card => card.card_number);
+
+                // 카드 번호가 있는 사용자인 경우 필터 유지
+                return hasCardWithNumber ? memberCards : null;
+            }))
+
+            // null 값 제거 후 사용자 상태 업데이트
+            setUsers(filteredMembers.filter(user => user !== null));
+            
         } catch (error) {
             setErrMsg("사용자 목록을 불러오지 못했습니다.");
         }

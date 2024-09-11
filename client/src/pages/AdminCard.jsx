@@ -181,7 +181,6 @@ const AdminCard = () => {
                             <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {cards.map(card => {
                                     const totalBalance = card.balance + (card.rollover_amount || 0); // 이월 금액을 합산
-                                    console.log('totalBalance', totalBalance);
                                     return (
                                         <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
                                             <div className="flex items-center">
@@ -255,7 +254,7 @@ const AdminCard = () => {
                                 label="현재 잔액" 
                                 id="balance"
                                 type="number"
-                                value={selectedCard.balance || 0}
+                                value={(selectedCard.balance + (selectedCard.rollover_amount || 0)) || 0}  // 이월 금액을 합산
                                 placeholder=""
                                 disabled={true}
                                 required
