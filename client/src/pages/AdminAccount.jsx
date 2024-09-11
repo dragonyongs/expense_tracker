@@ -120,44 +120,47 @@ const AdminAccount = () => {
     return (
         <>
             <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
-                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
-                    <div className="flex items-center justify-between mb-4">
-                        <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
-                        <button
-                            type="button" 
-                            className='text-black font-semibold rounded-lg text-2xl'
-                            onClick={handleAddAccount}
-                        ><IoAddCircleOutline /></button>
-                    </div>
-                    <div className='flow-root'>
+                <div className="flex items-center justify-between mt-2 mb-4 px-3">
+                    <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
+                    <button
+                        type="button" 
+                        className='text-black font-semibold rounded-lg text-2xl'
+                        onClick={handleAddAccount}
+                    >
+                        <IoAddCircleOutline />
+                    </button>
+                </div>
+                <div className='flow-root'>
+                    <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700'>
                         {accounts.length === 0 ? (
                             <div className="py-4 text-center text-gray-500 dark:text-gray-400">
                                 데이터가 없습니다.
                             </div>
                         ) : (
-                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {accounts.map(account => (
-                                    <li key={account._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(account)}>
-                                        <div className="flex items-center">
-                                            <div className={`flex-shrink-0 w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center ${getBankColor(account.bank_name)}`}>
-                                                <span className="text-white text-sm font-normal">
-                                                    {account.bank_name}
-                                                </span>
+                                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                                    {accounts.map(account => (
+                                        <li key={account._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(account)}>
+                                            <div className="flex items-center">
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center ${getBankColor(account.bank_name)}`}>
+                                                    <span className="text-white text-sm font-normal">
+                                                        {account.bank_name}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1 min-w-0 ms-4">
+                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                        {account.account_number}
+                                                    </p>
+                                                    <p className="text-slate-700">
+                                                        {account.team_id.team_name}
+                                                    </p>
+                                                </div>
+                                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                    <MdKeyboardArrowRight className='text-2xl' />
+                                                </div>
                                             </div>
-                                            <div className="flex-1 min-w-0 ms-4">
-                                                <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                {account.bank_name} {account.account_number}
-                                                </p>
-                                                <p className="text-slate-700">{account.team_id.team_name}</p>
-
-                                            </div>
-                                            <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                <MdKeyboardArrowRight className='text-2xl' />
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+                                        </li>
+                                    ))}
+                                </ul>
                         )}
                     </div>
                 </div>

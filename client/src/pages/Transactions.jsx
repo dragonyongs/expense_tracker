@@ -151,18 +151,9 @@ const Transactions = () => {
             if (!card) {
                 throw new Error("해당 카드를 찾을 수 없습니다.");
             }
-    
-            // 트랜잭션 수정 시 기존 금액과 새로운 금액의 차액 계산
-            // const previousAmount = isEditing ? transactions.find(t => t._id === selectedTransaction._id)?.transaction_amount : 0;
-            // const newAmount = selectedTransaction.transaction_amount;
-            // const amountDifference = newAmount - previousAmount;  // 차액 계산
-    
+
             // 트랜잭션 저장
             await saveTransaction(transactionData);
-    
-            // 카드 잔액 업데이트 (차액만큼 업데이트)
-            // await updateCardBalance(selectedTransaction.card_id, amountDifference);
-    
             await fetchTransactionsForCurrentMonth();
             await fetchCards();
 
@@ -171,49 +162,6 @@ const Transactions = () => {
             setErrMsg(handleError(error));
         }
     }
-    
-    
-    // const updateCardBalance = async (card_id, amountDifference) => {
-    //     // console.log('updateCardBalance-card_id', card_id);
-    //     // console.log('amountDifference', amountDifference);
-
-    //     try {
-    //         // card_id와 cards 배열이 제대로 초기화되어 있는지 확인
-    //         if (!card_id || cards.length === 0) {
-    //             throw new Error("카드 정보를 찾을 수 없습니다.");
-    //         }
-    
-    //         const card = cards.find(c => c._id === card_id);
-            
-    //         if (!card) {
-    //             throw new Error("해당 카드를 찾을 수 없습니다.");
-    //         }
-    
-    //         const newBalance = card.balance - amountDifference;
-            
-    //         // 서버에 카드의 잔액 업데이트 요청
-    //         await axios.put(`${API_URLS.CARDS}/${card_id}`, { balance: newBalance });
-            
-    //         console.log('카드 잔액 업데이트 성공:', newBalance);
-    //     } catch (error) {
-    //         setErrMsg(handleError(error));
-    //     }
-    // }
-    
-
-    // 카드별로 남은 한도 계산 함수
-    // const calculateRemainingBalance = (card, transactions) => {
-    //     const totalSpent = transactions
-    //         .filter(tx => tx.card_id._id === card._id && tx.transaction_type === '지출')
-    //         .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0);
-    
-    //     const balance = card.balance; // 잔액 표시
-    //     return {
-    //         totalSpent,
-    //         balance
-    //     };
-    // };
-    
 
     const groupedTransactions = transactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
@@ -240,8 +188,8 @@ const Transactions = () => {
 
             <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
                 {/* 카드 한도와 남은 금액 표시 */}
-                <div className="space-y-4 mb-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
-                    <h5 className="text-md font-semibold leading-none text-gray-500 dark:text-white">카드정보</h5>
+                <div className='mb-8 px-3'>
+                    {/* <h5 className="mb-4 text-lg font-semibold leading-none text-black dark:text-white">카드정보</h5> */}
                     {userCardsWithTotals.map(card => (
                         <Card
                             key={card._id}  // 각 Card 컴포넌트에 고유한 key 추가
@@ -254,9 +202,8 @@ const Transactions = () => {
                 </div>
 
                 {/* 트랜잭션 목록 */}
-                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
-                    <div className="flex items-center justify-between mb-4">
-                        <h5 className="text-md font-semibold leading-none text-gray-500 dark:text-white">카드 사용 내역</h5>
+                    <div className="flex items-center justify-between mb-4 px-3">
+                        <h5 className="text-md font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
                         <button
                             type="button" 
                             className='text-black font-semibold rounded-lg text-2xl'
@@ -264,6 +211,7 @@ const Transactions = () => {
                         ><IoAddCircleOutline /></button>
                     </div>
                     <div className='flow-root'>
+                        <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
                         {Object.keys(groupedTransactions).length === 0 ? (
                             <div className="flex justify-center items-center min-h-[calc(100vh-47vh)] text-gray-500 dark:text-gray-400">
                                 데이터가 없습니다.
@@ -305,8 +253,8 @@ const Transactions = () => {
                                 ))}
                             </ul>
                         )}
+                        </div>
                     </div>
-                </div>
                 <CommonDrawer
                     isOpen={isOpen}
                     onClose={toggleDrawer}

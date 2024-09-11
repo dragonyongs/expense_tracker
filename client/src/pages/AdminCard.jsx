@@ -161,24 +161,23 @@ const AdminCard = () => {
     };
 
     return (
-        <>
-            <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
-                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
-                    <div className="flex items-center justify-between mb-4">
-                        <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">카드 목록</h5>
-                        <button
-                            type="button"
-                            className="text-black font-semibold rounded-lg text-2xl"
-                        onClick={handleAddCard}
-                    ><IoAddCircleOutline /></button>
-                    </div>
- 
-                    <div className='flow-root'>
-                        {cards.length === 0 ? (
-                            <div className="py-4 text-center text-gray-500 dark:text-gray-400">
-                                데이터가 없습니다.
-                            </div>
-                        ) : (
+        <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
+            <div className="flex items-center justify-between mt-2 mb-4 px-3">
+                <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">카드 목록</h5>
+                <button
+                    type="button"
+                    className="text-black font-semibold rounded-lg text-2xl"
+                onClick={handleAddCard}
+            ><IoAddCircleOutline /></button>
+            </div>
+
+            <div className='flow-root'>
+                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700'>
+                    {cards.length === 0 ? (
+                        <div className="py-4 text-center text-gray-500 dark:text-gray-400">
+                            데이터가 없습니다.
+                        </div>
+                    ) : (
                             <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {cards.map(card => (
                                     <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
@@ -197,8 +196,7 @@ const AdminCard = () => {
                                     </li>
                                 ))}
                             </ul>
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -315,8 +313,7 @@ const AdminCard = () => {
                     </form>
                 )}
             </CommonDrawer>
-
-        </>
+        </div>
     )
 }
 

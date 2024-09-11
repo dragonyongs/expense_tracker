@@ -174,8 +174,7 @@ const AdminDeposit = () => {
     return (
         <>
             <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
-                <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 px-3">
                         <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">입출금 거래내역</h5>
                         <button
                             type="button"
@@ -187,38 +186,34 @@ const AdminDeposit = () => {
                     </div>
 
                     <div className="flow-root">
-                        {deposits.length === 0 ? (
-                            <div className="py-4 text-center text-gray-500 dark:text-gray-400">
-                                데이터가 없습니다.
-                            </div>
-                        ) : (
-                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {deposits.map(deposit => (
-                                    <li key={deposit._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(deposit)}>
-                                        <div className="flex items-center py-2">
-                                                    <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
-                                                        <span className="text-slate-500 text-lg font-normal">
-                                                            {deposit.merchant_name.charAt(0)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0 ms-4">
-                                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                        {new Date(deposit.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} {deposit.merchant_name} {deposit.transaction_type}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                            {deposit.member_name}님 {deposit.menu_name}
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline-flex gap-x-3 items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                        <span>
-                                                            {deposit.transaction_amount.toLocaleString()}원
-                                                        </span>
-                                                    </div>
+                        <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
+                            {deposits.length === 0 ? (
+                                <div className="py-4 text-center text-gray-500 dark:text-gray-400">
+                                    데이터가 없습니다.
+                                </div>
+                            ) : (
+                                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                                    {deposits.map(deposit => (
+                                        <li key={deposit._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(deposit)}>
+                                            <div className="flex items-center py-2">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                    {new Date(deposit.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} {deposit.merchant_name} {deposit.transaction_type}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                                        {deposit.member_name}님 {deposit.menu_name}
+                                                    </p>
                                                 </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
+                                                <div className="inline-flex gap-x-3 items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                    <span>
+                                                        {deposit.transaction_amount.toLocaleString()}원
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                     </div>
                 </div>
 

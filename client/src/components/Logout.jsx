@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthProvider';
 import { MdLogout } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 
-function Logout(isDashBoard) {
+function Logout({isDashBoard}) {
     const navigate = useNavigate();
     const { logout } = useContext(AuthContext);
 

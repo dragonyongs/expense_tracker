@@ -37,13 +37,13 @@ const AdminTab = () => {
     }, []);
 
     return (
-        <div className="sticky top-0 left-0 text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700 bg-white">
+        <div className="sticky top-0 left-0 px-2 text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700 bg-white">
             <ul
                 ref={tabRef}
                 className="flex flex-nowrap -mb-px overflow-x-auto scrollbar-hide"
             >
                 {tabs.map((tab) => (
-                    <li key={tab.path} className={`me-2 flex-shrink-0 ${tab.role.some(role => allowedRoles.includes(role) && role === user?.role) ? '' : 'hidden'}`}>
+                    <li key={tab.path} className={`flex-shrink-0 ${tab.role.some(role => allowedRoles.includes(role) && role === user?.role) ? '' : 'hidden'}`}>
                         {tab.disabled ? (
                             <span className={`inline-block p-4 text-gray-400 rounded-t-lg cursor-not-allowed`}>
                                 {tab.label}
