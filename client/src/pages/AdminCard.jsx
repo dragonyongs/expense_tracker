@@ -179,22 +179,27 @@ const AdminCard = () => {
                         </div>
                     ) : (
                             <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {cards.map(card => (
-                                    <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
-                                        <div className="flex items-center">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                    {card.card_number}
-                                                </p>
-                                                <p className='inline-block'>{card.member_id.member_name}</p>
+                                {cards.map(card => {
+                                    const totalBalance = card.balance + (card.rollover_amount || 0); // 이월 금액을 합산
+                                    console.log('totalBalance', totalBalance);
+                                    return (
+                                        <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
+                                            <div className="flex items-center">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                        {card.card_number}
+                                                    </p>
+                                                    <p className='inline-block'>{card.member_id.member_name}</p>
+                                                </div>
+                                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                    <span className='font-bold tracking-tight'>{totalBalance.toLocaleString()}</span>원
+                                                    <MdKeyboardArrowRight className='text-2xl' />
+                                                </div>
                                             </div>
-                                            <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                <span className='font-bold tracking-tight'>{card.balance.toLocaleString()}</span>원
-                                                <MdKeyboardArrowRight className='text-2xl' />
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
+                                        </li>
+                                    );
+                                })}
+
                             </ul>
                     )}
                 </div>
@@ -275,7 +280,7 @@ const AdminCard = () => {
                             </div>
 
                             <div className="flex flex-col gap-2 pb-2">
-                                <label htmlFor="account_id">연결 걔좌</label>
+                                <label htmlFor="account_id">연결 계좌</label>
                                 <select
                                     id="account_id"
                                     name="account_id"

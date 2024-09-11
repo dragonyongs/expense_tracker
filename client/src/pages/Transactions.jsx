@@ -152,6 +152,14 @@ const Transactions = () => {
                 throw new Error("해당 카드를 찾을 수 없습니다.");
             }
 
+            // 사용 가능한 잔액 계산 (기본 잔액 + 이월 금액)
+            const availableBalance = Number(card.balance) + Number(card.rollover_amount);
+
+            // 지출 금액이 사용 가능한 잔액을 초과하는지 확인
+            if (Number(selectedTransaction.transaction_amount) > availableBalance) {
+                throw new Error(`잔액 부족: 사용 가능한 금액은 ${availableBalance.toLocaleString()}원 입니다.`);
+            }
+
             // 트랜잭션 저장
             await saveTransaction(transactionData);
             await fetchTransactionsForCurrentMonth();
@@ -189,16 +197,18 @@ const Transactions = () => {
             <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
                 {/* 카드 한도와 남은 금액 표시 */}
                 <div className='mb-8 px-3'>
-                    {/* <h5 className="mb-4 text-lg font-semibold leading-none text-black dark:text-white">카드정보</h5> */}
-                    {userCardsWithTotals.map(card => (
-                        <Card
-                            key={card._id}  // 각 Card 컴포넌트에 고유한 key 추가
-                            cardNumber={card.card_number}
-                            totalSpent={Number(card.totalSpent)}  // String to Number 변환
-                            currentBalance={Number(card.balance)} // String to Number 변환
-                            rolloverAmount={Number(card.rollover_amount)}
-                        />
-                    ))}
+                    {userCardsWithTotals.map(card => {
+                        const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0); // 이월 금액 포함한 잔액 계산
+                        return (
+                            <Card
+                                key={card._id} 
+                                cardNumber={card.card_number}
+                                totalSpent={Number(card.totalSpent)}
+                                currentBalance={currentBalanceWithRollover} // 이월 금액을 포함한 잔액 전달
+                                rolloverAmount={Number(card.rollover_amount)}
+                            />
+                        );
+                    })}
                 </div>
 
                 {/* 트랜잭션 목록 */}
