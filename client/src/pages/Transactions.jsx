@@ -45,15 +45,17 @@ const Transactions = () => {
             const currentDate = new Date();
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더함
-    
+
             const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
-            const sortedTransactions = response.data.sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
+            const sortedTransactions = response.data
+                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
             setTransactions(sortedTransactions);
         } catch (error) {
             console.error('Error fetching transactions for the current month:', error);
         }
-    }
+    };
 
     useEffect(() => {
         console.log('Fetching transactions...');
@@ -98,6 +100,7 @@ const Transactions = () => {
     
 
     const handleOpenDrawer = (transaction) => {
+        console.log("transaction", transaction);
         setSelectedTransaction(transaction);
         setIsEditing(true);
         setIsOpen(true);
@@ -150,15 +153,15 @@ const Transactions = () => {
             }
     
             // 트랜잭션 수정 시 기존 금액과 새로운 금액의 차액 계산
-            const previousAmount = isEditing ? transactions.find(t => t._id === selectedTransaction._id)?.transaction_amount : 0;
-            const newAmount = selectedTransaction.transaction_amount;
-            const amountDifference = newAmount - previousAmount;  // 차액 계산
+            // const previousAmount = isEditing ? transactions.find(t => t._id === selectedTransaction._id)?.transaction_amount : 0;
+            // const newAmount = selectedTransaction.transaction_amount;
+            // const amountDifference = newAmount - previousAmount;  // 차액 계산
     
             // 트랜잭션 저장
             await saveTransaction(transactionData);
     
             // 카드 잔액 업데이트 (차액만큼 업데이트)
-            await updateCardBalance(selectedTransaction.card_id, amountDifference);
+            // await updateCardBalance(selectedTransaction.card_id, amountDifference);
     
             await fetchTransactionsForCurrentMonth();
             await fetchCards();
@@ -170,46 +173,46 @@ const Transactions = () => {
     }
     
     
-    const updateCardBalance = async (card_id, amountDifference) => {
-        // console.log('updateCardBalance-card_id', card_id);
-        // console.log('amountDifference', amountDifference);
+    // const updateCardBalance = async (card_id, amountDifference) => {
+    //     // console.log('updateCardBalance-card_id', card_id);
+    //     // console.log('amountDifference', amountDifference);
 
-        try {
-            // card_id와 cards 배열이 제대로 초기화되어 있는지 확인
-            if (!card_id || cards.length === 0) {
-                throw new Error("카드 정보를 찾을 수 없습니다.");
-            }
+    //     try {
+    //         // card_id와 cards 배열이 제대로 초기화되어 있는지 확인
+    //         if (!card_id || cards.length === 0) {
+    //             throw new Error("카드 정보를 찾을 수 없습니다.");
+    //         }
     
-            const card = cards.find(c => c._id === card_id);
+    //         const card = cards.find(c => c._id === card_id);
             
-            if (!card) {
-                throw new Error("해당 카드를 찾을 수 없습니다.");
-            }
+    //         if (!card) {
+    //             throw new Error("해당 카드를 찾을 수 없습니다.");
+    //         }
     
-            const newBalance = card.balance - amountDifference;
+    //         const newBalance = card.balance - amountDifference;
             
-            // 서버에 카드의 잔액 업데이트 요청
-            await axios.put(`${API_URLS.CARDS}/${card_id}`, { balance: newBalance });
+    //         // 서버에 카드의 잔액 업데이트 요청
+    //         await axios.put(`${API_URLS.CARDS}/${card_id}`, { balance: newBalance });
             
-            console.log('카드 잔액 업데이트 성공:', newBalance);
-        } catch (error) {
-            setErrMsg(handleError(error));
-        }
-    }
+    //         console.log('카드 잔액 업데이트 성공:', newBalance);
+    //     } catch (error) {
+    //         setErrMsg(handleError(error));
+    //     }
+    // }
     
 
     // 카드별로 남은 한도 계산 함수
-    const calculateRemainingBalance = (card, transactions) => {
-        const totalSpent = transactions
-            .filter(tx => tx.card_id._id === card._id && tx.transaction_type === '지출')
-            .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0);
+    // const calculateRemainingBalance = (card, transactions) => {
+    //     const totalSpent = transactions
+    //         .filter(tx => tx.card_id._id === card._id && tx.transaction_type === '지출')
+    //         .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0);
     
-        const balance = card.balance; // 잔액 표시
-        return {
-            totalSpent,
-            balance
-        };
-    };
+    //     const balance = card.balance; // 잔액 표시
+    //     return {
+    //         totalSpent,
+    //         balance
+    //     };
+    // };
     
 
     const groupedTransactions = transactions.reduce((acc, transaction) => {
@@ -221,6 +224,17 @@ const Transactions = () => {
         return acc;
     }, {});
 
+    const userCardsWithTotals = userCards.map(card => {
+        const totalSpent = transactions
+            .filter(tx => tx.card_id._id === card._id && tx.transaction_type === '지출')
+            .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0);
+    
+        return {
+            ...card,
+            totalSpent
+        };
+    });
+
     return (
         <>
 
@@ -228,27 +242,15 @@ const Transactions = () => {
                 {/* 카드 한도와 남은 금액 표시 */}
                 <div className="space-y-4 mb-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
                     <h5 className="text-md font-semibold leading-none text-gray-500 dark:text-white">카드정보</h5>
-                    {userCards.map(card => {
-                        const calculate = calculateRemainingBalance(card, transactions);
-
-                        return (
-                            <>
-                                <Card
-                                    cardNumber= {card.card_number}
-                                    totalSpent={calculate.totalSpent.toLocaleString()}
-                                    currentBalance={calculate.balance.toLocaleString()}
-                                />
-                                {/* <div key={card._id} className="">
-                                        <h6 className="text-gray-900 dark:text-white">카드 번호: {card.card_number}</h6>
-                                        <p className="text-gray-700 dark:text-gray-400">지출 금액: {calculate.totalSpent.toLocaleString()} 원</p>
-                                        <p className={`font-semibold ${card.balance <= 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                            잔여 금액: {calculate.balance.toLocaleString()} 원
-                                        </p>
-                                </div> */}
-                        </>
-                            );
-                    
-                    })}
+                    {userCardsWithTotals.map(card => (
+                        <Card
+                            key={card._id}  // 각 Card 컴포넌트에 고유한 key 추가
+                            cardNumber={card.card_number}
+                            totalSpent={Number(card.totalSpent)}  // String to Number 변환
+                            currentBalance={Number(card.balance)} // String to Number 변환
+                            rolloverAmount={Number(card.rollover_amount)}
+                        />
+                    ))}
                 </div>
 
                 {/* 트랜잭션 목록 */}
@@ -356,7 +358,7 @@ const Transactions = () => {
                                 id="card_id"
                                 name="card_id"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                value={selectedTransaction?.card_id || ""}
+                                value={selectedTransaction?.card_id._id || ""}
                                 onChange={handleCardChange}
                             >
                                 <option value="">카드 선택</option>

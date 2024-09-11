@@ -21,11 +21,11 @@ const PayHistory = () => {
     return (
         <>
             <div className="mt-10 px-6">
-                <h3 className='font-semibold text-2xl pb-4'>최근 결제</h3>
+                <h3 className='font-semibold text-2xl'>최근 결제</h3>
                 <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
                 { transactions
                     .filter(type => type.transaction_type !== '입금')
-                    .slice(0, 7)
+                    .slice(0, 4)
                     .map( transaction => (
                     <li key={transaction._id} className='flex justify-between py-3'>
                         <div>

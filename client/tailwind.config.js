@@ -28,6 +28,9 @@ export default {
       },
       zIndex: {
         '110' : '110',
+      },
+      borderRadius: {
+        '4xl' : '2rem'
       }
     },
   },

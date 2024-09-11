@@ -10,7 +10,7 @@ const Header = () => {
     const isDashBoard = location.pathname === '/';
 
     return (
-        <header className={`flex justify-between items-center py-4 px-8 shadow-md ${isDashBoard ? 'bg-[#0433FF] text-white' : ''}`}>
+        <header className={`flex justify-between items-center py-4 px-6 shadow-md ${isDashBoard ? 'bg-[#0433FF] text-white' : ''}`}>
             <div className='text-2xl' >
                 <span className='font-thin'>Hello,</span>
                 <span className="pl-2 font-semibold">{user.name.slice(1)}</span>

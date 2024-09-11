@@ -26,7 +26,7 @@ function CardBalance() {
 
     return (
         <>
-            <div className='flex flex-col items-center gap-y-3 pt-6 pb-16 rounded-es-3xl rounded-ee-3xl bg-[#0433FF]'>
+            <div className='flex flex-col items-center gap-y-3 pt-6 pb-16 rounded-es-4xl rounded-ee-4xl bg-[#0433FF]'>
                 <p className='text-xl text-blue-200'>카드 잔액</p>
                 <div className='flex justify-center items-center gap-x-2 text-white text-5xl tracking-tighter'>
                     <span className="font-thin">₩</span>

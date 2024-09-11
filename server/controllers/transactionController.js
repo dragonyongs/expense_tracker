@@ -94,7 +94,6 @@ exports.getTransactionById = async (req, res) => {
 
 exports.updateTransaction = async (req, res) => {
     try {
-        // 입력된 데이터에서 공백과 제어 문자 제거
         const sanitizeInput = (input) => {
             return input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
         };
@@ -113,8 +112,27 @@ exports.updateTransaction = async (req, res) => {
             ...({ menu_name: sanitizedMenuName !== undefined ? sanitizedMenuName : '' }),
         };
 
+        const transaction = await Transaction.findById(req.params.id);
+        if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+
+        const card = await Card.findById(transaction.card_id);
+        if (!card) return res.status(404).json({ message: 'Card not found' });
+
+        // 트랜잭션 금액의 차이 계산
+        const previousAmount = transaction.transaction_amount;
+        const newAmount = transaction_amount !== undefined ? transaction_amount : previousAmount;
+
+        // 카드 잔액 업데이트
+        const difference = newAmount - previousAmount;
+        card.balance -= difference; // 기존 금액보다 크면 차감, 작으면 더함
+
+        // 카드 잔액 업데이트 저장
+        await card.save();
+
+        // 트랜잭션 업데이트
         const updatedTransaction = await Transaction.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedTransaction) return res.status(404).json({ message: 'Transaction not found' });
+
         res.status(200).json(updatedTransaction);
     } catch (error) {
         console.error('Error updating transaction:', error);
@@ -123,15 +141,30 @@ exports.updateTransaction = async (req, res) => {
 };
 
 
+
 exports.deleteTransaction = async (req, res) => {
     try {
-        const deletedTransaction = await Transaction.findByIdAndDelete(req.params.id);
-        if (!deletedTransaction) return res.status(404).json({ message: 'Transaction not found' });
+        // 삭제할 트랜잭션 찾기
+        const transaction = await Transaction.findById(req.params.id);
+        if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+
+        const card = await Card.findById(transaction.card_id);
+        if (!card) return res.status(404).json({ message: 'Card not found' });
+
+        // 지출 트랜잭션일 경우 잔액 복구
+        if (transaction.transaction_type === '지출') {
+            card.balance += transaction.transaction_amount;
+        }
+
+        await card.save(); // 업데이트된 잔액 저장
+        await transaction.deleteOne(); // 트랜잭션 삭제
+
         res.status(200).json({ message: 'Transaction deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting transaction', error });
     }
 };
+
 
 exports.getAllDeposits = async (req, res) => {
     try {
