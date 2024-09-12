@@ -46,10 +46,12 @@ if (!mongoURI) {
 }
 
 mongoose.connect(mongoURI, {
-    serverSelectionTimeoutMS: 30000, // 타임아웃 시간 설정 (30초)
+    waitQueueTimeoutMS: 10000, // 필요에 따라 조정
+    serverSelectionTimeoutMS: 20000, // 타임아웃 시간 설정 (20초)
     socketTimeoutMS: 45000, // 소켓 타임아웃 설정 (45초)
     connectTimeoutMS: 30000, // 연결 타임아웃 설정 (30초)
-    maxPoolSize: 10, // 최대 연결 풀 크기 설정
+    minPoolSize: 5, // 필요에 따라 조정
+    maxPoolSize: 20, // 최대 연결 풀 크기 설정
 })
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log('MongoDB connection error:', err));
