@@ -46,16 +46,12 @@ const Transactions = () => {
             const transactionDate = new Date(transactionData.transaction_date); // 거래된 날짜
             const transactionAmount = parseFloat(transactionData.transaction_amount);
     
-            console.log("transactionAmount", transactionAmount);
-    
             // 해당 거래 내역의 카드 정보 조회
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${transactionData.card_id}`);
             const cardData = cardResponse.data;
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
-            console.log("updatedBalance", updatedBalance);
-            console.log("rolloverAmount", rolloverAmount);
-    
+
             // 해당 거래 이후의 거래 내역이 있는지 확인
             const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${transactionData.card_id}`);
             const transactions = transactionsResponse.data;
