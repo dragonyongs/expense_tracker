@@ -28,6 +28,80 @@ const Transactions = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
+    const handleDeleteConfirm = () => {
+        setIsDeleteConfirmOpen(true);
+    };
+    
+    const handleDeleteCancel = () => {
+        setIsDeleteConfirmOpen(false);
+    };
+
+    const handleDelete = async () => {
+        try {
+            // 선택된 거래 내역의 정보 조회
+            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+            const transactionData = response.data;
+            const transactionDate = new Date(transactionData.transaction_date); // 거래된 날짜
+            const transactionAmount = parseFloat(transactionData.transaction_amount);
+    
+            console.log("transactionAmount", transactionAmount);
+    
+            // 해당 거래 내역의 카드 정보 조회
+            const cardResponse = await axios.get(`${API_URLS.CARDS}/${transactionData.card_id}`);
+            const cardData = cardResponse.data;
+            let updatedBalance = parseFloat(cardData.balance);
+            let rolloverAmount = parseFloat(cardData.rollover_amount);
+            console.log("updatedBalance", updatedBalance);
+            console.log("rolloverAmount", rolloverAmount);
+    
+            // 해당 거래 이후의 거래 내역이 있는지 확인
+            const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${transactionData.card_id}`);
+            const transactions = transactionsResponse.data;
+    
+            // 거래 이후에 발생한 거래가 있는지 확인
+            const hasPostTransactionTransactions = transactions.some(transaction => {
+                const txnDate = new Date(transaction.transaction_date);
+                return txnDate > transactionDate && transaction.transaction_type === '지출';
+            });
+    
+            if (hasPostTransactionTransactions) {
+                // 거래 이후에 발생한 거래가 있으면 삭제 방지
+                setErrMsg("이 거래 이후에 사용된 내역이 있어 삭제할 수 없습니다.");
+                console.warn('거래 이후 사용 내역이 있어 삭제가 불가능합니다.');
+                return;
+            }
+    
+            // 거래 내역의 금액을 차감하여 balance 업데이트
+            if (updatedBalance + rolloverAmount < transactionAmount) {
+                const remainingAmountToDeduct = transactionAmount - (updatedBalance + rolloverAmount);
+                updatedBalance = Math.max(updatedBalance - remainingAmountToDeduct, 0);
+                rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
+            }
+    
+            // 카드의 balance와 rollover_amount 업데이트
+            await axios.put(`${API_URLS.CARDS}/${transactionData.card_id}`, {
+                balance: updatedBalance,
+                rollover_amount: rolloverAmount,
+            });
+    
+            // 거래 내역 삭제
+            await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+            console.log('거래 내역 삭제 완료');
+    
+            // 거래 내역 갱신
+            fetchTransactionsForCurrentMonth();
+            fetchCards();
+
+            // 삭제 확인 모달 닫기
+            setIsDeleteConfirmOpen(false);
+            handleCloseDrawer();
+        } catch (error) {
+            setErrMsg("삭제 중 오류가 발생했습니다.");
+            console.error('삭제 중 오류:', error);
+        }
+    };
 
     useEffect(() => {
         setErrMsg('');
@@ -272,6 +346,32 @@ const Transactions = () => {
                     )}
                     </div>
                 </div>
+
+                {/* 삭제 모달 : 추후 컴포넌트로 변경 */}
+                {isDeleteConfirmOpen && (
+                    <div className="fixed inset-0 z-110 flex items-center justify-center bg-gray-900 bg-opacity-50">
+                        <div className="bg-white rounded-lg p-6 w-11/12 md:w-96">
+                            <h3 className="text-lg font-semibold mb-4">정말로 삭제하시겠습니까?</h3>
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md"
+                                    onClick={handleDeleteCancel}
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md"
+                                    onClick={handleDelete}
+                                >
+                                    삭제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             <CommonDrawer
                 isOpen={isOpen}
                 onClose={toggleDrawer}
@@ -341,9 +441,12 @@ const Transactions = () => {
                     <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                         {isEditing ? '수정' : '등록'}
                     </button>
-                    <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
-                        안할래요
-                    </button>
+                    {!isEditing ? '' : <button
+                            type="button" 
+                            className='text-red-600 font-semibold'
+                            onClick={handleDeleteConfirm}
+                        >삭제 할래요</button>
+                    }
                 </div>
             </CommonDrawer>
         </div>

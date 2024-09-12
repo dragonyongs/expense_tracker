@@ -14,7 +14,7 @@ const TabBarComponent = () => {
         navigate('/');
     };
     const handleAdmin = () => {
-        navigate('/admin');
+        navigate('/admin/members');
     };
     const handleTransactions = () => {
         navigate('/transactions');
