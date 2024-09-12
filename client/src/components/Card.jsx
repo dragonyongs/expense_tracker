@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types'; 
 
 const Card = ({ cardNumber, totalSpent, currentBalance, rolloverAmount }) => {
-    const formattedCardNumber = cardNumber.replace(/\D/g, ''); // 숫자 이외의 문자는 제거
-    const maskedCardNumber = formattedCardNumber.replace(/^(\d{4})(\d{4})(\d{4})(\d{4})$/, '$1-****-$3-$4');
+    // const formattedCardNumber = cardNumber.replace(/\D/g, ''); // 숫자 이외의 문자는 제거
+    // const maskedCardNumber = formattedCardNumber.replace(/^(\d{4})(\d{4})(\d{4})(\d{4})$/, '$1-****-$3-$4');
 
     return (
         <div className="max-w-sm mx-auto h-48 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg p-6 relative overflow-hidden">
@@ -14,7 +14,7 @@ const Card = ({ cardNumber, totalSpent, currentBalance, rolloverAmount }) => {
             {/* 카드 번호 */}
             <div className="relative text-lg font-semibold tracking-wider mb-5">
                 <p className="tracking-widest">
-                    {maskedCardNumber}
+                    {cardNumber}
                 </p>
             </div>
 
@@ -26,19 +26,19 @@ const Card = ({ cardNumber, totalSpent, currentBalance, rolloverAmount }) => {
                 </p>
             </div>
 
-            {/* 총 지출 금액 */}
-            <div className="relative flex justify-between items-center mb-1">
-                <p className="text-sm font-light">총 지출 금액</p>
-                <p className="text-lg font-bold">
-                    {totalSpent.toLocaleString()}원
-                </p>
-            </div>
-
             {/* 현재 잔액 */}
             <div className="relative flex justify-between items-center">
                 <p className="text-sm font-light">현재 잔액</p>
                 <p className="text-lg font-bold">
                     {currentBalance.toLocaleString()}원
+                </p>
+            </div>
+            
+            {/* 총 지출 금액 */}
+            <div className="relative flex justify-between items-center mb-1">
+                <p className="text-sm font-light">총 지출 금액</p>
+                <p className="text-lg font-bold">
+                    {totalSpent.toLocaleString()}원
                 </p>
             </div>
 

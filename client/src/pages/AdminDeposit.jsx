@@ -15,12 +15,13 @@ const AdminDeposit = () => {
     const [balance, setBalance] = useState('');
     const [errMsg, setErrMsg] = useState('');
     const [selectedDeposit, setSelectedDeposit] = useState({
-        transaction_amount: ""
+        transaction_amount: "",
+        member_id: null, 
     });
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-
     const [isOpen, setIsOpen] = useState(false);
+
     const handleDeleteConfirm = () => {
         setIsDeleteConfirmOpen(true);
     };
@@ -29,25 +30,88 @@ const AdminDeposit = () => {
         setIsDeleteConfirmOpen(false);
     };
 
-    const fetchUsers = async () => {
+    const handleDelete = async () => {
         try {
-            const response = await axios.get(API_URLS.MEMBERS);
-            let allMembers = response.data;
-
-            const filteredMembers = await Promise.all(allMembers.map( async (member) => {
-                const memberCardsResponse = await axios.get(`${API_URLS.CARDS}/member/${member._id}`);
-                const memberCards = memberCardsResponse.data;
-                
-                // 적어도 하나의 카드가 있고 그 카드에 card_number가 있는지 확인
-                const hasCardWithNumber = memberCards.some(card => card.card_number);
-
-                // 카드 번호가 있는 사용자인 경우 필터 유지
-                return hasCardWithNumber ? memberCards : null;
-            }))
-
-            // null 값 제거 후 사용자 상태 업데이트
-            setUsers(filteredMembers.filter(user => user !== null));
+            // 선택된 입금 내역의 금액과 카드 정보 조회
+            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
+            const depositData = response.data;
+            const depositDate = new Date(depositData.transaction_date); // 입금된 날짜
+            const depositAmount = parseFloat(depositData.transaction_amount);
+    
+            // 해당 입금 내역의 카드 정보 조회
+            const cardResponse = await axios.get(`${API_URLS.CARDS}/${depositData.card_id}`);
+            const cardData = cardResponse.data;
+            let updatedBalance = parseFloat(cardData.balance);
+            let rolloverAmount = parseFloat(cardData.rollover_amount);
+    
+            // 해당 입금 이후의 거래 내역이 있는지 확인
+            const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${depositData.card_id}`);
+            const transactions = transactionsResponse.data;
+    
+            // 입금 이후에 발생한 거래가 있는지 확인
+            const hasPostDepositTransactions = transactions.some(transaction => {
+                const transactionDate = new Date(transaction.transaction_date);
+                return transactionDate > depositDate && transaction.transaction_type === 'expense';
+            });
+    
+            if (hasPostDepositTransactions) {
+                // 입금 이후에 발생한 거래가 있으면 삭제 방지
+                setErrMsg("이 입금 이후에 사용된 내역이 있어 삭제할 수 없습니다.");
+                console.warn('입금 이후 사용 내역이 있어 삭제가 불가능합니다.');
+                return;
+            }
+    
+            // 입금 내역의 금액을 차감하여 balance 업데이트
+            if (updatedBalance - depositAmount < 0) {
+                const remainingAmountToDeduct = depositAmount - updatedBalance;
+                updatedBalance = 0;
+                rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
+            } else {
+                updatedBalance -= depositAmount;
+            }
+    
+            // 카드의 balance와 rollover_amount 업데이트
+            await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
+                balance: updatedBalance,
+                rollover_amount: rolloverAmount,
+            });
+    
+            // 입금 내역 삭제
+            await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
+            console.log('입금 내역 삭제 완료');
+    
+            // 입금 내역 갱신
+            fetchDeposits();
             
+            // 삭제 확인 모달 닫기
+            setIsDeleteConfirmOpen(false);
+            handleCloseDrawer();
+        } catch (error) {
+            setErrMsg("삭제 중 오류가 발생했습니다.");
+            console.error('삭제 중 오류:', error);
+        }
+    };
+
+    const fetchFilteredMembers = async () => {
+        try {
+            // 전체 카드 목록을 가져오기
+            const cardsResponse = await axios.get(API_URLS.CARDS);
+            const allCards = cardsResponse.data;
+    
+            // member_id가 있는 카드만 필터링
+            const validCards = allCards.filter(card => card.member_id && card.card_number);
+    
+            // 해당 멤버들의 ID를 모은 배열 생성
+            const validMemberIds = validCards.map(card => card.member_id._id);
+    
+            // 전체 멤버 목록 가져오기
+            const membersResponse = await axios.get(API_URLS.MEMBERS);
+            const allMembers = membersResponse.data;
+    
+            // 유효한 카드가 있는 멤버들만 필터링
+            const filteredMembers = allMembers.filter(member => validMemberIds.includes(member._id));
+    
+            setUsers(filteredMembers);
         } catch (error) {
             setErrMsg("사용자 목록을 불러오지 못했습니다.");
         }
@@ -56,7 +120,11 @@ const AdminDeposit = () => {
     const fetchDeposits = async () => {
         try {
             const response = await axios.get(API_URLS.DEPOSITS);
-            setDeposits(response.data);
+            const sortedDeposits = response.data
+                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            setDeposits(sortedDeposits);
         } catch (error) {
             setErrMsg("입금 내역을 불러오지 못했습니다.");
         }
@@ -65,33 +133,32 @@ const AdminDeposit = () => {
     // 사용자 리스트 불러오기
     useEffect(() => {
         fetchDeposits();
-        fetchUsers();
-    }, []);
-
-
+        fetchFilteredMembers();
+    }, [isOpen, isDeleteConfirmOpen]); // Drawer가 열리거나 삭제 모달이 열릴 때만 호출
+    
     const handleAddDeposit = () => {
-        setSelectedDeposit({
-            transaction_amount: ""
-        });
-        setIsEditing(false); 
+        setSelectedDeposit({ transaction_amount: "" });
+        setSelectedUser(""); // 선택 초기화
+        setSelectedCard(""); // 선택 초기화
+        setIsEditing(false);
         setIsOpen(true);
     };
 
     // 사용자 선택 핸들러
     const handleUserChange = async (e) => {
         const selectedUserId = e.target.value;
-        setSelectedUser(selectedUserId); // 사용자 선택
-
+        setSelectedUser(selectedUserId);
+    
         try {
             // 선택한 사용자의 ID로 카드 목록 필터링
             const response = await axios.get(`${API_URLS.CARDS}/member/${selectedUserId}`);
             const userCards = response.data;
-
+    
             if (userCards.length > 0) {
                 setCards(userCards); // 카드 목록 업데이트
                 setSelectedCard(userCards[0]._id); // 첫 번째 카드를 자동으로 선택
                 setBalance(userCards[0].balance); // 카드 잔액 설정
-
+    
                 // 선택된 사용자 및 카드 정보 업데이트
                 setSelectedDeposit((prev) => ({
                     ...prev,
@@ -102,12 +169,12 @@ const AdminDeposit = () => {
                 setCards([]); // 카드가 없으면 빈 배열로 설정
                 setSelectedCard(""); // 선택된 카드 해제
                 setBalance(0); // 잔액도 0으로 설정
-
+    
                 // 선택된 사용자 및 카드 정보 업데이트
                 setSelectedDeposit((prev) => ({
                     ...prev,
                     member_id: selectedUserId,
-                    card_id: '',
+                    card_id: '', // 카드 ID 초기화
                 }));
             }
         } catch (error) {
@@ -118,30 +185,42 @@ const AdminDeposit = () => {
     // 카드 선택 핸들러
     const handleCardChange = (e) => {
         const selectedCardId = e.target.value;
-        const selectedCardInfo = cards.find(card => card._id === selectedCardId); // 선택한 카드 정보 찾기
-
+        const selectedCardInfo = cards.find(card => card._id === selectedCardId);
+    
         if (selectedCardInfo) {
-            setBalance(selectedCardInfo.balance); // 카드의 잔액 설정
-            setSelectedCard(selectedCardId); // 선택된 카드 업데이트
+            setBalance(selectedCardInfo.balance);
+            setSelectedCard(selectedCardId);
+    
+            // 선택된 카드 정보 업데이트
+            setSelectedDeposit((prev) => ({
+                ...prev,
+                card_id: selectedCardId,
+            }));
         }
-
-        setSelectedDeposit((prev) => ({
-            ...prev,
-            card_id: selectedCardId, // 선택된 카드 ID 업데이트
-        }));
     };
-
-    // 상태 변화 확인용 useEffect
-    useEffect(() => {
-        console.log('selectedDeposit:', selectedDeposit);
-    }, [selectedDeposit]);
 
     // 입금 저장 처리
     const handleSave = async () => {
         try {
-            console.log('API_URLS.CARDS', API_URLS.CARDS);
             setErrMsg('');
-
+    
+            // 현재 카드의 잔액 및 rollover_amount 불러오기
+            const cardResponse = await axios.get(`${API_URLS.CARDS}/${selectedCard}`);
+            const cardData = cardResponse.data;
+            let updatedBalance = parseFloat(cardData.balance);
+            let rolloverAmount = parseFloat(cardData.rollover_amount);
+    
+            const depositAmount = parseFloat(selectedDeposit.transaction_amount);
+    
+            // 현재 잔액과 입금액을 더해 100,000원을 초과하는지 확인
+            if (updatedBalance + depositAmount > 100000) {
+                const excessAmount = updatedBalance + depositAmount - 100000;
+                rolloverAmount += excessAmount; // 초과분을 rollover_amount에 추가
+                updatedBalance = 100000; // 잔액은 100,000원으로 설정
+            } else {
+                updatedBalance += depositAmount; // 잔액에 입금액 추가
+            }
+    
             const transactionData = {
                 card_id: selectedCard,
                 transaction_amount: selectedDeposit.transaction_amount,
@@ -150,21 +229,16 @@ const AdminDeposit = () => {
                 transaction_type: '입금',
                 transaction_date: new Date().toISOString().split('T')[0],
             };
-            
-            console.log('transactionData: ', transactionData);
-
+    
             // 트랜잭션 저장 (입금 처리)
             const response = await axios.post(API_URLS.TRANSACTIONS, transactionData);
             console.log("입금 성공:", response.data);
-
-            // 입금 후 카드 balance 업데이트 (기존 balance에 transaction_amount 더하기)
-            const updatedBalance = parseFloat(balance) + parseFloat(selectedDeposit.transaction_amount);
-
-            // 카드 balance 업데이트 API 호출
-            await axios.put(`${API_URLS.CARDS}/${selectedCard}`, { balance: updatedBalance });
-
-            console.log("카드 잔액 업데이트 성공:", updatedBalance);
-
+    
+            // 카드 balance와 rollover_amount 업데이트 API 호출
+            await axios.put(`${API_URLS.CARDS}/${selectedCard}`, { balance: updatedBalance, rollover_amount: rolloverAmount });
+    
+            console.log("카드 잔액 및 rollover_amount 업데이트 성공:", updatedBalance, rolloverAmount);
+    
             // 상태 값 업데이트
             setBalance(updatedBalance);
             fetchDeposits();
@@ -174,13 +248,31 @@ const AdminDeposit = () => {
             setErrMsg("입금 처리 중 오류가 발생했습니다.");
         }
     };
-
-
+    
+    // 드로어 열 때 카드 정보 업데이트
     const handleOpenDrawer = (deposit) => {
-        setSelectedDeposit(deposit);
+        setSelectedDeposit({
+            ...deposit,
+            member_id: deposit.member_id || '', // 기본값 설정
+            card_id: deposit.card_id || '', // 기본값 설정
+        });
         setIsEditing(true);
         setIsOpen(true);
     };
+
+    // 드로어에서 사용자 선택 값 설정
+    useEffect(() => {
+        if (selectedDeposit && selectedDeposit.member_id) {
+            // 사용자가 선택된 경우 카드 목록을 업데이트
+            handleUserChange({ target: { value: selectedDeposit.member_id } });
+        }
+    }, [selectedDeposit]);
+
+    // useEffect(() => {
+    //     if (selectedDeposit && selectedDeposit.member_id) {
+    //         console.log('member_id:', selectedDeposit.member_id);
+    //     }
+    // }, [selectedDeposit]);
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
@@ -248,7 +340,7 @@ const AdminDeposit = () => {
                                 <button
                                     type="button"
                                     className="px-4 py-2 bg-red-600 text-white rounded-md"
-                                    // onClick={handleDelete}
+                                    onClick={handleDelete}
                                 >
                                     삭제
                                 </button>
@@ -269,7 +361,7 @@ const AdminDeposit = () => {
                                 id="member_id"
                                 name="member_id"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                value={selectedDeposit.member_id || ""}
+                                value={selectedDeposit?.card_id?.member_id || ""}
                                 onChange={handleUserChange}
                             >
                                 <option value="">사용자 선택</option>
@@ -284,21 +376,20 @@ const AdminDeposit = () => {
                         {/* 카드 선택 */}
                         {isEditing ? (""
                         ) : (
-                            
-                        <select
-                            id="card_id"
-                            name="card_id"
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            value={selectedDeposit.card_id || ""}
-                            onChange={handleCardChange}
-                        >
-                            <option value="">카드 선택</option>
-                            {cards.map((card) => (
-                                <option key={card._id} value={card._id}>
-                                    {card.card_number}/ {card.balance}
-                                </option>
-                            ))}
-                        </select>
+                            <select
+                                id="card_id"
+                                name="card_id"
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                value={selectedDeposit.card_id|| ""}
+                                onChange={handleCardChange}
+                            >
+                                <option value="">카드 선택</option>
+                                {cards.map((card) => (
+                                    <option key={card._id} value={card._id}>
+                                        {card.card_number}/ {card.balance}
+                                    </option>
+                                ))}
+                            </select>
                         )}
 
                         {/* 입금 금액 입력 */}

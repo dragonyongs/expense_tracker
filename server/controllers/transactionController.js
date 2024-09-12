@@ -15,14 +15,38 @@ exports.getAllTransactions = async (req, res) => {
     }
 };
 
-// 트랜잭션 생성 함수
+exports.getCardTransactions = async (req, res) => {
+    try {
+        const { cardId } = req.params;
+        const transactions = await Transaction.find({ card_id: cardId });
+
+        if (!transactions || transactions.length === 0) {
+            return res.status(404).json({ message: "해당 카드의 트랜잭션을 찾을 수 없습니다." });
+        }
+
+        return res.status(200).json(transactions);
+    } catch (error) {
+        return res.status(500).json({ message: "트랜잭션 조회 중 오류가 발생했습니다.", error });
+    }
+};
+
+// 총 지출 금액 계산 함수
+const calculateTotalSpent = async (cardId) => {
+    try {
+        const transactions = await Transaction.find({ card_id: cardId, transaction_type: '지출' });
+        return transactions.reduce((total, tx) => total + Number(tx.transaction_amount), 0);
+    } catch (error) {
+        console.error('Error calculating total spent:', error);
+        throw new Error('총 지출 금액 계산 중 오류가 발생했습니다.');
+    }
+};
+
+// 트랜잭션 생성 및 처리 함수
 exports.createTransaction = async (req, res) => {
     const { card_id, transaction_date, merchant_name, menu_name, transaction_amount, transaction_type } = req.body;
 
     try {
-        const sanitizeInput = (input) => {
-            return input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
-        };
+        const sanitizeInput = (input) => input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
 
         const sanitizedMerchantName = sanitizeInput(merchant_name);
         const sanitizedMenuName = sanitizeInput(menu_name);
@@ -33,39 +57,51 @@ exports.createTransaction = async (req, res) => {
             return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
         }
 
-        // 입금인지 지출인지 구분
+        let remainingAmount = Number(transaction_amount);
+
         if (transaction_type === '지출') {
-            // 현재 사용 가능 금액(한도 + 이월 금액)
-            const availableLimit = card.limit + card.rollover_amount;
+            // 1. 사용자가 지출하는 경우
+            const availableLimit = Number(card.limit + card.rollover_amount);
             const totalSpentThisMonth = await calculateTotalSpent(card_id);
 
             // 사용 한도 초과 여부 확인
-            if (totalSpentThisMonth + transaction_amount > availableLimit) {
+            if (totalSpentThisMonth + Number(transaction_amount) > availableLimit) {
                 return res.status(400).json({ error: '이번 달 사용 한도를 초과했습니다.' });
             }
 
-            // 잔액에서 지출 금액 차감
-            card.balance -= transaction_amount;
+            // 잔액에서 먼저 차감
+            if (card.balance >= remainingAmount) {
+                card.balance -= remainingAmount;
+                remainingAmount = 0;
+            } else {
+                remainingAmount -= card.balance;
+                card.balance = 0;
+            }
+
+            // 이월 금액에서 추가 차감
+            if (remainingAmount > 0 && card.rollover_amount >= remainingAmount) {
+                card.rollover_amount -= remainingAmount;
+                remainingAmount = 0;
+            }
+
+            if (remainingAmount > 0) {
+                return res.status(400).json({ error: '잔액 및 이월 금액이 부족합니다.' });
+            }
+        } else if (transaction_type === '입금') {
+            // 2. 관리자가 입금하는 경우
+            if (card.balance < 10000) {
+                // 잔액이 1만원 미만일 경우 이월 처리
+                card.rollover_amount = card.balance;
+                card.balance = card.limit;
+            } else {
+                // 잔액이 1만원 이상일 경우 차액만 입금
+                const depositAmount = card.limit - card.balance;
+                card.balance += depositAmount;
+                remainingAmount = depositAmount;
+            }
         }
 
-        // 이번 달 사용 금액 계산
-        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-        const transactionsThisMonth = await Transaction.find({
-            card_id: card_id,
-            transaction_date: { $gte: startOfMonth, $lte: endOfMonth },
-            transaction_type: '지출'  // 지출 트랜잭션만 계산
-        });
-
-        const totalSpentThisMonth = transactionsThisMonth.reduce((total, transaction) => total + transaction.transaction_amount, 0);
-        const availableLimit = card.limit + card.rollover_amount;  // 사용 가능 금액
-
-        // 사용 한도 초과 여부 확인
-        if (totalSpentThisMonth + Number(transaction_amount) > availableLimit) {
-            return res.status(400).json({ error: '이번 달 사용 한도를 초과했습니다.' });
-        }
-
-        // 지출 또는 입금 트랜잭션 생성 및 저장
+        // 트랜잭션 기록
         const transaction = new Transaction({
             card_id,
             transaction_date,
@@ -76,14 +112,85 @@ exports.createTransaction = async (req, res) => {
         });
 
         await transaction.save();
-        await card.save();  // 카드 잔액 갱신
-        res.status(201).json(transaction);
+        await card.save();
+
+        res.status(201).json({ message: '트랜잭션 처리 성공', transaction: transaction.toObject(), card: card.toObject() });
 
     } catch (error) {
         console.error('트랜잭션 생성 중 오류 발생:', error);
         res.status(500).json({ message: '서버 오류가 발생했습니다.', error });
     }
 };
+// exports.createTransaction = async (req, res) => {
+//     const { card_id, transaction_date, merchant_name, menu_name, transaction_amount, transaction_type } = req.body;
+
+//     try {
+//         const sanitizeInput = (input) => {
+//             return input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
+//         };
+
+//         const sanitizedMerchantName = sanitizeInput(merchant_name);
+//         const sanitizedMenuName = sanitizeInput(menu_name);
+
+//         // 해당 카드 찾기
+//         const card = await Card.findById(card_id);
+//         if (!card) {
+//             return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
+//         }
+
+//         // 입금인지 지출인지 구분
+//         if (transaction_type === '지출') {
+//             // 현재 사용 가능 금액(한도 + 이월 금액)
+//             const availableLimit = card.limit + card.rollover_amount;
+//             const totalSpentThisMonth = await calculateTotalSpent(card_id);
+
+//             // 사용 한도 초과 여부 확인
+//             if (totalSpentThisMonth + transaction_amount > availableLimit) {
+//                 return res.status(400).json({ error: '이번 달 사용 한도를 초과했습니다.' });
+//             }
+
+//             // 잔액에서 지출 금액 차감
+//             card.balance -= transaction_amount;
+//         }
+
+//         // 이번 달 사용 금액 계산
+//         const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+//         const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+//         const transactionsThisMonth = await Transaction.find({
+//             card_id: card_id,
+//             transaction_date: { $gte: startOfMonth, $lte: endOfMonth },
+//             transaction_type: '지출'  // 지출 트랜잭션만 계산
+//         });
+
+//         const totalSpentThisMonth = transactionsThisMonth.reduce((total, transaction) => total + transaction.transaction_amount, 0);
+//         const availableLimit = card.limit + card.rollover_amount;  // 사용 가능 금액
+
+//         // 사용 한도 초과 여부 확인
+//         if (totalSpentThisMonth + Number(transaction_amount) > availableLimit) {
+//             return res.status(400).json({ error: '이번 달 사용 한도를 초과했습니다.' });
+//         }
+
+//         // 지출 또는 입금 트랜잭션 생성 및 저장
+//         const transaction = new Transaction({
+//             card_id,
+//             transaction_date,
+//             merchant_name: sanitizedMerchantName,
+//             menu_name: sanitizedMenuName,
+//             transaction_amount,
+//             transaction_type
+//         });
+
+//         await transaction.save();
+//         await card.save();  // 카드 잔액 갱신
+//         res.status(201).json(transaction);
+
+//     } catch (error) {
+//         console.error('트랜잭션 생성 중 오류 발생:', error);
+//         res.status(500).json({ message: '서버 오류가 발생했습니다.', error });
+//     }
+// };
+
+
 
 exports.getTransactionById = async (req, res) => {
     try {
@@ -144,6 +251,7 @@ exports.updateTransaction = async (req, res) => {
             });
 
             const totalSpentThisMonth = transactionsThisMonth.reduce((total, txn) => total + txn.transaction_amount, 0);
+
             if (totalSpentThisMonth + difference > totalLimit) {
                 return res.status(400).json({ error: '이번 달 사용 한도를 초과했습니다.' });
             }
@@ -241,97 +349,92 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
     }
 };
 
-// exports.depositToCard = async (req, res) => {
-//     try {
-//         const { card_id, deposit_amount } = req.body;
-        
-//         // 카드 찾기
-//         const card = await Card.findById(card_id);
-//         if (!card) {
-//             return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
-//         }
-
-//         const { limit, balance, rollover_amount } = card;
-//         const totalLimit = limit + rollover_amount; // 총 사용 가능한 금액
-
-//         // 현재 사용 가능한 잔액 (잔액 + 이월 금액을 포함한 최대 사용 가능 한도)
-//         const currentTotal = balance;
-
-//         // 입금 가능한 최대 금액 계산
-//         const maxDeposit = totalLimit - currentTotal;
-//         const actualDeposit = Math.min(deposit_amount, maxDeposit); // 입금할 수 있는 금액 (최대 한도 초과하지 않도록)
-
-//         if (actualDeposit <= 0) {
-//             return res.status(400).json({ error: '입금할 수 있는 금액이 없습니다. 이미 최대 한도에 도달했습니다.' });
-//         }
-
-//         // 카드 잔액 업데이트
-//         card.balance += actualDeposit;
-
-//         // 입금 트랜잭션 생성
-//         const depositTransaction = new Transaction({
-//             card_id,
-//             transaction_date: new Date(),
-//             merchant_name: '관리자',
-//             menu_name: '잔액 충전',
-//             transaction_amount: actualDeposit,
-//             transaction_type: '입금'  // 트랜잭션 타입을 명시적으로 구분
-//         });
-
-//         await card.save();  // 카드 모델에 잔액 저장
-//         await depositTransaction.save();  // 입금 트랜잭션 저장
-
-//         res.status(201).json({ message: '카드에 입금되었습니다.', card, transaction: depositTransaction });
-//     } catch (error) {
-//         console.error('입금 처리 중 오류 발생:', error);
-//         res.status(500).json({ message: '입금 처리 중 서버 오류가 발생했습니다.', error });
-//     }
-// };
-
-exports.handleDeposit = async (req, res) => {
+exports.handleAdminDeposit = async (req, res) => {
     try {
-        const { card_id, deposit_amount } = req.body;
+        const { card_id, transaction_amount } = req.body;
         const card = await Card.findById(card_id);
+        
+        if (!card) {
+            return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+        }
 
-        if (!card) return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
-
-        // 이번 달의 잔액 계산 (rollover_amount + balance)
-        const currentBalance = card.balance;
-        const rolloverAmount = card.rollover_amount;
-
-        // 전월 이월 조건: 잔액이 1만원 미만인 경우
-        let amountToDeposit = deposit_amount;
+        // 현재 잔액 확인
+        let currentBalance = card.balance;
 
         if (currentBalance < 10000) {
-            const totalLimit = card.limit; // 한도 10만원
-            const totalBalance = currentBalance + deposit_amount;
-
-            if (totalBalance > totalLimit) {
-                amountToDeposit = totalLimit - currentBalance;
-            }
-
-            // 입금 트랜잭션 생성
-            const depositTransaction = new Transaction({
-                card_id: card_id,
-                transaction_date: new Date(),
-                merchant_name: '관리자',
-                menu_name: '잔액 충전',
-                transaction_amount: amountToDeposit,
-                transaction_type: '입금'
-            });
-
-            await depositTransaction.save();
-
-            // 카드 잔액 업데이트
-            card.balance += amountToDeposit;
-            await card.save();
-
-            res.status(201).json({ message: '입금이 완료되었습니다.', transaction: depositTransaction });
+            // 잔액이 1만 원 미만일 경우, 남은 금액을 이월하고 잔액을 10만 원으로 설정
+            card.rollover_amount = currentBalance;
+            card.balance = 100000;
         } else {
-            return res.status(400).json({ error: '잔액이 1만원 이상이므로 입금할 수 없습니다.' });
+            // 잔액이 1만 원 이상일 경우, 10만 원에서 현재 잔액을 제외한 차액만 더함
+            const difference = 100000 - currentBalance;
+            card.balance = currentBalance + difference;
         }
+
+        // 트랜잭션 기록 (입금)
+        const transaction = new Transaction({
+            card_id,
+            transaction_amount: card.balance - currentBalance, // 차액만큼 기록
+            merchant_name: '관리자',
+            menu_name: '잔액 충전',
+            transaction_type: '입금',
+            transaction_date: new Date(),
+        });
+
+        await transaction.save();
+        await card.save();
+
+        return res.status(200).json({ message: '입금 처리 성공', card });
     } catch (error) {
-        console.error('입금 처리 중 오류 발생:', error);
-        res.status(500).json({ error: '서버 오류 발생' });
+        console.error('입금 처리 중 오류:', error);
+        return res.status(500).json({ message: '입금 처리 중 오류가 발생했습니다.' });
     }
 };
+
+// exports.handleDeposit = async (req, res) => {
+//     try {
+//         const { card_id, deposit_amount } = req.body;
+//         const card = await Card.findById(card_id);
+
+//         if (!card) return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
+
+//         // 이번 달의 잔액 계산 (rollover_amount + balance)
+//         const currentBalance = card.balance;
+//         const rolloverAmount = card.rollover_amount;
+
+//         // 전월 이월 조건: 잔액이 1만원 미만인 경우
+//         let amountToDeposit = deposit_amount;
+
+//         if (currentBalance < 10000) {
+//             const totalLimit = card.limit; // 한도 10만원
+//             const totalBalance = currentBalance + deposit_amount;
+
+//             if (totalBalance > totalLimit) {
+//                 amountToDeposit = totalLimit - currentBalance;
+//             }
+
+//             // 입금 트랜잭션 생성
+//             const depositTransaction = new Transaction({
+//                 card_id: card_id,
+//                 transaction_date: new Date(),
+//                 merchant_name: '관리자',
+//                 menu_name: '잔액 충전',
+//                 transaction_amount: amountToDeposit,
+//                 transaction_type: '입금'
+//             });
+
+//             await depositTransaction.save();
+
+//             // 카드 잔액 업데이트
+//             card.balance += amountToDeposit;
+//             await card.save();
+
+//             res.status(201).json({ message: '입금이 완료되었습니다.', transaction: depositTransaction });
+//         } else {
+//             return res.status(400).json({ error: '잔액이 1만원 이상이므로 입금할 수 없습니다.' });
+//         }
+//     } catch (error) {
+//         console.error('입금 처리 중 오류 발생:', error);
+//         res.status(500).json({ error: '서버 오류 발생' });
+//     }
+// };

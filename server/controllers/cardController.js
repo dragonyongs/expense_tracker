@@ -43,7 +43,7 @@ exports.getCardsByMemberId = async (req, res) => {
             return res.status(404).json({ error: 'No cards found for this member' });
         }
         
-        res.json(cards[0]);
+        res.json(cards);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }

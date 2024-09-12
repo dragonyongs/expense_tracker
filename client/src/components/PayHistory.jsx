@@ -27,17 +27,17 @@ const PayHistory = () => {
                     .filter(type => type.transaction_type !== '입금')
                     .slice(0, 4)
                     .map( transaction => (
-                    <li key={transaction._id} className='flex justify-between py-3'>
-                        <div>
-                            <p className='font-semibold text-sm text-slate-500'>{new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}</p>
-                            <p>
+                    <li key={transaction._id} className='flex justify-between items-center py-3'>
+                        <div className="flex-1 min-w-0">
+                            <p className='font-semibold text-sm text-slate-500 truncate'>{new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}</p>
+                            <p className='truncate' >
                                 {transaction.merchant_name}
-                                {transaction.menu_name && (
-                                    <span className="pl-2 text-gray-400">{transaction.menu_name}</span>
-                                )}
+                                <span className="ms-2 text-sm text-gray-400">
+                                    {transaction.menu_name}
+                                </span>
                             </p>
                         </div>
-                        <span className='font-semibold'>{transaction.transaction_amount.toLocaleString()}원</span>
+                        <div className='font-semibold'>{transaction.transaction_amount.toLocaleString()}원</div>
                     </li>    
                 ))}
                 </ul>
