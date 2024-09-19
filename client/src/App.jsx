@@ -12,6 +12,7 @@ const Signin = React.lazy(() => import('./pages/Signin'));
 const Signup = React.lazy(() => import('./pages/Signup'));
 const Pending = React.lazy(() => import('./pages/Pending'));
 const Transactions = React.lazy(() => import('./pages/Transactions'));
+const Teams = React.lazy(() => import('./pages/Teams'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const AdminMembers = React.lazy(() => import('./pages/AdminMembers'));
@@ -49,6 +50,12 @@ const App = () => {
                         <Route path="/transactions" element={
                             <ProtectedRoute>
                                 <Transactions />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path="/teams" element={
+                            <ProtectedRoute>
+                                <Teams />
                             </ProtectedRoute>
                         } />
 

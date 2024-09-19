@@ -19,9 +19,12 @@ const TabBarComponent = () => {
     const handleAdmin = () => {
         navigate('/admin/members');
     };
+    const handleTeams = () => {
+        navigate('/teams');
+    };
     const handleTransactions = () => {
         navigate('/transactions');
-    }
+    };
 
     // 현재 경로에 따라 탭의 색상을 결정하는 함수
     const isActiveTab = (path) => {
@@ -47,7 +50,7 @@ const TabBarComponent = () => {
             </button>
 
             {memberRoles.includes(user?.role) && (
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/explore') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`}>
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/teams') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleTeams}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiCardsThree className="text-2xl" />
                     </div>
