@@ -315,22 +315,25 @@ const Transactions = () => {
                                     {transactions.map((transaction) => (
                                         <div key={transaction._id} onClick={ transaction.transaction_type !== "입금" ? () => handleOpenDrawer(transaction) : null} className="active:bg-slate-50">
                                             <div className="flex items-center py-2">
-                                                <div className="flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center">
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== '입금' ? 'border-red-600' : 'border-green-600'}`}>
                                                     <span className="text-slate-500 text-lg font-normal">
                                                         {transaction.transaction_type !== "입금" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
                                                     </span>
                                                 </div>
                                                 <div className="flex-1 min-w-0 ms-4">
                                                     <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                        {transaction.merchant_name} {transaction.transaction_type}
+                                                        {transaction.merchant_name}
                                                     </p>
                                                     <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                                         {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
                                                     </p>
                                                 </div>
-                                                <div className="inline-flex gap-x-3 items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                    <span>
+                                                <div className="inline-flex flex-col gap-x-3 items-center">
+                                                    <span className='font-semibold text-base text-gray-900 dark:text-white'>
                                                         {transaction.transaction_amount.toLocaleString()}원
+                                                    </span>
+                                                    <span className='inline-block w-full text-sm text-right text-gray-400'>
+                                                        {transaction.transaction_type}
                                                     </span>
                                                 </div>
                                             </div>

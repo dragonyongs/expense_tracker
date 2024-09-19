@@ -351,7 +351,7 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
 
 exports.handleAdminDeposit = async (req, res) => {
     try {
-        const { card_id, transaction_amount } = req.body;
+        const { card_id } = req.body;
         const card = await Card.findById(card_id);
         
         if (!card) {

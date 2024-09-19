@@ -4,7 +4,9 @@ import { AuthContext } from '../context/AuthProvider';
 
 import { GoHome } from "react-icons/go";
 import { PiPencilSimpleLine } from "react-icons/pi";
-import { LuFolderLock, LuUsers, LuGlobe } from "react-icons/lu";
+import { LuFolderLock } from "react-icons/lu";
+import { PiCardsThree, PiAddressBookTabsLight } from "react-icons/pi";
+
 
 const TabBarComponent = () => {
     const location = useLocation();
@@ -43,7 +45,16 @@ const TabBarComponent = () => {
                 </div>
                 <span className="text-sm">홈</span>
             </button>
-    
+
+            {memberRoles.includes(user?.role) && (
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/explore') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`}>
+                    <div className='flex items-center justify-center w-8 h-8'>
+                        <PiCardsThree className="text-2xl" />
+                    </div>
+                    <span className="text-sm">팀계좌</span>
+                </button>
+            )}
+
             {memberRoles.includes(user?.role) && (
                 <button type="button" className={`flex flex-col items-center ${isActiveTab('/transactions') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleTransactions}>
                     <div className='flex items-center justify-center w-8 h-8'>
@@ -52,21 +63,12 @@ const TabBarComponent = () => {
                     <span className="text-sm">기록</span>
                 </button>
             )}
-    
-            {memberRoles.includes(user?.role) && (
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/explore') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`}>
-                    <div className='flex items-center justify-center w-8 h-8'>
-                        <LuGlobe className="text-2xl" />
-                    </div>
-                    <span className="text-sm">탐색</span>
-                </button>
-            )}
-    
+
             <button type="button" className={`flex flex-col items-center ${isActiveTab('/members') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`}>
                 <div className='flex items-center justify-center w-8 h-8'>
-                    <LuUsers className="text-2xl" />
+                    <PiAddressBookTabsLight className="text-2xl" />
                 </div>
-                <span className="text-sm">회원</span>
+                <span className="text-sm">연락망</span>
             </button>
     
             {allowedAdminRoles.includes(user?.role) && (

@@ -75,16 +75,14 @@ const Signup = () => {
             email: email.trim(),
             password: pwd.trim(),
         };
-
         try {
             const response = await axios.post(REGISTER_URL,
                 JSON.stringify(trimmedData),
                 {
-                    headers: { 'Content-Type': 'application/json',},
+                    headers: { 'Content-Type': 'application/json'},
                     withCredentials: true
                 }
             );
-
             setSuccess(true);
             
             // 입력 인풋 값 초기화

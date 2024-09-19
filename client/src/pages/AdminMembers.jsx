@@ -12,12 +12,72 @@ const TEAM_URL = '/api/teams';
 
 const AdminMembers = () => {
     const [members, setMembers] = useState([]);
+    const [selectedMember, setSelectedMember] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState('전체');
+    const [filteredMembers, setFilteredMembers] = useState([]);
+    const [password, setPassword] = useState('');
     const [statuses, setStatuses] = useState([]);
     const [roles, setRoles] = useState([]);
     const [teams, setTeams] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedMember, setSelectedMember] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [errMsg, setErrMsg] = useState('');
+
+    useEffect(() => {
+        fetchMembers();
+        fetchStatuses();
+        fetchRoles();
+        fetchTeams();
+    }, []);
+
+    useEffect(() => {
+        filterMembers();
+    }, [selectedCategory, members]);
+    
+    const toggleDrawer = () => {
+        setIsOpen((prevState) => !prevState);
+        setPassword('');
+    };
+
+    const filterMembers = () => {
+        let filtered = [...members];
+
+        if (selectedCategory === '요청') {
+            filtered = members.filter(member => member.status_id.status_name === 'pending');
+        } else if (selectedCategory === '전체') {
+            filtered = members.filter(member => member.role_id.role_name !== 'super_admin');
+        }
+        
+        setFilteredMembers(filtered);
+    };
+
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+    };
+
+    const handleOpenDrawer = async (member) => {
+        setSelectedMember(member);
+        setIsEditing(true);
+        setIsOpen(true);
+
+        const response = await axios.get(`${MEMBER_URL}/${member._id}`);
+        const fullMemberData = response.data;
+
+        // 상세 정보가 포함된 멤버로 업데이트
+        setSelectedMember(fullMemberData);
+    };
+
+    const handleAddDepartment = () => {
+        setSelectedMember({ member_name: '', email: '', password: '' });
+        setPassword('');
+        setIsEditing(false);
+        setIsOpen(true);
+    };
+
+    const handleCloseDrawer = () => {
+        setIsOpen(false);
+        setSelectedMember(null);
+    };
 
     const fetchMembers = async () => {
         try {
@@ -53,34 +113,6 @@ const AdminMembers = () => {
         } catch (error) {
             console.error('Error fetching Roles:', error);
         }
-    };
-
-    useEffect(() => {
-        fetchMembers();
-        fetchStatuses();
-        fetchRoles();
-        fetchTeams();
-    }, []);
-
-    const toggleDrawer = () => {
-        setIsOpen((prevState) => !prevState);
-    };
-
-    const handleOpenDrawer = (member) => {
-        setSelectedMember(member);
-        setIsEditing(true);
-        setIsOpen(true);
-    };
-
-    const handleAddDepartment = () => {
-        setSelectedMember({ member_name: '', email: '' });
-        setIsEditing(false);
-        setIsOpen(true);
-    };
-
-    const handleCloseDrawer = () => {
-        setIsOpen(false);
-        setSelectedMember(null);
     };
 
     const handleStatusChange = (e) => {
@@ -145,75 +177,99 @@ const AdminMembers = () => {
         try {
             const memberData = {
                 ...selectedMember,
-                status_id: selectedMember.status_id._id,
-                team_id: selectedMember.team_id._id
+                status_id: selectedMember?.status_id?._id || null,
+                team_id: selectedMember?.team_id?._id || null,
+                password: password.length > 0 ? password : undefined
             };
 
+            console.log(memberData);
+            
             if (isEditing) {
-                // 수정 모드일 때 PUT 요청
                 await axios.put(`${MEMBER_URL}/${selectedMember._id}`, memberData);
-                console.log("Department updated successfully:", memberData);
             } else {
-                // 추가 모드일 때 POST 요청
                 await axios.post(MEMBER_URL, memberData);
-                console.log("Department added successfully:", memberData);
             }
             
             await fetchMembers();
-
             handleCloseDrawer();
         } catch (error) {
-            console.error("Error updating member:", error);
+            setErrMsg(error.message);
+            console.error("Error Save member:", error);
         }
     };
 
     return (
         <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
+            <div>
+                <ul className='flex gap-x-1 mb-10'>
+                    <li 
+                        className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '전체' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
+                        onClick={() => handleCategoryClick('전체')}
+                    >
+                        전체
+                    </li>
+                    <li 
+                        className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '요청' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
+                        onClick={() => handleCategoryClick('요청')}
+                    >
+                        요청
+                    </li>
+                </ul>
+            </div>
             <div className="flex items-center justify-between mt-2 mb-4 px-3">
-                <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
+                <h5 className="text-2xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
                 <button
                     type="button" 
-                    className='text-black font-semibold rounded-lg text-2xl'
+                    className='text-black font-semibold rounded-lg text-3xl'
                     onClick={handleAddDepartment}
                 ><IoAddCircleOutline /></button>
             </div>
             <div className='flow-root space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700'>
-                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {members.map(member => (
-                        <li 
-                            key={member._id} 
-                            className='py-3 sm:py-4 cursor-pointer' 
-                            onClick={() => handleOpenDrawer(member)}
-                        >
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-400 overflow-hidden flex items-center justify-center">
-                                    {member.photoUrl ? (
-                                        <img className="w-10 h-10" src={member.photoUrl} alt={member.member_name} />
-                                    ) : (
-                                        <span className="text-white text-lg font-semibold">
-                                            {member.member_name.charAt(0)}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0 ms-4">
-                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                        {member.member_name} 
-                                        <span className={`ml-2 p-2 text-xs font-semibold text-center rounded-lg ${member.status_id.status_name === 'pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-600'}`}>
-                                            {member.status_id.status_description}
-                                        </span>
-                                    </p>
-                                    <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                        {member.email}
-                                    </p>
-                                </div>
-                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                    <MdKeyboardArrowRight className='text-2xl' />
-                                </div>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
+                {filteredMembers.length === 0 ? (
+                    <p className="text-center text-gray-500 dark:text-gray-400">현재 요청중인 사용자가 없습니다.</p>
+                ) : (
+                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {filteredMembers.map(({ _id, member_name, status_id, team_id, photoUrl, createdAt }) => {
+                            const isPending = status_id.status_name === 'pending';
+                            const statusClass = isPending
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white text-gray-700 border border-gray-400';
+
+                            return (
+                                <li
+                                    key={_id}
+                                    className='py-3 sm:py-4 cursor-pointer'
+                                    onClick={() => handleOpenDrawer({ _id, member_name, status_id, team_id, photoUrl, createdAt })}
+                                >
+                                    <div className="flex items-center">
+                                        <div className={`flex-shrink-0 w-10 h-10 rounded-full ${statusClass} overflow-hidden flex items-center justify-center`}>
+                                            {photoUrl ? (
+                                                <img className="w-10 h-10" src={photoUrl} alt={member_name} />
+                                            ) : (
+                                                <span className="text-md font-semibold">
+                                                    {isPending ? '대기' : member_name.charAt(0)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0 ms-4">
+                                            <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                {member_name}
+                                            </p>
+                                            <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                                                {isPending ? `승인` : team_id?.team_name || ''}
+                                            </p>
+                                        </div>
+                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                            <MdKeyboardArrowRight className='text-2xl' />
+                                        </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
             </div>
+
             <CommonDrawer
                 isOpen={isOpen}
                 onClose={toggleDrawer}
@@ -222,6 +278,8 @@ const AdminMembers = () => {
                 {selectedMember && (
                     <form>
                         <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
+                            {errMsg && <div className="text-red-600">{errMsg.toString()}</div>} {/* 에러 메시지 표시 */}
+                            
                             {/* Member Name */}
                             <InputField 
                                 label="이름" 
@@ -246,14 +304,8 @@ const AdminMembers = () => {
                                 label="비밀번호" 
                                 id="password"
                                 type="password"
-                                value={selectedMember.newPassword || ''}  // 새로운 비밀번호는 항상 빈 문자열로 시작
-                                onChange={(e) => {
-                                    const newPassword = e.target.value;
-                                    setSelectedMember({ 
-                                        ...selectedMember, 
-                                        newPassword: newPassword.length > 0 ? newPassword : null  // 입력이 없으면 null
-                                    });
-                                }}
+                                value={password}  // 상태에 따라 비밀번호 필드의 값을 설정
+                                onChange={(e) => setPassword(e.target.value)}
                                 placeholder="비밀번호 변경 없음" 
                                 required={false}  // 비밀번호는 필수 입력이 아님
                             />
@@ -351,3 +403,7 @@ const AdminMembers = () => {
 };
 
 export default AdminMembers;
+
+                                        {/* <span className={`ml-2 p-2 text-xs font-semibold text-center rounded-lg ${member.status_id.status_name === 'pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-600'}`}>
+                                            {member.status_id.status_description}
+                                        </span> */}

@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthProvider';
 import { MdLogout } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 
-function Logout({isDashBoard}) {
+function Logout({isDashBoard, role}) {
     const navigate = useNavigate();
     const { logout } = useContext(AuthContext);
 
@@ -19,7 +19,7 @@ function Logout({isDashBoard}) {
 
     return (
         <div className='relative leading-none'>
-            <button className={`text-3xl ${isDashBoard ? 'text-white' : 'text-gray-700'}`}  onClick={handleLogout}>
+            <button className={`text-3xl ${isDashBoard && role !== 'super_admin'  ? 'text-white' : 'text-gray-700'}`}  onClick={handleLogout}>
                 <MdLogout />
             </button>
         </div>

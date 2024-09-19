@@ -1,5 +1,5 @@
-import React from 'react';
-// import { AuthContext } from '../context/AuthProvider'; , { useContext }
+import React, { useContext } from 'react';
+import { AuthContext } from '../context/AuthProvider';
 // import { MdLogout } from "react-icons/md";
 // import { useNavigate } from 'react-router-dom';
 import CardBalance from '../components/CardBalance';
@@ -7,7 +7,7 @@ import PayHistory from '../components/PayHistory';
 
 const Dashboard = () => {
     // const navigate = useNavigate();
-    // const { user, logout} = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
 
     // const handleLogout = async () => {
     //     await logout();
@@ -15,9 +15,18 @@ const Dashboard = () => {
     // }
 
     return (
-        <>
-            <CardBalance />
-            <PayHistory />
+        <>  
+            {user.role === ('super_admin') ? (
+                <div className='p-8'>
+                    <p>{user.role}</p>
+                </div>
+            ) : (
+                <div>
+                    <CardBalance role={user.role} />
+                    <PayHistory />
+                </div>
+            ) }
+            
 
             {/* <div className='p-6'>
                 <h1>Dashboard</h1>
