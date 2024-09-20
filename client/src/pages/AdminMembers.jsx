@@ -68,7 +68,7 @@ const AdminMembers = () => {
     };
 
     const handleAddDepartment = () => {
-        setSelectedMember({ member_name: '', email: '', password: '' });
+        setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
         setPassword('');
         setIsEditing(false);
         setIsOpen(true);
@@ -199,28 +199,26 @@ const AdminMembers = () => {
     };
 
     return (
-        <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
-            <div>
-                <ul className='flex gap-x-1 mb-10'>
-                    <li 
-                        className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '전체' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
-                        onClick={() => handleCategoryClick('전체')}
-                    >
-                        전체
-                    </li>
-                    <li 
-                        className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '요청' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
-                        onClick={() => handleCategoryClick('요청')}
-                    >
-                        요청
-                    </li>
-                </ul>
-            </div>
-            <div className="flex items-center justify-between mt-2 mb-4 px-3">
+        <div className='flex-1 w-full p-4 sm:p-6 dark:bg-gray-800'>
+            <ul className='flex gap-x-1 mb-6'>
+                <li 
+                    className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '전체' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
+                    onClick={() => handleCategoryClick('전체')}
+                >
+                    전체
+                </li>
+                <li 
+                    className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '요청' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
+                    onClick={() => handleCategoryClick('요청')}
+                >
+                    요청
+                </li>
+            </ul>
+            <div className="flex items-center justify-between mb-4 px-3">
                 <h5 className="text-2xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
                 <button
                     type="button" 
-                    className='text-black font-semibold rounded-lg text-3xl'
+                    className='text-black font-semibold rounded-lg text-3xl dark:text-white'
                     onClick={handleAddDepartment}
                 ><IoAddCircleOutline /></button>
             </div>

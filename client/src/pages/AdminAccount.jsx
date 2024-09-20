@@ -119,12 +119,12 @@ const AdminAccount = () => {
 
     return (
         <>
-            <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
+            <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                 <div className="flex items-center justify-between mt-2 mb-4 px-3">
                     <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
                     <button
                         type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl'
+                        className='text-black font-semibold rounded-lg text-2xl dark:text-white'
                         onClick={handleAddAccount}
                     >
                         <IoAddCircleOutline />

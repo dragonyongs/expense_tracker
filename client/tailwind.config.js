@@ -1,12 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 
-const flowbite = require("flowbite-react/tailwind");
-
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    flowbite.content(),
   ],
   theme: {
     extend: {
@@ -25,6 +22,7 @@ export default {
       height: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
         'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 168px )',
+        'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px )',
         'pending-screen': 'calc((var(--vh, 1vh) * 100) - 48px )',
       },
       zIndex: {
@@ -36,7 +34,6 @@ export default {
     },
   },
   plugins: [
-    flowbite.plugin(),
   ],
 }
 

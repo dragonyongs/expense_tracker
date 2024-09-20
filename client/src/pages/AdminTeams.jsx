@@ -115,12 +115,12 @@ const AdminTeams = () => {
     const groupedTeams = groupTeamsByDepartment();
 
     return (
-        <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
+        <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                 <div className="flex items-center justify-between mt-2 mb-4 px-3">
                     <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">팀 목록</h5>
                     <button
                         type="button"
-                        className="text-black font-semibold rounded-lg text-2xl"
+                        className="text-black font-semibold rounded-lg text-2xl dark:text-white"
                         onClick={handleAddTeam}
                     >
                         <IoAddCircleOutline />
@@ -136,7 +136,7 @@ const AdminTeams = () => {
                         Object.keys(groupedTeams).map(departmentName => (
                             <div key={departmentName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700 mb-4">
                                 <h6 className="text-sm font-bold text-gray-500 dark:text-white">{departmentName}</h6>
-                                {groupedTeams[departmentName].length === 0 ? <p className="pb-3 text-center">소속된 팀이 없습니다.</p> : (
+                                {groupedTeams[departmentName].length === 0 ? <p className="pb-3 text-center dark:text-slate-400">소속된 팀이 없습니다.</p> : (
 
                                 <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700 mt-2">
                                     {groupedTeams[departmentName].map(team => (

@@ -41,7 +41,7 @@ const TabBarComponent = () => {
     
 
     return (
-        <nav className='z-50 bg-white shadow-md pt-2 px-6 pb-4 flex justify-between'>
+        <nav className='z-50 bg-white shadow-md pt-2 px-6 pb-4 flex justify-between border border-t border-gray-100'>
             <button type="button" className={`flex flex-col items-center ${isActiveTab('/') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleHome}>
                 <div className='flex items-center justify-center w-8 h-8'>
                     <GoHome className="text-2xl" />

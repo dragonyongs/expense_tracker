@@ -89,6 +89,13 @@ export function AuthProvider({ children }) {
         navigate(status === 'pending' ? '/pending' : '/');
     };
 
+    const deleteAllCookies = () => {
+        document.cookie.split(";").forEach((cookie) => {
+            const name = cookie.split("=")[0].trim();
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        });
+    };
+
     const logout = async () => {
         try {
             // 서버에 로그아웃 요청
@@ -97,6 +104,9 @@ export function AuthProvider({ children }) {
             // 로컬 스토리지에서 토큰 제거
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('status');
+
+            // 쿠키 삭제
+            deleteAllCookies();
 
             // 인증 상태와 사용자 정보 초기화
             setIsAuthenticated(false);

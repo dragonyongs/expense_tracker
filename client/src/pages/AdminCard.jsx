@@ -161,12 +161,12 @@ const AdminCard = () => {
     };
 
     return (
-        <div className="w-full p-4 sm:p-6 dark:bg-gray-800">
+        <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
             <div className="flex items-center justify-between mt-2 mb-4 px-3">
                 <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">카드 목록</h5>
                 <button
                     type="button"
-                    className="text-black font-semibold rounded-lg text-2xl"
+                    className="text-black font-semibold rounded-lg text-2xl dark:text-white"
                 onClick={handleAddCard}
             ><IoAddCircleOutline /></button>
             </div>
@@ -188,7 +188,7 @@ const AdminCard = () => {
                                                     <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                                         {card.card_number}
                                                     </p>
-                                                    <p className='inline-block'>{card.member_id.member_name}</p>
+                                                    <p className='inline-block dark:text-white'>{card.member_id.member_name}</p>
                                                 </div>
                                                 <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
                                                     <span className='font-bold tracking-tight'>{totalBalance.toLocaleString()}</span>원

@@ -22,7 +22,7 @@ const PayHistory = () => {
         <>
             <div className="mt-10 px-6">
                 <h3 className='font-semibold text-2xl'>최근 결제</h3>
-                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                <ul role="list" className="divide-y divide-gray-200">
                 { transactions
                     .filter(type => type.transaction_type !== '입금')
                     .slice(0, 4)
