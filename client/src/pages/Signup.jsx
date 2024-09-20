@@ -112,8 +112,8 @@ const Signup = () => {
         
     }
     return (
-        <div className="w-full">            
-            <div className="mb-14">
+        <div className="w-full p-6">            
+            <div className="my-14">
                 <h2 className='text-3xl font-normal'>로그인에 사용할 이메일과<br />
                 비밀번호를 작성해주세요.</h2>
             </div>
@@ -129,7 +129,7 @@ const Signup = () => {
                         id="email"
                         name="email"
                         type="text"
-                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400"
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400"
                         placeholder="이메일(아이디) 입력" 
                         autoComplete='off' 
                         ref={emailRef} 
@@ -164,7 +164,7 @@ const Signup = () => {
                         id="member_name"
                         name="member_name"
                         type="text" 
-                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
                         placeholder="사용자 이름 입력" 
                         autoComplete='off'
                         ref={userRef} 
@@ -195,7 +195,7 @@ const Signup = () => {
                         id="password" 
                         name="password"
                         type="password" 
-                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
                         placeholder="8자 이상 대문자, 특수기호, 숫자, 영문 조합으로 입력" 
                         autoComplete='off' 
                         onChange={(e) => setPwd(e.target.value)}
@@ -226,7 +226,7 @@ const Signup = () => {
                     <input
                         id="confirm_pwd" 
                         type="password" 
-                        className="w-full rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
                         placeholder="동일한 비밀번호 재입력" 
                         autoComplete='off'
                         onChange={(e) => setMatchPwd(e.target.value)}
