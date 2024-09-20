@@ -10,5 +10,8 @@ export const API_URLS = {
     ACCOUNTS_WITH_CARDS: '/api/accounts/memberAccountsWithCards',
     DEPARTMENTS: '/api/departments',
     STATUSES: '/api/statuses',
-    ROLES: '/api/roles'
+    ROLES: '/api/roles',
+    AUTHENTICATED: '/api/auth/isAuthenticated',
+    AUTH_LOGIN: '/api/auth/login',
+    AUTH_LOGOUT: '/api/auth/logout',
 };

@@ -17,7 +17,7 @@ const TabBarComponent = () => {
         navigate('/');
     };
     const handleAdmin = () => {
-        navigate('/admin/members');
+        navigate('/admin');
     };
     const handleTeams = () => {
         navigate('/teams');
@@ -67,13 +67,15 @@ const TabBarComponent = () => {
                 </button>
             )}
 
-            <button type="button" className={`flex flex-col items-center ${isActiveTab('/members') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`}>
-                <div className='flex items-center justify-center w-8 h-8'>
-                    <PiAddressBookTabsLight className="text-2xl" />
-                </div>
-                <span className="text-sm">연락망</span>
-            </button>
-    
+            {memberRoles.includes(user?.role) && (
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/members') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`}>
+                    <div className='flex items-center justify-center w-8 h-8'>
+                        <PiAddressBookTabsLight className="text-2xl" />
+                    </div>
+                    <span className="text-sm">연락망</span>
+                </button>
+            )}
+
             {allowedAdminRoles.includes(user?.role) && (
                 <button type="button" className={`flex flex-col items-center ${isActiveTab('/admin') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleAdmin}>
                     <div className='flex items-center justify-center w-8 h-8'>

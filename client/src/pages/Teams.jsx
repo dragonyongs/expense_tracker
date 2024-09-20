@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthProvider';
 import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
+import Loading from '../components/Loading';
 
 function Teams() {
     const { user } = useContext(AuthContext);
@@ -33,7 +34,7 @@ function Teams() {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Loading type="ThreeDots" />;
     }
 
     return (

@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loading from '../components/Loading';
+import { API_URLS } from '../services/apiUrls';
 
 export const AuthContext = createContext({});
 
@@ -14,11 +15,11 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const checkAuthStatus = async () => {
             try {
-                const response = await axios.get('/api/auth/isAuthenticated');
+                const response = await axios.get(`${API_URLS.AUTHENTICATED}`);
                 const fetchedUser = response.data.user;
 
                 // 사용자 상태 확인
-                const statusResponse = await axios.get(`/api/statuses/${fetchedUser.status_id}`);
+                const statusResponse = await axios.get(`${API_URLS.STATUSES}/${fetchedUser.status_id}`);
                 const status = statusResponse.data.status_name;
 
                 // role_id가 null일 경우 예외 처리
@@ -26,7 +27,7 @@ export function AuthProvider({ children }) {
                     throw new Error("User does not have a valid role_id.");
                 }
 
-                const roleResponse = await axios.get(`/api/roles/${fetchedUser.role_id}`);
+                const roleResponse = await axios.get(`${API_URLS.ROLES}/${fetchedUser.role_id}`);
                 const role = roleResponse.data.role_name;
 
                 // 사용자와 상태 정보 업데이트
@@ -63,7 +64,7 @@ export function AuthProvider({ children }) {
 
     const login = async (credentials) => {
         try {
-            const { data } = await axios.post('/api/auth/login', credentials);
+            const { data } = await axios.post(`${API_URLS.AUTH_LOGIN}`, credentials);
             handleLoginSuccess(data);
         } catch (err) {
             const errorMessage = err.response?.data?.error || '로그인 중 문제가 발생했습니다. 다시 시도해주세요.';
@@ -74,7 +75,7 @@ export function AuthProvider({ children }) {
     const handleLoginSuccess = async (data) => {
         // 로그인 성공 후 토큰 저장 및 사용자 정보 업데이트
         localStorage.setItem('refreshToken', data.refreshToken);
-        const statusResponse = await axios.get(`/api/status/${data.user.status_id}`);
+        const statusResponse = await axios.get(`${API_URLS.STATUSES}/${data.user.status_id}`);
         const status = statusResponse.data.status_name;
 
         // 상태와 토큰 설정
@@ -99,7 +100,7 @@ export function AuthProvider({ children }) {
     const logout = async () => {
         try {
             // 서버에 로그아웃 요청
-            await axios.post('/api/auth/logout', { refreshToken: localStorage.getItem('refreshToken') });
+            await axios.post(`${API_URLS.AUTH_LOGOUT}`, { refreshToken: localStorage.getItem('refreshToken') });
             
             // 로컬 스토리지에서 토큰 제거
             localStorage.removeItem('refreshToken');
