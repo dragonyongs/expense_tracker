@@ -21,10 +21,10 @@ const Dashboard = () => {
                     <p>{user.role}</p>
                 </div>
             ) : (
-                <div>
+                <>
                     <CardBalance role={user.role} />
                     <PayHistory />
-                </div>
+                </>
             ) }
             
 

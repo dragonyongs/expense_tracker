@@ -150,7 +150,7 @@ const AdminAccount = () => {
                                                     <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                                         {account.account_number}
                                                     </p>
-                                                    <p className="text-slate-700">
+                                                    <p className="text-slate-700 dark:text-white">
                                                         {account.team_id.team_name}
                                                     </p>
                                                 </div>

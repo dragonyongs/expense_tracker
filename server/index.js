@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 // CORS 설정
-app.use(cors({ origin: 'https://expense-tracker-mhnw.onrender.com/' }));
+app.use(cors({ origin: 'https://expense-tracker-mhnw.onrender.com/', credentials: true }));
 
 // Routes
 app.use('/api/auth', authRotes);

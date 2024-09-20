@@ -271,7 +271,7 @@ const Transactions = () => {
     });
 
     return (
-        <div className='w-full p-4 sm:p-6 dark:bg-gray-800'>
+        <div className='flex-1 w-full p-4 sm:p-6 dark:bg-gray-800'>
             {/* 카드 한도와 남은 금액 표시 */}
             <div className='mb-8 px-3'>
                 {userCardsWithTotals.map(card => {
@@ -293,7 +293,7 @@ const Transactions = () => {
                     <h5 className="text-md font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
                     <button
                         type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl'
+                        className='text-black font-semibold rounded-lg text-2xl dark:text-white'
                         onClick={handleAddTransaction}
                     ><IoAddCircleOutline /></button>
                 </div>

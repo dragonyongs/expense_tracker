@@ -6,5 +6,6 @@ export const API_URLS = {
     DEPOSITS: '/api/transactions/deposits',
     MEMBERS: '/api/members',
     ACCOUNTS: '/api/accounts',
-    TEAMS: '/api/teams'
+    TEAMS: '/api/teams',
+    ACCOUNTS_WITH_CARDS: '/api/accounts/memberAccountsWithCards'
 };
