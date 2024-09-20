@@ -34,7 +34,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
-app.use('/api/status', statusRoutes);
+app.use('/api/statuses', statusRoutes);
 app.use('/api/roles', roleRoutes);
 
 // MongoDB 연결

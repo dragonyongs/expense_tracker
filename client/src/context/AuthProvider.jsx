@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
                 const fetchedUser = response.data.user;
 
                 // 사용자 상태 확인
-                const statusResponse = await axios.get(`/api/status/${fetchedUser.status_id}`);
+                const statusResponse = await axios.get(`/api/statuses/${fetchedUser.status_id}`);
                 const status = statusResponse.data.status_name;
 
                 // role_id가 null일 경우 예외 처리

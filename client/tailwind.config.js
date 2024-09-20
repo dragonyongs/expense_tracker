@@ -30,6 +30,9 @@ export default {
       },
       borderRadius: {
         '4xl' : '2rem'
+      },
+      scale: {
+        '98': '.98',
       }
     },
   },

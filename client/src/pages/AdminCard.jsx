@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import axios from "../services/axiosInstance"; 
+import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
-
-const ACCOUNT_URL = '/api/accounts';
-const MEMBER_URL = '/api/members';
-const CARD_URL = '/api/cards';
+import SelectField from '../components/SelectField';
 
 const AdminCard = () => {
     const [cards, setCards] = useState([]);
@@ -20,7 +18,7 @@ const AdminCard = () => {
 
     const fetchCards = async () => {
         try {
-            const response = await axios.get(CARD_URL);
+            const response = await axios.get(API_URLS.CARDS);
             setCards(response.data);
         } catch (error) {
             console.error('Error fetching cards:', error);
@@ -29,7 +27,7 @@ const AdminCard = () => {
 
     const fetchAccounts = async () => {
         try {
-            const response = await axios.get(ACCOUNT_URL);
+            const response = await axios.get(API_URLS.ACCOUNTS);
             setAccounts(response.data);
         } catch (error) {
             console.error('Error fetching accounts:', error);
@@ -38,7 +36,7 @@ const AdminCard = () => {
 
     const fetchMembers = async () => {
         try {
-            const response = await axios.get(MEMBER_URL);
+            const response = await axios.get(API_URLS.MEMBERS);
             setMembers(response.data);
         } catch (error) {
             console.error('Error fetching cards:', error);
@@ -86,11 +84,11 @@ const AdminCard = () => {
 
             if (isEditing) {
                 // 수정 모드일 때 PUT 요청
-                await axios.put(`${CARD_URL}/${selectedCard._id}`, cardData);
+                await axios.put(`${API_URLS.CARDS}/${selectedCard._id}`, cardData);
                 console.log("Card updated successfully:", cardData);
             } else {
                 // 추가 모드일 때 POST 요청
-                await axios.post(CARD_URL, cardData);
+                await axios.post(API_URLS.CARDS, cardData);
                 console.log("Card added successfully:", cardData);
             }
             
@@ -112,7 +110,7 @@ const AdminCard = () => {
 
     const handleDelete = async () => {
         try {
-            await axios.delete(`${CARD_URL}/${selectedCard._id}`);
+            await axios.delete(`${API_URLS.CARDS}/${selectedCard._id}`);
             console.log("Card deleted successfully", selectedCard.card_number);
             await fetchCards();
             handleCloseDrawer();
@@ -260,41 +258,27 @@ const AdminCard = () => {
                                 required
                             />
 
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="members_id">사용자</label>
-                                <select
-                                    id="members_id"
-                                    name="members_id"
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    value={selectedCard?.member_id?._id || ""}  // 현재 상태의 _id 값 설정
-                                    onChange={handleMemberChange}
-                                >
-                                    <option value="" disabled>사용자 선택</option>
-                                    {members.map(member => (
-                                        <option key={member._id} value={member._id}>
-                                            {member.member_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <SelectField
+                                label="사용자"
+                                id="card_id"
+                                value={selectedCard?.member_id?._id || ""}
+                                onChange={handleMemberChange}
+                                options={members.map(member => ({ value: member._id, label: member.member_name}
+                                ))}
+                                placeholder="사용자 선택"
+                                required
+                            />
 
-                            <div className="flex flex-col gap-2 pb-2">
-                                <label htmlFor="account_id">연결 계좌</label>
-                                <select
-                                    id="account_id"
-                                    name="account_id"
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    value={selectedCard?.account_id?._id || ""}  // 현재 상태의 _id 값 설정
-                                    onChange={handleAccountChange}
-                                >
-                                    <option value="" disabled>연결 계좌 선택</option>
-                                    {accounts.map(account => (
-                                        <option key={account._id} value={account._id}>
-                                            {account.account_number}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <SelectField
+                                label="연결 계좌"
+                                id="account_id"
+                                value={selectedCard?.account_id?._id || ""}
+                                onChange={handleAccountChange}
+                                options={accounts.map(account => ({ value: account._id, label: account.account_number}
+                                ))}
+                                placeholder="연결 계좌"
+                                required
+                            />
 
                         </div>
                         {/* 저장 버튼 */}

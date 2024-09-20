@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import axios from "../services/axiosInstance"; 
+import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
-
-const TEAM_URL = '/api/teams';
-const DEPARTMENT_URL = '/api/departments';
 
 const AdminTeams = () => {
     const [teams, setTeams] = useState([]);
@@ -17,7 +15,7 @@ const AdminTeams = () => {
 
     const fetchTeams = async () => {
         try {
-            const response = await axios.get(TEAM_URL);
+            const response = await axios.get(API_URLS.TEAMS);
             setTeams(response.data);
         } catch (error) {
             console.error('Error fetching teams:', error);
@@ -26,7 +24,7 @@ const AdminTeams = () => {
 
     const fetchDepartments = async () => {
         try {
-            const response = await axios.get(DEPARTMENT_URL);
+            const response = await axios.get(API_URLS.DEPARTMENTS);
             setDepartments(response.data);
         } catch (error) {
             console.error('Error fetching departments:', error);
@@ -89,11 +87,11 @@ const AdminTeams = () => {
 
             if (isEditing) {
                 // 수정 모드일 때 PUT 요청
-                await axios.put(`${TEAM_URL}/${selectedTeam._id}`, teamData);
+                await axios.put(`${API_URLS.TEAMS}/${selectedTeam._id}`, teamData);
                 console.log("Team updated successfully:", teamData);
             } else {
                 // 추가 모드일 때 POST 요청
-                await axios.post(TEAM_URL, teamData);
+                await axios.post(API_URLS.TEAMS, teamData);
                 console.log("Team added successfully:", teamData);
             }
             
@@ -206,4 +204,4 @@ const AdminTeams = () => {
     )
 }
 
-export default AdminTeams
+export default AdminTeams;

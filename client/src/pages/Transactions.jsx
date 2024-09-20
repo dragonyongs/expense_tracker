@@ -4,6 +4,7 @@ import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance"; 
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
+import SelectField from '../components/SelectField';
 import Card from '../components/Card';
 import { IoAddCircleOutline } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
@@ -313,7 +314,7 @@ const Transactions = () => {
                                         </p>
                                     </div>
                                     {transactions.map((transaction) => (
-                                        <div key={transaction._id} onClick={ transaction.transaction_type !== "입금" ? () => handleOpenDrawer(transaction) : null} className="active:bg-slate-50">
+                                        <div key={transaction._id} onClick={ transaction.transaction_type !== "입금" ? () => handleOpenDrawer(transaction) : null} className="rounded-lg active:scale-99 active:px-2 active:bg-slate-50 dark:active:bg-slate-600">
                                             <div className="flex items-center py-2">
                                                 <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== '입금' ? 'border-red-600' : 'border-green-600'}`}>
                                                     <span className="text-slate-500 text-lg font-normal">
@@ -416,23 +417,38 @@ const Transactions = () => {
                         onChange={(e) => setSelectedTransaction({ ...selectedTransaction, menu_name: e.target.value })}
                         placeholder="메뉴명(옵션) 입력"
                     />
-                    <div className="flex flex-col gap-2">
+                    <SelectField
+                        label="사용 카드"
+                        id="card_id"
+                        value={getCardId() || ""}
+                        onChange={handleCardChange}
+                        options={userCards.map(card => ({ value: card._id, label: card.card_number }))}
+                        placeholder="카드 선택"
+                        required
+                    />
+
+                    {/* <div className="flex flex-col gap-2">
                         <label htmlFor="card_id">사용 카드</label>
-                        <select
-                            id="card_id"
-                            name="card_id"
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            value={getCardId() || ""}
-                            onChange={handleCardChange}
-                        >
-                            <option value="">카드 선택</option>
-                            {userCards.map(card => (
-                                <option key={card._id} value={card._id}>
-                                    {card.card_number}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                        <div className='relative'>
+                            <select
+                                id="card_id"
+                                name="card_id"
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white appearance-none"
+                                value={getCardId() || ""}
+                                onChange={handleCardChange}
+                            >
+                                <option value="">카드 선택</option>
+                                {userCards.map(card => (
+                                    <option key={card._id} value={card._id}>
+                                        {card.card_number}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <IoIosArrowDown className="w-4 h-4 text-gray-500 dark:text-gray-50" />
+                            </div>
+                        </div>
+                    </div> */}
                 </div>
 
                 {/* 저장 버튼 */}

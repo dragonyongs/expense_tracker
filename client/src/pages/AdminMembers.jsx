@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import axios from "../services/axiosInstance";
+import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { IoAddCircleOutline } from "react-icons/io5";
-
-const MEMBER_URL = '/api/members';
-const STATUS_URL = '/api/status';
-const ROLE_URL = '/api/roles';
-const TEAM_URL = '/api/teams';
 
 const AdminMembers = () => {
     const [members, setMembers] = useState([]);
@@ -60,7 +56,7 @@ const AdminMembers = () => {
         setIsEditing(true);
         setIsOpen(true);
 
-        const response = await axios.get(`${MEMBER_URL}/${member._id}`);
+        const response = await axios.get(`${API_URLS.MEMBERS}/${member._id}`);
         const fullMemberData = response.data;
 
         // 상세 정보가 포함된 멤버로 업데이트
@@ -81,7 +77,7 @@ const AdminMembers = () => {
 
     const fetchMembers = async () => {
         try {
-            const response = await axios.get(MEMBER_URL);
+            const response = await axios.get(API_URLS.MEMBERS);
             setMembers(response.data);
         } catch (error) {
             console.error('Error fetching members:', error);
@@ -90,7 +86,7 @@ const AdminMembers = () => {
 
     const fetchStatuses = async () => {
         try {
-            const response = await axios.get(STATUS_URL);
+            const response = await axios.get(API_URLS.STATUS);
             setStatuses(response.data);
         } catch (error) {
             console.error('Error fetching statuses:', error);
@@ -99,7 +95,7 @@ const AdminMembers = () => {
 
     const fetchTeams = async () => {
         try {
-            const response = await axios.get(TEAM_URL);
+            const response = await axios.get(API_URLS.TEAMS);
             setTeams(response.data);
         } catch (error) {
             console.error('Error fetching Teams:', error);
@@ -108,7 +104,7 @@ const AdminMembers = () => {
 
     const fetchRoles = async () => {
         try {
-            const response = await axios.get(ROLE_URL);
+            const response = await axios.get(API_URLS.ROLES);
             setRoles(response.data);
         } catch (error) {
             console.error('Error fetching Roles:', error);
@@ -185,9 +181,9 @@ const AdminMembers = () => {
             console.log(memberData);
             
             if (isEditing) {
-                await axios.put(`${MEMBER_URL}/${selectedMember._id}`, memberData);
+                await axios.put(`${API_URLS.MEMBERS}/${selectedMember._id}`, memberData);
             } else {
-                await axios.post(MEMBER_URL, memberData);
+                await axios.post(API_URLS.MEMBERS, memberData);
             }
             
             await fetchMembers();

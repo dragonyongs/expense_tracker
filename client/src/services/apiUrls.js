@@ -7,5 +7,8 @@ export const API_URLS = {
     MEMBERS: '/api/members',
     ACCOUNTS: '/api/accounts',
     TEAMS: '/api/teams',
-    ACCOUNTS_WITH_CARDS: '/api/accounts/memberAccountsWithCards'
+    ACCOUNTS_WITH_CARDS: '/api/accounts/memberAccountsWithCards',
+    DEPARTMENTS: '/api/departments',
+    STATUSES: '/api/statuses',
+    ROLES: '/api/roles'
 };

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import axios from "../services/axiosInstance"; 
+import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer'; // 공통 Drawer 컴포넌트 사용
 import InputField from '../components/InputField'; // 공통 Input 컴포넌트 사용
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
 
-const DEPARTMENTS_URL = '/api/departments';
+// const DEPARTMENTS_URL = '/api/departments';
 
 const AdminDepartments = () => {
     const [departments, setDepartments] = useState([]);
@@ -16,7 +17,7 @@ const AdminDepartments = () => {
     // 부서 리스트를 가져오는 함수
     const fetchDepartments = async () => {
         try {
-            const response = await axios.get(DEPARTMENTS_URL);
+            const response = await axios.get(API_URLS.DEPARTMENTS);
             setDepartments(response.data);
         } catch (error) {
             console.error('Error fetching departments:', error);
@@ -58,11 +59,11 @@ const AdminDepartments = () => {
             
             if (isEditing) {
                 // 수정 모드일 때 PUT 요청
-                await axios.put(`${DEPARTMENTS_URL}/${selectedDepartment._id}`, departmentData);
+                await axios.put(`${API_URLS.DEPARTMENTS}/${selectedDepartment._id}`, departmentData);
                 console.log("Department updated successfully:", departmentData);
             } else {
                 // 추가 모드일 때 POST 요청
-                await axios.post(DEPARTMENTS_URL, departmentData);
+                await axios.post(API_URLS.DEPARTMENTS, departmentData);
                 console.log("Department added successfully:", departmentData);
             }
             
