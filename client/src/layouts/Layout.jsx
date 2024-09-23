@@ -30,11 +30,11 @@ const Layout = () => {
             <section className='lg:ml-mobile'>
                 <div className={`h-real-screen md:max-w-xl mx-auto lg:mx-0 bg-white flex flex-col ${!isApprovedUser ? '' : 'justify-between'}`}>
                     {isApprovedUser && <Header />}
-                    <div className={`overflow-y-auto shadow-md bg-slate-200 h-full ${isApprovedUser ? '' : 'flex items-center justify-center'}`}>
-                        <div className={`${isApprovedUser ? 'flex flex-col relative h-full' : 'w-full h-full'}`}>
+                    <div className={`overflow-y-auto shadow-md bg-slate-200 h-full ${isApprovedUser ? '' : 'flex items-center justify-center'} dark:bg-slate-900`}>
+                        <div className={`${isApprovedUser ? 'relative h-default-screen' : 'w-full h-full'}`}>
                             {/* /admin 경로일 때만 Tab 컴포넌트 렌더링 */}
                             {isAdminRoute && allowedRoles.includes(user?.role) && <AdminTab />}
-                                <Outlet />
+                            <Outlet />
                         </div>
                     </div>
                     {isApprovedUser && <TabBar />}

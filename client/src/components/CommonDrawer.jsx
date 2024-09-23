@@ -9,10 +9,12 @@ const CommonDrawer = ({ isOpen, onClose, title, children }) => {
             <div className="flex justify-between py-2 px-4 dark:bg-slate-800">
                 <h5 className="text-lg font-bold dark:text-slate-200">{title}</h5>
                 <button onClick={onClose}>
-                    <MdClose className='text-2xl dark:text-slate-200'/>
+                    <MdClose className='text-2xl dark:text-slate-300'/>
                 </button>
             </div>
-            {children} 
+            <div className='dark:bg-slate-800'>
+                {children} 
+            </div>
         </Drawer>
     );
 };

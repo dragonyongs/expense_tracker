@@ -3,6 +3,29 @@ import { AuthContext } from '../context/AuthProvider';
 import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
 import Loading from '../components/Loading';
+// ProgressBar 컴포넌트 정의
+function ProgressBar({ spentPercentage }) {
+    const [progressWidth, setProgressWidth] = useState(0); // 초기 width를 0으로 설정
+
+    useEffect(() => {
+        // spentPercentage가 계산되었을 때 애니메이션 적용
+        const timer = setTimeout(() => {
+            setProgressWidth(spentPercentage); // 애니메이션 후 spentPercentage로 업데이트
+        }, 100); // 100ms 딜레이를 줘서 애니메이션이 자연스럽게 시작되도록
+
+        return () => clearTimeout(timer); // 컴포넌트 언마운트 시 타이머 클리어
+    }, [spentPercentage]); // spentPercentage가 변경될 때마다 실행
+
+    return (
+        <div className='relative'>
+            <div 
+                className={`absolute top-0 left-0 h-3 transition-all duration-500 ease-in-out rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-[#0433FF]'}`}
+                style={{ width: `${progressWidth}%` }} // 애니메이션을 적용할 width 값
+            ></div>
+            <div className='w-full h-3 bg-gray-200 rounded-full dark:bg-slate-500'></div>
+        </div>
+    );
+}
 
 function Teams() {
     const { user } = useContext(AuthContext);
@@ -39,7 +62,7 @@ function Teams() {
 
     return (
         <>
-            <div className='flex flex-col gap-y-2 h-full dark:bg-slate-900'>
+            <div className='flex flex-col gap-y-2 h-full'>
                 {accounts
                     .filter(account => {
                         // 팀원이면서 팀장 카드가 있는 계좌는 렌더링하지 않음
@@ -57,7 +80,7 @@ function Teams() {
                         const totalBalance = account.cards.reduce((sum, card) => sum + card.balance, 0);
     
                         return (
-                            <div key={account._id} className='p-8 bg-white shadow-sm dark:bg-slate-800 dark:text-slate-300'>
+                            <div key={account._id} className='h-full p-8 bg-white shadow-sm border-t border-t-gray-300 dark:border-t-slate-700 dark:bg-slate-800 dark:text-slate-300'>
                                 <h3 className='text-lg'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌</h3>
                                 <h3 className='text-2xl tracking-tight text-gray-700 dark:text-slate-300 mt-2 dark:font-thin'>
                                     <span className='font-bold text-black dark:text-slate-300 dark:font-normal'>{totalBalance.toLocaleString()}원</span> {totalBalance > 0 ? "남음" : "" }
@@ -70,7 +93,7 @@ function Teams() {
                                             const totalAmount = card.limit + card.rollover_amount; // 카드의 한도 + 이월 금액
                                             const spentAmount = card.limit - card.balance; // 지출 금액
                                             const spentPercentage = totalAmount > 0 ? (spentAmount / totalAmount) * 100 : 0;
-    
+
                                             return (
                                                 <div key={card.card_number} className='mb-10'>
                                                     <div className='flex justify-between mb-4'>
@@ -82,13 +105,15 @@ function Teams() {
                                                             <span className='font-bold text-black dark:font-normal dark:text-slate-200'>{card.balance.toLocaleString()}원</span> <span className='text-base'> {card.balance > 0 ? "남음" : "" }</span>
                                                         </span>
                                                     </div>
-                                                    <div className='relative'>
+                                                    {/* ProgressBar 컴포넌트 사용 */}
+                                                    <ProgressBar spentPercentage={spentPercentage} />
+                                                    {/* <div className='relative'>
                                                         <div 
-                                                            className={`absolute top-0 left-0 h-3 rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-[#0433FF]'}`}
+                                                            className={`absolute top-0 left-0 h-3 transition ease-in-out delay-150  rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-[#0433FF]'}`}
                                                             style={{ width: `${spentPercentage}%` }} // 지출 비율에 따라 너비 설정
                                                         ></div>
                                                         <div className='w-full h-3 bg-gray-200 rounded-full dark:bg-slate-500'></div>
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             );
                                         })}

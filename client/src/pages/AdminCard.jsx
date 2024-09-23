@@ -161,7 +161,7 @@ const AdminCard = () => {
     return (
         <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
             <div className="flex items-center justify-between mt-2 mb-4 px-3">
-                <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">카드 목록</h5>
+                <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">카드 목록</h5>
                 <button
                     type="button"
                     className="text-black font-semibold rounded-lg text-2xl dark:text-white"
@@ -286,7 +286,7 @@ const AdminCard = () => {
                             <div className='flex justify-between gap-y-4 gap-x-2'>
                                 {!isEditing ? '' : <button
                                     type="button" 
-                                    className='text-red-600 font-semibold text-sm border border-red-400 px-5 py-3 rounded-lg'
+                                    className='text-red-600 font-semibold text-sm border border-red-400 px-5 py-3 rounded-lg dark:text-orange-50 dark:border-none dark:bg-orange-600'
                                     onClick={handleDeleteConfirm}
                                 >삭제</button>
                                 }
@@ -294,7 +294,7 @@ const AdminCard = () => {
                                     {isEditing ? '수정' : '추가'}
                                 </button>
                             </div>
-                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600 dark:text-slate-400">
                                 취소
                             </button>
                         </div>

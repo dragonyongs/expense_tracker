@@ -1,9 +1,9 @@
-const InputField = ({ label, id, value, onChange, placeholder, className = "bg-slate-100 border-0", type = "text", required = false, disabled = false }) => {
+const InputField = ({ label, id, value='', onChange, placeholder, className = "bg-slate-100 border-0", type = "text", required = false, disabled = false }) => {
     return (
         <div className={`flex flex-col gap-2 ${type === 'hidden'? "hidden" : ""}`}>
             <div className="flex justify-between">
                 <label htmlFor={id} className="dark:text-slate-300 dark:font-light">{label}</label>
-                {!required ? <span className="text-sm text-slate-400">(선택)</span> : ''}
+                {!required ? <span className="text-sm text-slate-400 dark:text-slate-500">(선택)</span> : ''}
             </div>
             <input 
                 id={id}

@@ -4,6 +4,7 @@ import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
+import SelectField from '../components/SelectField';
 import { IoAddCircleOutline } from "react-icons/io5";
 
 const AdminMembers = () => {
@@ -86,7 +87,7 @@ const AdminMembers = () => {
 
     const fetchStatuses = async () => {
         try {
-            const response = await axios.get(API_URLS.STATUS);
+            const response = await axios.get(API_URLS.STATUSES);
             setStatuses(response.data);
         } catch (error) {
             console.error('Error fetching statuses:', error);
@@ -211,10 +212,10 @@ const AdminMembers = () => {
                 </li>
             </ul>
             <div className="flex items-center justify-between mb-4 px-3">
-                <h5 className="text-2xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
+                <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
                 <button
                     type="button" 
-                    className='text-black font-semibold rounded-lg text-3xl dark:text-white'
+                    className='text-black font-semibold rounded-lg text-2xl dark:text-white'
                     onClick={handleAddDepartment}
                 ><IoAddCircleOutline /></button>
             </div>
@@ -325,59 +326,39 @@ const AdminMembers = () => {
                                 required
                             />
 
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="team_id">소속</label>
-                                <select
-                                    id="team_id"
-                                    name="team_id"
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    value={selectedMember?.team_id?._id || ""}
-                                    onChange={handleTeamChange}
-                                >
-                                    <option value="" disabled>상태 선택</option>
-                                    {teams.map(team => (
-                                        <option key={team._id} value={team._id}>
-                                            {team.team_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            {/* Member Status */}
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="status_id">상태</label>
-                                <select
-                                    id="status_id"
-                                    name="status_id"
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    value={selectedMember?.status_id?._id || ""}
-                                    onChange={handleStatusChange}
-                                >
-                                    <option value="" disabled>상태 선택</option>
-                                    {statuses.map(status => (
-                                        <option key={status._id} value={status._id}>
-                                            {status.status_description}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <SelectField
+                                label="소속"
+                                id="team_id"
+                                value={selectedMember?.team_id?._id || ""}
+                                onChange={handleTeamChange}
+                                options={teams.map(team => ({ value: team._id, label: team.team_name}
+                                ))}
+                                placeholder="소속 선택"
+                                required
+                            />
 
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="role_id">권한</label>
-                                <select
-                                    id="role_id"
-                                    name="role_id"
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    value={selectedMember?.role_id?._id || ""}
-                                    onChange={handleRoleChange}
-                                >
-                                    <option value="" disabled>권한 선택</option>
-                                    {roles.map(role => (
-                                        <option key={role._id} value={role._id}>
-                                            {role.role_description}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {/* Member Status */}
+                            <SelectField
+                                label="상태"
+                                id="status_id"
+                                value={selectedMember?.status_id?._id || ""}
+                                onChange={handleStatusChange}
+                                options={statuses.map(status => ({ value: status._id, label: status.status_description}
+                                ))}
+                                placeholder="상태 선택"
+                                required
+                            />
+
+                            <SelectField
+                                label="권한"
+                                id="role_id"
+                                value={selectedMember?.role_id?._id || ""}
+                                onChange={handleRoleChange}
+                                options={roles.map(role => ({ value: role._id, label: role.role_description}
+                                ))}
+                                placeholder="권한 선택"
+                                required
+                            />
                         </div>
                         
                         {/* Save Button */}
@@ -385,7 +366,7 @@ const AdminMembers = () => {
                             <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 {isEditing ? '수정' : '추가'}
                             </button>
-                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600 dark:text-slate-400">
                                 안할래요
                             </button>
                         </div>

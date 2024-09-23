@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from "../services/axiosInstance"; 
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
+import SelectField from '../components/SelectField';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { API_URLS } from '../services/apiUrls';
@@ -121,10 +122,10 @@ const AdminAccount = () => {
         <>
             <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                 <div className="flex items-center justify-between mt-2 mb-4 px-3">
-                    <h5 className="text-2xl font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
+                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
                     <button
                         type="button" 
-                        className='text-black font-semibold rounded-lg text-3xl dark:text-white'
+                        className='text-black font-semibold rounded-lg text-2xl dark:text-white'
                         onClick={handleAddAccount}
                     >
                         <IoAddCircleOutline />
@@ -190,31 +191,23 @@ const AdminAccount = () => {
                                 required
                             />
 
-                            <div className="flex flex-col gap-2">
-                                    <label htmlFor="team_id">사용 팀</label>
-                                    <select
-                                        id="team_id"
-                                        name="team_id"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                        value={selectedAccount?.team_id?._id || ""}  // 현재 상태의 _id 값 설정
-                                        onChange={handleTeamChange}
-                                    >
-                                        <option value="" disabled>팀 선택</option>
-                                        {teams.map(team => (
-                                            <option key={team._id} value={team._id}>
-                                                {team.team_name}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                </div>
+                            <SelectField
+                                label="소속"
+                                id="team_id"
+                                value={selectedAccount?.team_id?._id || ""}
+                                onChange={handleTeamChange}
+                                options={teams.map(team => ({ value: team._id, label: team.team_name}
+                                ))}
+                                placeholder="팀 선택"
+                                required
+                            />
                         </div>
                         {/* 저장 버튼 */}
                         <div className="flex flex-col gap-3 pt-4 p-6">
                             <button type="button" onClick={handleSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 {isEditing ? '수정' : '추가'}
                             </button>
-                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600 dark:text-slate-400">
                                 취소
                             </button>
                         </div>

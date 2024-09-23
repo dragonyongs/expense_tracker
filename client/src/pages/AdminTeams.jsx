@@ -3,6 +3,7 @@ import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
+import SelectField from '../components/SelectField';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
 
@@ -115,10 +116,10 @@ const AdminTeams = () => {
     return (
         <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                 <div className="flex items-center justify-between mt-2 mb-4 px-3">
-                    <h5 className="text-2xl font-bold leading-none text-gray-900 dark:text-white">팀 목록</h5>
+                    <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">팀 목록</h5>
                     <button
                         type="button"
-                        className="text-black font-semibold rounded-lg text-3xl dark:text-white"
+                        className="text-black font-semibold rounded-lg text-2xl dark:text-white"
                         onClick={handleAddTeam}
                     >
                         <IoAddCircleOutline />
@@ -169,23 +170,17 @@ const AdminTeams = () => {
                                     placeholder="팀 이름 입력"
                                 />
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="department_id">본부</label>
-                                    <select
-                                        id="department_id"
-                                        name="department_id"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 mb-6 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                        value={selectedTeam?.department_id?._id || ""}
-                                        onChange={handleDepartmentChange}
-                                    >
-                                        <option value="" disabled>본부 선택</option>
-                                        {departments.map(department => (
-                                            <option key={department._id} value={department._id}>
-                                                {department.department_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <SelectField
+                                    label="본부"
+                                    id="department_id"
+                                    value={selectedTeam?.status_id?._id || ""}
+                                    onChange={handleDepartmentChange}
+                                    options={departments.map(department => ({ value: department._id, label: department.department_name}
+                                    ))}
+                                    placeholder="본부 선택"
+                                    required
+                                />
+                                
                             </div>
                             
                             {/* 저장 버튼 */}
