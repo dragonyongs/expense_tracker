@@ -15,8 +15,8 @@ function Teams() {
             const response = await axios.get(url, {
                 withCredentials: true // 쿠키를 전송하는 옵션
             });
-            console.log(response.data);
             setAccounts(response.data);
+
             // 유저의 포지션 설정
             const userInfo = response.data.find(account => 
                 account.cards.some(card => card.member_id === user.member_id)
@@ -58,10 +58,7 @@ function Teams() {
     
                         return (
                             <div key={account._id} className='p-8 bg-white shadow-sm'>
-                                <h3 className='text-xl'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌 잔액</h3>
-                                {/* <h2 className='text-md tracking-tight text-gray-500'>
-                                    <span className='font-bold'>{account.bank_name}</span> {account.account_number}
-                                </h2> */}
+                                <h3 className='text-lg'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌</h3>
                                 <h3 className='text-2xl tracking-tight text-gray-700 mt-2'>
                                     <span className='font-bold text-black'>{totalBalance.toLocaleString()}원</span> 남음
                                 </h3>
@@ -78,16 +75,16 @@ function Teams() {
                                                 <div key={card.card_number} className='mb-10'>
                                                     <div className='flex justify-between mb-4'>
                                                         <h3 className='flex gap-x-2 items-center'>
-                                                            <span className='text-xl font-bold'>{card.member_name}</span>
-                                                            <span className='text-xl'>{card.rank} / {card.position}</span>
+                                                            <span className='text-lg font-bold'>{card.member_name}</span>
+                                                            <span className='text-base'>{card.position}</span>
                                                         </h3>
-                                                        <span className='text-xl text-gray-400'>
-                                                            <span className='font-bold text-black'>{card.balance.toLocaleString()}원</span> 남음
+                                                        <span className='text-lg text-gray-400'>
+                                                            <span className='font-bold text-black'>{card.balance.toLocaleString()}원</span> <span className='text-base'>남음</span>
                                                         </span>
                                                     </div>
                                                     <div className='relative'>
                                                         <div 
-                                                            className={`absolute top-0 left-0 h-3 rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-blue-500'}`}
+                                                            className={`absolute top-0 left-0 h-3 rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-[#0433FF]'}`}
                                                             style={{ width: `${spentPercentage}%` }} // 지출 비율에 따라 너비 설정
                                                         ></div>
                                                         <div className='w-full h-3 bg-gray-200 rounded-full'></div>

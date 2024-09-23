@@ -24,7 +24,7 @@ const PayHistory = () => {
     return (
         <>
             <h3 className='mt-10 px-6 font-semibold text-2xl'>최근 결제</h3>
-            <div className="px-6 h-full">
+            <div className="px-6">
                 {filteredTransactions.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full">
                         <img src="/icon-wallet.png" alt="No Transactions" className="mb-4 w-48 h-48" />

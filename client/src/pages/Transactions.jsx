@@ -291,7 +291,7 @@ const Transactions = () => {
 
             {/* 트랜잭션 목록 */}
                 <div className="flex items-center justify-between mb-4 px-3">
-                    <h5 className="text-md font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
+                    <h5 className="text-xl font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
                     <button
                         type="button" 
                         className='text-black font-semibold rounded-lg text-2xl dark:text-white'
@@ -299,7 +299,7 @@ const Transactions = () => {
                     ><IoAddCircleOutline /></button>
                 </div>
                 <div className='flow-root'>
-                    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700">
+                    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
                     {Object.keys(groupedTransactions).length === 0 ? (
                         <div className="flex justify-center items-center min-h-[calc(100vh-47vh)] text-gray-500 dark:text-gray-400">
                             데이터가 없습니다.
@@ -378,8 +378,8 @@ const Transactions = () => {
                 title={isEditing ? '카드 사용 수정' : '카드 사용 추가'}
             >
 
-                <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
-                    {errMsg && <div className="text-red-600">{errMsg}</div>} {/* 에러 메시지 표시 */}
+                <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
+                    {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
                     <InputField 
                         label="상호명" 
                         id="merchant_name" 
@@ -452,13 +452,13 @@ const Transactions = () => {
                 </div>
 
                 {/* 저장 버튼 */}
-                <div className="flex flex-col gap-3 pt-4 p-6">
+                <div className="flex flex-col gap-3 pt-4 p-6 dark:bg-slate-800">
                     <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                         {isEditing ? '수정' : '등록'}
                     </button>
                     {!isEditing ? '' : <button
                             type="button" 
-                            className='text-red-600 font-semibold'
+                            className='text-red-600 font-semibold dark:text-orange-400 dark:font-normal'
                             onClick={handleDeleteConfirm}
                         >삭제 할래요</button>
                     }

@@ -121,10 +121,10 @@ const AdminAccount = () => {
         <>
             <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                 <div className="flex items-center justify-between mt-2 mb-4 px-3">
-                    <h5 className="text-lg font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
+                    <h5 className="text-2xl font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>
                     <button
                         type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl dark:text-white'
+                        className='text-black font-semibold rounded-lg text-3xl dark:text-white'
                         onClick={handleAddAccount}
                     >
                         <IoAddCircleOutline />
@@ -141,7 +141,7 @@ const AdminAccount = () => {
                                     {accounts.map(account => (
                                         <li key={account._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(account)}>
                                             <div className="flex items-center">
-                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center ${getBankColor(account.bank_name)}`}>
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center dark:border-none ${getBankColor(account.bank_name)}`}>
                                                     <span className="text-white text-sm font-normal">
                                                         {account.bank_name.slice(0, 2)}
                                                     </span>
@@ -150,7 +150,7 @@ const AdminAccount = () => {
                                                     <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                                         {account.account_number}
                                                     </p>
-                                                    <p className="text-slate-700 dark:text-white">
+                                                    <p className="text-slate-700 dark:text-slate-400">
                                                         {account.team_id.team_name}
                                                     </p>
                                                 </div>

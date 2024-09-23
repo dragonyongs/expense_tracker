@@ -41,8 +41,8 @@ const TabBarComponent = () => {
     
 
     return (
-        <nav className='z-50 bg-white shadow-md pt-2 px-6 pb-4 flex justify-between border border-t border-gray-100'>
-            <button type="button" className={`flex flex-col items-center ${isActiveTab('/') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleHome}>
+        <nav className='z-50 bg-white shadow-md pt-2 px-6 pb-4 flex justify-between border-t border-slate-100 dark:bg-slate-800 dark:border-slate-700'>
+            <button type="button" className={`flex flex-col items-center ${isActiveTab('/') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleHome}>
                 <div className='flex items-center justify-center w-8 h-8'>
                     <GoHome className="text-2xl" />
                 </div>
@@ -50,7 +50,7 @@ const TabBarComponent = () => {
             </button>
 
             {memberRoles.includes(user?.role) && (
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/teams') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleTeams}>
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/teams') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleTeams}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiCardsThree className="text-2xl" />
                     </div>
@@ -59,16 +59,16 @@ const TabBarComponent = () => {
             )}
 
             {memberRoles.includes(user?.role) && (
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/transactions') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleTransactions}>
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/transactions') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleTransactions}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiPencilSimpleLine className="text-2xl" />
                     </div>
-                    <span className="text-sm">기록</span>
+                    <span className="text-sm">내카드</span>
                 </button>
             )}
 
             {memberRoles.includes(user?.role) && (
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/members') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`}>
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/members') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiAddressBookTabsLight className="text-2xl" />
                     </div>
@@ -77,7 +77,7 @@ const TabBarComponent = () => {
             )}
 
             {allowedAdminRoles.includes(user?.role) && (
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/admin') ? 'text-blue-600 font-semibold' : 'text-slate-500'}`} onClick={handleAdmin}>
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/admin') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleAdmin}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <LuFolderLock className="text-2xl" />
                     </div>
