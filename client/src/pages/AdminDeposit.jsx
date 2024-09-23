@@ -3,6 +3,7 @@ import axios from "../services/axiosInstance";
 import CommonDrawer from '../components/CommonDrawer';
 import { API_URLS } from '../services/apiUrls';
 import InputField from '../components/InputField';
+import SelectField from '../components/SelectField';
 import { IoAddCircleOutline } from "react-icons/io5";
 // import { MdKeyboardArrowRight } from "react-icons/md";
 
@@ -147,8 +148,7 @@ const AdminDeposit = () => {
     // 사용자 선택 핸들러
     const handleUserChange = async (e) => {
         const selectedUserId = e.target.value;
-        setSelectedUser(selectedUserId);
-    
+        setSelectedUser(selectedUserId); // 사용자를 선택하면 상태에 저장
         try {
             // 선택한 사용자의 ID로 카드 목록 필터링
             const response = await axios.get(`${API_URLS.CARDS}/member/${selectedUserId}`);
@@ -242,7 +242,6 @@ const AdminDeposit = () => {
             // 상태 값 업데이트
             setBalance(updatedBalance);
             fetchDeposits();
-            handleCloseDrawer();
         } catch (error) {
             console.error('입금 처리 중 오류:', error);
             setErrMsg("입금 처리 중 오류가 발생했습니다.");
@@ -262,17 +261,11 @@ const AdminDeposit = () => {
 
     // 드로어에서 사용자 선택 값 설정
     useEffect(() => {
-        if (selectedDeposit && selectedDeposit.member_id) {
-            // 사용자가 선택된 경우 카드 목록을 업데이트
+        if (selectedDeposit && selectedDeposit.member_id && !selectedUser) {
+            // 사용자가 선택된 경우 카드 목록을 업데이트, selectedUser가 이미 설정되어 있으면 handleUserChange 호출 안함
             handleUserChange({ target: { value: selectedDeposit.member_id } });
         }
-    }, [selectedDeposit]);
-
-    // useEffect(() => {
-    //     if (selectedDeposit && selectedDeposit.member_id) {
-    //         console.log('member_id:', selectedDeposit.member_id);
-    //     }
-    // }, [selectedDeposit]);
+    }, [selectedDeposit, selectedUser]); // selectedUser를 의존성에 추가
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
@@ -352,44 +345,35 @@ const AdminDeposit = () => {
                 {/* Drawer: 입금 관리 */}
                 <CommonDrawer isOpen={isOpen} onClose={handleCloseDrawer} title={isEditing ? '입금 수정' : '입금 추가'}>
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
-                        {errMsg && <div className="text-red-600">{errMsg}</div>}
+                        {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
 
                         {/* 사용자 선택 */}
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="member_id">사용자 선택</label>
-                            <select
-                                id="member_id"
-                                name="member_id"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                value={selectedDeposit?.card_id?.member_id || ""}
-                                onChange={handleUserChange}
-                            >
-                                <option value="">사용자 선택</option>
-                                {users.map((member) => (
-                                    <option key={member._id} value={member._id}>
-                                        {member.member_name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <SelectField
+                            label="사용자"
+                            id="member_id"
+                            value={selectedUser || ""}  // selectedUser 상태로 설정
+                            onChange={handleUserChange}
+                            options={users.map(member => ({
+                                value: member._id,
+                                label: member.member_name
+                            }))}
+                            placeholder="사용자 선택"
+                            required
+                        />
 
                         {/* 카드 선택 */}
                         {isEditing ? (""
                         ) : (
-                            <select
+                            <SelectField
+                                label="카드"
                                 id="card_id"
-                                name="card_id"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                value={selectedDeposit.card_id|| ""}
+                                value={selectedDeposit?.card_id || ""}
                                 onChange={handleCardChange}
-                            >
-                                <option value="">카드 선택</option>
-                                {cards.map((card) => (
-                                    <option key={card._id} value={card._id}>
-                                        {card.card_number}/ {card.balance}
-                                    </option>
+                                options={cards.map(card => ({ value: card._id, label: card.card_number}
                                 ))}
-                            </select>
+                                placeholder="카드 선택"
+                                required
+                            />
                         )}
 
                         {/* 입금 금액 입력 */}
@@ -401,6 +385,15 @@ const AdminDeposit = () => {
                             onChange={(e) => setSelectedDeposit({ ...selectedDeposit, transaction_amount: e.target.value })}
                             placeholder="입금 금액 입력"
                             required={true}
+                        />
+
+                        <InputField
+                            label="입금명"
+                            id="menu_name"
+                            value={selectedDeposit?.menu_name || ""}
+                            className={"bg-white border border-slate-200"}
+                            onChange={(e) => setSelectedDeposit({ ...selectedDeposit, menu_name: e.target.value })}
+                            placeholder="입급명 입력"
                         />
                     </div>
 

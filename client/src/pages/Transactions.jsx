@@ -102,7 +102,7 @@ const Transactions = () => {
 
     useEffect(() => {
         setErrMsg('');
-    }, [transactions])
+    }, [transactions.length])
 
 
     // 카드와 트랜잭션 데이터 가져오기
@@ -133,7 +133,6 @@ const Transactions = () => {
     };
 
     useEffect(() => {
-        console.log('Fetching transactions...');
         fetchTransactionsForCurrentMonth();
         fetchCards();
     }, []);
@@ -148,9 +147,9 @@ const Transactions = () => {
         }
     }, [cards, user]);
     
-    const toggleDrawer = () => {
-        setIsOpen(!isOpen);
-    };
+    // const toggleDrawer = () => {
+    //     setIsOpen(!isOpen);
+    // };
 
     const resetTransaction = () => ({
         card_id: userCards[0]?._id || "",
@@ -167,6 +166,7 @@ const Transactions = () => {
     };
     
     const handleCloseDrawer = () => {
+        console.log('Closing drawer');
         setIsOpen(false);
         setSelectedTransaction(resetTransaction());
     };
@@ -197,14 +197,6 @@ const Transactions = () => {
         return selectedTransaction.card_id;
     };
 
-    const saveTransaction = async (transactionData) => {
-        if (isEditing) {
-            await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
-        } else {
-            await axios.post(API_URLS.TRANSACTIONS, transactionData);
-        }
-    };
-
     const handleError = (error) => {
         if (error.response) {
             return error.response.data.error || "오류가 발생했습니다.";
@@ -218,7 +210,7 @@ const Transactions = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
-            
+    
             const cardId = selectedTransaction.card_id._id || userCards[0]._id;
             const transactionData = {
                 card_id: cardId,
@@ -243,11 +235,19 @@ const Transactions = () => {
             }
     
             // 트랜잭션 저장
-            await saveTransaction(transactionData);
+            if (isEditing) {
+                await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
+                console.log('거래 내역 수정 완료');
+            } else {
+                await axios.post(API_URLS.TRANSACTIONS, transactionData);
+            }
+
             await fetchTransactionsForCurrentMonth();
             await fetchCards();
-    
+
+             // 에러가 발생하지 않으면 드로어 닫기
             handleCloseDrawer();
+
         } catch (error) {
             setErrMsg(handleError(error));
         }
@@ -376,9 +376,11 @@ const Transactions = () => {
 
             <CommonDrawer
                 isOpen={isOpen}
-                onClose={toggleDrawer}
-                title={isEditing ? '카드 사용 수정' : '카드 사용 추가'}
-            >
+                onClose={handleCloseDrawer}
+                title={isEditing ? "거래 내역 수정" : "거래 내역 추가"}
+                errMsg={errMsg}
+                onSave={handleSave}
+                >
 
                 <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
                     {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
@@ -429,28 +431,7 @@ const Transactions = () => {
                         required
                     />
 
-                    {/* <div className="flex flex-col gap-2">
-                        <label htmlFor="card_id">사용 카드</label>
-                        <div className='relative'>
-                            <select
-                                id="card_id"
-                                name="card_id"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white appearance-none"
-                                value={getCardId() || ""}
-                                onChange={handleCardChange}
-                            >
-                                <option value="">카드 선택</option>
-                                {userCards.map(card => (
-                                    <option key={card._id} value={card._id}>
-                                        {card.card_number}
-                                    </option>
-                                ))}
-                            </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                <IoIosArrowDown className="w-4 h-4 text-gray-500 dark:text-gray-50" />
-                            </div>
-                        </div>
-                    </div> */}
+
                 </div>
 
                 {/* 저장 버튼 */}
@@ -458,7 +439,11 @@ const Transactions = () => {
                     <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                         {isEditing ? '수정' : '등록'}
                     </button>
-                    {!isEditing ? '' : <button
+                    {!isEditing ? <button
+                            type="button" 
+                            className='text-gray-600 font-semibold dark:text-gray-400 dark:font-normal'
+                            onClick={handleCloseDrawer}
+                        >닫기</button> : <button
                             type="button" 
                             className='text-red-600 font-semibold dark:text-orange-400 dark:font-normal'
                             onClick={handleDeleteConfirm}

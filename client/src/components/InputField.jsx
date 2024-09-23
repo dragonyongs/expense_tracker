@@ -9,7 +9,7 @@ const InputField = ({ label, id, value='', onChange, placeholder, className = "b
                 id={id}
                 name={id}
                 type={type}
-                className={`${className} w-full py-2 px-3 rounded-md placeholder:text-slate-400  dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-300 ${!disabled? '' : 'bg-slate-200 text-slate-500'}`}
+                className={`${className} w-full py-2 px-3 rounded-md placeholder:text-slate-400  dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 ${!disabled? '' : 'bg-slate-200 text-slate-500'}`}
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
