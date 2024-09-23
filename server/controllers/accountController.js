@@ -102,8 +102,7 @@ exports.getMemberAccountsAndCards = async (req, res) => {
             })
             .lean();
 
-            console.log('accounts', accounts);
-        
+            // console.log('accounts', accounts);
 
         // 각 계좌에 연결된 카드 정보 가져오기 (사용자 본인의 카드 포함)
         const accountData = await Promise.all(accounts.map(async (account) => {

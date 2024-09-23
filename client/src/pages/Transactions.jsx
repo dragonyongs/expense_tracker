@@ -228,23 +228,25 @@ const Transactions = () => {
                 transaction_amount: selectedTransaction.transaction_amount,
                 transaction_type: "지출"
             };
-
+    
             const card = cards.find(card => card._id === cardId);
             if (!card) {
                 throw new Error("해당 카드를 찾을 수 없습니다.");
             }
-
-            // 사용 가능한 잔액 계산 (기본 잔액 + 이월 금액)
-            const availableBalance = calculateAvailableBalance(card);
-            if (Number(selectedTransaction.transaction_amount) > availableBalance) {
-                throw new Error(`잔액 부족: 사용 가능한 금액은 ${availableBalance.toLocaleString()}원 입니다.`);
+    
+            // **신규 등록일 때만 잔액 부족 여부 확인**
+            if (!isEditing) {
+                const availableBalance = calculateAvailableBalance(card);
+                if (Number(selectedTransaction.transaction_amount) > availableBalance) {
+                    throw new Error(`잔액 부족: 사용 가능한 금액은 ${availableBalance.toLocaleString()}원 입니다.`);
+                }
             }
-
+    
             // 트랜잭션 저장
             await saveTransaction(transactionData);
             await fetchTransactionsForCurrentMonth();
             await fetchCards();
-
+    
             handleCloseDrawer();
         } catch (error) {
             setErrMsg(handleError(error));

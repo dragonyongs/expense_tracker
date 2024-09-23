@@ -39,7 +39,7 @@ function Teams() {
 
     return (
         <>
-            <div className='flex flex-col gap-y-2 h-full'>
+            <div className='flex flex-col gap-y-2 h-full dark:bg-slate-900'>
                 {accounts
                     .filter(account => {
                         // 팀원이면서 팀장 카드가 있는 계좌는 렌더링하지 않음
@@ -57,10 +57,10 @@ function Teams() {
                         const totalBalance = account.cards.reduce((sum, card) => sum + card.balance, 0);
     
                         return (
-                            <div key={account._id} className='p-8 bg-white shadow-sm'>
+                            <div key={account._id} className='p-8 bg-white shadow-sm dark:bg-slate-800 dark:text-slate-300'>
                                 <h3 className='text-lg'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌</h3>
-                                <h3 className='text-2xl tracking-tight text-gray-700 mt-2'>
-                                    <span className='font-bold text-black'>{totalBalance.toLocaleString()}원</span> 남음
+                                <h3 className='text-2xl tracking-tight text-gray-700 dark:text-slate-300 mt-2 dark:font-thin'>
+                                    <span className='font-bold text-black dark:text-slate-300 dark:font-normal'>{totalBalance.toLocaleString()}원</span> {totalBalance > 0 ? "남음" : "" }
                                 </h3>
     
                                 <div className='mt-8'>
@@ -78,8 +78,8 @@ function Teams() {
                                                             <span className='text-lg font-bold'>{card.member_name}</span>
                                                             <span className='text-base'>{card.position}</span>
                                                         </h3>
-                                                        <span className='text-lg text-gray-400'>
-                                                            <span className='font-bold text-black'>{card.balance.toLocaleString()}원</span> <span className='text-base'>남음</span>
+                                                        <span className='text-lg text-gray-400 dark:text-slate-400'>
+                                                            <span className='font-bold text-black dark:font-normal dark:text-slate-200'>{card.balance.toLocaleString()}원</span> <span className='text-base'> {card.balance > 0 ? "남음" : "" }</span>
                                                         </span>
                                                     </div>
                                                     <div className='relative'>
@@ -87,7 +87,7 @@ function Teams() {
                                                             className={`absolute top-0 left-0 h-3 rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-[#0433FF]'}`}
                                                             style={{ width: `${spentPercentage}%` }} // 지출 비율에 따라 너비 설정
                                                         ></div>
-                                                        <div className='w-full h-3 bg-gray-200 rounded-full'></div>
+                                                        <div className='w-full h-3 bg-gray-200 rounded-full dark:bg-slate-500'></div>
                                                     </div>
                                                 </div>
                                             );
