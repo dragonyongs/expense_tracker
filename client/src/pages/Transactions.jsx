@@ -123,8 +123,8 @@ const Transactions = () => {
 
             const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
             const sortedTransactions = response.data
-                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
 
             setTransactions(sortedTransactions);
         } catch (error) {

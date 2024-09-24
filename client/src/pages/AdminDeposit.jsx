@@ -18,6 +18,7 @@ const AdminDeposit = () => {
     const [selectedDeposit, setSelectedDeposit] = useState({
         transaction_amount: "",
         member_id: null, 
+        transaction_date: "",
     });
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -122,8 +123,8 @@ const AdminDeposit = () => {
         try {
             const response = await axios.get(API_URLS.DEPOSITS);
             const sortedDeposits = response.data
-                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
 
             setDeposits(sortedDeposits);
         } catch (error) {
@@ -243,7 +244,7 @@ const AdminDeposit = () => {
                     merchant_name: '관리자',
                     menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
                     transaction_type: '입금',
-                    transaction_date: new Date().toISOString().split('T')[0],
+                    transaction_date: selectedDeposit?.transaction_date,
                 });
             } else {
                 // 새로운 입금일 경우
@@ -433,6 +434,17 @@ const AdminDeposit = () => {
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedDeposit({ ...selectedDeposit, menu_name: e.target.value })}
                             placeholder="입급명 입력"
+                        />
+
+                        <InputField 
+                            label="거래일" 
+                            id="transaction_date" 
+                            type='date'
+                            value={selectedDeposit?.transaction_date.split("T")[0] || ""}
+                            className={"bg-white border border-slate-200"}
+                            onChange={(e) => setSelectedDeposit({ ...selectedDeposit, transaction_date: e.target.value })}
+                            placeholder=""
+                            required={true}
                         />
                     </div>
 
