@@ -7,7 +7,7 @@ const Dashboard = () => {
     const { user } = useContext(AuthContext);
 
     return (
-        <div className='flex flex-col w-full h-full'>  
+        <div className='flex flex-col w-full h-default-screen'>  
             {user.role === ('super_admin') ? (
                 <div className='p-8'>
                     <p>{user.role}</p>
