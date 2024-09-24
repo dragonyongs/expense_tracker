@@ -7,16 +7,16 @@ const Dashboard = () => {
     const { user } = useContext(AuthContext);
 
     return (
-        <div className='flex flex-col w-full h-default-screen'>  
+        <div className='flex flex-col w-full h-full'>  
             {user.role === ('super_admin') ? (
                 <div className='p-8'>
                     <p>{user.role}</p>
                 </div>
             ) : (
-                <>
+                <div className='h-full bg-white'>
                     <CardBalance role={user.role} />
                     <PayHistory />
-                </>
+                </div>
             ) }
         </div>
     );

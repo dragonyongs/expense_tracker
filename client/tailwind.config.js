@@ -18,12 +18,14 @@ export default {
       },
       minHeight: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
+        'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px )',
       },
       height: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
         'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 168px )',
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px )',
         'pending-screen': 'calc((var(--vh, 1vh) * 100) - 48px )',
+        'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px )'
       },
       zIndex: {
         '110' : '110',

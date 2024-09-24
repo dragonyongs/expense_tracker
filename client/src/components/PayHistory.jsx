@@ -22,10 +22,10 @@ const PayHistory = () => {
     const filteredTransactions = transactions.filter(type => type.transaction_type !== '입금');
 
     return (
-        <div className='flex flex-col flex-1'>
-            <h3 className='mt-10 px-6 font-semibold text-2xl dark:text-slate-400 dark:font-normal'>최근 결제</h3>
+        <div className='flex flex-col pb-2'>
+            <h3 className='mt-8 mb-2 px-6 font-semibold text-2xl dark:text-slate-400 dark:font-normal'>최근 결제</h3>
             {filteredTransactions.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center">
+                <div className="flex flex-col items-center justify-center h-dashboard-screen">
                     <img src="/icon-wallet.png" alt="No Transactions" className="mb-4 w-32 h-32 dark:invert dark:opacity-40" />
                     <p className='text-lg text-gray-600 dark:text-gray-500'>최근 결제 내역이 없습니다</p>
                 </div>

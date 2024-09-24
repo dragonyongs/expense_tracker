@@ -274,9 +274,9 @@ const Transactions = () => {
     });
 
     return (
-        <div className='flex-1 w-full p-4 sm:p-6 dark:bg-gray-800'>
+        <div className='flex-1 w-full p-4 sm:p-6'>
             {/* 카드 한도와 남은 금액 표시 */}
-            <div className='mb-8 px-3'>
+            <div className='mb-8'>
                 {userCardsWithTotals.map(card => {
                     const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0); // 이월 금액 포함한 잔액 계산
                     return (
@@ -303,7 +303,7 @@ const Transactions = () => {
                 <div className='flow-root'>
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
                     {Object.keys(groupedTransactions).length === 0 ? (
-                        <div className="flex justify-center items-center min-h-[calc(100vh-47vh)] text-gray-500 dark:text-gray-400">
+                        <div className="flex justify-center items-center text-gray-500 dark:text-gray-400">
                             데이터가 없습니다.
                         </div>
                     ) : (

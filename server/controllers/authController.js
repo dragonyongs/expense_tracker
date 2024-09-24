@@ -69,8 +69,10 @@ exports.logout = (req, res) => {
         return res.status(401).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
     }
 
+    // 리프레시 토큰 삭제
     delete refreshTokens[refreshToken];
 
+    // 액세스 토큰 쿠키 삭제
     res.clearCookie('accessToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
