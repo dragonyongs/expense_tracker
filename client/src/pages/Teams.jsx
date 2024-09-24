@@ -4,31 +4,7 @@ import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
 import Loading from '../components/Loading';
 import { PiCreditCardLight } from "react-icons/pi";
-
-
-// ProgressBar 컴포넌트 정의
-function ProgressBar({ spentPercentage }) {
-    const [progressWidth, setProgressWidth] = useState(0); // 초기 width를 0으로 설정
-
-    useEffect(() => {
-        // spentPercentage가 계산되었을 때 애니메이션 적용
-        const timer = setTimeout(() => {
-            setProgressWidth(spentPercentage); // 애니메이션 후 spentPercentage로 업데이트
-        }, 100); // 100ms 딜레이를 줘서 애니메이션이 자연스럽게 시작되도록
-
-        return () => clearTimeout(timer); // 컴포넌트 언마운트 시 타이머 클리어
-    }, [spentPercentage]); // spentPercentage가 변경될 때마다 실행
-
-    return (
-        <div className='relative'>
-            <div 
-                className={`absolute top-0 left-0 h-3 transition-all duration-500 ease-in-out rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-[#0433FF]'}`}
-                style={{ width: `${progressWidth}%` }} // 애니메이션을 적용할 width 값
-            ></div>
-            <div className='w-full h-3 bg-gray-200 rounded-full dark:bg-slate-500'></div>
-        </div>
-    );
-}
+import ProgressBars from '../components/ProgressBars';
 
 function Teams() {
     const { user } = useContext(AuthContext);
@@ -117,14 +93,7 @@ function Teams() {
                                                                 </span>
                                                             </div>
                                                             {/* ProgressBar 컴포넌트 사용 */}
-                                                            <ProgressBar spentPercentage={spentPercentage} />
-                                                            {/* <div className='relative'>
-                                                                <div 
-                                                                    className={`absolute top-0 left-0 h-3 transition ease-in-out delay-150  rounded-full ${spentPercentage === 100 ? 'bg-green-500' : 'bg-[#0433FF]'}`}
-                                                                    style={{ width: `${spentPercentage}%` }} // 지출 비율에 따라 너비 설정
-                                                                ></div>
-                                                                <div className='w-full h-3 bg-gray-200 rounded-full dark:bg-slate-500'></div>
-                                                            </div> */}
+                                                            <ProgressBars spentPercentage={spentPercentage} />
                                                         </div>
                                                     );
                                                 })}
@@ -141,57 +110,3 @@ function Teams() {
 }
 
 export default Teams;
-
-                {/* <div className='p-8 bg-white shadow-sm'>
-                    <h3 className='text-xl mb-3'>팀 운영비 계좌 잔액</h3>
-                    <h2 className='text-3xl tracking-tight'><span className='font-bold'>110,000</span> 원</h2>
-                    <div className='flex justify-between mt-10 mb-4'>
-                        <span className='text-xl font-bold'>팀 운영비</span>
-                        <span className='text-xl text-gray-400'><span className='font-bold text-black'>110,000원</span> 남음</span>
-                    </div>
-                    <div className='relative'>
-                        <div className='absolute top-0 left-0 w-2/4 h-3 bg-blue-500 rounded-full'></div>
-                        <div className='w-full h-3 bg-gray-200 rounded-full'></div>
-                    </div>
-                </div>
-                <div className='p-8 bg-white shadow-sm'>
-                    <h3 className='text-xl mb-3'>팀장 활동비 계좌 잔액</h3>
-                    <h2 className='text-3xl tracking-tight'><span className='font-bold'>51,000</span> 원</h2>
-                    <div className='mt-14'>
-                        <div className='flex justify-between mb-4'>
-                            <h3 className='flex gap-x-2 items-center'>
-                                <span className='text-xl font-bold'>타일러</span>
-                                <span className='text-xl '>부장 / 팀장</span>
-                            </h3>
-                            <span className='text-xl text-gray-400'><span className='font-bold text-black'>50,000원</span> 남음</span>
-                        </div>
-                        <div className='relative'>
-                            <div className='absolute top-0 left-0 w-6/12 h-3 bg-blue-500 rounded-full'></div>
-                            <div className='w-full h-3 bg-gray-200 rounded-full'></div>
-                        </div>
-                    </div>
-                </div>
-                <div className='p-8 bg-white flex-1'>
-                    <h3 className='text-xl mb-3'>팀 활동비 계좌 잔액</h3>
-                    <h2 className='text-3xl tracking-tight'><span className='font-bold'>37,000</span> 원</h2>
-                    <div className='mt-14'>
-                        <div className='flex justify-between mb-4'>
-                            <span className='text-xl font-bold'>토마스</span>
-                            <span className='text-xl text-gray-400'><span className='font-bold text-black'>10,000원</span> 남음</span>
-                        </div>
-                        <div className='relative'>
-                            <div className='absolute top-0 left-0 w-11/12 h-3 bg-blue-500 rounded-full'></div>
-                            <div className='w-full h-3 bg-gray-200 rounded-full'></div>
-                        </div>
-                    </div>
-                    <div className='mt-12'>
-                        <div className='flex justify-between mb-4'>
-                            <span className='text-xl font-bold'>크리스티나</span>
-                            <span className='text-xl text-gray-400'><span className='font-bold text-black'>27,000원</span> 남음</span>
-                        </div>
-                        <div className='relative'>
-                            <div className='absolute top-0 left-0 w-10/12 h-3 bg-blue-500 rounded-full'></div>
-                            <div className='w-full h-3 bg-gray-200 rounded-full'></div>
-                        </div>
-                    </div>
-                </div> */}

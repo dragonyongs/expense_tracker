@@ -13,7 +13,7 @@ const Dashboard = () => {
                     <p>{user.role}</p>
                 </div>
             ) : (
-                <div className='h-full bg-white'>
+                <div className='h-full bg-white dark:bg-slate-800'>
                     <CardBalance role={user.role} />
                     <PayHistory />
                 </div>

@@ -112,16 +112,16 @@ const Signup = () => {
         
     }
     return (
-        <div className="w-full p-6">            
+        <div className="w-full p-6 bg-white dark:bg-slate-800">            
             <div className="my-14">
-                <h2 className='text-3xl font-normal'>로그인에 사용할 이메일과<br />
+                <h2 className='text-3xl font-normal dark:text-slate-200'>로그인에 사용할 이메일과<br />
                 비밀번호를 작성해주세요.</h2>
             </div>
             <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">{errMsg}</p>
             <form className="flex w-full flex-col gap-6" onSubmit={handleSubmit}>
                 <div>
                     <div className="flex items-center gap-x-4 mb-2">
-                        <label htmlFor="email">이메일</label>
+                        <label htmlFor="email" className='dark:text-slate-100'>이메일</label>
                         <FaCheck className={validEmail ? "text-green-500" : "hidden"} />
                         <FaCheck className={validEmail || !email ? "hidden" : "text-red-500"} />
                     </div>
@@ -129,7 +129,7 @@ const Signup = () => {
                         id="email"
                         name="email"
                         type="text"
-                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400"
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400 dark:bg-slate-700 dark:placeholder:text-slate-500 dark:text-slate-300"
                         placeholder="이메일(아이디) 입력" 
                         autoComplete='off' 
                         ref={emailRef} 
@@ -156,7 +156,7 @@ const Signup = () => {
                 </div>
                 <div>
                     <div className="flex items-center gap-x-4 mb-2">
-                        <label htmlFor="member_name">이름</label>
+                        <label htmlFor="member_name" className='dark:text-slate-100'>이름</label>
                         <FaCheck className={validName ? "text-green-500" : "hidden"} />
                         <FaCheck className={validName || !user ? "hidden" : "text-red-500"} />
                     </div>
@@ -164,7 +164,7 @@ const Signup = () => {
                         id="member_name"
                         name="member_name"
                         type="text" 
-                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400 dark:bg-slate-700 dark:placeholder:text-slate-500 dark:text-slate-300"
                         placeholder="사용자 이름 입력" 
                         autoComplete='off'
                         ref={userRef} 
@@ -187,7 +187,7 @@ const Signup = () => {
                 </div>
                 <div>
                     <div className="flex items-center gap-x-4 mb-2">
-                        <label htmlFor="password">비밀번호</label>
+                        <label htmlFor="password" className='dark:text-slate-100'>비밀번호</label>
                         <FaCheck className={validPwd ? "text-green-500" : "hidden"} />
                         <FaCheck className={validPwd || !pwd ? "hidden" : "text-red-500"} />
                     </div>
@@ -195,7 +195,7 @@ const Signup = () => {
                         id="password" 
                         name="password"
                         type="password" 
-                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400 dark:bg-slate-700 dark:placeholder:text-slate-500 dark:text-slate-300"
                         placeholder="8자 이상 대문자, 특수기호, 숫자, 영문 조합으로 입력" 
                         autoComplete='off' 
                         onChange={(e) => setPwd(e.target.value)}
@@ -219,14 +219,14 @@ const Signup = () => {
                 </div>
                 <div>
                     <div className="flex items-center gap-x-4 mb-2">
-                        <label htmlFor="confirm_pwd">비밀번호 확인</label>
+                        <label htmlFor="confirm_pwd" className='dark:text-slate-100'>비밀번호 확인</label>
                         <FaCheck className={validMatch && matchPwd ? "text-green-500" : "hidden"} />
                         <FaCheck className={validMatch || !matchPwd ? "hidden" : "text-red-500"} />
                     </div>
                     <input
                         id="confirm_pwd" 
                         type="password" 
-                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400" 
+                        className="w-full p-3 rounded-md border-0 bg-slate-100 placeholder:text-slate-400 dark:bg-slate-700 dark:placeholder:text-slate-500 dark:text-slate-300"
                         placeholder="동일한 비밀번호 재입력" 
                         autoComplete='off'
                         onChange={(e) => setMatchPwd(e.target.value)}
@@ -247,8 +247,8 @@ const Signup = () => {
                     </p>
                 </div>
                 <div className='flex flex-col gap-3'>
-                    <button type="submit" className="w-full disabled:text-slate-500 text-white disabled:bg-slate-200 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" disabled={!validName || !validPwd || !validMatch || !validEmail ? true : false}>카드 지출 관리 시작하기</button>
-                    <button type="button" className='w-full text-slate-600' onClick={ () => { navigate('/'); } }>안할래요</button>
+                    <button type="submit" className="w-full disabled:text-slate-500 text-white disabled:bg-slate-200 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 dark:disabled:bg-slate-600" disabled={!validName || !validPwd || !validMatch || !validEmail ? true : false}>카드 지출 관리 시작하기</button>
+                    <button type="button" className='w-full text-slate-600 dark:text-slate-400' onClick={ () => { navigate('/'); } }>안할래요</button>
                 </div>
             </form>
         </div>
