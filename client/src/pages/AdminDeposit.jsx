@@ -207,6 +207,8 @@ const AdminDeposit = () => {
             // 카드의 현재 잔액 및 rollover_amount 가져오기
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${selectedCard}`);
             const cardData = cardResponse.data;
+            console.log('selectedCard', selectedCard);
+            
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
     
@@ -217,29 +219,27 @@ const AdminDeposit = () => {
                 const existingDepositResponse = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
                 const existingDeposit = existingDepositResponse.data;
                 const previousAmount = parseFloat(existingDeposit.transaction_amount);
-    
-                // 기존 금액을 다시 더해 현재 잔액을 복원
-                if (updatedBalance + previousAmount > 100000) {
-                    const excess = updatedBalance + previousAmount - 100000;
-                    rolloverAmount -= excess;
-                    updatedBalance = 100000;
+            
+                // 수정된 금액과 기존 금액의 차액을 계산
+                const difference = depositAmount - previousAmount;
+            
+                // 차액을 잔액에 반영
+                if (updatedBalance + difference > 100000) {
+                    const excess = updatedBalance + difference - 100000;
+                    rolloverAmount += excess;
+                    updatedBalance = 100000;  // 잔액은 100,000원을 초과하지 않도록 유지
+                } else if (updatedBalance + difference < 0) {
+                    // 차액으로 인해 잔액이 0보다 작아지는 경우
+                    throw new Error("잔액이 부족하여 트랜잭션을 수정할 수 없습니다.");
                 } else {
-                    updatedBalance += previousAmount;
+                    // 차액을 잔액에 반영
+                    updatedBalance += difference;
                 }
-    
-                // 수정된 금액을 적용한 후 다시 잔액 계산
-                if (updatedBalance + depositAmount > 100000) {
-                    const excessAmount = updatedBalance + depositAmount - 100000;
-                    rolloverAmount += excessAmount;
-                    updatedBalance = 100000;
-                } else {
-                    updatedBalance += depositAmount;
-                }
-    
-                // 트랜잭션 업데이트
+            
+                // 트랜잭션 업데이트 (입금 금액 외 다른 정보만 수정하더라도 업데이트)
                 await axios.put(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`, {
                     card_id: selectedCard,
-                    transaction_amount: selectedDeposit.transaction_amount,
+                    transaction_amount: depositAmount,  // 수정된 금액
                     merchant_name: '관리자',
                     menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
                     transaction_type: '입금',
@@ -254,18 +254,18 @@ const AdminDeposit = () => {
                 } else {
                     updatedBalance += depositAmount;
                 }
-    
+            
                 // 새로운 트랜잭션 저장
                 await axios.post(API_URLS.TRANSACTIONS, {
                     card_id: selectedCard,
-                    transaction_amount: selectedDeposit.transaction_amount,
+                    transaction_amount: depositAmount,  // 새로운 입금 금액
                     merchant_name: '관리자',
                     menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
                     transaction_type: '입금',
                     transaction_date: new Date().toISOString().split('T')[0],
                 });
             }
-    
+            
             // 카드의 balance와 rollover_amount 업데이트 API 호출
             await axios.put(`${API_URLS.CARDS}/${selectedCard}`, {
                 balance: updatedBalance,
@@ -273,24 +273,27 @@ const AdminDeposit = () => {
             });
     
             console.log("카드 잔액 및 rollover_amount 업데이트 성공:", updatedBalance, rolloverAmount);
-    
+            
             // 상태 값 업데이트 및 모달 닫기
             setBalance(updatedBalance);
             fetchDeposits();
             handleCloseDrawer();
         } catch (error) {
             console.error('입금 처리 중 오류:', error);
-            setErrMsg("입금 처리 중 오류가 발생했습니다.");
+            setErrMsg(error.message);
         }
     };
     
     // 드로어 열 때 카드 정보 업데이트
     const handleOpenDrawer = (deposit) => {
+        const memberId = deposit?.card_id?.member_id;
+        const cardId = deposit?.card_id?._id;
         setSelectedDeposit({
             ...deposit,
-            member_id: deposit.member_id || '', // 기본값 설정
-            card_id: deposit.card_id || '', // 기본값 설정
+            member_id: memberId, // 기본값 설정
+            card_id: cardId, // 기본값 설정
         });
+        setSelectedCard(cardId);
         setIsEditing(true);
         setIsOpen(true);
     };

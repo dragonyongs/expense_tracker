@@ -42,7 +42,6 @@ function Teams() {
                 withCredentials: true // 쿠키를 전송하는 옵션
             });
             setAccounts(response.data);
-            console.log(user);
             // 유저의 포지션 설정
             const userInfo = response.data.find(account => 
                 account.cards.some(card => card.member_id === user.member_id)
@@ -92,7 +91,7 @@ function Teams() {
                                 const totalBalance = account.cards.reduce((sum, card) => sum + card.balance, 0);
             
                                 return (
-                                    <div key={account._id} className='p-8 bg-white shadow-sm border-t border-t-gray-300 dark:border-t-slate-700 dark:bg-slate-800 dark:text-slate-300'>
+                                    <div key={account._id} className='pt-8 px-8 bg-white shadow-sm border-t border-t-gray-200 dark:border-t-slate-700 dark:bg-slate-800 dark:text-slate-300'>
                                         <h3 className='text-lg'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌</h3>
                                         <h3 className='text-2xl tracking-tight text-gray-700 dark:text-slate-300 mt-2 dark:font-thin'>
                                             <span className='font-bold text-black dark:text-slate-300 dark:font-normal'>{totalBalance.toLocaleString()}원</span> {totalBalance > 0 ? "남음" : "" }

@@ -37,7 +37,7 @@ const AdminTab = () => {
     }, []);
 
     return (
-        <div className="sticky top-0 left-0 px-2 text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 bg-white dark:border-slate-600 dark:bg-slate-800">
+        <div className="sticky top-0 left-0 text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 bg-white dark:border-slate-600 dark:bg-slate-800">
             <ul
                 ref={tabRef}
                 className="flex flex-nowrap -mb-px overflow-x-auto scrollbar-hide"
@@ -51,7 +51,7 @@ const AdminTab = () => {
                         ) : (
                             <Link
                                 to={tab.path}
-                                className={`inline-block p-4 border-b-2 rounded-t-lg text-lg ${
+                                className={`inline-block py-3 px-4 border-b-2 rounded-t-lg text-base ${
                                     location.pathname === tab.path
                                         ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500'
                                         : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'
