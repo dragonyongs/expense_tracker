@@ -292,16 +292,18 @@ const Transactions = () => {
             </div>
 
             {/* 트랜잭션 목록 */}
-                <div className="flex items-center justify-between mb-4 px-3">
-                    <h5 className="text-xl font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
-                    <button
-                        type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl dark:text-white'
-                        onClick={handleAddTransaction}
-                    ><IoAddCircleOutline /></button>
-                </div>
+
                 <div className='flow-root'>
+                    
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h5 className="text-xl font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
+                            <button
+                                type="button" 
+                                className='text-black font-semibold rounded-lg text-2xl dark:text-white'
+                                onClick={handleAddTransaction}
+                            ><IoAddCircleOutline /></button>
+                        </div>
                     {Object.keys(groupedTransactions).length === 0 ? (
                         <div className="flex justify-center items-center text-gray-500 dark:text-gray-400">
                             데이터가 없습니다.
