@@ -34,6 +34,7 @@ const PayHistory = () => {
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-slate-700">
                         {filteredTransactions
                             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                            .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
                             .slice(0, 4)
                             .map(transaction => (
                                 <li key={transaction._id} className='flex justify-between items-center py-3'>
