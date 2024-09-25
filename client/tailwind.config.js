@@ -7,6 +7,12 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'gradient-text': 'linear-gradient(to right, #1e3a8a, #9333ea)', // 원하는 그라데이션 색상 설정
+      },
+      textColor: {
+        'gradient': 'transparent',
+      },
       margin: {
         'mobile': 'calc(-50px + 50vw)',
       },
@@ -40,6 +46,11 @@ export default {
       scale: {
         '98': '.98',
       }
+    },
+  },
+  variants: {
+    extend: {
+      backgroundClip: ['responsive', 'hover', 'focus'],
     },
   },
   plugins: [
