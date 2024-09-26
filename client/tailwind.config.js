@@ -7,6 +7,15 @@ export default {
   ],
   theme: {
     extend: {
+      animation: {
+        'flip-once': 'flip-once 0.5s ease-in-out forwards', // 한 번만 플립되는 애니메이션
+      },
+      keyframes: {
+        'flip-once': {
+          '0%': { transform: 'rotateY(0deg)' },
+          '100%': { transform: 'rotateY(360deg)' },
+        },
+      },
       backgroundImage: {
         'gradient-text': 'linear-gradient(to right, #1e3a8a, #9333ea)', // 원하는 그라데이션 색상 설정
       },
