@@ -22,7 +22,7 @@ const PayHistory = () => {
     const filteredTransactions = transactions.filter(type => type.transaction_type !== '입금');
 
     return (
-        <div className='flex flex-col pb-2'>
+        <div className='flex flex-col pb-2 xl:px-4'>
             <h3 className='mt-8 mb-2 px-6 font-semibold text-2xl dark:text-slate-400 dark:font-normal'>최근 결제</h3>
             {filteredTransactions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-dashboard-screen">
