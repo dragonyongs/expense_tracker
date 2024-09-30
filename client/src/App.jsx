@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Router } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
@@ -13,6 +13,7 @@ const Signup = React.lazy(() => import('./pages/Signup'));
 const Pending = React.lazy(() => import('./pages/Pending'));
 const Transactions = React.lazy(() => import('./pages/Transactions'));
 const Teams = React.lazy(() => import('./pages/Teams'));
+const Contacts = React.lazy(() => import('./pages/Contacts'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const AdminMembers = React.lazy(() => import('./pages/AdminMembers'));
@@ -56,6 +57,12 @@ const App = () => {
                         <Route path="/teams" element={
                             <ProtectedRoute>
                                 <Teams />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/contacts' element= {
+                            <ProtectedRoute>
+                                <Contacts />
                             </ProtectedRoute>
                         } />
 

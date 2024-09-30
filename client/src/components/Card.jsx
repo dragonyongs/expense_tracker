@@ -19,7 +19,7 @@ const Card = ({ cardNumber, totalSpent, currentBalance, rolloverAmount }) => {
             </div>
 
             {/* 이월 잔액 */}
-            <div className="relative flex justify-between items-cente mb-1">
+            <div className="relative flex justify-between items-cente">
                 <p className="text-sm font-light">이월 잔액</p>
                 <p className="text-lg font-bold">
                     {rolloverAmount.toLocaleString()}원

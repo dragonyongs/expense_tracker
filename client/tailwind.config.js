@@ -45,6 +45,7 @@ export default {
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px )',
         'pending-screen': 'calc((var(--vh, 1vh) * 100) - 48px )',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px )',
+        'profile-screen': 'calc((var(--vh, 1vh) * 100) - 44px )',
       },
       zIndex: {
         '110' : '110',

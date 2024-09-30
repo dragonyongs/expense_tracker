@@ -3,9 +3,9 @@ import Drawer from 'react-modern-drawer';
 import 'react-modern-drawer/dist/index.css';
 import { MdClose } from 'react-icons/md';
 
-const CommonDrawer = ({ isOpen, onClose, title, children }) => {
+const CommonDrawer = ({ isOpen, onClose, title, children, size="320px" }) => {
     return (
-        <Drawer open={isOpen} onClose={onClose} className='h-real-screen' direction='right' size='320px'>
+        <Drawer open={isOpen} onClose={onClose} className='h-real-screen' direction='right' size={size}>
             <div className="flex justify-between py-2 px-4 dark:bg-slate-800">
                 <h5 className="text-lg font-bold dark:text-slate-200">{title}</h5>
                 <button onClick={onClose}>
