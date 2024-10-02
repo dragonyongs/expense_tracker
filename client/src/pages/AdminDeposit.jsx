@@ -61,15 +61,20 @@ const AdminDeposit = () => {
         return 30000 * teamMembersCount; // 팀 운영비 = 3만원 * 팀원 수
     };
 
-    // depositType이 변경될 때마다 인풋 값을 초기화
     useEffect(() => {
-        if (depositType !== "TeamFund") {
-            console.log('초기화')
-            setSelectedDeposit({ transaction_amount: '' }); // 값 초기화
-        } else {
-            setSelectedDeposit({ transaction_amount: calculateTeamFund()}); // 팀운영비일 경우 자동 계산된 값 설정
-        }
-    }, [depositType]);
+    if (depositType !== "TeamFund") {
+        console.log('초기화');
+        setSelectedDeposit(prevDeposit => ({
+            ...prevDeposit, // 이전 상태를 가져옴
+            transaction_amount: '' // transaction_amount만 초기화
+        }));
+    } else {
+        setSelectedDeposit(prevDeposit => ({
+            ...prevDeposit, // 이전 상태를 가져옴
+            transaction_amount: calculateTeamFund() // 팀 운영비일 경우 자동 계산된 값 설정
+        }));
+    }
+}, [depositType]);
     
     const teamMembersCount = calculateTeamMembersCount(); // 팀원 수 계산
 
