@@ -255,8 +255,8 @@ exports.deleteTransaction = async (req, res) => {
         console.log('card Balancd: ', card.balance);
         console.log('card team_fund: ', card.team_fund);
 
-        // await card.save(); // 업데이트된 잔액 저장
-        // await transaction.deleteOne(); // 트랜잭션 삭제
+        await card.save(); // 업데이트된 잔액 저장
+        await transaction.deleteOne(); // 트랜잭션 삭제
 
         res.status(200).json({ message: 'Transaction deleted successfully' });
     } catch (error) {
