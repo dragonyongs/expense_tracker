@@ -31,19 +31,19 @@ exports.getCardTransactions = async (req, res) => {
 };
 
 // 총 지출 금액 계산 함수
-const calculateTotalSpent = async (cardId) => {
-    try {
-        const transactions = await Transaction.find({ card_id: cardId, transaction_type: '지출' });
-        return transactions.reduce((total, tx) => total + Number(tx.transaction_amount), 0);
-    } catch (error) {
-        console.error('Error calculating total spent:', error);
-        throw new Error('총 지출 금액 계산 중 오류가 발생했습니다.');
-    }
-};
+// const calculateTotalSpent = async (cardId) => {
+//     try {
+//         const transactions = await Transaction.find({ card_id: cardId, transaction_type: '지출' });
+//         return transactions.reduce((total, tx) => total + Number(tx.transaction_amount), 0);
+//     } catch (error) {
+//         console.error('Error calculating total spent:', error);
+//         throw new Error('총 지출 금액 계산 중 오류가 발생했습니다.');
+//     }
+// };
 
 // 트랜잭션 생성 및 처리 함수
 exports.createTransaction = async (req, res) => {
-    const { card_id, transaction_date, merchant_name, menu_name, transaction_amount, transaction_type } = req.body;
+    const { card_id, transaction_date, merchant_name, menu_name, transaction_amount, transaction_type, deposit_type } = req.body;
 
     try {
         // 입력 값 정리 함수 (제어 문자 제거 및 공백 제거)
@@ -85,16 +85,24 @@ exports.createTransaction = async (req, res) => {
                 }
             }
         } else if (transaction_type === '입금') {
-            // 관리자가 입금하는 경우
-            if (card.balance < 10000) {
-                // 잔액이 1만원 미만일 경우 이월 처리
-                card.rollover_amount = card.balance;
-                card.balance = card.limit;
-            } else {
-                // 잔액이 1만원 이상일 경우 차액만 입금
-                const depositAmount = card.limit - card.balance;
-                card.balance += depositAmount;
-                remainingAmount = depositAmount;
+            let currentBalance = card.balance;
+
+            if (deposit_type === '정기 입금') {
+                if (currentBalance < 10000) {
+                    const difference = 100000 - currentBalance;
+                    card.balance += difference;
+                    remainingAmount = difference;
+                } else {
+                    const depositAmount = Math.max(0, 100000 - currentBalance);
+                    card.balance += depositAmount;
+                    remainingAmount = depositAmount; // 추가된 금액
+                }
+            }
+
+            if (deposit_type === '추가 입금') {
+                const additionalAmount = transaction_amount || 0;
+                card.balance += additionalAmount;
+                remainingAmount = additionalAmount;
             }
         }
 
@@ -104,8 +112,9 @@ exports.createTransaction = async (req, res) => {
             transaction_date,
             merchant_name: sanitizedMerchantName,
             menu_name: sanitizedMenuName,
-            transaction_amount,
-            transaction_type
+            transaction_amount: remainingAmount,
+            transaction_type,
+            deposit_type // 입금 유형 기록
         });
 
         // 트랜잭션 저장 및 카드 정보 업데이트
@@ -339,47 +348,99 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
     }
 };
 
-exports.handleAdminDeposit = async (req, res) => {
-    try {
-        const { card_id } = req.body;
-        const card = await Card.findById(card_id);
+// exports.handleAdminDeposit = async (req, res) => {
+//     try {
+//         const { card_id, deposit_type, transaction_amount } = req.body; // 입금 금액 추가
+//         console.log('deposit_type--------', deposit_type);
+//         const card = await Card.findById(card_id);
         
-        if (!card) {
-            return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
-        }
+//         if (!card) {
+//             return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+//         }
 
-        // 현재 잔액 확인
-        let currentBalance = card.balance;
+//         let currentBalance = card.balance;
 
-        if (currentBalance < 10000) {
-            // 잔액이 1만 원 미만일 경우, 남은 금액을 이월하고 잔액을 10만 원으로 설정
-            card.rollover_amount = currentBalance;
-            card.balance = 100000;
-        } else {
-            // 잔액이 1만 원 이상일 경우, 10만 원에서 현재 잔액을 제외한 차액만 더함
-            const difference = 100000 - currentBalance;
-            card.balance = currentBalance + difference;
-        }
+//         // 정기 입금일 경우
+//         if (deposit_type === '정기 입금') {
+//             if (currentBalance < 10000) {
+//                 card.rollover_amount = currentBalance;
+//                 card.balance = 100000;
+//             } else {
+//                 const difference = 100000 - currentBalance;
+//                 card.balance = currentBalance + difference;
+//             }
+//         }
 
-        // 트랜잭션 기록 (입금)
-        const transaction = new Transaction({
-            card_id,
-            transaction_amount: card.balance - currentBalance, // 차액만큼 기록
-            merchant_name: '관리자',
-            menu_name: '잔액 충전',
-            transaction_type: '입금',
-            transaction_date: new Date(),
-        });
+//         // 추가 입금일 경우 (사용자가 입력한 금액으로 추가 입금)
+//         if (deposit_type === '추가 입금') {
+//             const additionalAmount = transaction_amount || 0; // 사용자가 입력한 금액이 없으면 0
+//             card.balance += additionalAmount;
+//         }
 
-        await transaction.save();
-        await card.save();
+//         // 트랜잭션 기록
+//         const transaction = new Transaction({
+//             card_id,
+//             transaction_amount: deposit_type === '정기 입금' 
+//                 ? card.balance - currentBalance 
+//                 : transaction_amount,  // 추가 입금 금액 사용
+//             merchant_name: '관리자',
+//             menu_name: deposit_type === '정기 입금' ? '잔액 충전' : '추가 입금',
+//             transaction_type: '입금',
+//             deposit_type,  // 입금 유형 기록
+//             transaction_date: new Date(),
+//         });
 
-        return res.status(200).json({ message: '입금 처리 성공', card });
-    } catch (error) {
-        console.error('입금 처리 중 오류:', error);
-        return res.status(500).json({ message: '입금 처리 중 오류가 발생했습니다.' });
-    }
-};
+//         await transaction.save();
+//         await card.save();
+
+//         return res.status(200).json({ message: `${deposit_type} 처리 성공`, card });
+//     } catch (error) {
+//         console.error('입금 처리 중 오류:', error);
+//         return res.status(500).json({ message: '입금 처리 중 오류가 발생했습니다.' });
+//     }
+// };
+
+// exports.handleAdminDeposit = async (req, res) => {
+//     try {
+//         const { card_id } = req.body;
+//         const card = await Card.findById(card_id);
+        
+//         if (!card) {
+//             return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+//         }
+
+//         // 현재 잔액 확인
+//         let currentBalance = card.balance;
+
+//         if (currentBalance < 10000) {
+//             // 잔액이 1만 원 미만일 경우, 남은 금액을 이월하고 잔액을 10만 원으로 설정
+//             card.rollover_amount = currentBalance;
+//             card.balance = 100000;
+//         } else {
+//             // 잔액이 1만 원 이상일 경우, 10만 원에서 현재 잔액을 제외한 차액만 더함
+//             const difference = 100000 - currentBalance;
+//             card.balance = currentBalance + difference;
+//         }
+
+//         // 트랜잭션 기록 (입금)
+//         const transaction = new Transaction({
+//             card_id,
+//             transaction_amount: card.balance - currentBalance, // 차액만큼 기록
+//             merchant_name: '관리자',
+//             menu_name: '잔액 충전',
+//             transaction_type: '입금',
+//             transaction_date: new Date(),
+//         });
+
+//         await transaction.save();
+//         await card.save();
+
+//         return res.status(200).json({ message: '입금 처리 성공', card });
+//     } catch (error) {
+//         console.error('입금 처리 중 오류:', error);
+//         return res.status(500).json({ message: '입금 처리 중 오류가 발생했습니다.' });
+//     }
+// };
 
 // exports.handleDeposit = async (req, res) => {
 //     try {

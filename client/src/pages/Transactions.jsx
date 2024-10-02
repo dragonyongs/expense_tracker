@@ -146,10 +146,6 @@ const Transactions = () => {
             }
         }
     }, [cards, user]);
-    
-    // const toggleDrawer = () => {
-    //     setIsOpen(!isOpen);
-    // };
 
     const resetTransaction = () => ({
         card_id: userCards[0]?._id || "",

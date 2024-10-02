@@ -4,7 +4,8 @@ import CommonDrawer from '../components/CommonDrawer';
 import { API_URLS } from '../services/apiUrls';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
-import { IoAddCircleOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
+
 // import { MdKeyboardArrowRight } from "react-icons/md";
 
 const AdminDeposit = () => {
@@ -14,7 +15,8 @@ const AdminDeposit = () => {
     const [selectedCard, setSelectedCard] = useState("");
     const [deposits, setDeposits] = useState([]);
     const [balance, setBalance] = useState('');
-    const [errMsg, setErrMsg] = useState('');
+    const [depositType, setDepositType] = useState("정기 입금");
+    // const [depositAmount, setDepositAmount] = useState(''); // 입금 금액 상태
     const [selectedDeposit, setSelectedDeposit] = useState({
         transaction_amount: "",
         member_id: null, 
@@ -23,6 +25,16 @@ const AdminDeposit = () => {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [errMsg, setErrMsg] = useState('');
+
+    const handleDepositTypeChange = (e) => {
+        const selectedType = e.target.value;
+        console.log('selectedType', selectedType);
+        setDepositType(selectedType);
+        
+        // Reset transaction amount based on the selected type
+        setSelectedDeposit({ ...selectedDeposit, transaction_amount: selectedType === "추가 입금" ? "" : selectedDeposit.transaction_amount });
+    };
 
     const handleDeleteConfirm = () => {
         setIsDeleteConfirmOpen(true);
@@ -204,16 +216,20 @@ const AdminDeposit = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
+            console.log('디버깅용', depositType); // 디버깅용 로그 추가
     
             // 카드의 현재 잔액 및 rollover_amount 가져오기
+            if (!selectedCard) throw new Error("선택된 카드가 없습니다.");
+    
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${selectedCard}`);
             const cardData = cardResponse.data;
             console.log('selectedCard', selectedCard);
             
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
-    
             const depositAmount = parseFloat(selectedDeposit.transaction_amount);
+    
+            if (depositAmount <= 0) throw new Error("입금 금액은 0보다 커야 합니다.");
     
             if (isEditing) {
                 // 수정 모드일 때 기존 입금 내역을 불러옴
@@ -223,7 +239,7 @@ const AdminDeposit = () => {
             
                 // 수정된 금액과 기존 금액의 차액을 계산
                 const difference = depositAmount - previousAmount;
-            
+    
                 // 차액을 잔액에 반영
                 if (updatedBalance + difference > 100000) {
                     const excess = updatedBalance + difference - 100000;
@@ -237,33 +253,44 @@ const AdminDeposit = () => {
                     updatedBalance += difference;
                 }
             
-                // 트랜잭션 업데이트 (입금 금액 외 다른 정보만 수정하더라도 업데이트)
+                // 트랜잭션 업데이트
                 await axios.put(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`, {
                     card_id: selectedCard,
-                    transaction_amount: depositAmount,  // 수정된 금액
+                    transaction_amount: depositAmount,
                     merchant_name: '관리자',
                     menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
                     transaction_type: '입금',
                     transaction_date: selectedDeposit?.transaction_date,
+                    deposit_type: depositType,
                 });
             } else {
                 // 새로운 입금일 경우
-                if (updatedBalance + depositAmount > 100000) {
-                    const excessAmount = updatedBalance + depositAmount - 100000;
-                    rolloverAmount += excessAmount;
-                    updatedBalance = 100000;
-                } else {
-                    updatedBalance += depositAmount;
+                if (depositType === '정기 입금') {
+                    // 정기 입금일 경우 기존 잔액과 이월 금액을 고려
+                    if (updatedBalance < 10000) {
+                        // 잔액이 1만원 미만일 경우 이전 잔액을 이월 잔액으로 설정
+                        rolloverAmount += updatedBalance; // 이전 잔액을 이월 잔액으로 설정
+                        updatedBalance = 100000; // 잔액을 10만원으로 설정
+                    } else {
+                        // 잔액이 1만원 이상일 경우 차액만 입금
+                        const excessAmount = Math.max(0, 100000 - updatedBalance);
+                        updatedBalance += excessAmount;
+                    }
+                } else if (depositType === '추가 입금') {
+                    // 추가 입금일 경우
+                    updatedBalance += depositAmount; // 잔액에 추가 금액을 더함
+                    // 이월 잔액에는 포함되지 않음
                 }
-            
+    
                 // 새로운 트랜잭션 저장
                 await axios.post(API_URLS.TRANSACTIONS, {
                     card_id: selectedCard,
-                    transaction_amount: depositAmount,  // 새로운 입금 금액
+                    transaction_amount: depositAmount,
                     merchant_name: '관리자',
                     menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
                     transaction_type: '입금',
-                    transaction_date: new Date().toISOString().split('T')[0],
+                    deposit_type: depositType,
+                    transaction_date: new Date(),
                 });
             }
             
@@ -281,7 +308,8 @@ const AdminDeposit = () => {
             handleCloseDrawer();
         } catch (error) {
             console.error('입금 처리 중 오류:', error);
-            setErrMsg(error.message);
+            const message = error.response?.data?.message || error.message;
+            setErrMsg(message);
         }
     };
     
@@ -297,6 +325,9 @@ const AdminDeposit = () => {
         setSelectedCard(cardId);
         setIsEditing(true);
         setIsOpen(true);
+
+        // deposit_type 값을 가져와서 초기 상태에 설정
+        setDepositType(deposit.deposit_type || "정기 입금"); // 기본값을 "정기 입금"으로 설정
     };
 
     // 드로어에서 사용자 선택 값 설정
@@ -310,7 +341,7 @@ const AdminDeposit = () => {
     const handleCloseDrawer = () => {
         setIsOpen(false);
     };
-
+    
     return (
         <>
             <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
@@ -386,6 +417,34 @@ const AdminDeposit = () => {
                 <CommonDrawer isOpen={isOpen} onClose={handleCloseDrawer} title={isEditing ? '입금 수정' : '입금 추가'}>
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                         {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">입금 형식</h3>
+                        <ul className="grid w-full gap-2 grid-cols-2">
+                            <li>
+                                <input type="radio" id="deposit_type_a" name="deposit_type" value="정기 입금" className="hidden peer" checked={depositType === '정기 입금'} onChange={handleDepositTypeChange} required />
+                                <label htmlFor="deposit_type_a" className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">                           
+                                    <div className="block">
+                                        <div className="w-full text-md font-semibold">정기 입금</div>
+                                        <div className="w-full text-sm">100,000원</div>
+                                    </div>
+                                    {depositType === "정기 입금" && (
+                                    <IoCheckmark className='w-6 h-6'/>
+                                    )}
+                                </label>
+                            </li>
+                            <li>
+                                <input type="radio" id="deposit_type_b" name="deposit_type" value="추가 입금" className="hidden peer" checked={depositType === '추가 입금'} onChange={handleDepositTypeChange} />
+                                <label htmlFor="deposit_type_b" className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                    <div className="block">
+                                        <div className="w-full text-md font-semibold">추가 입금</div>
+                                        <div className="w-full text-sm">금액입력</div>
+                                    </div>
+
+                                    {depositType === "추가 입금" && (
+                                    <IoCheckmark className='w-6 h-6'/>
+                                    )}
+                                </label>
+                            </li>
+                        </ul>
 
                         {/* 사용자 선택 */}
                         <SelectField
@@ -417,15 +476,18 @@ const AdminDeposit = () => {
                         )}
 
                         {/* 입금 금액 입력 */}
-                        <InputField
-                            label="입금 금액"
-                            id="transaction_amount"
-                            value={selectedDeposit?.transaction_amount || ""}
-                            className={"bg-white border border-slate-200"}
-                            onChange={(e) => setSelectedDeposit({ ...selectedDeposit, transaction_amount: e.target.value })}
-                            placeholder="입금 금액 입력"
-                            required={true}
-                        />
+                        {depositType !== "정기 입금" && (
+                            <InputField
+                                label="입금 금액"
+                                id="transaction_amount"
+                                value={selectedDeposit?.transaction_amount || ""}
+                                className={"bg-white border border-slate-200"}
+                                onChange={(e) => setSelectedDeposit({ ...selectedDeposit, transaction_amount: e.target.value })}
+                                placeholder="입금 금액 입력"
+                                required={true}
+                                disabled={depositType === "정기 입금" && !isEditing}
+                            />
+                        )}
 
                         <InputField
                             label="입금명"
@@ -440,7 +502,7 @@ const AdminDeposit = () => {
                             label="거래일" 
                             id="transaction_date" 
                             type='date'
-                            value={selectedDeposit?.transaction_date.split("T")[0] || ""}
+                            value={selectedDeposit?.transaction_date?.split("T")[0] || ""}
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedDeposit({ ...selectedDeposit, transaction_date: e.target.value })}
                             placeholder=""
