@@ -110,7 +110,7 @@ const AdminDeposit = () => {
             const cardData = cardResponse.data;
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
-            let isTeamFund = depositData.transaction_type === 'team_fund'; // 팀 운영비 여부 체크
+            let isTeamFund = depositData.deposit_type === 'TeamFund'; // 팀 운영비 여부 체크
     
             // 해당 입금 이후의 거래 내역이 있는지 확인
             const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${depositData.card_id}`);
