@@ -11,21 +11,67 @@ import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
 const AdminDeposit = () => {
     const [users, setUsers] = useState([]);
     const [cards, setCards] = useState([]);
+    const [accounts, setAccounts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState("");
     const [selectedCard, setSelectedCard] = useState("");
     const [deposits, setDeposits] = useState([]);
     const [balance, setBalance] = useState('');
-    const [depositType, setDepositType] = useState("정기 입금");
-    // const [depositAmount, setDepositAmount] = useState(''); // 입금 금액 상태
+    const [depositType, setDepositType] = useState("");
     const [selectedDeposit, setSelectedDeposit] = useState({
-        transaction_amount: "",
+        _id: "", // 초기값을 빈 문자열로 설정
+        transaction_amount: "", 
         member_id: null, 
         transaction_date: "",
+        card_id: null, // 필요시 추가
+        deposit_type: "RegularDeposit", // 기본값 설정
     });
+    
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [errMsg, setErrMsg] = useState('');
+
+    const fetchData = async (url) => {
+        try {
+            const response = await axios.get(url, { withCredentials: true });
+            setAccounts(response.data);
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}`);
+    }, []);
+
+
+    // 팀원 수 계산 함수
+    const calculateTeamMembersCount = () => {
+        return accounts.reduce((count, account) => {
+            return count + account.cards.length; // 팀장 포함하여 모든 카드 수
+        }, 0);
+    };
+
+    // 팀운영비 자동 계산
+    const calculateTeamFund = () => {
+        const teamMembersCount = calculateTeamMembersCount();
+        return 30000 * teamMembersCount; // 팀 운영비 = 3만원 * 팀원 수
+    };
+
+    // depositType이 변경될 때마다 인풋 값을 초기화
+    useEffect(() => {
+        if (depositType !== "TeamFund") {
+            console.log('초기화')
+            setSelectedDeposit({ transaction_amount: '' }); // 값 초기화
+        } else {
+            setSelectedDeposit({ transaction_amount: calculateTeamFund()}); // 팀운영비일 경우 자동 계산된 값 설정
+        }
+    }, [depositType]);
+    
+    const teamMembersCount = calculateTeamMembersCount(); // 팀원 수 계산
 
     const handleDepositTypeChange = (e) => {
         const selectedType = e.target.value;
@@ -33,7 +79,7 @@ const AdminDeposit = () => {
         setDepositType(selectedType);
         
         // Reset transaction amount based on the selected type
-        setSelectedDeposit({ ...selectedDeposit, transaction_amount: selectedType === "추가 입금" ? "" : selectedDeposit.transaction_amount });
+        setSelectedDeposit({ ...selectedDeposit, transaction_amount: selectedType === "AdditionalDeposit" ? "" : selectedDeposit.transaction_amount });
     };
 
     const handleDeleteConfirm = () => {
@@ -46,8 +92,10 @@ const AdminDeposit = () => {
 
     const handleDelete = async () => {
         try {
+            console.log('handleDelete: ', selectedDeposit);
             // 선택된 입금 내역의 금액과 카드 정보 조회
             const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
+            console.log('response', response);
             const depositData = response.data;
             const depositDate = new Date(depositData.transaction_date); // 입금된 날짜
             const depositAmount = parseFloat(depositData.transaction_amount);
@@ -57,6 +105,7 @@ const AdminDeposit = () => {
             const cardData = cardResponse.data;
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
+            let isTeamFund = depositData.transaction_type === 'team_fund'; // 팀 운영비 여부 체크
     
             // 해당 입금 이후의 거래 내역이 있는지 확인
             const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${depositData.card_id}`);
@@ -76,19 +125,31 @@ const AdminDeposit = () => {
             }
     
             // 입금 내역의 금액을 차감하여 balance 업데이트
-            if (updatedBalance - depositAmount < 0) {
-                const remainingAmountToDeduct = depositAmount - updatedBalance;
-                updatedBalance = 0;
-                rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
-            } else {
-                updatedBalance -= depositAmount;
-            }
+            if (isTeamFund) {
+                // 팀 운영비인 경우 team_fund에서 차감
+                let updatedTeamFund = parseFloat(cardData.team_fund);
+                updatedTeamFund = Math.max(updatedTeamFund - depositAmount, 0); // 음수가 되지 않도록 보장
     
-            // 카드의 balance와 rollover_amount 업데이트
-            await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
-                balance: updatedBalance,
-                rollover_amount: rolloverAmount,
-            });
+                // 카드의 team_fund 업데이트
+                await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
+                    team_fund: updatedTeamFund,
+                });
+            } else {
+                // 일반 카드 잔액에서 차감
+                if (updatedBalance - depositAmount < 0) {
+                    const remainingAmountToDeduct = depositAmount - updatedBalance;
+                    updatedBalance = 0;
+                    rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
+                } else {
+                    updatedBalance -= depositAmount;
+                }
+    
+                // 카드의 balance와 rollover_amount 업데이트
+                await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
+                    balance: updatedBalance,
+                    rollover_amount: rolloverAmount,
+                });
+            }
     
             // 입금 내역 삭제
             await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
@@ -259,13 +320,13 @@ const AdminDeposit = () => {
                     transaction_amount: depositAmount,
                     merchant_name: '관리자',
                     menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
-                    transaction_type: '입금',
+                    transaction_type: 'income',
                     transaction_date: selectedDeposit?.transaction_date,
                     deposit_type: depositType,
                 });
             } else {
                 // 새로운 입금일 경우
-                if (depositType === '정기 입금') {
+                if (depositType === 'RegularDeposit') {
                     // 정기 입금일 경우 기존 잔액과 이월 금액을 고려
                     if (updatedBalance < 10000) {
                         // 잔액이 1만원 미만일 경우 이전 잔액을 이월 잔액으로 설정
@@ -276,7 +337,7 @@ const AdminDeposit = () => {
                         const excessAmount = Math.max(0, 100000 - updatedBalance);
                         updatedBalance += excessAmount;
                     }
-                } else if (depositType === '추가 입금') {
+                } else if (depositType === 'AdditionalDeposit') {
                     // 추가 입금일 경우
                     updatedBalance += depositAmount; // 잔액에 추가 금액을 더함
                     // 이월 잔액에는 포함되지 않음
@@ -288,7 +349,7 @@ const AdminDeposit = () => {
                     transaction_amount: depositAmount,
                     merchant_name: '관리자',
                     menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
-                    transaction_type: '입금',
+                    transaction_type: 'income',
                     deposit_type: depositType,
                     transaction_date: new Date(),
                 });
@@ -315,33 +376,45 @@ const AdminDeposit = () => {
     
     // 드로어 열 때 카드 정보 업데이트
     const handleOpenDrawer = (deposit) => {
-        const memberId = deposit?.card_id?.member_id;
-        const cardId = deposit?.card_id?._id;
+        console.log('handleOpenDrawer: ', deposit);
+        const memberId = deposit?.card_id?.member_id || null;
+        const cardId = deposit?.card_id?._id || null;
+        console.log('selectedDeposit-1: ', selectedDeposit);
+
         setSelectedDeposit({
-            ...deposit,
-            member_id: memberId, // 기본값 설정
-            card_id: cardId, // 기본값 설정
+            _id: deposit?._id || "", // deposit._id가 없으면 빈 문자열
+            transaction_amount: deposit.transaction_amount || "", // 기본값 설정
+            member_id: memberId,
+            transaction_date: deposit.transaction_date || "",
+            card_id: cardId,
+            menu_name: deposit.menu_name || "",
+            deposit_type: deposit.deposit_type || "RegularDeposit", // 기본값 설정
         });
         setSelectedCard(cardId);
         setIsEditing(true);
         setIsOpen(true);
+        console.log('selectedDeposit-2: ', selectedDeposit);
 
         // deposit_type 값을 가져와서 초기 상태에 설정
-        setDepositType(deposit.deposit_type || "정기 입금"); // 기본값을 "정기 입금"으로 설정
+        setDepositType(deposit.deposit_type || "RegularDeposit"); // 기본값을 "정기 입금"으로 설정
     };
 
-    // 드로어에서 사용자 선택 값 설정
     useEffect(() => {
-        if (selectedDeposit && selectedDeposit.member_id && !selectedUser) {
-            // 사용자가 선택된 경우 카드 목록을 업데이트, selectedUser가 이미 설정되어 있으면 handleUserChange 호출 안함
-            handleUserChange({ target: { value: selectedDeposit.member_id } });
-        }
-    }, [selectedDeposit, selectedUser]); // selectedUser를 의존성에 추가
+        console.log('selectedDeposit-useEffect: ', selectedDeposit);
+    }, [selectedDeposit]);
+    
+    // // 드로어에서 사용자 선택 값 설정
+    // useEffect(() => {
+    //     if (selectedDeposit && selectedDeposit.member_id && !selectedUser) {
+    //         // 사용자가 선택된 경우 카드 목록을 업데이트, selectedUser가 이미 설정되어 있으면 handleUserChange 호출 안함
+    //         handleUserChange({ target: { value: selectedDeposit.member_id } });
+    //     }
+    // }, [selectedDeposit, selectedUser]); // selectedUser를 의존성에 추가
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
     };
-    
+
     return (
         <>
             <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
@@ -417,34 +490,75 @@ const AdminDeposit = () => {
                 <CommonDrawer isOpen={isOpen} onClose={handleCloseDrawer} title={isEditing ? '입금 수정' : '입금 추가'}>
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                         {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">입금 형식</h3>
-                        <ul className="grid w-full gap-2 grid-cols-2">
-                            <li>
-                                <input type="radio" id="deposit_type_a" name="deposit_type" value="정기 입금" className="hidden peer" checked={depositType === '정기 입금'} onChange={handleDepositTypeChange} required />
-                                <label htmlFor="deposit_type_a" className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">                           
-                                    <div className="block">
-                                        <div className="w-full text-md font-semibold">정기 입금</div>
-                                        <div className="w-full text-sm">100,000원</div>
-                                    </div>
-                                    {depositType === "정기 입금" && (
-                                    <IoCheckmark className='w-6 h-6'/>
-                                    )}
-                                </label>
-                            </li>
-                            <li>
-                                <input type="radio" id="deposit_type_b" name="deposit_type" value="추가 입금" className="hidden peer" checked={depositType === '추가 입금'} onChange={handleDepositTypeChange} />
-                                <label htmlFor="deposit_type_b" className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                    <div className="block">
-                                        <div className="w-full text-md font-semibold">추가 입금</div>
-                                        <div className="w-full text-sm">금액입력</div>
-                                    </div>
-
-                                    {depositType === "추가 입금" && (
-                                    <IoCheckmark className='w-6 h-6'/>
-                                    )}
-                                </label>
-                            </li>
-                        </ul>
+                        <div>
+                            <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">입금 형식</h3>
+                            <ul className="grid w-full gap-2 grid-cols-2">
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="deposit_type_a"
+                                        name="deposit_type"
+                                        value="RegularDeposit" // "정기 입금"을 실제 코드에 맞게 변경
+                                        className="hidden peer"
+                                        checked={depositType === 'RegularDeposit'}
+                                        onChange={handleDepositTypeChange}
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="deposit_type_a"
+                                        className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                    >
+                                        <div className="block">
+                                            <div className="w-full text-md font-semibold">정기 입금</div>
+                                            <div className="w-full text-sm">10만원</div>
+                                        </div>
+                                        {depositType === 'RegularDeposit' && <IoCheckmark className="w-6 h-6" />}
+                                    </label>
+                                </li>
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="deposit_type_b"
+                                        name="deposit_type"
+                                        value="TransportationExpense" // "여비교통비"
+                                        className="hidden peer"
+                                        checked={depositType === 'TransportationExpense'}
+                                        onChange={handleDepositTypeChange}
+                                    />
+                                    <label
+                                        htmlFor="deposit_type_b"
+                                        className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                    >
+                                        <div className="block">
+                                            <div className="w-full text-md font-semibold">여비교통비</div>
+                                            <div className="w-full text-sm">금액입력</div>
+                                        </div>
+                                        {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
+                                    </label>
+                                </li>
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="deposit_type_c"
+                                        name="deposit_type"
+                                        value="TeamFund" // "팀운영비"
+                                        className="hidden peer"
+                                        checked={depositType === 'TeamFund'}
+                                        onChange={handleDepositTypeChange}
+                                    />
+                                    <label
+                                        htmlFor="deposit_type_c"
+                                        className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                    >
+                                        <div className="block">
+                                            <div className="w-full text-md font-semibold">팀운영비</div>
+                                            <div className="w-full text-sm">팀원당 3만원</div>
+                                        </div>
+                                        {depositType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
 
                         {/* 사용자 선택 */}
                         <SelectField
@@ -476,18 +590,24 @@ const AdminDeposit = () => {
                         )}
 
                         {/* 입금 금액 입력 */}
-                        {depositType !== "정기 입금" && (
-                            <InputField
-                                label="입금 금액"
-                                id="transaction_amount"
-                                value={selectedDeposit?.transaction_amount || ""}
-                                className={"bg-white border border-slate-200"}
-                                onChange={(e) => setSelectedDeposit({ ...selectedDeposit, transaction_amount: e.target.value })}
-                                placeholder="입금 금액 입력"
-                                required={true}
-                                disabled={depositType === "정기 입금" && !isEditing}
-                            />
-                        )}
+                        <div>
+                            {depositType !== "RegularDeposit" && (
+                                <InputField
+                                    label="입금 금액"
+                                    id="transaction_amount"
+                                    value={selectedDeposit.transaction_amount || ''} // 자동 계산된 금액
+                                    className={"bg-white border border-slate-200"}
+                                    onChange={(e) => setSelectedDeposit({ ...selectedDeposit, transaction_amount: e.target.value })}
+                                    placeholder="입금 금액 입력"
+                                    required={true}
+                                />
+                            )}
+                            {depositType === "TeamFund" && (
+                                <div className="mt-2 text-gray-500">
+                                    <span>팀 인원: {teamMembersCount}명</span> {/* 팀원 수만 표시 */}
+                                </div>
+                            )}
+                        </div>
 
                         <InputField
                             label="입금명"

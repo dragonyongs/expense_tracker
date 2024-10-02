@@ -19,7 +19,7 @@ const PayHistory = () => {
     };
 
     // 입금을 제외한 거래 필터링
-    const filteredTransactions = transactions.filter(type => type.transaction_type !== '입금');
+    const filteredTransactions = transactions.filter(type => type.transaction_type !== 'income');
 
     return (
         <div className='flex flex-col pb-2 xl:px-4'>

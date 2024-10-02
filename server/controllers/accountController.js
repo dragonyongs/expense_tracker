@@ -78,7 +78,7 @@ exports.getAccountsAndCards = async (req, res) => {
                     balance: card.balance,
                     member_name: card.member_id.member_name,
                     rank: card.member_id.rank,
-                    position: card.member_id.position
+                    position: card.member_id.position,
                 }))
             };
         }));
@@ -120,7 +120,8 @@ exports.getMemberAccountsAndCards = async (req, res) => {
                     member_id: card.member_id._id,
                     member_name: card.member_id.member_name,
                     rank: card.member_id.rank,
-                    position: card.member_id.position
+                    position: card.member_id.position,
+                    team_fund: card.team_fund,
                 }))
             };
         }));

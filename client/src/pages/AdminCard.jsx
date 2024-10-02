@@ -258,6 +258,15 @@ const AdminCard = () => {
                                 required
                             />
 
+                            <InputField 
+                                label="팀 운영비 잔액" 
+                                id="team_fund"
+                                type="number"
+                                value={selectedCard.team_fund || 0}
+                                placeholder=""
+                                disabled={true}
+                            />
+
                             <SelectField
                                 label="사용자"
                                 id="card_id"

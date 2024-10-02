@@ -17,6 +17,7 @@ const calculateAvailableBalance = (card) => {
 const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
+    const [depositType, setDepositType] = useState('');
     const [errMsg, setErrMsg] = useState('');
     const [transactions, setTransactions] = useState([]);
     const [selectedTransaction, setSelectedTransaction] = useState({
@@ -24,81 +25,13 @@ const Transactions = () => {
         transaction_date: new Date().toISOString().split('T')[0],
         merchant_name: "",
         menu_name: "",
-        transaction_amount: ""
+        transaction_amount: "",
+        transaction_type: "",
     });
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-
-    const handleDeleteConfirm = () => {
-        setIsDeleteConfirmOpen(true);
-    };
-    
-    const handleDeleteCancel = () => {
-        setIsDeleteConfirmOpen(false);
-    };
-
-    const handleDelete = async () => {
-        try {
-            // 선택된 거래 내역의 정보 조회
-            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
-            const transactionData = response.data;
-            const transactionDate = new Date(transactionData.transaction_date); // 거래된 날짜
-            const transactionAmount = parseFloat(transactionData.transaction_amount);
-    
-            // 해당 거래 내역의 카드 정보 조회
-            const cardResponse = await axios.get(`${API_URLS.CARDS}/${transactionData.card_id}`);
-            const cardData = cardResponse.data;
-            let updatedBalance = parseFloat(cardData.balance);
-            let rolloverAmount = parseFloat(cardData.rollover_amount);
-
-            // 해당 거래 이후의 거래 내역이 있는지 확인
-            const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${transactionData.card_id}`);
-            const transactions = transactionsResponse.data;
-    
-            // 거래 이후에 발생한 거래가 있는지 확인
-            const hasPostTransactionTransactions = transactions.some(transaction => {
-                const txnDate = new Date(transaction.transaction_date);
-                return txnDate > transactionDate && transaction.transaction_type === '지출';
-            });
-    
-            if (hasPostTransactionTransactions) {
-                // 거래 이후에 발생한 거래가 있으면 삭제 방지
-                setErrMsg("이 거래 이후에 사용된 내역이 있어 삭제할 수 없습니다.");
-                console.warn('거래 이후 사용 내역이 있어 삭제가 불가능합니다.');
-                return;
-            }
-    
-            // 거래 내역의 금액을 차감하여 balance 업데이트
-            if (updatedBalance + rolloverAmount < transactionAmount) {
-                const remainingAmountToDeduct = transactionAmount - (updatedBalance + rolloverAmount);
-                updatedBalance = Math.max(updatedBalance - remainingAmountToDeduct, 0);
-                rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
-            }
-    
-            // 카드의 balance와 rollover_amount 업데이트
-            await axios.put(`${API_URLS.CARDS}/${transactionData.card_id}`, {
-                balance: updatedBalance,
-                rollover_amount: rolloverAmount,
-            });
-    
-            // 거래 내역 삭제
-            await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
-            console.log('거래 내역 삭제 완료');
-    
-            // 거래 내역 갱신
-            fetchTransactionsForCurrentMonth();
-            fetchCards();
-
-            // 삭제 확인 모달 닫기
-            setIsDeleteConfirmOpen(false);
-            handleCloseDrawer();
-        } catch (error) {
-            setErrMsg("삭제 중 오류가 발생했습니다.");
-            console.error('삭제 중 오류:', error);
-        }
-    };
 
     useEffect(() => {
         setErrMsg('');
@@ -123,8 +56,8 @@ const Transactions = () => {
 
             const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
             const sortedTransactions = response.data
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
+            .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
             setTransactions(sortedTransactions);
         } catch (error) {
@@ -173,6 +106,16 @@ const Transactions = () => {
             ...transaction,
             card_id: transaction.card_id._id ? transaction.card_id : transaction.card_id // 카드 ID가 객체인 경우 문자열로 변환
         });
+
+        // 거래 타입에 따라 depositType 설정
+        if (transaction.transaction_type === 'expense') {
+            // 지출의 경우 depositType을 설정하지 않거나 특정 값으로 초기화
+            setDepositType(""); // 혹은 원하는 초기값
+        } else {
+            // 입금의 경우 deposit_type 값을 설정
+            setDepositType(transaction.deposit_type || "정기 입금");
+        }
+
         setIsEditing(true);
         setIsOpen(true);
     };
@@ -214,8 +157,13 @@ const Transactions = () => {
                 merchant_name: selectedTransaction.merchant_name,
                 menu_name: selectedTransaction.menu_name,
                 transaction_amount: selectedTransaction.transaction_amount,
-                transaction_type: "지출"
+                transaction_type: "expense",
             };
+
+            // deposit_type이 필요한 경우에만 추가
+            if (selectedTransaction.transaction_type === "income") {
+                transactionData.deposit_type = selectedTransaction.deposit_type || "AdditionalDeposit";
+            }
     
             const card = cards.find(card => card._id === cardId);
             if (!card) {
@@ -245,9 +193,79 @@ const Transactions = () => {
             handleCloseDrawer();
 
         } catch (error) {
-            setErrMsg(handleError(error));
+            const errorMsg = handleError(error); // 오류 메시지 문자열로 변환
+            setErrMsg(errorMsg); // 문자열로 상태 업데이트
         }
     }
+
+    const handleDeleteConfirm = () => {
+        setIsDeleteConfirmOpen(true);
+    };
+    
+    const handleDeleteCancel = () => {
+        setIsDeleteConfirmOpen(false);
+    };
+
+    const handleDelete = async () => {
+        try {
+            // 선택된 거래 내역의 정보 조회
+            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+            const transactionData = response.data;
+            const transactionDate = new Date(transactionData.transaction_date); // 거래된 날짜
+            const transactionAmount = parseFloat(transactionData.transaction_amount);
+    
+            // 해당 거래 내역의 카드 정보 조회
+            const cardResponse = await axios.get(`${API_URLS.CARDS}/${transactionData.card_id}`);
+            const cardData = cardResponse.data;
+            let updatedBalance = parseFloat(cardData.balance);
+            let rolloverAmount = parseFloat(cardData.rollover_amount);
+
+            // 해당 거래 이후의 거래 내역이 있는지 확인
+            const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${transactionData.card_id}`);
+            const transactions = transactionsResponse.data;
+    
+            // 거래 이후에 발생한 거래가 있는지 확인
+            const hasPostTransactionTransactions = transactions.some(transaction => {
+                const txnDate = new Date(transaction.transaction_date);
+                return txnDate > transactionDate && transaction.transaction_type === 'expense';
+            });
+    
+            if (hasPostTransactionTransactions) {
+                // 거래 이후에 발생한 거래가 있으면 삭제 방지
+                setErrMsg("이 거래 이후에 사용된 내역이 있어 삭제할 수 없습니다.");
+                console.warn('거래 이후 사용 내역이 있어 삭제가 불가능합니다.');
+                return;
+            }
+    
+            // 거래 내역의 금액을 차감하여 balance 업데이트
+            if (updatedBalance + rolloverAmount < transactionAmount) {
+                const remainingAmountToDeduct = transactionAmount - (updatedBalance + rolloverAmount);
+                updatedBalance = Math.max(updatedBalance - remainingAmountToDeduct, 0);
+                rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
+            }
+    
+            // 카드의 balance와 rollover_amount 업데이트
+            await axios.put(`${API_URLS.CARDS}/${transactionData.card_id}`, {
+                balance: updatedBalance,
+                rollover_amount: rolloverAmount,
+            });
+    
+            // 거래 내역 삭제
+            await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+            console.log('거래 내역 삭제 완료');
+    
+            // 거래 내역 갱신
+            fetchTransactionsForCurrentMonth();
+            fetchCards();
+
+            // 삭제 확인 모달 닫기
+            setIsDeleteConfirmOpen(false);
+            handleCloseDrawer();
+        } catch (error) {
+            setErrMsg("삭제 중 오류가 발생했습니다.");
+            console.error('삭제 중 오류:', error);
+        }
+    };
 
     const groupedTransactions = transactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
@@ -260,7 +278,7 @@ const Transactions = () => {
 
     const userCardsWithTotals = userCards.map(card => {
         const totalSpent = transactions
-            .filter(tx => tx.card_id._id === card._id && tx.transaction_type === '지출')
+            .filter(tx => tx.card_id._id === card._id && tx.transaction_type === 'expense')
             .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0);
     
         return {
@@ -314,11 +332,11 @@ const Transactions = () => {
                                         </p>
                                     </div>
                                     {transactions.map((transaction) => (
-                                        <div key={transaction._id} onClick={ transaction.transaction_type !== "입금" ? () => handleOpenDrawer(transaction) : null} className="rounded-lg active:scale-99 active:px-2 active:bg-slate-50 dark:active:bg-slate-600">
+                                        <div key={transaction._id} onClick={ transaction.transaction_type !== "income" ? () => handleOpenDrawer(transaction) : null} className="rounded-lg active:scale-99 active:px-2 active:bg-slate-50 dark:active:bg-slate-600">
                                             <div className="flex items-center py-2">
-                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== '입금' ? 'border-red-600' : 'border-green-600'}`}>
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== 'income' ? 'border-red-600' : 'border-green-600'}`}>
                                                     <span className="text-slate-500 text-lg font-normal">
-                                                        {transaction.transaction_type !== "입금" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
+                                                        {transaction.transaction_type !== "income" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
                                                     </span>
                                                 </div>
                                                 <div className="flex-1 min-w-0 ms-4">
@@ -334,7 +352,7 @@ const Transactions = () => {
                                                         {transaction.transaction_amount.toLocaleString()}원
                                                     </span>
                                                     <span className='inline-block w-full text-sm text-right text-gray-400'>
-                                                        {transaction.transaction_type}
+                                                        {transaction.transaction_type === 'expense' ? '지출' : '입금'}
                                                     </span>
                                                 </div>
                                             </div>
