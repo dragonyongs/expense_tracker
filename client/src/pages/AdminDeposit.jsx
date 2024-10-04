@@ -20,11 +20,15 @@ const AdminDeposit = () => {
     const [depositType, setDepositType] = useState("");
     const [selectedDeposit, setSelectedDeposit] = useState({
         _id: "", // 초기값을 빈 문자열로 설정
-        transaction_amount: "", 
-        member_id: null, 
+        member_name: "",
+        card_id: "", // 필요시 추가
+        merchant_name: "",
+        menu_name: "",
         transaction_date: "",
-        card_id: null, // 필요시 추가
-        deposit_type: "RegularDeposit", // 기본값 설정
+        transaction_amount: "", 
+        transaction_type: "",
+        deposit_type: "RegularDeposit", // 기본값 설정,
+
     });
     
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -32,7 +36,12 @@ const AdminDeposit = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [errMsg, setErrMsg] = useState('');
 
-    const fetchData = async (url) => {
+    useEffect(() => {
+        console.log('selectedDeposit has been updated: ', selectedDeposit);
+    }, [selectedDeposit]);
+    
+
+    const fetchAuccountData = async (url) => {
         try {
             const response = await axios.get(url, { withCredentials: true });
             setAccounts(response.data);
@@ -43,8 +52,20 @@ const AdminDeposit = () => {
         }
     };
 
+    const fetchCardData = async (url) => {
+        try {
+            const response = await axios.get(url, { withCredentials: true });
+            setCards(response.data);
+        } catch (error) {
+            console.error(`Error fetching data from ${url}:`, error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}`);
+        fetchAuccountData(`${API_URLS.ACCOUNTS_WITH_CARDS}`);
+        fetchCardData(`${API_URLS.CARDS}`);
     }, []);
 
 
@@ -62,19 +83,19 @@ const AdminDeposit = () => {
     };
 
     useEffect(() => {
-    if (depositType !== "TeamFund") {
-        console.log('초기화');
-        setSelectedDeposit(prevDeposit => ({
-            ...prevDeposit, // 이전 상태를 가져옴
-            transaction_amount: '' // transaction_amount만 초기화
-        }));
-    } else {
-        setSelectedDeposit(prevDeposit => ({
-            ...prevDeposit, // 이전 상태를 가져옴
-            transaction_amount: calculateTeamFund() // 팀 운영비일 경우 자동 계산된 값 설정
-        }));
-    }
-}, [depositType]);
+        if (depositType !== "TeamFund") {
+            console.log('초기화');
+            setSelectedDeposit(prevDeposit => ({
+                ...prevDeposit, // 이전 상태를 가져옴
+                transaction_amount: '' // transaction_amount만 초기화
+            }));
+        } else {
+            setSelectedDeposit(prevDeposit => ({
+                ...prevDeposit, // 이전 상태를 가져옴
+                transaction_amount: calculateTeamFund() // 팀 운영비일 경우 자동 계산된 값 설정
+            }));
+        }
+    }, [depositType]);
     
     const teamMembersCount = calculateTeamMembersCount(); // 팀원 수 계산
 
@@ -232,7 +253,7 @@ const AdminDeposit = () => {
             // 선택한 사용자의 ID로 카드 목록 필터링
             const response = await axios.get(`${API_URLS.CARDS}/member/${selectedUserId}`);
             const userCards = response.data;
-    
+
             if (userCards.length > 0) {
                 setCards(userCards); // 카드 목록 업데이트
                 setSelectedCard(userCards[0]._id); // 첫 번째 카드를 자동으로 선택
@@ -282,14 +303,12 @@ const AdminDeposit = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
-            console.log('디버깅용', depositType); // 디버깅용 로그 추가
     
             // 카드의 현재 잔액 및 rollover_amount 가져오기
             if (!selectedCard) throw new Error("선택된 카드가 없습니다.");
     
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${selectedCard}`);
             const cardData = cardResponse.data;
-            console.log('selectedCard', selectedCard);
             
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
@@ -381,40 +400,19 @@ const AdminDeposit = () => {
     
     // 드로어 열 때 카드 정보 업데이트
     const handleOpenDrawer = (deposit) => {
-        console.log('handleOpenDrawer: ', deposit);
         const memberId = deposit?.card_id?.member_id || null;
         const cardId = deposit?.card_id?._id || null;
-        console.log('selectedDeposit-1: ', selectedDeposit);
 
-        setSelectedDeposit({
-            _id: deposit?._id || "", // deposit._id가 없으면 빈 문자열
-            transaction_amount: deposit.transaction_amount || "", // 기본값 설정
-            member_id: memberId,
-            transaction_date: deposit.transaction_date || "",
-            card_id: cardId,
-            menu_name: deposit.menu_name || "",
-            deposit_type: deposit.deposit_type || "RegularDeposit", // 기본값 설정
-        });
+        // 상태  업데이트
+        setSelectedDeposit(deposit);
+        setSelectedUser(memberId);
         setSelectedCard(cardId);
         setIsEditing(true);
         setIsOpen(true);
-        console.log('selectedDeposit-2: ', selectedDeposit);
 
         // deposit_type 값을 가져와서 초기 상태에 설정
         setDepositType(deposit.deposit_type || "RegularDeposit"); // 기본값을 "정기 입금"으로 설정
     };
-
-    useEffect(() => {
-        console.log('selectedDeposit-useEffect: ', selectedDeposit);
-    }, [selectedDeposit]);
-    
-    // // 드로어에서 사용자 선택 값 설정
-    // useEffect(() => {
-    //     if (selectedDeposit && selectedDeposit.member_id && !selectedUser) {
-    //         // 사용자가 선택된 경우 카드 목록을 업데이트, selectedUser가 이미 설정되어 있으면 handleUserChange 호출 안함
-    //         handleUserChange({ target: { value: selectedDeposit.member_id } });
-    //     }
-    // }, [selectedDeposit, selectedUser]); // selectedUser를 의존성에 추가
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
@@ -495,6 +493,45 @@ const AdminDeposit = () => {
                 <CommonDrawer isOpen={isOpen} onClose={handleCloseDrawer} title={isEditing ? '입금 수정' : '입금 추가'}>
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
                         {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
+
+                        {/* 사용자 선택 */}
+                        <SelectField
+                            label="사용자"
+                            id="member_id"
+                            value={selectedDeposit?.card_id?.member_id || ""}  // selectedUser 상태로 설정
+                            onChange={handleUserChange}
+                            options={users.map(member => ({
+                                value: member._id,
+                                label: member.member_name
+                            }))}
+                            placeholder="사용자 선택"
+                            required
+                        />
+
+                        {/* 카드 선택 */}
+                        {isEditing ? (<SelectField
+                                label="카드"
+                                id="card_id"
+                                value={selectedDeposit?.card_id?._id || ""}
+                                onChange={handleCardChange}
+                                options={cards.map(card => ({ value: card._id, label: card.card_number}
+                                ))}
+                                placeholder="카드 선택"
+                                required
+                            />
+                        ) : (
+                            <SelectField
+                                label="카드"
+                                id="card_id"
+                                value={selectedDeposit?.card_id?._id || ""}
+                                onChange={handleCardChange}
+                                options={cards.map(card => ({ value: card._id, label: card.card_number}
+                                ))}
+                                placeholder="카드 선택"
+                                required
+                            />
+                        )}
+
                         <div>
                             <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">입금 형식</h3>
                             <ul className="grid w-full gap-2 grid-cols-2">
@@ -564,35 +601,6 @@ const AdminDeposit = () => {
                                 </li>
                             </ul>
                         </div>
-
-                        {/* 사용자 선택 */}
-                        <SelectField
-                            label="사용자"
-                            id="member_id"
-                            value={selectedUser || ""}  // selectedUser 상태로 설정
-                            onChange={handleUserChange}
-                            options={users.map(member => ({
-                                value: member._id,
-                                label: member.member_name
-                            }))}
-                            placeholder="사용자 선택"
-                            required
-                        />
-
-                        {/* 카드 선택 */}
-                        {isEditing ? (""
-                        ) : (
-                            <SelectField
-                                label="카드"
-                                id="card_id"
-                                value={selectedDeposit?.card_id || ""}
-                                onChange={handleCardChange}
-                                options={cards.map(card => ({ value: card._id, label: card.card_number}
-                                ))}
-                                placeholder="카드 선택"
-                                required
-                            />
-                        )}
 
                         {/* 입금 금액 입력 */}
                         <div>
