@@ -6,7 +6,7 @@ import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import Card from '../components/Card';
-import { IoAddCircleOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 
@@ -18,6 +18,9 @@ const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
     const [depositType, setDepositType] = useState('');
+    const [expenceType, setExpenceType] = useState('');
+    const [cardBalance, setCardBalance] = useState(0);
+    const [teamFund, setTeamFund] = useState(0);
     const [errMsg, setErrMsg] = useState('');
     const [transactions, setTransactions] = useState([]);
     const [selectedTransaction, setSelectedTransaction] = useState({
@@ -56,8 +59,8 @@ const Transactions = () => {
 
             const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
             const sortedTransactions = response.data
-            .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
 
             setTransactions(sortedTransactions);
         } catch (error) {
@@ -76,6 +79,8 @@ const Transactions = () => {
             setUserCards(filteredCards);
             if (filteredCards.length > 0) {
                 setSelectedTransaction(prev => ({ ...prev, card_id: filteredCards[0]._id }));
+                setCardBalance(filteredCards[0].balance);
+                setTeamFund(filteredCards[0].team_fund);
             }
         }
     }, [cards, user]);
@@ -107,15 +112,16 @@ const Transactions = () => {
             card_id: transaction.card_id._id ? transaction.card_id : transaction.card_id // 카드 ID가 객체인 경우 문자열로 변환
         });
 
+        setExpenceType(transaction.expense_type || '');
+        
         // 거래 타입에 따라 depositType 설정
         if (transaction.transaction_type === 'expense') {
             // 지출의 경우 depositType을 설정하지 않거나 특정 값으로 초기화
             setDepositType(""); // 혹은 원하는 초기값
         } else {
             // 입금의 경우 deposit_type 값을 설정
-            setDepositType(transaction.deposit_type || "정기 입금");
+            setDepositType(transaction.deposit_type || "RegularDeposit");
         }
-
         setIsEditing(true);
         setIsOpen(true);
     };
@@ -158,9 +164,9 @@ const Transactions = () => {
                 menu_name: selectedTransaction.menu_name,
                 transaction_amount: selectedTransaction.transaction_amount,
                 transaction_type: "expense",
+                expense_type: expenceType,
             };
 
-            // deposit_type이 필요한 경우에만 추가
             if (selectedTransaction.transaction_type === "income") {
                 transactionData.deposit_type = selectedTransaction.deposit_type || "AdditionalDeposit";
             }
@@ -219,7 +225,7 @@ const Transactions = () => {
             const cardData = cardResponse.data;
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
-
+    
             // 해당 거래 이후의 거래 내역이 있는지 확인
             const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${transactionData.card_id}`);
             const transactions = transactionsResponse.data;
@@ -238,17 +244,26 @@ const Transactions = () => {
             }
     
             // 거래 내역의 금액을 차감하여 balance 업데이트
-            if (updatedBalance + rolloverAmount < transactionAmount) {
-                const remainingAmountToDeduct = transactionAmount - (updatedBalance + rolloverAmount);
-                updatedBalance = Math.max(updatedBalance - remainingAmountToDeduct, 0);
-                rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
+            if (transactionData.deposit_type === 'TeamFund') {
+                // 팀 운영비인 경우
+                updatedBalance = Math.max(updatedBalance, 0); // 카드 잔액은 음수가 될 수 없음
+            } else {
+                // 일반 지출의 경우
+                if (updatedBalance + rolloverAmount < transactionAmount) {
+                    const remainingAmountToDeduct = transactionAmount - (updatedBalance + rolloverAmount);
+                    updatedBalance = Math.max(updatedBalance - remainingAmountToDeduct, 0);
+                    rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
+                } else {
+                    // 일반 카드에서 지출할 경우
+                    updatedBalance += transactionAmount; // 삭제로 인해 잔액 복구
+                }
             }
     
             // 카드의 balance와 rollover_amount 업데이트
-            await axios.put(`${API_URLS.CARDS}/${transactionData.card_id}`, {
-                balance: updatedBalance,
-                rollover_amount: rolloverAmount,
-            });
+            // await axios.put(`${API_URLS.CARDS}/${transactionData.card_id}`, {
+            //     balance: updatedBalance,
+            //     rollover_amount: rolloverAmount,
+            // });
     
             // 거래 내역 삭제
             await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
@@ -257,7 +272,7 @@ const Transactions = () => {
             // 거래 내역 갱신
             fetchTransactionsForCurrentMonth();
             fetchCards();
-
+    
             // 삭제 확인 모달 닫기
             setIsDeleteConfirmOpen(false);
             handleCloseDrawer();
@@ -292,7 +307,7 @@ const Transactions = () => {
             {/* 카드 한도와 남은 금액 표시 */}
             <div className='mb-8'>
                 {userCardsWithTotals.map(card => {
-                    const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0); // 이월 금액 포함한 잔액 계산
+                    const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
                     return (
                         <Card
                             key={card._id} 
@@ -400,6 +415,57 @@ const Transactions = () => {
 
                 <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
                     {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
+
+                    <div>
+                        <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">입금 형식</h3>
+                        <ul className="grid w-full gap-2 grid-cols-2">
+                            <li>
+                                <input
+                                    type="radio"
+                                    id="expense_type_a"
+                                    name="expenseType"
+                                    value="TeamCard" // 기본 팀카드 사용
+                                    className="hidden peer"
+                                    checked={expenceType === 'TeamCard'}
+                                    onChange={() => { setExpenceType('TeamCard'); }}
+                                    
+                                    required
+                                />
+                                <label
+                                    htmlFor="expense_type_a"
+                                    className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                >
+                                    <div className="block">
+                                        <div className="w-full text-md font-semibold">팀 카드</div>
+                                        <div className="w-full text-sm">잔액: {cardBalance.toLocaleString()}원</div>
+                                    </div>
+                                    {expenceType === 'TeamCard' && <IoCheckmark className="w-6 h-6" />}
+                                </label>
+                            </li>
+                            <li>
+                                <input
+                                    type="radio"
+                                    id="expense_type_b"
+                                    name="expenseType"
+                                    value="TeamFund" // team_fund 사용 구분
+                                    className="hidden peer"
+                                    checked={expenceType === 'TeamFund'}
+                                    onChange={() => setExpenceType('TeamFund')} // 상태 업데이트
+                                />
+                                <label
+                                    htmlFor="expense_type_b"
+                                    className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                >
+                                    <div className="block">
+                                        <div className="w-full text-md font-semibold">팀 운영비</div>
+                                        <div className="w-full text-sm">잔액: {teamFund.toLocaleString()}원</div>
+                                    </div>
+                                    {expenceType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                    
                     <InputField 
                         label="상호명" 
                         id="merchant_name" 

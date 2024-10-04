@@ -309,9 +309,11 @@ const AdminDeposit = () => {
     
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${selectedCard}`);
             const cardData = cardResponse.data;
-            
+
+            let isTeamFund = selectedDeposit.deposit_type === 'TeamFund'; // 팀 운영비 여부 체크
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
+            let teamFund = parseFloat(cardData.team_fund); // 팀 운영비
             const depositAmount = parseFloat(selectedDeposit.transaction_amount);
     
             if (depositAmount <= 0) throw new Error("입금 금액은 0보다 커야 합니다.");
@@ -322,20 +324,60 @@ const AdminDeposit = () => {
                 const existingDeposit = existingDepositResponse.data;
                 const previousAmount = parseFloat(existingDeposit.transaction_amount);
             
+                // 수정하려는 입금 내역의 날짜
+                const depositDate = new Date(existingDeposit.transaction_date);
+
+                // 해당 카드의 모든 트랜잭션 조회
+                const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${selectedCard}`);
+                const transactions = transactionsResponse.data;
+
+                // 입금 이후에 발생한 거래가 있는지 확인
+                const hasPostDepositTransactions = transactions.some(transaction => {
+                    const transactionDate = new Date(transaction.transaction_date);
+                    return transactionDate > depositDate && transaction.transaction_type === 'expense';
+                });
+
+                if (hasPostDepositTransactions) {
+                    // 입금 이후에 발생한 거래가 있으면 수정 방지
+                    setErrMsg("이 입금 이후에 사용된 내역이 있어 수정할 수 없습니다.");
+                    console.warn('입금 이후 사용 내역이 있어 수정이 불가능합니다.');
+                    return;
+                }
+
                 // 수정된 금액과 기존 금액의 차액을 계산
                 const difference = depositAmount - previousAmount;
-    
+                console.log(depositAmount, '-', previousAmount, '=', difference );
+
                 // 차액을 잔액에 반영
-                if (updatedBalance + difference > 100000) {
-                    const excess = updatedBalance + difference - 100000;
-                    rolloverAmount += excess;
-                    updatedBalance = 100000;  // 잔액은 100,000원을 초과하지 않도록 유지
-                } else if (updatedBalance + difference < 0) {
-                    // 차액으로 인해 잔액이 0보다 작아지는 경우
-                    throw new Error("잔액이 부족하여 트랜잭션을 수정할 수 없습니다.");
+                // if (updatedBalance + difference > 100000) {
+                //     const excess = updatedBalance + difference - 100000;
+                //     rolloverAmount += excess;
+                //     updatedBalance = 100000;  // 잔액은 100,000원을 초과하지 않도록 유지
+                // } else if (updatedBalance + difference < 0) {
+                //     // 차액으로 인해 잔액이 0보다 작아지는 경우
+                //     throw new Error("잔액이 부족하여 트랜잭션을 수정할 수 없습니다.");
+                // } else {
+                //     // 차액을 잔액에 반영
+                //     updatedBalance += difference;
+                // }
+
+                if (isTeamFund) {
+                    // 팀 운영비일 경우 team_fund에서 차액을 처리
+                    if (teamFund + difference < 0) {
+                        throw new Error("팀 운영비가 부족하여 트랜잭션을 수정할 수 없습니다.");
+                    }
+                    teamFund += difference;
                 } else {
-                    // 차액을 잔액에 반영
-                    updatedBalance += difference;
+                    // 일반 카드 잔액에서 차액 처리
+                    if (updatedBalance + difference > 100000) {
+                        const excess = updatedBalance + difference - 100000;
+                        rolloverAmount += excess;
+                        updatedBalance = 100000;  // 잔액은 100,000원을 초과하지 않도록 유지
+                    } else if (updatedBalance + difference < 0) {
+                        throw new Error("잔액이 부족하여 트랜잭션을 수정할 수 없습니다.");
+                    } else {
+                        updatedBalance += difference;
+                    }
                 }
             
                 // 트랜잭션 업데이트
@@ -347,6 +389,7 @@ const AdminDeposit = () => {
                     transaction_type: 'income',
                     transaction_date: selectedDeposit?.transaction_date,
                     deposit_type: depositType,
+                    team_fund: teamFund,
                 });
             } else {
                 // 새로운 입금일 경우
@@ -383,9 +426,10 @@ const AdminDeposit = () => {
             await axios.put(`${API_URLS.CARDS}/${selectedCard}`, {
                 balance: updatedBalance,
                 rollover_amount: rolloverAmount,
+                team_fund: teamFund,
             });
     
-            console.log("카드 잔액 및 rollover_amount 업데이트 성공:", updatedBalance, rolloverAmount);
+            console.log("카드 잔액 및 rollover_amount 업데이트 성공:", updatedBalance, rolloverAmount, teamFund);
             
             // 상태 값 업데이트 및 모달 닫기
             setBalance(updatedBalance);

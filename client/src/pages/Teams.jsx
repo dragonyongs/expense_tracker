@@ -43,6 +43,31 @@ function Teams() {
         setRemainingDays(Math.ceil(daysLeft));
     };
 
+    // const handleTeamOperatingFundSpent = (account) => {
+    //     const teamLeaderCard = account.cards.find(card => card.position === "팀장" && card.member_id === user.member_id);
+    //     if (!teamLeaderCard) return 0;
+    //     const teamFundPercentage = (teamLeaderCard.team_fund / 30000 ) * 100;
+    //     return teamFundPercentage;
+    // };
+
+    const handleTeamOperatingFundSpent = (account) => {
+        const teamLeaderCard = account.cards.find(card => card.position === "팀장" && card.member_id === user.member_id);
+        if (!teamLeaderCard) return 0;
+    
+        const totalCards = accounts.reduce((sum, account) => sum + account.cards.length, 0);
+    
+        // 팀원 수에 따른 총 팀 운영비 한도 계산 (팀원 수 * 30,000)
+        const totalTeamFundLimit = totalCards * 30000;
+    
+        // 사용된 팀 운영비 퍼센트 계산 (잔액 기준)
+        const remainingFund = teamLeaderCard.team_fund;  // 현재 남은 금액
+        const usedFund = totalTeamFundLimit - remainingFund;  // 사용한 금액
+        const teamFundPercentage = totalTeamFundLimit > 0 ? (usedFund / totalTeamFundLimit) * 100 : 0;
+        
+        return teamFundPercentage;
+    };
+
+
     if (loading) {
         return <Loading type="ThreeDots" />;
     }
@@ -72,10 +97,9 @@ function Teams() {
                             const teamMembersCount = account.cards.filter(card => card.position !== '팀장').length;
     
                             // 팀 운영비 계산
-                            const teamOperatingFundLimit = account.cards.find(card => card.position === "팀장")?.team_fund || 0; // 팀장의 team_fund 가져오기
-                            const teamOperatingFundSpent = 0; // 현재 사용 금액 (입금 시 별도로 관리)
-                            const teamOperatingFundPercentage = teamOperatingFundLimit > 0 ? (teamOperatingFundSpent / teamOperatingFundLimit) * 100 : 0;
-    
+                            const teamOperatingFundBalance = account.cards.find(card => card.position === "팀장")?.team_fund || 0; // 팀장의 team_fund 가져오기
+                            const teamOperatingFundPercentage = handleTeamOperatingFundSpent(account);
+
                             return (
                                 <div key={account._id} className='pt-8 px-8 bg-white shadow-sm border-t border-t-gray-200 dark:border-t-slate-700 dark:bg-slate-800 dark:text-slate-300'>
                                     <h3 className='text-lg'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌</h3>
@@ -128,9 +152,9 @@ function Teams() {
                                                     </h3>
                                                     <span className={`text-lg text-gray-400 dark:text-slate-400`}>
                                                         <span className={`font-bold text-black dark:font-normal dark:text-slate-200`}>
-                                                            {teamOperatingFundLimit.toLocaleString()}원
+                                                            {teamOperatingFundBalance.toLocaleString()}원
                                                         </span> 
-                                                        <span className='text-base'>{teamOperatingFundLimit > 0 ? "남음" : "" }</span>
+                                                        <span className='text-base'>{teamOperatingFundBalance > 0 ? "남음" : "" }</span>
                                                     </span>
                                                 </div>
                                                 <ProgressBars spentPercentage={teamOperatingFundPercentage} isWarning={false} />

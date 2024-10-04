@@ -13,7 +13,8 @@ const transactionSchema = new mongoose.Schema({
         required: function() {
             return this.transaction_type === 'income'; // deposit일 경우에만 필수
         }
-    }
+    },
+    expense_type: { type: String, enum: ['RegularExpense', 'TeamFund'] }
 }, { timestamps: true });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
