@@ -36,9 +36,9 @@ const AdminDeposit = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [errMsg, setErrMsg] = useState('');
 
-    useEffect(() => {
-        console.log('selectedDeposit has been updated: ', selectedDeposit);
-    }, [selectedDeposit]);
+    // useEffect(() => {
+    //     console.log('selectedDeposit has been updated: ', selectedDeposit);
+    // }, [selectedDeposit]);
     
 
     const fetchAuccountData = async (url) => {
