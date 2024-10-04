@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  input[type="date"] {
+    @apply px-4 py-2 border rounded;
+  }
+}
+
 .instructions {
     display: flex;
     justify-content: start;
