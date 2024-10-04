@@ -498,7 +498,7 @@ const AdminDeposit = () => {
                         <SelectField
                             label="사용자"
                             id="member_id"
-                            value={selectedDeposit?.card_id?.member_id || ""}  // selectedUser 상태로 설정
+                            value={isEditing ? selectedDeposit?.card_id?.member_id : selectedUser || ""}  // selectedUser 상태로 설정
                             onChange={handleUserChange}
                             options={users.map(member => ({
                                 value: member._id,
@@ -509,28 +509,16 @@ const AdminDeposit = () => {
                         />
 
                         {/* 카드 선택 */}
-                        {isEditing ? (<SelectField
-                                label="카드"
-                                id="card_id"
-                                value={selectedDeposit?.card_id?._id || ""}
-                                onChange={handleCardChange}
-                                options={cards.map(card => ({ value: card._id, label: card.card_number}
-                                ))}
-                                placeholder="카드 선택"
-                                required
-                            />
-                        ) : (
-                            <SelectField
-                                label="카드"
-                                id="card_id"
-                                value={selectedDeposit?.card_id?._id || ""}
-                                onChange={handleCardChange}
-                                options={cards.map(card => ({ value: card._id, label: card.card_number}
-                                ))}
-                                placeholder="카드 선택"
-                                required
-                            />
-                        )}
+                        <SelectField
+                            label="카드"
+                            id="card_id"
+                            value={isEditing ? selectedDeposit?.card_id?._id : selectedCard || ""}
+                            onChange={handleCardChange}
+                            options={cards.map(card => ({ value: card._id, label: card.card_number}
+                            ))}
+                            placeholder="카드 선택"
+                            required
+                        />
 
                         <div>
                             <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">입금 형식</h3>
