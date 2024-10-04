@@ -27,7 +27,7 @@ function CardBalance() {
         }
     };
 
-    const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0);
+    const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + ( card.team_fund || 0);
 
     return (
         <div className='flex flex-col items-center gap-y-3 pt-6 pb-12 rounded-es-4xl rounded-ee-4xl bg-[#0433FF]'>
