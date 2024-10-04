@@ -70,7 +70,7 @@ function Contacts() {
                             </div>
                             <div className='font-semibold text-xl text-white'>{selectedContact?.member_name} <span className='font-normal'>{selectedContact?.position}</span></div>
                         </div>
-                        <div className='flex flex-col gap-y-2 w-full rounded-md text-sm p-8 bg-slate-200'>
+                        <div className='flex flex-col gap-y-2 w-full rounded-b-md text-sm p-8 bg-slate-200 mb-2'>
                             <div className='grid grid-cols-4 w-full p-3 rounded-md bg-white border dark:border-none'>
                                 <span className='font-semibold'>소속</span>
                                 <span className='col-span-3'>{selectedContact?.team_id?.team_name}</span>
@@ -91,23 +91,13 @@ function Contacts() {
                                 <span className='font-semibold'>상태</span>
                                 <span className='col-span-3'>{selectedContact?.status_id?.status_description}</span>
                             </div>
-                            {/* <div className='grid grid-cols-4 w-full p-3 rounded-md bg-white border dark:border-none'>
-                                <span className='font-semibold'>휴대폰</span>
-                                <span className='col-span-3'>010-0000-0000</span>
-                            </div>
-                            <div className='grid grid-cols-4 w-full p-3 rounded-md bg-white border dark:border-none'>
-                                <span className='font-semibold'>사무실</span>
-                                <span className='col-span-3'>02-6969-0000 (155)</span>
-                            </div>
-                            <div className='grid grid-cols-4 w-full p-3 rounded-md bg-white border dark:border-none'>
-                                <span className='font-semibold'>근무지</span>
-                                <span className='col-span-3'>서울특별시 강남구 강남대로62길 23, 3층 역삼빌딩</span>
-                            </div>
+                        </div>
+                        {/* <div className='flex flex-col gap-y-2 w-full rounded-md text-sm p-8 bg-slate-200'>
                             <div className='grid grid-cols-4 w-full p-3 rounded-md bg-white border dark:border-none'>
                                 <span className='font-semibold'>기타</span>
                                 <span className='col-span-3'>-</span>
-                            </div> */}
-                        </div>
+                            </div>
+                        </div> */}
                     </div>
                 </CommonDrawer>
         </div>
