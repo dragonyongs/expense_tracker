@@ -120,7 +120,7 @@ function Teams() {
                                                     <div key={card.card_number} className='mb-10'>
                                                         <div className='flex justify-between mb-4'>
                                                             <h3 className='flex gap-x-2 items-center'>
-                                                                <span className={`text-lg font-bold`}>{card.position === "팀장" ? "팀장" : card.member_name}</span>
+                                                                <span className={`text-lg font-bold`}>{card.member_name}</span>
                                                                 <span className='text-base'>{card.position}</span>
                                                             </h3>
                                                             <span className={`text-lg text-gray-400 dark:text-slate-400`}>
