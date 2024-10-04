@@ -9,12 +9,12 @@ const transactionSchema = new mongoose.Schema({
     transaction_type: { type: String, enum: ['expense', 'income'], required: true },
     deposit_type: { 
         type: String, 
-        enum: ['RegularDeposit', 'TransportationExpense', 'TeamFund', 'TeamCard', 'AdditionalDeposit'], 
+        enum: ['RegularDeposit', 'TransportationExpense', 'TeamFund', 'AdditionalDeposit'], 
         required: function() {
             return this.transaction_type === 'income'; // deposit일 경우에만 필수
         }
     },
-    expense_type: { type: String, enum: ['RegularExpense', 'TeamFund'] }
+    expense_type: { type: String, enum: ['RegularExpense', 'TeamCard', 'TeamFund'] }
 }, { timestamps: true });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
