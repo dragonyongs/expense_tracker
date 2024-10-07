@@ -1,10 +1,10 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useContext, memo } from 'react';
 import { AuthContext } from '../context/AuthProvider';
-
 import { GoHome } from "react-icons/go";
 import { PiPencilSimpleLine } from "react-icons/pi";
-import { LuFolderLock } from "react-icons/lu";
+// import { LuFolderLock } from "react-icons/lu";
+import { RxAvatar } from "react-icons/rx";
 import { PiCardsThree, PiAddressBookTabsLight } from "react-icons/pi";
 
 
@@ -16,8 +16,8 @@ const TabBarComponent = () => {
     const handleHome = () => {
         navigate('/');
     };
-    const handleAdmin = () => {
-        navigate('/admin');
+    const handleProfile = () => {
+        navigate('/profile');
     };
     const handleTeams = () => {
         navigate('/teams');
@@ -79,12 +79,12 @@ const TabBarComponent = () => {
                 </button>
             )}
 
-            {allowedAdminRoles.includes(user?.role) && (
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/admin') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleAdmin}>
+            {memberRoles.includes(user?.role) && (
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/profile') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleProfile}>
                     <div className='flex items-center justify-center w-8 h-8'>
-                        <LuFolderLock className="text-2xl" />
+                        <RxAvatar className="text-2xl" />
                     </div>
-                    <span className="text-sm">관리</span>
+                    <span className="text-sm">프로필</span>
                 </button>
             )}
         </nav>

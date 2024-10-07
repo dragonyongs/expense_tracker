@@ -34,7 +34,7 @@ const Loading = ({ type = "ColorRing" }) => {
   };
 
   return (
-    <div className='flex justify-center items-center w-full h-screen'>
+    <div className='flex justify-center items-center w-full h-default-screen'>
       {renderSpinner()}
     </div>
   );
