@@ -1,5 +1,6 @@
 import React from 'react'
 import { LuBuilding, LuSmartphone, LuHome } from "react-icons/lu";
+import { AiOutlineMail } from "react-icons/ai";
 
 const Profile = () => {
     return (
@@ -34,7 +35,7 @@ const Profile = () => {
                     <ul role="list" className="divide-y divide-gray-200">
                         <li className='flex items-center gap-x-4 py-3 sm:py-4'>
                             <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuBuilding /><span className='w-10 text-nowrap'>이메일</span>
+                                <AiOutlineMail /><span className='w-10 text-nowrap'>이메일</span>
                             </div>
                             <span className=''>ujudge@naver.com</span>
                         </li>

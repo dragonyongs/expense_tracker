@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthProvider';
 import Notification from './Notification';
 import AdminBtn from './AdminBtn';
-// import Logout from './Logout';
+import Logout from './Logout';
 
 const Header = () => {
     const { user } = useContext(AuthContext);
@@ -19,8 +19,8 @@ const Header = () => {
             </div>
             <div className='flex gap-x-6'>
                 <Notification isDashBoard = {isDashBoard} role = {user.role} />
-                {/* <Logout isDashBoard = {isDashBoard} role = {user.role} /> */}
                 <AdminBtn isDashBoard = {isDashBoard} role = {user.role} />
+                <Logout isDashBoard = {isDashBoard} role = {user.role} />
             </div>
         </header>
     );
