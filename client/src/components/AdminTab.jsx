@@ -40,7 +40,7 @@ const AdminTab = () => {
         <div className="sticky top-0 left-0 text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 bg-white dark:border-slate-600 dark:bg-slate-800">
             <ul
                 ref={tabRef}
-                className="flex flex-nowrap -mb-px overflow-x-auto scrollbar-hide"
+                className="flex flex-nowrap -mb-px overflow-x-auto scrollbar-hide pl-2"
             >
                 {tabs.map((tab) => (
                     <li key={tab.path} className={`flex-shrink-0 ${tab.role.some(role => allowedRoles.includes(role) && role === user?.role) ? '' : 'hidden'}`}>
