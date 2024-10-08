@@ -77,7 +77,7 @@ const Profile = () => {
                 </div>
                 <button className='flex justify-center p-3 dark:text-slate-300 rounded-md active:bg-gray-100 active:text-gray-400 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit className='w-6 h-6'/></button>
             </header>
-            <div className='flex flex-col gap-y-3 p-4 dark:bg-slate-800'>
+            <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
 
                 <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
                     <div className='absolute top-6 right-6 text-md text-slate-500'>
