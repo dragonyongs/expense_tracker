@@ -59,6 +59,19 @@ const Profile = () => {
         setAvatarConfig({ ...avatarConfig, [key]: randomColor() });
     };
     
+    const handleStyleChange = (styleKey) => {
+        const currentStyle = avatarConfig[styleKey];
+        const styleOptions = stylesConfig[styleKey];
+        const currentIndex = styleOptions.indexOf(currentStyle);
+        const nextIndex = (currentIndex + 1) % styleOptions.length;
+        const nextStyle = styleOptions[nextIndex];
+
+        setAvatarConfig((prevConfig) => ({
+            ...prevConfig,
+            [styleKey]: nextStyle,
+        }));
+    };
+    
     const handleStyleAndColorChange = (styleKey, colorKey) => {
     	const currentStyle = avatarConfig[styleKey];
     	const styleOptions = stylesConfig[styleKey];
