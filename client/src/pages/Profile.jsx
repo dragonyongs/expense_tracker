@@ -71,13 +71,13 @@ const Profile = () => {
 
     return (
         <>
-            <header className={`flex justify-between items-center py-4 pl-6 pr-3 text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+            <header className={`flex justify-between items-center py-4 pl-6 pr-3 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                 <div className='text-2xl' >
                     <span className='font-semibold'>프로필</span>
                 </div>
                 <button className='flex justify-center p-3 dark:text-slate-300 rounded-md active:bg-gray-100 active:text-gray-400 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit className='w-6 h-6'/></button>
             </header>
-            <div className='flex flex-col gap-y-3 p-4 bg-slate-200 dark:bg-slate-800'>
+            <div className='flex flex-col gap-y-3 p-4 dark:bg-slate-800'>
 
                 <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
                     <div className='absolute top-6 right-6 text-md text-slate-500'>
@@ -198,17 +198,17 @@ const Profile = () => {
                     <Avatar className="w-24 h-24" {...avatarConfig} />
                     
                     {/* 아이콘 버튼 */}
-                    <div className="flex gap-2 mt-4 flex-wrap justify-start">
-                        <button onClick={generateRandomAvatar} className="px-4 py-2 bg-blue-300 rounded-md">
+                    <div className="flex gap-2 mt-4 flex-wrap justify-start mb-4">
+                        <button onClick={generateRandomAvatar} className="px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
                             랜덤
                         </button>
-                        {/* <button onClick={() => handleChange('sex', avatarConfig.sex === 'man' ? 'woman' : 'man')} className="px-4 py-2 bg-gray-300 rounded-md">
+                        {/* <button onClick={() => handleChange('sex', avatarConfig.sex === 'man' ? 'woman' : 'man')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md">
                             성별
                         </button> */}
-                        <button onClick={() => randomizeColor('faceColor')} className="px-4 py-2 bg-gray-300 rounded-md">
-                            피부색
+                        <button onClick={() => randomizeColor('faceColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
+                            피부
                         </button>
-                        <button onClick={() => handleChange('earSize', avatarConfig.earSize === 'small' ? 'big' : 'small')} className="px-4 py-2 bg-gray-300 rounded-md">
+                        <button onClick={() => handleChange('earSize', avatarConfig.earSize === 'small' ? 'big' : 'small')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
                             귀
                         </button>
                         
@@ -221,7 +221,7 @@ const Profile = () => {
                                 'normal', 
                                 'hairColor' // 헤어 색상도 함께 랜덤화
                             )} 
-                            className="px-4 py-2 bg-gray-300 rounded-md"
+                            className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
                         >
                             헤어
                         </button>
@@ -233,23 +233,23 @@ const Profile = () => {
                                 avatarConfig.hatStyle === 'none' ? 'beanie' : avatarConfig.hatStyle === 'beanie' ? 'turban' : 'none',
                                 'hatColor'
                             )} 
-                            className="px-4 py-2 bg-gray-300 rounded-md"
+                            className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
                         >
                             모자
                         </button>
 
                         {/* 눈 스타일 변경 */}
-                        <button onClick={() => handleChange('eyeStyle', avatarConfig.eyeStyle === 'circle' ? 'oval' : avatarConfig.eyeStyle === 'oval' ? 'smile' : 'circle')} className="px-4 py-2 bg-gray-300 rounded-md">
+                        <button onClick={() => handleChange('eyeStyle', avatarConfig.eyeStyle === 'circle' ? 'oval' : avatarConfig.eyeStyle === 'oval' ? 'smile' : 'circle')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
                             눈
                         </button>
 
                         {/* 코 스타일 변경 */}
-                        <button onClick={() => handleChange('noseStyle', avatarConfig.noseStyle === 'short' ? 'long' : avatarConfig.noseStyle === 'long' ? 'round' : 'short')} className="px-4 py-2 bg-gray-300 rounded-md">
+                        <button onClick={() => handleChange('noseStyle', avatarConfig.noseStyle === 'short' ? 'long' : avatarConfig.noseStyle === 'long' ? 'round' : 'short')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
                             코
                         </button>
 
                         {/* 입 스타일 변경 */}
-                        <button onClick={() => handleChange('mouthStyle', avatarConfig.mouthStyle === 'laugh' ? 'smile' : avatarConfig.mouthStyle === 'smile' ? 'peace' : 'laugh')} className="px-4 py-2 bg-gray-300 rounded-md">
+                        <button onClick={() => handleChange('mouthStyle', avatarConfig.mouthStyle === 'laugh' ? 'smile' : avatarConfig.mouthStyle === 'smile' ? 'peace' : 'laugh')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
                             입
                         </button>
 
@@ -260,19 +260,19 @@ const Profile = () => {
                                 avatarConfig.shirtStyle === 'hoody' ? 'short' : avatarConfig.shirtStyle === 'short' ? 'polo' : 'hoody',
                                 'shirtColor'
                             )} 
-                            className="px-4 py-2 bg-gray-300 rounded-md"
+                            className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
                         >
                             셔츠
                         </button>
 
                         {/* 배경 색상 변경 */}
-                        <button onClick={() => randomizeColor('bgColor')} className="px-4 py-2 bg-gray-300 rounded-md">
+                        <button onClick={() => randomizeColor('bgColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
                             배경
                         </button>
                     </div>
 
                 </div>
-                <div className="flex flex-col space-y-4 dark:text-slate-300">
+                <div className="flex flex-col space-y-4 dark:text-slate-400">
                     {/* 주소 입력 필드 */}
                     <InputField
                     label="주소 타입"

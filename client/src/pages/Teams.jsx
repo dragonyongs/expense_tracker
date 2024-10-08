@@ -67,7 +67,7 @@ function Teams() {
 
     return (
         <>
-            <header className={`flex justify-between items-center py-4 px-6 text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+            <header className={`flex justify-between items-center py-4 px-6 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                 <div className='text-2xl' >
                     <span className='font-semibold'>팀계좌</span>
                 </div>
