@@ -47,6 +47,8 @@ const Profile = () => {
        noseStyle: ['short', 'long', 'round'],
        mouthStyle: ['laugh', 'smile', 'peace'],
        shirtStyle: ['hoody', 'short', 'polo'],
+       earSize: ['small', 'big'],
+       glassesStyle: ['none', 'round', 'square'],
 	};
 
 {/*
@@ -264,6 +266,7 @@ const Profile = () => {
                         {renderStyleAndColorButton('hairStyle', 'hairColor', '헤어')}
                         {renderStyleAndColorButton('hatStyle', 'hatColor', '모자')}
                         {renderStyleButton('eyeStyle', '눈')}
+                         {renderStyleButton('glassesStyle', '안경')}
                         {renderStyleButton('noseStyle', '코')}
                         {renderStyleButton('mouthStyle', '입')}
                         {renderStyleAndColorButton('shirtStyle', 'shirtColor', '셔츠')}
