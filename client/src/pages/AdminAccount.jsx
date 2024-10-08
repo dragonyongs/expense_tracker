@@ -6,6 +6,7 @@ import SelectField from '../components/SelectField';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { API_URLS } from '../services/apiUrls';
+import AdminHader from '../components/AdminHader';
 
 const BANK_COLORS = {
     '하나': 'bg-emerald-700',
@@ -120,6 +121,7 @@ const AdminAccount = () => {
 
     return (
         <>
+            <AdminHader />
             <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                 <div className="flex items-center justify-between mt-2 mb-4 px-3">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">계좌 목록</h5>

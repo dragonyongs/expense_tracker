@@ -5,6 +5,7 @@ import CommonDrawer from '../components/CommonDrawer'; // 공통 Drawer 컴포�
 import InputField from '../components/InputField'; // 공통 Input 컴포넌트 사용
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
+import AdminHader from '../components/AdminHader';
 
 // const DEPARTMENTS_URL = '/api/departments';
 
@@ -78,6 +79,7 @@ const AdminDepartments = () => {
 
     return (
         <>
+            <AdminHader />
             <div className='flex-1 w-full p-4 sm:p-6 dark:bg-gray-800'>
                 <div className="flex items-center justify-between mt-2 mb-4 px-3">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">본부 목록</h5>

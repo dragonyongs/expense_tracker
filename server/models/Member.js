@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Status = require('./Status'); // Status 모델을 불러옴
-// const Role = require('./Role');     // Role 모델을 불러옴
 
 const memberSchema = new mongoose.Schema({
     member_name: { type: String, required: true },
@@ -12,6 +11,7 @@ const memberSchema = new mongoose.Schema({
     rank: { type: String, default: null },
     position: { type: String, default: null },
     role_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null },      // 기본값 null
+    avatar_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Avatar', default: null },
 }, { timestamps: true });
 
 // Pre-save hook to dynamically set status_id and role_id if not provided

@@ -1,9 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useContext, memo } from 'react';
-import { AuthContext } from '../context/AuthProvider';
+import { memo } from 'react';
 import { GoHome } from "react-icons/go";
 import { PiPencilSimpleLine } from "react-icons/pi";
-// import { LuFolderLock } from "react-icons/lu";
 import { RxAvatar } from "react-icons/rx";
 import { PiCardsThree, PiAddressBookTabsLight } from "react-icons/pi";
 
@@ -11,7 +9,7 @@ import { PiCardsThree, PiAddressBookTabsLight } from "react-icons/pi";
 const TabBarComponent = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
+    // const { user } = useContext(AuthContext);
 
     const handleHome = () => {
         navigate('/');
@@ -36,12 +34,6 @@ const TabBarComponent = () => {
         }
         return location.pathname === path;
     };
-    
-    // const adminRoles = ['admin', 'ms_admin', 'hr_admin']; 
-    const allowedAdminRoles = ['super_admin', 'admin', 'ms_admin', 'hr_admin'];
-    const memberRoles = ['member', 'admin', 'ms_admin', 'hr_admin'];
-    // const superAdminRole = ['super_admin'];
-    
 
     return (
         <nav className='z-50 bg-white shadow-md pt-2 px-6 pb-4 flex justify-between border-t border-slate-100 dark:bg-slate-800 dark:border-slate-700'>
@@ -52,41 +44,41 @@ const TabBarComponent = () => {
                 <span className="text-sm">홈</span>
             </button>
 
-            {memberRoles.includes(user?.role) && (
+            {/* {memberRoles.includes(user?.role) && ( */}
                 <button type="button" className={`flex flex-col items-center ${isActiveTab('/teams') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleTeams}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiCardsThree className="text-2xl" />
                     </div>
                     <span className="text-sm">팀계좌</span>
                 </button>
-            )}
+            {/* )} */}
 
-            {memberRoles.includes(user?.role) && (
+            {/* {memberRoles.includes(user?.role) && ( */}
                 <button type="button" className={`flex flex-col items-center ${isActiveTab('/transactions') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleTransactions}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiPencilSimpleLine className="text-2xl" />
                     </div>
                     <span className="text-sm">내카드</span>
                 </button>
-            )}
+            {/* )} */}
 
-            {memberRoles.includes(user?.role) && (
+            {/* {memberRoles.includes(user?.role) && ( */}
                 <button type="button" className={`flex flex-col items-center ${isActiveTab('/members') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={hadleContacts}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiAddressBookTabsLight className="text-2xl" />
                     </div>
                     <span className="text-sm">연락망</span>
                 </button>
-            )}
+            {/* )} */}
 
-            {memberRoles.includes(user?.role) && (
+            {/* {memberRoles.includes(user?.role) && ( */}
                 <button type="button" className={`flex flex-col items-center ${isActiveTab('/profile') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleProfile}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <RxAvatar className="text-2xl" />
                     </div>
                     <span className="text-sm">프로필</span>
                 </button>
-            )}
+            {/* )} */}
         </nav>
     );
 };

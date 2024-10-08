@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { TbView360Arrow } from "react-icons/tb";
+import AdminHader from '../components/AdminHader';
 
 const Admin = () => {
+
     const [isFlipped, setIsFlipped] = useState(false);
     const [showRotatingIcon, setShowRotatingIcon] = useState(true);
     const [animateFlip, setAnimateFlip] = useState(true); // 애니메이션 제어
+    // const location = useLocation();
 
     const toggleCard = () => {
         setIsFlipped(!isFlipped);
@@ -22,8 +25,8 @@ const Admin = () => {
 
     return (
         <>
-            <div className='p-5 dark:text-white'>관리자 페이지</div>
-            <div className='flex justify-center'>
+            <AdminHader />
+            <div className='flex justify-center mt-12'>
                 <div className={`w-72 h-48 perspective`} onClick={toggleCard}>
                     <div className={`bg-slate-800 w-72 h-48 p-4 rounded-lg shadow-xl border border-slate-700 flex items-end justify-between relative overflow-hidden transition-transform duration-300 cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}>
 

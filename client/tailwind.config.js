@@ -36,7 +36,7 @@ export default {
       },
       minHeight: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
-        'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px )',
+        'default-screen': 'calc((var(--vh, 1vh) * 100) - 77px )',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px )',
       },
       height: {
@@ -46,6 +46,7 @@ export default {
         'pending-screen': 'calc((var(--vh, 1vh) * 100) - 48px )',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px )',
         'profile-screen': 'calc((var(--vh, 1vh) * 100) - 44px )',
+        'profileDrawer-screen': 'calc((var(--vh, 1vh) * 100) - 159px )',
       },
       zIndex: {
         '110' : '110',
