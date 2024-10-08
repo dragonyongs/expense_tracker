@@ -19,7 +19,7 @@ const Layout = () => {
     return (
         <>  
             {/* Background */}
-            <div className='-z-10 fixed bg-gradient-to-r from-green-50 to-indigo-50 w-full lg:h-real-screen'></div>
+            <div className='-z-10 fixed bg-gradient-to-r from-green-50 to-indigo-50 w-full lg:h-real-screen dark:from-slate-950 dark:to-slate-950'></div>
 
             {/* Promotion Message */}
             <div className='hidden z-10 fixed lg:flex items-center lg:h-real-screen left-desktop'>
