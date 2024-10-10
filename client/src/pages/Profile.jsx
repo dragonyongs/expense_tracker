@@ -69,7 +69,10 @@ const Profile = () => {
         try {
             // 새로운 연락처 추가 (POST 요청)
             for (const contact of contacts.filter(c => !c._id)) {
-                await axios.post('/api/phones', { member_id: user.member_id, ...contact });
+                const existingContact = contacts.some(c => c.phone_number === contact.phone_number && c.phone_type === contact.phone_type);
+                if (!existingContact) {
+                    await axios.post('/api/phones', { member_id: user.member_id, ...contact });
+                }
             }
     
             // 기존 연락처 수정 (PUT 요청)
@@ -81,6 +84,9 @@ const Profile = () => {
             for (const contactId of deletedContacts || []) {  // deletedContacts가 배열인지 확인
                 await axios.delete(`/api/phones/${contactId}`);
             }
+            
+            // 데이터 저장 후 새로 불러오기
+            await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
     
         } catch (error) {
             // 에러 응답이 있는지 확인
