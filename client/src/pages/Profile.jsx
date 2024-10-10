@@ -18,6 +18,36 @@ const randomColor = () => {
     return color;
 };
 
+const renderContactIcon = (type) => {
+    switch (type) {
+        case 'company_phone':
+            return <LuBuilding />;
+        case 'work_mobile':
+            return <LuSmartphone />;
+        case 'personal_mobile':
+            return <LuSmartphone />;
+        case 'fax':
+            return <LiaFaxSolid />;
+        default:
+            return null;
+    }
+};
+
+const renderContactLabel = (type) => {
+    switch (type) {
+        case 'company_phone':
+            return '회사';
+        case 'work_mobile':
+            return '업무';
+        case 'personal_mobile':
+            return '개인';
+        case 'fax':
+            return '팩스';
+        default:
+            return '알수없음';
+    }
+};
+
 const Profile = () => {
     const { user } = useContext(AuthContext);
     const [isOpen, setIsOpen] = useState(false);
@@ -106,6 +136,7 @@ const Profile = () => {
         }
     }
 };
+    
     
     // 아바타 설정 상태
     const [avatarConfig, setAvatarConfig] = useState({
@@ -240,6 +271,25 @@ const Profile = () => {
                     </div>
                 </div>
 
+<div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
+            <ul role="list" className="divide-y divide-gray-200">
+                {contacts.map((contact, index) => (
+                    <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4'>
+                        <div className='flex items-center space-x-2 px-2 font-semibold'>
+                            {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
+                            {renderContactIcon(contact.phone_type)}
+                            <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
+                        </div>
+                        {/* 내선 번호가 있는 경우 함께 출력 */}
+                        <span>
+                            {contact.phone_number} {contact.extension && `(${contact.extension})`}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+
+{/*
                 <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
                     <ul role="list" className="divide-y divide-gray-200">
                         <li className='flex items-center gap-x-4 py-3 sm:py-4'>
@@ -268,7 +318,7 @@ const Profile = () => {
                         </li>
                     </ul>
                 </div>
-
+*/}
                 <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
                     <ul role="list" className="divide-y divide-gray-200">
                         <li className='flex items-center gap-x-4 py-3 sm:py-4'>
