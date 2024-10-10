@@ -94,7 +94,8 @@ const Profile = () => {
 
         // 데이터 저장 후 새로 불러오기
         await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
-
+        setIsOpen(false);
+        
     } catch (error) {
         if (error.response) {
             console.error('서버 응답 에러:', error.response.data);
@@ -391,13 +392,16 @@ const Profile = () => {
                                             autoComplete='off'
                                             required
                                         />
-                                        <input
-                                            type="text"
-                                            value={contact.extension || ''}
-                                            onChange={(e) => handleUpdateContact(index, 'extension', e.target.value)}
-                                            className="w-3/12 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                                            placeholder="내선(옵션)"
-                                        />
+                                        {/* 회사 전화일 경우에만 내선 입력 필드 표시 */}
+        {contact.phone_type === 'company_phone' && (
+            <input
+                type="text"
+                value={contact.extension || ''}
+                onChange={(e) => handleUpdateContact(index, 'extension', e.target.value)}
+                className="w-3/12 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
+                placeholder="내선(옵션)"
+            />
+        )}
                                         <button onClick={() => handleRemoveContact(index)} className='w-1/12 py-1 px-2 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
                                             <LuTrash className="w-4 h-4" />
                                         </button>
