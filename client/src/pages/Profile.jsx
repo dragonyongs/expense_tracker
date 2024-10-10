@@ -229,6 +229,10 @@ const Profile = () => {
         setIsOpen(false);
     };
 
+    // 개인 번호를 필터링하여 추출
+    const personalContact = contacts.find(contact => contact.phone_type === 'personal_mobile');
+    const personalPhoneNumber = personalContact ? personalContact.phone_number : '번호 없음';
+
     return (
         <>
             <header className={`flex justify-between items-center py-4 pl-6 pr-3 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
@@ -259,10 +263,10 @@ const Profile = () => {
                     </div>
                     <div>
                         <div className='flex items-center gap-x-2'>
-                            <LuSmartphone /> <p className='font-normal text-lg'>010-0000-0000</p>
+                            <LuSmartphone /> <p className='font-normal text-lg'>{personalPhoneNumber}</p>
                         </div>
                         <div className='flex items-center gap-x-2'>
-                            <AiOutlineMail /> <p className='font-normal text-lg'>myemail@starrih.co.kr</p>
+                            <AiOutlineMail /> <p className='font-normal text-lg'>{user.email}</p>
                         </div>
                     </div>
                     <div className='flex gap-x-3 mt-4'>
