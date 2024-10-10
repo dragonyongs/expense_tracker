@@ -66,40 +66,45 @@ const Profile = () => {
     };
     
     const handleSave = async () => {
-        try {
-            // 새로운 연락처 추가 (POST 요청)
-            for (const contact of contacts.filter(c => !c._id)) {
-                const existingContact = contacts.some(c => c.phone_number === contact.phone_number && c.phone_type === contact.phone_type);
-                if (!existingContact) {
-                    await axios.post('/api/phones', { member_id: user.member_id, ...contact });
-                }
-            }
-    
-            // 기존 연락처 수정 (PUT 요청)
-            for (const contact of contacts.filter(c => c._id)) {
-                await axios.put(`/api/phones/${contact._id}`, { ...contact });
-            }
-    
-            // 삭제된 연락처 처리 (DELETE 요청)
-            for (const contactId of deletedContacts || []) {  // deletedContacts가 배열인지 확인
-                await axios.delete(`/api/phones/${contactId}`);
-            }
-            
-            // 데이터 저장 후 새로 불러오기
-            await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
-    
-        } catch (error) {
-            // 에러 응답이 있는지 확인
-            if (error.response) {
-                console.error('서버 응답 에러:', error.response.data);
-                console.error('상태 코드:', error.response.status);
-            } else if (error.request) {
-                console.error('요청은 전송되었으나 응답이 없습니다:', error.request);
-            } else {
-                console.error('에러 발생:', error.message);
+    try {
+        // Fetch current contacts from the server to compare and prevent duplicate entries
+        const { data: currentContacts } = await axios.get(`/api/phones/${user.member_id}`);
+
+        // 새로운 연락처 추가 (POST 요청)
+        for (const contact of contacts.filter(c => !c._id)) {
+            const isDuplicate = currentContacts.some(
+                (existing) => 
+                    existing.phone_number === contact.phone_number && 
+                    existing.phone_type === contact.phone_type
+            );
+            if (!isDuplicate) {
+                await axios.post('/api/phones', { member_id: user.member_id, ...contact });
             }
         }
-    };
+
+        // 기존 연락처 수정 (PUT 요청)
+        for (const contact of contacts.filter(c => c._id)) {
+            await axios.put(`/api/phones/${contact._id}`, { ...contact });
+        }
+
+        // 삭제된 연락처 처리 (DELETE 요청)
+        for (const contactId of deletedContacts) {
+            await axios.delete(`/api/phones/${contactId}`);
+        }
+
+        // 데이터 저장 후 새로 불러오기
+        await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
+
+    } catch (error) {
+        if (error.response) {
+            console.error('서버 응답 에러:', error.response.data);
+        } else if (error.request) {
+            console.error('요청은 전송되었으나 응답이 없습니다:', error.request);
+        } else {
+            console.error('에러 발생:', error.message);
+        }
+    }
+};
     
     // 아바타 설정 상태
     const [avatarConfig, setAvatarConfig] = useState({
