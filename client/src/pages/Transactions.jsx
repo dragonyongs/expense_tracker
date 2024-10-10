@@ -328,88 +328,88 @@ const Transactions = () => {
 
                 {/* 트랜잭션 목록 */}
 
-                    <div className='flow-root'>
-                        
-                        <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
-                            <div className="flex items-center justify-between mb-4">
-                                <h5 className="text-xl font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
-                                <button
-                                    type="button" 
-                                    className='text-black font-semibold rounded-lg text-2xl dark:text-white'
-                                    onClick={handleAddTransaction}
-                                ><IoAddCircleOutline /></button>
-                            </div>
-                        {Object.keys(groupedTransactions).length === 0 ? (
-                            <div className="flex justify-center items-center text-gray-500 dark:text-gray-400">
-                                데이터가 없습니다.
-                            </div>
-                        ) : (
-                            <ul role="list">
-                                {Object.entries(groupedTransactions).map(([date, transactions]) => (
-                                    <li key={date} className="py-3 cursor-pointer">
-                                        <div>
-                                            <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                                {date}
-                                            </p>
-                                        </div>
-                                        {transactions.map((transaction) => (
-                                            <div key={transaction._id} onClick={ transaction.transaction_type !== "income" ? () => handleOpenDrawer(transaction) : null} className="rounded-lg active:scale-99 active:px-2 active:bg-slate-50 dark:active:bg-slate-600">
-                                                <div className="flex items-center py-2">
-                                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== 'income' ? 'border-red-600' : 'border-green-600'}`}>
-                                                        <span className="text-slate-500 text-lg font-normal">
-                                                            {transaction.transaction_type !== "income" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0 ms-4">
-                                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                            {transaction.merchant_name}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                            {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline-flex flex-col gap-x-3 items-center">
-                                                        <span className='font-semibold text-base text-gray-900 dark:text-white'>
-                                                            {transaction.transaction_amount.toLocaleString()}원
-                                                        </span>
-                                                        <span className='inline-block w-full text-sm text-right text-gray-400'>
-                                                            {transaction.transaction_type === 'expense' ? '지출' : '입금'}
-                                                        </span>
-                                                    </div>
+                <div className='flow-root'>
+                    
+                    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h5 className="text-xl font-semibold leading-none text-black dark:text-white">카드 사용 내역</h5>
+                            <button
+                                type="button" 
+                                className='text-black font-semibold rounded-lg text-2xl dark:text-white'
+                                onClick={handleAddTransaction}
+                            ><IoAddCircleOutline /></button>
+                        </div>
+                    {Object.keys(groupedTransactions).length === 0 ? (
+                        <div className="flex justify-center items-center text-gray-500 dark:text-gray-400">
+                            데이터가 없습니다.
+                        </div>
+                    ) : (
+                        <ul role="list">
+                            {Object.entries(groupedTransactions).map(([date, transactions]) => (
+                                <li key={date} className="py-3 cursor-pointer">
+                                    <div>
+                                        <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                                            {date}
+                                        </p>
+                                    </div>
+                                    {transactions.map((transaction) => (
+                                        <div key={transaction._id} onClick={ transaction.transaction_type !== "income" ? () => handleOpenDrawer(transaction) : null} className="rounded-lg active:scale-99 active:px-2 active:bg-slate-50 dark:active:bg-slate-600">
+                                            <div className="flex items-center py-2">
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== 'income' ? 'border-red-600' : 'border-green-600'}`}>
+                                                    <span className="text-slate-500 text-lg font-normal">
+                                                        {transaction.transaction_type !== "income" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1 min-w-0 ms-4">
+                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                        {transaction.merchant_name}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                                        {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
+                                                    </p>
+                                                </div>
+                                                <div className="inline-flex flex-col gap-x-3 items-center">
+                                                    <span className='font-semibold text-base text-gray-900 dark:text-white'>
+                                                        {transaction.transaction_amount.toLocaleString()}원
+                                                    </span>
+                                                    <span className='inline-block w-full text-sm text-right text-gray-400'>
+                                                        {transaction.transaction_type === 'expense' ? '지출' : '입금'}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        </div>
+                                        </div>
+                                    ))}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                     </div>
+                </div>
 
-                    {/* 삭제 모달 : 추후 컴포넌트로 변경 */}
-                    {isDeleteConfirmOpen && (
-                        <div className="fixed inset-0 z-110 flex items-center justify-center bg-gray-900 bg-opacity-50">
-                            <div className="bg-white rounded-lg p-6 w-11/12 md:w-96">
-                                <h3 className="text-lg font-semibold mb-4">정말로 삭제하시겠습니까?</h3>
-                                <div className="flex justify-end space-x-4">
-                                    <button
-                                        type="button"
-                                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md"
-                                        onClick={handleDeleteCancel}
-                                    >
-                                        취소
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="px-4 py-2 bg-red-600 text-white rounded-md"
-                                        onClick={handleDelete}
-                                    >
-                                        삭제
-                                    </button>
-                                </div>
+                {/* 삭제 모달 : 추후 컴포넌트로 변경 */}
+                {isDeleteConfirmOpen && (
+                    <div className="fixed inset-0 z-110 flex items-center justify-center bg-gray-900 bg-opacity-50">
+                        <div className="bg-white rounded-lg p-6 w-11/12 md:w-96">
+                            <h3 className="text-lg font-semibold mb-4">정말로 삭제하시겠습니까?</h3>
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md"
+                                    onClick={handleDeleteCancel}
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md"
+                                    onClick={handleDelete}
+                                >
+                                    삭제
+                                </button>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
 
                 <CommonDrawer
                     isOpen={isOpen}

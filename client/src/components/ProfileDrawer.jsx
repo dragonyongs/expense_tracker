@@ -23,39 +23,30 @@ const useMediaQuery = (query) => {
 
 const ProfileDrawer = ({ isOpen, onClose, title, children }) => {
 
-    const isMobile = useMediaQuery('(max-width: 640px)');
-    const drawerSize = isMobile ? '100%' : '574px';
-    // const style = {
-    //     reactModernDrawer: {
-    //         left: '50%',
-    //         // transform: 'translateX(-50%)',
-    //         width: drawerSize,
-    //         height: "90%",
-    //         marginLeft: "-50px"
-    //     }
-    // }
+    const isMobile = useMediaQuery('(max-width: 1024px)');
+    const drawerSize = isMobile ? '100%' : '576px';
 
     const mobileStyle = {
         width: '100%',
-        height: '90%',
+        height: 'calc( 100vh - 50px)',
     };
     
     const desktopStyle = {
         left: '50%',
         marginLeft: "-50px",
         width: drawerSize,
-        height: '90%',
+        height: 'calc( 100vh - 145px)',
     };
 
     return (
-        <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' style={isMobile ? mobileStyle : desktopStyle}>
+        <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' className="rounded-tr-lg rounded-tl-lg" style={isMobile ? mobileStyle : desktopStyle}>
             <div className="flex justify-between py-4 px-6 dark:bg-slate-800">
                 <h5 className="text-lg font-bold dark:text-slate-200">{title}</h5>
                 <button onClick={onClose} className='text-2xl dark:text-slate-300 mb-4'>
                     <FaChevronDown />
                 </button>
             </div>
-            <div className='overflow-y-auto h-profileDrawer-screen dark:bg-slate-800 pb-6 px-6'>
+            <div className='dark:bg-slate-800'>
                 {children} 
             </div>
         </Drawer>

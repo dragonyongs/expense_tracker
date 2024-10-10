@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
-import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays } from "react-icons/lu";
+import React, { useState, useEffect, useContext } from 'react'
+import { AuthContext } from '../context/AuthProvider';
+import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash } from "react-icons/lu";
 import { AiOutlineMail } from "react-icons/ai";
 import { LiaFaxSolid } from "react-icons/lia";
 import { TbUserEdit } from "react-icons/tb";
 import { RiSignpostLine } from "react-icons/ri";
 import Avatar, { genConfig } from 'react-nice-avatar';
 import ProfileDrawer from '../components/ProfileDrawer';
-import InputField from '../components/InputField';
+import axios from "../services/axiosInstance"; 
 
 const randomColor = () => {
     const letters = '0123456789ABCDEF';
@@ -18,9 +19,82 @@ const randomColor = () => {
 };
 
 const Profile = () => {
+    const { user } = useContext(AuthContext);
     const [isOpen, setIsOpen] = useState(false);
-    const [profile, setProfile] = useState({sample: "sample"});
 
+    const [contacts, setContacts] = useState([]);  // 연락처 배열
+    const [deletedContacts, setDeletedContacts] = useState([]); // 삭제된 연락처 ID를 추적
+
+    const fetchProfileData = async () => {
+        try {
+            console.log('user.member_id', user.member_id);
+            const contactsRes = await  axios.get(`/api/phones/${user.member_id}`);
+    
+            setContacts(contactsRes.data || []);
+
+        } catch (error) {
+            console.error('데이터 불러오기 실패:', error);
+        }
+    };
+    
+    // Drawer 열릴 때 데이터 불러오기
+    useEffect(() => {
+        fetchProfileData();
+    }, [user.member_id]);
+    
+    const handleAddContact = () => {
+        const newContact = {
+            phone_type: '',
+            phone_number: '',
+            extension: '',
+        };
+        setContacts((prevContacts) => [...prevContacts, newContact]);
+    };
+    
+    const handleUpdateContact = (index, field, value) => {
+        const updatedContacts = contacts.map((contact, i) => 
+            i === index ? { ...contact, [field]: value } : contact
+        );
+        setContacts(updatedContacts);
+    };
+    
+    const handleRemoveContact = (index) => {
+        const removedContact = contacts[index]; // 삭제된 연락처 정보 가져오기
+        const updatedContacts = contacts.filter((_, i) => i !== index);
+        setContacts(updatedContacts);
+        setDeletedContacts((prev) => [...prev, removedContact._id]); // 삭제된 연락처 ID 추가
+    };
+    
+    const handleSave = async () => {
+        try {
+            // 새로운 연락처 추가 (POST 요청)
+            for (const contact of contacts.filter(c => !c._id)) {
+                await axios.post('/api/phones', { member_id: user.member_id, ...contact });
+            }
+    
+            // 기존 연락처 수정 (PUT 요청)
+            for (const contact of contacts.filter(c => c._id)) {
+                await axios.put(`/api/phones/${contact._id}`, { ...contact });
+            }
+    
+            // 삭제된 연락처 처리 (DELETE 요청)
+            for (const contactId of deletedContacts || []) {  // deletedContacts가 배열인지 확인
+                await axios.delete(`/api/phones/${contactId}`);
+            }
+    
+        } catch (error) {
+            // 에러 응답이 있는지 확인
+            if (error.response) {
+                console.error('서버 응답 에러:', error.response.data);
+                console.error('상태 코드:', error.response.status);
+            } else if (error.request) {
+                console.error('요청은 전송되었으나 응답이 없습니다:', error.request);
+            } else {
+                console.error('에러 발생:', error.message);
+            }
+        }
+    };
+    
     // 아바타 설정 상태
     const [avatarConfig, setAvatarConfig] = useState({
         sex: 'man',
@@ -41,22 +115,16 @@ const Profile = () => {
     });
     
     const stylesConfig = {
- 	   hairStyle: ['normal', 'thick', 'mohawk', 'womanLong', 'womanShort'],
-  	   hatStyle: ['none', 'beanie', 'turban'],
-   	   eyeStyle: ['circle', 'oval', 'smile'],
-       noseStyle: ['short', 'long', 'round'],
-       mouthStyle: ['laugh', 'smile', 'peace'],
-       shirtStyle: ['hoody', 'short', 'polo'],
-       earSize: ['small', 'big'],
-       glassesStyle: ['none', 'round', 'square'],
+        hairStyle: ['normal', 'thick', 'mohawk', 'womanLong', 'womanShort'],
+        hatStyle: ['none', 'beanie', 'turban'],
+        eyeStyle: ['circle', 'oval', 'smile'],
+        noseStyle: ['short', 'long', 'round'],
+        mouthStyle: ['laugh', 'smile', 'peace'],
+        shirtStyle: ['hoody', 'short', 'polo'],
+        earSize: ['small', 'big'],
+        glassesStyle: ['none', 'round', 'square'],
 	};
 
-{/*
-    const handleChange = (key, value) => {
-        console.log(key,value)
-        setAvatarConfig({ ...avatarConfig, [key]: value });
-    };
-*/}
     const randomizeColor = (key) => {
         setAvatarConfig({ ...avatarConfig, [key]: randomColor() });
     };
@@ -75,28 +143,19 @@ const Profile = () => {
     };
     
     const handleStyleAndColorChange = (styleKey, colorKey) => {
-    	const currentStyle = avatarConfig[styleKey];
-    	const styleOptions = stylesConfig[styleKey];
-    	const currentIndex = styleOptions.indexOf(currentStyle);
-    	const nextIndex = (currentIndex + 1) % styleOptions.length;
-    	const nextStyle = styleOptions[nextIndex];
+        const currentStyle = avatarConfig[styleKey];
+        const styleOptions = stylesConfig[styleKey];
+        const currentIndex = styleOptions.indexOf(currentStyle);
+        const nextIndex = (currentIndex + 1) % styleOptions.length;
+        const nextStyle = styleOptions[nextIndex];
 
-    	setAvatarConfig((prevConfig) => ({
-           ...prevConfig,
-          [styleKey]: nextStyle,
-          [colorKey]: randomColor(),  // 색상 랜덤화
-        }));
-	};
-
-{/*
-    const handleStyleAndColorChange = (styleKey, styleValue, colorKey) => {
         setAvatarConfig((prevConfig) => ({
-            ...prevConfig,
-            [styleKey]: styleValue,
-            [colorKey]: randomColor(),  // 색상 랜덤화
+        ...prevConfig,
+        [styleKey]: nextStyle,
+        [colorKey]: randomColor(),  // 색상 랜덤화
         }));
     };
-*/}
+
     const generateRandomAvatar = () => {
         setAvatarConfig(genConfig()); // 전체 랜덤 설정 불러오기
     };
@@ -111,14 +170,14 @@ const Profile = () => {
     );
 
     const renderStyleAndColorButton = (styleKey, colorKey, label) => (
-       <button 
-           onClick={() => handleStyleAndColorChange(styleKey, colorKey)} 
-           className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
+        <button 
+            onClick={() => handleStyleAndColorChange(styleKey, colorKey)} 
+            className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
         >
             {label}
         </button>
     );
-
+    
     const handleOpenDrawer = () => {
         setIsOpen(true);
     };
@@ -225,6 +284,12 @@ const Profile = () => {
                     <ul role="list" className="divide-y divide-gray-200">
                         <li className='flex items-center gap-x-4 py-3 sm:py-4'>
                             <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                <LuCalendarDays /><span className='w-7 text-nowrap'>생일</span>
+                            </div>
+                            <span className=''>1900년 0월 0일 (양)</span>
+                        </li>
+                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
+                            <div className='flex items-center space-x-2 px-2 font-semibold'>
                                 <LuCalendarDays /><span className='w-7 text-nowrap'>입사</span>
                             </div>
                             <span className=''>2017년 2월 1일</span>
@@ -237,7 +302,7 @@ const Profile = () => {
                         </li>
                         <li className='flex items-center gap-x-4 py-3 sm:py-4'>
                             <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuCalendarDays /><span className='w-7 text-nowrap'>재입사</span>
+                                <LuCalendarDays /><span className='w-7 text-nowrap'>입사</span>
                             </div>
                             <span className=''>2022년 10월 2일</span>
                         </li>
@@ -249,181 +314,215 @@ const Profile = () => {
                 isOpen={isOpen}
                 title={"프로필 수정"}
                 onClose={handleCloseDrawer}
-                >
-                {/* 아바타 미리보기 및 설정 */}
-                <div className="flex flex-col items-center mb-4">
-                    {/* 아바타 미리보기 */}
-                    <Avatar className="w-24 h-24" {...avatarConfig} />
-                    
-                    <div className="flex gap-2 mt-4 flex-wrap justify-start mb-4">
-                        <button onClick={generateRandomAvatar} className="px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            랜덤
-                        </button>
-                        <button onClick={() => randomizeColor('faceColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            피부
-                        </button>
-                        {renderStyleButton('earSize', '귀')}
-                        {renderStyleAndColorButton('hairStyle', 'hairColor', '헤어')}
-                        {renderStyleAndColorButton('hatStyle', 'hatColor', '모자')}
-                        {renderStyleButton('eyeStyle', '눈')}
-                         {renderStyleButton('glassesStyle', '안경')}
-                        {renderStyleButton('noseStyle', '코')}
-                        {renderStyleButton('mouthStyle', '입')}
-                        {renderStyleAndColorButton('shirtStyle', 'shirtColor', '셔츠')}
-                        <button onClick={() => randomizeColor('bgColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            배경
+                onSave={handleSave}
+            >
+                <div className='overflow-y-auto h-profileDrawer-screen pb-6 px-6'>
+                    {/* 아바타 미리보기 및 설정 */}
+                    <div className="flex flex-col items-center mb-4">
+                        {/* 아바타 미리보기 */}
+                        <Avatar className="w-24 h-24" {...avatarConfig} />
+                        
+                        <div className="flex gap-2 mt-4 flex-wrap justify-start mb-4">
+                            <button onClick={generateRandomAvatar} className="px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
+                                랜덤
+                            </button>
+                            <button onClick={() => randomizeColor('faceColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
+                                피부
+                            </button>
+                            {renderStyleButton('earSize', '귀')}
+                            {renderStyleAndColorButton('hairStyle', 'hairColor', '헤어')}
+                            {renderStyleAndColorButton('hatStyle', 'hatColor', '모자')}
+                            {renderStyleButton('eyeStyle', '눈')}
+                            {renderStyleButton('glassesStyle', '안경')}
+                            {renderStyleButton('noseStyle', '코')}
+                            {renderStyleButton('mouthStyle', '입')}
+                            {renderStyleAndColorButton('shirtStyle', 'shirtColor', '셔츠')}
+                            <button onClick={() => randomizeColor('bgColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
+                                배경
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className='flex flex-col gap-y-10'>
+                        <div className="flex flex-col space-y-4 dark:text-slate-400">
+                            <div className='flex justify-between items-center'>
+                                <label className='font-semibold text-xl'>
+                                    연락처
+                                </label>
+                                <button onClick={handleAddContact} className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
+                                    추가
+                                </button>
+                            </div>
+                            {contacts.length === 0 ? (
+                                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
+                                    <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
+                                </div>
+                            ) : (
+                                contacts.map((contact, index) => (
+                                    <div key={index} className="flex gap-x-2">
+                                        <select
+                                            value={contact.phone_type || ''}
+                                            onChange={(e) => handleUpdateContact(index, 'phone_type', e.target.value)}
+                                            className="w-3/12 p-3 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                        >
+                                            <option>선택</option>
+                                            <option value="company_phone">회사</option>
+                                            <option value="work_mobile">업무</option>
+                                            <option value="personal_mobile">개인</option>
+                                            <option value="fax">팩스</option>
+                                        </select>
+                                        <input
+                                            type="text"
+                                            value={contact.phone_number || ''}
+                                            onChange={(e) => handleUpdateContact(index, 'phone_number', e.target.value)}
+                                            className="w-5/12 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
+                                            placeholder="연락처 입력"
+                                            autoComplete='off'
+                                            required
+                                        />
+                                        <input
+                                            type="text"
+                                            value={contact.extension || ''}
+                                            onChange={(e) => handleUpdateContact(index, 'extension', e.target.value)}
+                                            className="w-3/12 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
+                                            placeholder="내선(옵션)"
+                                        />
+                                        <button onClick={() => handleRemoveContact(index)} className='w-1/12 py-1 px-2 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
+                                            <LuTrash className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+
+                        </div>
+
+                        {/* 연락처 입력 */}
+                        {/* <div className="flex flex-col space-y-4 dark:text-slate-400">
+                            <div className='flex justify-between items-center'>
+                                <label className='font-semibold text-xl'>
+                                    연락처
+                                </label>
+                                <button className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
+                                    추가
+                                </button>
+                            </div>
+
+                            <div className="flex gap-x-2">
+                                <select className="p-3 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
+                                    <option>선택</option>
+                                    <option selected>회사</option>
+                                    <option>업무</option>
+                                    <option>개인</option>
+                                    <option>팩스</option>
+                                </select>
+                                <input
+                                    type="text" 
+                                    id="" 
+                                    name="" 
+                                    className="flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 disabled:border-slate-300 disabled:text-slate-300 disabled:bg-slate-200 disabled:placeholder:text-slate-300 dark:disabled:bg-slate-700 dark:disabled:text-slate-500 dark:disabled:placeholder:text-slate-500"   
+                                    placeholder=""
+                                    value="02-6969-0000"
+                                    autoComplete='off'
+                                    required
+                                />
+                                <button className='w-24py-1 px-3 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
+                                    <LuTrash className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="flex gap-x-2">
+                                <select className="p-3 bg-white rounded-md border border-slate-300 text-slate-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
+                                    <option selected>구분</option>
+                                    <option>회사</option>
+                                    <option>업무</option>
+                                    <option>개인</option>
+                                    <option>팩스</option>
+                                </select>
+                                <input
+                                    type="text" 
+                                    id="" 
+                                    name="" 
+                                    className="flex-1 py-2 px-3 bg-white rounded-md border border-slate-300 placeholder:text-slate-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 disabled:border-slate-300 disabled:text-slate-300 disabled:bg-slate-200 disabled:placeholder:text-slate-300 dark:disabled:bg-slate-700 dark:disabled:text-slate-500 dark:disabled:placeholder:text-slate-500"   
+                                    placeholder="연락처 구분 선택 후 입력"
+                                    value=""
+                                    autoComplete='off'
+                                    required
+                                />
+                            </div>
+                        </div> */}
+
+                        {/* 주소 입력 */}
+                        {/* <div className="flex flex-col space-y-4 dark:text-slate-400">
+                            <div className='flex justify-between items-center'>
+                                <label className='font-semibold text-xl'>
+                                    주소
+                                </label>
+                                <button className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
+                                    추가
+                                </button>
+                            </div>
+                            <div className="flex gap-x-2">
+                                <select className="p-3 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
+                                    <option>선택</option>
+                                    <option>회사</option>
+                                    <option>집</option>
+                                    <option>택배</option>
+                                </select>
+                                <input
+                                    type="text" 
+                                    id="" 
+                                    name="" 
+                                    className="w-full py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 disabled:border-slate-300 disabled:text-slate-300 disabled:bg-slate-200 disabled:placeholder:text-slate-300 dark:disabled:bg-slate-700 dark:disabled:text-slate-500 dark:disabled:placeholder:text-slate-500"   
+                                    placeholder=""
+                                    autoComplete='off'
+                                    required
+                                />
+                            </div>
+                        </div> */}
+
+                        {/* 일자 입력 */}
+                        {/* <div className="flex flex-col space-y-4 dark:text-slate-400">
+                            <div className='flex justify-between items-center'>
+                                <label className='font-semibold text-xl'>
+                                    기념일
+                                </label>
+                                <button className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
+                                    추가
+                                </button>
+                            </div>
+                            <div className="flex gap-x-2">
+                                <select className="p-3 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
+                                    <option>선택</option>
+                                    <option>생일</option>
+                                    <option>입사</option>
+                                    <option>퇴사</option>
+                                    <option>휴직</option>
+                                </select>
+                                <input
+                                    type="text" 
+                                    id="" 
+                                    name="" 
+                                    className="w-full py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 disabled:border-slate-300 disabled:text-slate-300 disabled:bg-slate-200 disabled:placeholder:text-slate-300 dark:disabled:bg-slate-700 dark:disabled:text-slate-500 dark:disabled:placeholder:text-slate-500"   
+                                    placeholder=""
+                                    autoComplete='off'
+                                    required
+                                />
+                            </div>
+                        </div> */}
+                    </div>
+                </div>
+                {/* 저장 버튼 */}
+                <div className="flex flex-col gap-3 pt-4 p-6">
+                    <div className='flex justify-between gap-y-4 gap-x-2'>
+                        <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                            저장
                         </button>
                     </div>
-                    
-                    {/* 아이콘 버튼 */}
-                    {/*
-                    <div className="flex gap-2 mt-4 flex-wrap justify-start mb-4">
-                        <button onClick={generateRandomAvatar} className="px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            랜덤
-                        </button>
-                        
-                        <button onClick={() => randomizeColor('faceColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            피부
-                        </button>
-                        <button onClick={() => handleChange('earSize', avatarConfig.earSize === 'small' ? 'big' : 'small')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            귀
-                        </button>
-                        */}
-                        {/* 헤어 스타일과 색상 변경 */}
-                        {/*
-                        <button 
-                            onClick={() => handleStyleAndColorChange(
-                                'hairStyle', 
-                                avatarConfig.hairStyle === 'normal' ? 'thick' : 
-                                avatarConfig.hairStyle === 'thick' ? 'mohawk' : 
-                                'normal', 
-                                'hairColor' // 헤어 색상도 함께 랜덤화
-                            )} 
-                            className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
-                        >
-                            헤어
-                        </button>
-                        */}
-                        {/* 모자 스타일과 색상 변경 */}
-                        {/*
-                        <button 
-                            onClick={() => handleStyleAndColorChange(
-                                'hatStyle', 
-                                avatarConfig.hatStyle === 'none' ? 'beanie' : avatarConfig.hatStyle === 'beanie' ? 'turban' : 'none',
-                                'hatColor'
-                            )} 
-                            className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
-                        >
-                            모자
-                        </button>
-*/}
-                        {/* 눈 스타일 변경 */}
-                        {/*
-                        <button onClick={() => handleChange('eyeStyle', avatarConfig.eyeStyle === 'circle' ? 'oval' : avatarConfig.eyeStyle === 'oval' ? 'smile' : 'circle')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            눈
-                        </button>
-*/}
-                        {/* 코 스타일 변경 */}
-                        {/*
-                        <button onClick={() => handleChange('noseStyle', avatarConfig.noseStyle === 'short' ? 'long' : avatarConfig.noseStyle === 'long' ? 'round' : 'short')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            코
-                        </button>
-*/}
-                        {/* 입 스타일 변경 */}
-                        {/*
-                        <button onClick={() => handleChange('mouthStyle', avatarConfig.mouthStyle === 'laugh' ? 'smile' : avatarConfig.mouthStyle === 'smile' ? 'peace' : 'laugh')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            입
-                        </button>
-*/}
-                        {/* 셔츠 스타일과 색상 변경 */}
-                        {/*
-                        <button 
-                            onClick={() => handleStyleAndColorChange(
-                                'shirtStyle', 
-                                avatarConfig.shirtStyle === 'hoody' ? 'short' : avatarConfig.shirtStyle === 'short' ? 'polo' : 'hoody',
-                                'shirtColor'
-                            )} 
-                            className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
-                        >
-                            셔츠
-                        </button>
-*/}
-                        {/* 배경 색상 변경 */}
-                        {/*
-                        <button onClick={() => randomizeColor('bgColor')} className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">
-                            배경
-                        </button>
-                    </div>*/}
-
+                    <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                        취소
+                    </button>
                 </div>
-                <div className="flex flex-col space-y-4 dark:text-slate-400">
-                    {/* 주소 입력 필드 */}
-                    <InputField
-                    label="주소 타입"
-                    id="address_type"
-                    value={profile.address_type || ''}
-                    onChange={(e) => setProfile({ ...profile, address_type: e.target.value })}
-                    placeholder="예: 집주소, 회사주소, 배송지"
-                    required
-                    />
-                    <InputField
-                    label="주소 명칭"
-                    id="address_name"
-                    value={profile.address_name || ''}
-                    onChange={(e) => setProfile({ ...profile, address_name: e.target.value })}
-                    placeholder="예: 우주스페이스"
-                    required
-                    />
-                    <InputField
-                    label="기본 주소"
-                    id="address_line1"
-                    value={profile.address_line1 || ''}
-                    onChange={(e) => setProfile({ ...profile, address_line1: e.target.value })}
-                    placeholder="예: 서울시 강남구 강남대로62길 23"
-                    required
-                    />
-                    <InputField
-                    label="세부 주소 (선택)"
-                    id="address_line2"
-                    value={profile.address_line2 || ''}
-                    onChange={(e) => setProfile({ ...profile, address_line2: e.target.value })}
-                    placeholder="예: 역삼빌딩 3층"
-                    />
-                    <InputField
-                    label="우편번호"
-                    id="postal_code"
-                    value={profile.postal_code || ''}
-                    onChange={(e) => setProfile({ ...profile, postal_code: e.target.value })}
-                    placeholder="우편번호 입력"
-                    required
-                    />
-
-                    {/* 연락처 입력 필드 */}
-                    <InputField
-                    label="전화 타입"
-                    id="phone_type"
-                    value={profile.phone_type || ''}
-                    onChange={(e) => setProfile({ ...profile, phone_type: e.target.value })}
-                    placeholder="예: 개인휴대폰, 업무용휴대폰, 회사전화"
-                    required
-                    />
-                    <InputField
-                    label="전화 번호"
-                    id="phone_number"
-                    value={profile.phone_number || ''}
-                    onChange={(e) => setProfile({ ...profile, phone_number: e.target.value })}
-                    placeholder="예: 010-0000-0000"
-                    required
-                    />
-                    <InputField
-                    label="내선 번호 (선택)"
-                    id="extension"
-                    value={profile.extension || ''}
-                    onChange={(e) => setProfile({ ...profile, extension: e.target.value })}
-                    placeholder="내선 번호 (회사 전화일 경우)"
-                    />
-                </div>
-                </ProfileDrawer>
+            </ProfileDrawer>
         </>
     )
 }

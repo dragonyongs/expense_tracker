@@ -679,21 +679,21 @@ const AdminDeposit = () => {
 
                     {/* 저장 버튼 */}
                     <div className="flex flex-col gap-3 pt-4 p-6">
-                            <div className='flex justify-between gap-y-4 gap-x-2'>
-                                {!isEditing ? '' : <button
-                                    type="button" 
-                                    className='text-red-600 font-semibold text-sm border border-red-400 px-5 py-3 rounded-lg'
-                                    onClick={handleDeleteConfirm}
-                                >삭제</button>
-                                }
-                                <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                                    {isEditing ? '수정' : '추가'}
-                                </button>
-                            </div>
-                            <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
-                                취소
+                        <div className='flex justify-between gap-y-4 gap-x-2'>
+                            {!isEditing ? '' : <button
+                                type="button" 
+                                className='text-red-600 font-semibold text-sm border border-red-400 px-5 py-3 rounded-lg'
+                                onClick={handleDeleteConfirm}
+                            >삭제</button>
+                            }
+                            <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                {isEditing ? '수정' : '추가'}
                             </button>
                         </div>
+                        <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                            취소
+                        </button>
+                    </div>
                 </CommonDrawer>
             </div>
         </>
