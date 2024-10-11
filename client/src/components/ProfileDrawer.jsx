@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import Drawer from 'react-modern-drawer';
 import 'react-modern-drawer/dist/index.css';
 import { FaChevronDown } from "react-icons/fa";
@@ -22,7 +21,7 @@ const useMediaQuery = (query) => {
 };
 
 const ProfileDrawer = ({ isOpen, onClose, title, children }) => {
-    
+
     const isMobile = useMediaQuery('(max-width: 1024px)');
     const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
     
