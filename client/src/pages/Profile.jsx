@@ -57,7 +57,6 @@ const Profile = () => {
 
     const fetchProfileData = async () => {
         try {
-            console.log('user.member_id', user.member_id);
             const contactsRes = await  axios.get(`/api/phones/${user.member_id}`);
     
             setContacts(contactsRes.data || []);
@@ -390,7 +389,7 @@ const Profile = () => {
                 onClose={handleCloseDrawer}
                 onSave={handleSave}
             >
-                <div className='overflow-y-auto h-profileDrawer-screen pb-6 px-6 bg-red-100'>
+                <div className='overflow-y-auto h-profileDrawer-screen pb-6 px-6'>
                     {/* 아바타 미리보기 및 설정 */}
                     <div className="flex flex-col items-center mb-4">
                         {/* 아바타 미리보기 */}
