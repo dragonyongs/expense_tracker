@@ -14,4 +14,6 @@ export const API_URLS = {
     AUTHENTICATED: '/api/auth/isAuthenticated',
     AUTH_LOGIN: '/api/auth/login',
     AUTH_LOGOUT: '/api/auth/logout',
+    AVATARS: '/api/avatars',
+    PHONES: '/api/phones',
 };

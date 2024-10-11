@@ -1,10 +1,8 @@
 import React, { useContext } from 'react';
-import Avatar from 'react-nice-avatar';
-import { AvatarContext } from '../context/AvartarContext';
+import { AvatarContext } from '../context/AvatarContext';
 import AvatarPreview from './AvatarPreview';
 
 const AvatarComponent = () => {
-    // AvatarContext에서 상태와 핸들러를 가져옴
     const { avatarConfig, randomizeColor, handleStyleChange, handleStyleAndColorChange, generateRandomAvatar } = useContext(AvatarContext); // generateRandomAvatar를 가져옵니다.
 
     const renderStyleButton = (styleKey, label) => (

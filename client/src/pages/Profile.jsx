@@ -8,10 +8,11 @@ import { TbUserEdit } from "react-icons/tb";
 import { RiSignpostLine } from "react-icons/ri";
 import ProfileDrawer from '../components/ProfileDrawer';
 import axios from "../services/axiosInstance"; 
-import { AvatarContext } from '../context/AvartarContext';
+import { AvatarContext } from '../context/AvatarContext';
 import AvatarComponent from '../components/AvatarComponent';
 import AvatarPreview from '../components/AvatarPreview';
 import { useMobile } from '../context/MobileContext';
+import { API_URLS } from '../services/apiUrls';
 
 const renderContactIcon = (type) => {
     switch (type) {
@@ -57,7 +58,7 @@ const Profile = () => {
 
     const fetchProfileData = async () => {
         try {
-            const contactsRes = await  axios.get(`/api/phones/${user.member_id}`);
+            const contactsRes = await  axios.get(`${API_URLS.PHONES}/${user.member_id}`);
     
             setContacts(contactsRes.data || []);
 
@@ -102,28 +103,33 @@ const Profile = () => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            const { data: currentContacts } = await axios.get(`/api/phones/${user.member_id}`);
+            const { data: currentContacts } = await axios.get(`${API_URLS.PHONES}/${user.member_id}`);
             
             const newContactsPromises = contacts
                 .filter(c => !c._id && !currentContacts.some(existing => 
                     existing.phone_number === c.phone_number && existing.phone_type === c.phone_type))
-                .map(contact => axios.post('/api/phones', { member_id: user.member_id, ...contact }));
+                .map(contact => axios.post(`${API_URLS.PHONES}`, { member_id: user.member_id, ...contact }));
             
             const updateContactsPromises = contacts
                 .filter(c => c._id)
-                .map(contact => axios.put(`/api/phones/${contact._id}`, { ...contact }));
+                .map(contact => axios.put(`${API_URLS.PHONES}/${contact._id}`, { ...contact }));
             
             const deleteContactsPromises = deletedContacts.map(contactId => 
-                axios.delete(`/api/phones/${contactId}`)
+                axios.delete(`${API_URLS.PHONES}/${contactId}`)
             );
             
-            // 병렬로 모든 요청 처리
+            // 아바타 정보 저장 요청 추가
+            const avatarSavePromise = axios.put(`${API_URLS.AVATARS}/${user.member_id}`, avatarConfig);
+            await avatarSavePromise; // 아바타 저장 요청 기다리기
+            console.log("Sending avatar config:", avatarConfig); // 요청 전에 로그 출력
+            // 병렬로 모든 요청 처리 (연락처 및 아바타)
             await Promise.all([
                 ...newContactsPromises,
                 ...updateContactsPromises,
-                ...deleteContactsPromises
+                ...deleteContactsPromises,
+                avatarSavePromise // 아바타 저장 요청 추가
             ]);
-            
+                        
             // 데이터 재호출
             await fetchProfileData();
     

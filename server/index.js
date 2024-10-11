@@ -18,6 +18,7 @@ const statusRoutes = require('./routes/statusRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const phoneRoutes = require('./routes/phoneRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const avatarRoutes = require('./routes/avatarRoutes');
 
 const app = express();
 app.use(cookieParser());
@@ -40,6 +41,7 @@ app.use('/api/statuses', statusRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/phones', phoneRoutes);
+app.use('/api/avatars', avatarRoutes);
 
 // MongoDB 연결
 const mongoURI = process.env.MONGO_URI;

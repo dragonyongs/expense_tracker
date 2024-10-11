@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-// import { useMediaQuery } from '@mui/material';
 
 const MobileContext = createContext();
 
 export const MobileProvider = ({ children }) => {
-    
+
     const useMediaQuery = (query) => {
         const [matches, setMatches] = useState(false);
     

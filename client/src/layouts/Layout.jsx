@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-// import Header from '../components/Header';
+import { Outlet } from 'react-router-dom';
 import TabBar from '../components/TabBar';
 import Side from '../components/Side';
 import { AuthContext } from '../context/AuthProvider';
@@ -20,9 +19,8 @@ const Layout = () => {
             </div>
 
             {/* Mobile Layout */}
-            <section className='lg:ml-mobile'>
+            <section className='lg:ml-mobile bg-blue-50 dark:bg-slate-700'>
                 <div className={`h-real-screen md:max-w-xl mx-auto lg:mx-0 flex flex-col bg-white dark:bg-slate-900 ${!isApprovedUser ? '' : 'justify-between'}`}>
-                    {/* {isApprovedUser && <Header />} */}
                     <div className={`overflow-y-auto shadow-md h-full ${isApprovedUser ? '' : 'flex items-center justify-center'} `}>
                         <div className={`${isApprovedUser ? 'relative min-h-default-screen bg-[#dce8f5] dark:bg-gray-800' : 'w-full h-full'}`}>
                             <Outlet />

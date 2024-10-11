@@ -5,7 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
 import { AuthProvider } from './context/AuthProvider';
 import Loading from './components/Loading';
-import { AvatarProvider } from './context/AvartarContext';
+import { AvatarProvider } from './context/AvatarContext';
 import { MobileProvider } from './context/MobileContext';
 
 import './App.css';

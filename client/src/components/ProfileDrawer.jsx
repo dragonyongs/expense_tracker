@@ -29,7 +29,6 @@ const ProfileDrawer = ({ isOpen, onClose, title, children }) => {
         const handleResize = () => setViewportHeight(window.innerHeight);
         window.addEventListener('resize', handleResize);
         
-        // Cleanup on component unmount
         return () => window.removeEventListener('resize', handleResize);
     }, []);
     
@@ -37,7 +36,7 @@ const ProfileDrawer = ({ isOpen, onClose, title, children }) => {
 
     const mobileStyle = {
         width: '100%',
-        height: `${viewportHeight - 50}px`,  // Use dynamically calculated height
+        height: `${viewportHeight - 50}px`,
     };
 
     const desktopStyle = {
@@ -56,9 +55,7 @@ const ProfileDrawer = ({ isOpen, onClose, title, children }) => {
                     </button>
                 </div>
                 <div className='dark:bg-slate-800'>
-                    {/* <div className={`overflow-y-auto pb-6 px-6 ${isMobile ? 'h-profileDrawerMobilel-screen' : 'h-profileDrawer-screen'}`}> */}
-                        {children} 
-                    {/* </div> */}
+                    {children} 
                 </div>
         </Drawer>
     )

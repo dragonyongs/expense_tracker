@@ -1,5 +1,9 @@
-import React, { createContext, useState, useCallback } from 'react';
-import { genConfig } from 'react-nice-avatar'; // genConfig를 import합니다.
+import React, { createContext, useState, useCallback, useEffect, useContext } from 'react';
+import { genConfig } from 'react-nice-avatar';
+import { getAvatar } from '../api/avatarApi';
+import { AuthContext } from '../context/AuthProvider';
+
+export const AvatarContext = createContext();
 
 const randomColor = () => {
     const letters = '0123456789ABCDEF';
@@ -10,9 +14,9 @@ const randomColor = () => {
     return color;
 };
 
-export const AvatarContext = createContext();
-
 export const AvatarProvider = ({ children }) => {
+    const { user } = useContext(AuthContext);
+
     const [avatarConfig, setAvatarConfig] = useState({
         sex: 'man',
         shape: 'circle',
@@ -44,6 +48,31 @@ export const AvatarProvider = ({ children }) => {
         glassesStyle: ['none', 'round', 'square'],
 	};
 
+    const memberId = user?.member_id;
+
+    useEffect(() => {
+        const fetchAvatarData = async () => {
+            try {
+                const avatarData = await getAvatar(memberId);
+                if (avatarData) {
+                    setAvatarConfig(avatarData);
+                } else {
+                    console.log("아바타 데이터가 없습니다, 랜덤 값을 사용합니다.");
+                }
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    console.log("아바타 데이터가 없어 랜덤 값을 사용합니다.");
+                } else {
+                    console.error('Error fetching avatar data:', error.message);
+                }
+            }
+        };
+    
+        if (memberId) {
+            fetchAvatarData();
+        }
+    }, [memberId]);
+    
 
     const generateRandomColor = useCallback(() => randomColor(), []);
 
@@ -79,7 +108,7 @@ export const AvatarProvider = ({ children }) => {
         randomizeColor,
         handleStyleChange,
         handleStyleAndColorChange,
-        generateRandomAvatar
+        generateRandomAvatar,
     };
 
     return (

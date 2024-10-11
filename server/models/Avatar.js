@@ -13,10 +13,10 @@ const avatarSchema = new mongoose.Schema({
     hairStyle: { type: String, required: true },
     hatStyle: { type: String, enum: ['none', 'beanie', 'turban'], required: true },
     hatColor: { type: String, required: false },
-    eyeBrowStyle: { type: String, enum: ['up', 'down'], required: true },
     shirtColor: { type: String, required: true },
     bgColor: { type: String, required: true },
-    member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true } // 멤버 참조
+    member_id: { type: String, required: true },
+    // member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true } // 멤버 참조
 }, { timestamps: true });
 
 const Avatar = mongoose.model('Avatar', avatarSchema);
