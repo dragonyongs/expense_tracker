@@ -7,6 +7,6 @@ const datesSchema = new mongoose.Schema({
     member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true } // 멤버 참조
 }, { timestamps: true });
 
-const Dates = mongoose.model('Dates', datesSchema);
+const Dates = mongoose.model('Date', datesSchema);
 
 module.exports = Dates;

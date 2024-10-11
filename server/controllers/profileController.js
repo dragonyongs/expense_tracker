@@ -12,6 +12,9 @@ exports.createProfile = async (req, res) => {
 exports.getProfiles = async (req, res) => {
     try {
         const profile = await Profile.find()
+            .populate('phones');
+            // .populate('addresses')
+            // .populate('dates');
         res.status(201).json(profile);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -23,9 +26,9 @@ exports.getProfileById = async (req, res) => {
 
     try {
         const profile = await Profile.find({ member_id: memberID})
-            .populate('phones')
-            .populate('addresses')
-            .populate('dates');
+            .populate('phones');
+            // .populate('addresses')
+            // .populate('dates');
 
         if (!profile) {
             return res.status(404).json({ message: 'Profile not found' });

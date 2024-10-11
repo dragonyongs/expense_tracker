@@ -11,6 +11,7 @@ import axios from "../services/axiosInstance";
 import { AvatarContext } from '../context/AvartarContext';
 import AvatarComponent from '../components/AvatarComponent';
 import AvatarPreview from '../components/AvatarPreview';
+import { useMobile } from '../context/MobileContext';
 
 const renderContactIcon = (type) => {
     switch (type) {
@@ -43,6 +44,8 @@ const renderContactLabel = (type) => {
 };
 
 const Profile = () => {
+    const isMobile = useMobile();
+
     const { avatarConfig } = useContext(AvatarContext);
 
     const { user } = useContext(AuthContext);
@@ -275,7 +278,7 @@ const Profile = () => {
                 onClose={handleCloseDrawer}
                 onSave={handleSave}
             >
-                <div className='overflow-y-auto h-profileDrawer-screen pb-6 px-6'>
+                <div className={`overflow-y-auto ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6`}>
                     <div className="flex flex-col items-center mb-4">
                         <AvatarComponent className="w-24 h-24" {...avatarConfig} />;
                     </div>
@@ -337,6 +340,7 @@ const Profile = () => {
 
                     </div>
                 </div>
+
                 {/* 저장 버튼 */}
                 <div className="flex flex-col gap-3 pt-4 p-6">
                     <div className='flex justify-between gap-y-4 gap-x-2'>
