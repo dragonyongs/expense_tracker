@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const avatarSchema = new mongoose.Schema({
     sex: { type: String, enum: ['man', 'woman'], required: true },
     faceColor: { type: String, required: true },
