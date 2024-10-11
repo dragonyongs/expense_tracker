@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const profileSchema = new mongoose.Schema({
     member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true }, 
     phones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Phone' }],
