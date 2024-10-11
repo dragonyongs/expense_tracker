@@ -14,18 +14,18 @@ exports.createPhone = async (req, res) => {
             extension
         });
 
-        console.log('newPhone', newPhone);
-
         // 2. 연락처 저장
         const savedPhone = await newPhone.save();
 
         // 3. 프로필 조회
-        const profile = await Profile.findOne({ member_id });
+        let profile = await Profile.findOne({ member_id });
 
-        // 4. 프로필이 존재하는지 확인하고, 없으면 에러 처리
+        // 4. 프로필이 존재하지 않으면 새로 생성
         if (!profile) {
-            console.log('Profile not found for member_id:', member_id);
-            return res.status(404).json({ message: 'Profile not found' });
+            profile = new Profile({
+                member_id,
+                phones: [] // 초기에는 빈 배열
+            });
         }
 
         // 5. 프로필에 연락처 ID 추가
@@ -37,6 +37,7 @@ exports.createPhone = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 // 멤버의 연락처 목록 조회
 exports.getPhones = async (req, res) => {

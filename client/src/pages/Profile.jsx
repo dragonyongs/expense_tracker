@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../context/AuthProvider';
+import { ThreeDots } from 'react-loader-spinner';
 import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash } from "react-icons/lu";
 import { AiOutlineMail } from "react-icons/ai";
 import { LiaFaxSolid } from "react-icons/lia";
@@ -51,6 +52,7 @@ const renderContactLabel = (type) => {
 const Profile = () => {
     const { user } = useContext(AuthContext);
     const [isOpen, setIsOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [contacts, setContacts] = useState([]);  // 연락처 배열
     const [deletedContacts, setDeletedContacts] = useState([]); // 삭제된 연락처 ID를 추적
@@ -95,36 +97,46 @@ const Profile = () => {
     };
     
     const handleSave = async () => {
+        setLoading(true);  // 저장 중 로딩 상태 설정
+
         try {
-            // Fetch current contacts from the server to compare and prevent duplicate entries
+            // 서버에서 현재 연락처 목록 가져오기
             const { data: currentContacts } = await axios.get(`/api/phones/${user.member_id}`);
-
+    
             // 새로운 연락처 추가 (POST 요청)
-            for (const contact of contacts.filter(c => !c._id)) {
-                const isDuplicate = currentContacts.some(
-                    (existing) => 
-                        existing.phone_number === contact.phone_number && 
-                        existing.phone_type === contact.phone_type
-                );
-                if (!isDuplicate) {
-                    await axios.post('/api/phones', { member_id: user.member_id, ...contact });
-                }
-            }
-
+            const newContactsPromises = contacts
+                .filter(c => !c._id)
+                .map(contact => {
+                    const isDuplicate = currentContacts.some(
+                        (existing) =>
+                            existing.phone_number === contact.phone_number &&
+                            existing.phone_type === contact.phone_type
+                    );
+                    if (!isDuplicate) {
+                        return axios.post('/api/phones', { member_id: user.member_id, ...contact });
+                    }
+                });
+    
             // 기존 연락처 수정 (PUT 요청)
-            for (const contact of contacts.filter(c => c._id)) {
-                console.log('contact._id', contact._id);
-                await axios.put(`/api/phones/${contact._id}`, { ...contact });
-            }
-
+            const updateContactsPromises = contacts
+                .filter(c => c._id)
+                .map(contact => axios.put(`/api/phones/${contact._id}`, { ...contact }));
+    
             // 삭제된 연락처 처리 (DELETE 요청)
-            for (const contactId of deletedContacts) {
-                await axios.delete(`/api/phones/${contactId}`);
-            }
-            
+            const deleteContactsPromises = deletedContacts.map(contactId =>
+                axios.delete(`/api/phones/${contactId}`)
+            );
+    
+            // 모든 요청을 병렬로 처리
+            await Promise.all([
+                ...newContactsPromises,
+                ...updateContactsPromises,
+                ...deleteContactsPromises
+            ]);
+    
             // 데이터 저장 후 새로 불러오기
             await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
-            
+    
         } catch (error) {
             if (error.response) {
                 console.error('서버 응답 에러:', error.response.data);
@@ -134,6 +146,7 @@ const Profile = () => {
                 console.error('에러 발생:', error.message);
             }
         } finally {
+            setLoading(false);  // 로딩 완료
             setIsOpen(false);
         }
     };
@@ -590,11 +603,11 @@ const Profile = () => {
                 {/* 저장 버튼 */}
                 <div className="flex flex-col gap-3 pt-4 p-6">
                     <div className='flex justify-between gap-y-4 gap-x-2'>
-                        <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                            저장
+                        <button type="button" onClick={handleSave} className="overflow-hidden min-h-10 flex justify-center items-center flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                            {loading ? <ThreeDots color='#ffffff' width={'40px'} height={'auto'} /> : "저장"}
                         </button>
                     </div>
-                    <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                    <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600 dark:text-orange-300">
                         취소
                     </button>
                 </div>
