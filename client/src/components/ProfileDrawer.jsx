@@ -39,7 +39,7 @@ const ProfileDrawer = ({ isOpen, onClose, title, children }) => {
     };
 
     return (
-        <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' className="rounded-tr-lg rounded-tl-lg" style={isMobile ? mobileStyle : desktopStyle}>
+        <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' className="rounded-tr-lg rounded-tl-lg bg-green-200" style={isMobile ? mobileStyle : desktopStyle}>
             <div className="flex justify-between py-4 px-6 dark:bg-slate-800">
                 <h5 className="text-lg font-bold dark:text-slate-200">{title}</h5>
                 <button onClick={onClose} className='text-2xl dark:text-slate-300 mb-4'>
