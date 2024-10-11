@@ -28,8 +28,7 @@ const ProfileDrawer = ({ isOpen, onClose, title, children }) => {
 
     const mobileStyle = {
         width: '100%',
-        height: 'auto',
-        // calc( 100vh - 50px)
+        height: 'calc( 100vh - 50px)',
     };
     
     const desktopStyle = {

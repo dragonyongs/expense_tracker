@@ -422,56 +422,58 @@ const Transactions = () => {
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
                         {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
 
-                        <div>
-                            <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">입금 형식</h3>
-                            <ul className="grid w-full gap-2 grid-cols-2">
-                                <li>
-                                    <input
-                                        type="radio"
-                                        id="expense_type_a"
-                                        name="expenseType"
-                                        value="TeamCard" // 기본 팀카드 사용
-                                        className="hidden peer"
-                                        checked={expenceType === 'TeamCard'}
-                                        onChange={() => { setExpenceType('TeamCard'); }}
-                                        
-                                        required
-                                    />
-                                    <label
-                                        htmlFor="expense_type_a"
-                                        className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                    >
-                                        <div className="block">
-                                            <div className="w-full text-md font-semibold">팀 카드</div>
-                                            <div className="w-full text-sm">잔액: {cardBalance.toLocaleString()}원</div>
-                                        </div>
-                                        {expenceType === 'TeamCard' && <IoCheckmark className="w-6 h-6" />}
-                                    </label>
-                                </li>
-                                <li>
-                                    <input
-                                        type="radio"
-                                        id="expense_type_b"
-                                        name="expenseType"
-                                        value="TeamFund" // team_fund 사용 구분
-                                        className="hidden peer"
-                                        checked={expenceType === 'TeamFund'}
-                                        onChange={() => setExpenceType('TeamFund')} // 상태 업데이트
-                                    />
-                                    <label
-                                        htmlFor="expense_type_b"
-                                        className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                    >
-                                        <div className="block">
-                                            <div className="w-full text-md font-semibold">팀 운영비</div>
-                                            <div className="w-full text-sm">잔액: {teamFund.toLocaleString()}원</div>
-                                        </div>
-                                        {expenceType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
-                                    </label>
-                                </li>
-                            </ul>
-                        </div>
-                        
+                        { user.position === '팀장' && (
+                            <div>
+                                <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">지출 카드</h3>
+                                <ul className="grid w-full gap-2 grid-cols-2">
+                                        <li>
+                                            <input
+                                                type="radio"
+                                                id="expense_type_a"
+                                                name="expenseType"
+                                                value="TeamCard" // 기본 팀카드 사용
+                                                className="hidden peer"
+                                                checked={expenceType === 'TeamCard'}
+                                                onChange={() => { setExpenceType('TeamCard'); }}
+                                                
+                                                required
+                                            />
+                                            <label
+                                                htmlFor="expense_type_a"
+                                                className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                            >
+                                                <div className="block">
+                                                    <div className="w-full text-md font-semibold">팀 카드</div>
+                                                    <div className="w-full text-sm">잔액: {cardBalance.toLocaleString()}원</div>
+                                                </div>
+                                                {expenceType === 'TeamCard' && <IoCheckmark className="w-6 h-6" />}
+                                            </label>
+                                        </li>
+
+                                    <li>
+                                        <input
+                                            type="radio"
+                                            id="expense_type_b"
+                                            name="expenseType"
+                                            value="TeamFund" // team_fund 사용 구분
+                                            className="hidden peer"
+                                            checked={expenceType === 'TeamFund'}
+                                            onChange={() => setExpenceType('TeamFund')} // 상태 업데이트
+                                        />
+                                        <label
+                                            htmlFor="expense_type_b"
+                                            className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                        >
+                                            <div className="block">
+                                                <div className="w-full text-md font-semibold">팀 운영비</div>
+                                                <div className="w-full text-sm">잔액: {teamFund.toLocaleString()}원</div>
+                                            </div>
+                                            {expenceType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
+                                        </label>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
                         <InputField 
                             label="상호명" 
                             id="merchant_name" 

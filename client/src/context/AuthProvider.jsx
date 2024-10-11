@@ -30,8 +30,11 @@ export function AuthProvider({ children }) {
                 const roleResponse = await axios.get(`${API_URLS.ROLES}/${fetchedUser.role_id}`);
                 const role = roleResponse.data.role_name;
 
+                const positionResponse = await axios.get(`${API_URLS.MEMBERS}/${fetchedUser.member_id}`);
+                const position = positionResponse.data.position;
+
                 // 사용자와 상태 정보 업데이트
-                setUser({ ...fetchedUser, status, role });
+                setUser({ ...fetchedUser, status, role, position });
                 setIsAuthenticated(true);
 
                 // 상태에 따라 리디렉션
