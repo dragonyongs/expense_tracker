@@ -11,7 +11,6 @@ const memberSchema = new mongoose.Schema({
     rank: { type: String, default: null },
     position: { type: String, default: null },
     role_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null },      // 기본값 null
-    avatar_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Avatar', default: null },
 }, { timestamps: true });
 
 // Pre-save hook to dynamically set status_id and role_id if not provided
