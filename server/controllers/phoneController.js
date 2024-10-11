@@ -14,9 +14,24 @@ exports.createPhone = async (req, res) => {
             extension
         });
 
-        console.log('newPhone', newPhone)
+        console.log('newPhone', newPhone);
 
+        // 2. 연락처 저장
         const savedPhone = await newPhone.save();
+
+        // 3. 프로필 조회
+        const profile = await Profile.findOne({ member_id });
+
+        // 4. 프로필이 존재하는지 확인하고, 없으면 에러 처리
+        if (!profile) {
+            console.log('Profile not found for member_id:', member_id);
+            return res.status(404).json({ message: 'Profile not found' });
+        }
+
+        // 5. 프로필에 연락처 ID 추가
+        profile.phones.push(savedPhone._id);
+        await profile.save();
+
         res.status(201).json(savedPhone);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -36,8 +51,24 @@ exports.getPhones = async (req, res) => {
 // Update a phone contact by ID
 exports.updatePhone = async (req, res) => {
     try {
+        // 1. 연락처 업데이트
         const updatedPhone = await Phone.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        
+        // 2. 연락처가 존재하지 않을 경우 처리
         if (!updatedPhone) return res.status(404).json({ message: 'Phone not found' });
+
+        // 3. 프로필에 업데이트된 연락처 반영 (선택 사항)
+        const profile = await Profile.findOne({ phones: req.params.id });
+        if (profile) {
+            // 프로필에 해당 연락처 ID가 포함되어 있을 경우
+            profile.phones = profile.phones.map(phoneId => 
+                phoneId.toString() === req.params.id ? updatedPhone._id : phoneId
+            );
+            await profile.save();
+        }
+
+        console.log('profile update', profile);
+        // 4. 업데이트된 연락처 반환
         res.status(200).json(updatedPhone);
     } catch (error) {
         res.status(400).json({ message: error.message });

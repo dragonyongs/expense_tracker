@@ -96,47 +96,48 @@ const Profile = () => {
     };
     
     const handleSave = async () => {
-    try {
-        // Fetch current contacts from the server to compare and prevent duplicate entries
-        const { data: currentContacts } = await axios.get(`/api/phones/${user.member_id}`);
+        try {
+            // Fetch current contacts from the server to compare and prevent duplicate entries
+            const { data: currentContacts } = await axios.get(`/api/phones/${user.member_id}`);
 
-        // 새로운 연락처 추가 (POST 요청)
-        for (const contact of contacts.filter(c => !c._id)) {
-            const isDuplicate = currentContacts.some(
-                (existing) => 
-                    existing.phone_number === contact.phone_number && 
-                    existing.phone_type === contact.phone_type
-            );
-            if (!isDuplicate) {
-                await axios.post('/api/phones', { member_id: user.member_id, ...contact });
+            // 새로운 연락처 추가 (POST 요청)
+            for (const contact of contacts.filter(c => !c._id)) {
+                const isDuplicate = currentContacts.some(
+                    (existing) => 
+                        existing.phone_number === contact.phone_number && 
+                        existing.phone_type === contact.phone_type
+                );
+                if (!isDuplicate) {
+                    await axios.post('/api/phones', { member_id: user.member_id, ...contact });
+                }
             }
-        }
 
-        // 기존 연락처 수정 (PUT 요청)
-        for (const contact of contacts.filter(c => c._id)) {
-            await axios.put(`/api/phones/${contact._id}`, { ...contact });
-        }
+            // 기존 연락처 수정 (PUT 요청)
+            for (const contact of contacts.filter(c => c._id)) {
+                console.log('contact._id', contact._id);
+                await axios.put(`/api/phones/${contact._id}`, { ...contact });
+            }
 
-        // 삭제된 연락처 처리 (DELETE 요청)
-        for (const contactId of deletedContacts) {
-            await axios.delete(`/api/phones/${contactId}`);
+            // 삭제된 연락처 처리 (DELETE 요청)
+            for (const contactId of deletedContacts) {
+                await axios.delete(`/api/phones/${contactId}`);
+            }
+            
+            // 데이터 저장 후 새로 불러오기
+            await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
+            
+        } catch (error) {
+            if (error.response) {
+                console.error('서버 응답 에러:', error.response.data);
+            } else if (error.request) {
+                console.error('요청은 전송되었으나 응답이 없습니다:', error.request);
+            } else {
+                console.error('에러 발생:', error.message);
+            }
+        } finally {
+            setIsOpen(false);
         }
-
-        setIsOpen(false);
-        
-        // 데이터 저장 후 새로 불러오기
-        await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
-        
-    } catch (error) {
-        if (error.response) {
-            console.error('서버 응답 에러:', error.response.data);
-        } else if (error.request) {
-            console.error('요청은 전송되었으나 응답이 없습니다:', error.request);
-        } else {
-            console.error('에러 발생:', error.message);
-        }
-    }
-};
+    };
     
     
     // 아바타 설정 상태
@@ -252,7 +253,7 @@ const Profile = () => {
                         <Avatar className="w-full h-full rounded-none" style={{borderRadius: 'none'}} {...avatarConfig} />
                     </div>
                     <div className='font-bold text-3xl'>
-                        홍길동
+                        {user.name}
                     </div>
 
                     <div>
@@ -276,21 +277,27 @@ const Profile = () => {
                     </div>
                 </div>
 
-                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
-                    <ul role="list" className="divide-y divide-gray-200">
-                        {contacts.map((contact, index) => (
-                            <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4'>
-                                <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                    {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
-                                    {renderContactIcon(contact.phone_type)}
-                                    <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
-                                </div>
-                                {/* 내선 번호가 있는 경우 함께 출력 */}
-                                <span>
-                                    {contact.phone_number} {contact.extension && `(${contact.extension})`}
-                                </span>
-                            </li>
-                        ))}
+                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                        {contacts.length === 0 ? (
+                            <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                <p className="font-semibold text-center">등록된 연락처가 없습니다.</p>
+                            </div>
+                        ) : (
+                            contacts.map((contact, index) => (
+                                <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                    <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                        {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
+                                        {renderContactIcon(contact.phone_type)}
+                                        <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
+                                    </div>
+                                    {/* 내선 번호가 있는 경우 함께 출력 */}
+                                    <span>
+                                        {contact.phone_number} {contact.extension && `(${contact.extension})`}
+                                    </span>
+                                </li>
+                            )))
+                        }
                     </ul>
                 </div>
 
