@@ -122,9 +122,10 @@ const Profile = () => {
             await axios.delete(`/api/phones/${contactId}`);
         }
 
+        setIsOpen(false);
+        
         // 데이터 저장 후 새로 불러오기
         await fetchProfileData();  // 저장 후 업데이트된 데이터 새로 호출
-        setIsOpen(false);
         
     } catch (error) {
         if (error.response) {
@@ -275,23 +276,23 @@ const Profile = () => {
                     </div>
                 </div>
 
-<div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
-            <ul role="list" className="divide-y divide-gray-200">
-                {contacts.map((contact, index) => (
-                    <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4'>
-                        <div className='flex items-center space-x-2 px-2 font-semibold'>
-                            {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
-                            {renderContactIcon(contact.phone_type)}
-                            <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
-                        </div>
-                        {/* 내선 번호가 있는 경우 함께 출력 */}
-                        <span>
-                            {contact.phone_number} {contact.extension && `(${contact.extension})`}
-                        </span>
-                    </li>
-                ))}
-            </ul>
-        </div>
+                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
+                    <ul role="list" className="divide-y divide-gray-200">
+                        {contacts.map((contact, index) => (
+                            <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4'>
+                                <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                    {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
+                                    {renderContactIcon(contact.phone_type)}
+                                    <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
+                                </div>
+                                {/* 내선 번호가 있는 경우 함께 출력 */}
+                                <span>
+                                    {contact.phone_number} {contact.extension && `(${contact.extension})`}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
 
 {/*
                 <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
@@ -425,11 +426,11 @@ const Profile = () => {
                                 </div>
                             ) : (
                                 contacts.map((contact, index) => (
-                                    <div key={index} className="flex gap-x-2">
+                                    <div key={index} className="flex w-full space-x-2">
                                         <select
                                             value={contact.phone_type || ''}
                                             onChange={(e) => handleUpdateContact(index, 'phone_type', e.target.value)}
-                                            className="w-3/12 p-3 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                            className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
                                         >
                                             <option>선택</option>
                                             <option value="company_phone">회사</option>
@@ -441,22 +442,22 @@ const Profile = () => {
                                             type="text"
                                             value={contact.phone_number || ''}
                                             onChange={(e) => handleUpdateContact(index, 'phone_number', e.target.value)}
-                                            className="w-5/12 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
+                                            className={`${contact.phone_type !== 'company_phone' ? 'w-4/6' : 'w-3/6'} flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500`}
                                             placeholder="연락처 입력"
                                             autoComplete='off'
                                             required
                                         />
                                         {/* 회사 전화일 경우에만 내선 입력 필드 표시 */}
-        {contact.phone_type === 'company_phone' && (
-            <input
-                type="text"
-                value={contact.extension || ''}
-                onChange={(e) => handleUpdateContact(index, 'extension', e.target.value)}
-                className="w-3/12 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                placeholder="내선(옵션)"
-            />
-        )}
-                                        <button onClick={() => handleRemoveContact(index)} className='w-1/12 py-1 px-2 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
+                                        {contact.phone_type === 'company_phone' && (
+                                            <input
+                                                type="text"
+                                                value={contact.extension || ''}
+                                                onChange={(e) => handleUpdateContact(index, 'extension', e.target.value)}
+                                                className={`${contact.phone_type === 'company_phone' ? 'w-1/6' : 'hidden'} py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 }`}
+                                                placeholder="내선(옵션)"
+                                            />
+                                        )}
+                                        <button onClick={() => handleRemoveContact(index)} className='flex justify-center items-center w-1/6 py-1 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
                                             <LuTrash className="w-4 h-4" />
                                         </button>
                                     </div>
