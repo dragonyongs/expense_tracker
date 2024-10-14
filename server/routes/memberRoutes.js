@@ -4,7 +4,7 @@ const memberController = require('../controllers/memberController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 // Create a new member
-router.post('/', authMiddleware, memberController.createMember);
+router.post('/', memberController.createMember);
 
 // Get all members
 router.get('/', authMiddleware, memberController.getAllMembers);
