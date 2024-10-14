@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const Member = require('../models/Member');
+const Profile = require('../models/Profile');
 const mongoose = require('mongoose');
 
 // Create a new member
@@ -18,20 +19,37 @@ exports.createMember = async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+        // 새로운 멤버 생성
         const newMember = await Member.create({
             member_name,
             password: hashedPassword,
             email,
-            // role_id: mongoose.Types.ObjectId('66d00d41d4b33b5f82639c28') // 기본 롤 지정
         });
 
+        // 빈 프로필 생성
+        const profileData = {
+            member_id: newMember._id, // 방금 생성된 멤버의 ID
+            avatar_id: null, // 기본 아바타 ID 또는 null
+            phones: [], // 빈 배열로 초기화
+            dates: [],
+            addresses: []
+        };
+
+        const newProfile = await Profile.create(profileData); // 새 프로필 저장
+
+        // 생성된 프로필의 ID를 멤버 컬렉션에 업데이트
+        await Member.findByIdAndUpdate(
+            newMember._id,
+            { profile_id: newProfile._id }, // profile_id 필드에 프로필 ID 저장
+            { new: true } // 업데이트된 문서를 반환
+        );
+
         console.log(newMember);
-        res.status(201).json(newMember);
+        res.status(201).json({ member: newMember, profile: newProfile }); // 멤버와 프로필 정보 반환
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
 };
-
 
 // Get all members
 exports.getAllMembers = async (req, res) => {
@@ -53,6 +71,8 @@ exports.getMemberById = async (req, res) => {
             .populate('status_id')
             .populate('role_id')
             .populate('team_id')
+            .populate('profile_id');
+
         if (!member) return res.status(404).json({ error: 'Member not found' });
         res.json(member);
     } catch (err) {

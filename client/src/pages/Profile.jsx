@@ -87,22 +87,26 @@ const formatDateToKorean = (dateString) => {
 };
 
 const calculateYearsSinceEntry = (dates) => {
-    // entry 타입의 날짜를 필터링
     const entryDates = dates.filter(date => date.date_type === 'entry');
-    
-    // 가장 최근의 입사 날짜 찾기
+
+    // 입사 날짜가 없을 경우 0을 반환
+    if (entryDates.length === 0) {
+        return 0; // 또는 다른 기본값을 반환할 수 있습니다
+    }
+
     const latestEntryDate = entryDates.reduce((latest, date) => {
         const currentDate = new Date(date.date);
         return currentDate > latest ? currentDate : latest;
-    }, new Date(0)); // 초기값으로 과거의 날짜를 설정
+    }, new Date(0));
 
-    // 현재 날짜와 최근 입사일 차이 계산
     const now = new Date();
     const yearsDifference = now.getFullYear() - latestEntryDate.getFullYear();
 
-    // 만약 입사일이 아직 지나지 않았다면 -1을 반환
-    return yearsDifference - (now.getMonth() < latestEntryDate.getMonth() || 
-        (now.getMonth() === latestEntryDate.getMonth() && now.getDate() < latestEntryDate.getDate()) ? 1 : 0);
+    // 만약 현재 날짜가 가장 최근의 입사일이 지나지 않았다면 -1을 반환
+    const isPastAnniversary = now.getMonth() > latestEntryDate.getMonth() || 
+        (now.getMonth() === latestEntryDate.getMonth() && now.getDate() >= latestEntryDate.getDate());
+
+    return yearsDifference + (isPastAnniversary ? 1 : 0);
 };
 
 const Profile = () => {
@@ -261,7 +265,12 @@ const Profile = () => {
     
     // 컴포넌트 내에서 사용 예시
     const yearsSinceEntry = calculateYearsSinceEntry(dates);
-
+    
+    // if (yearsSinceEntry > 0) {
+    //     return <div className='absolute top-6 right-6 text-md text-slate-500'>
+    //                 입사 {yearsSinceEntry}년차
+    //             </div>;
+    // }
 
     return (
         <>
@@ -275,7 +284,7 @@ const Profile = () => {
 
                 <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
                     <div className='absolute top-6 right-6 text-md text-slate-500'>
-                        입사 {yearsSinceEntry}년차
+                        {yearsSinceEntry > 0 && `입사 ${yearsSinceEntry}년차`}
                     </div>
                     <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
                         <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
@@ -292,7 +301,7 @@ const Profile = () => {
                             ))}
                         </p>
                         <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
-                            <span className='pl-2 pr-1'>{member.team_id.team_name}</span>
+                            <span className='pl-2 pr-1'>{member?.team_id?.team_name}</span>
                             {member?.position === '팀장' ? (
                                 '팀장'
                             ) : member?.position === '팀원' ? (
@@ -319,7 +328,7 @@ const Profile = () => {
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
                         {contacts.length === 0 ? (
                             <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                <p className="font-semibold text-center">등록된 연락처가 없습니다.</p>
+                                <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
                             </div>
                         ) : (
                             contacts.map((contact, index) => (
@@ -366,7 +375,7 @@ const Profile = () => {
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
                         {dates.length === 0 ? (
                             <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                <p className="font-semibold text-center">등록된 데이터가 없습니다.</p>
+                                <p className="font-semibold text-center">생일 및 입사 정보가 없습니다.</p>
                             </div>
                         ) : (
                             dates.map((date, index) => (
