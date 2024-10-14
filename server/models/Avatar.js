@@ -15,7 +15,7 @@ const avatarSchema = new mongoose.Schema({
     hatColor: { type: String, required: false },
     shirtColor: { type: String, required: true },
     bgColor: { type: String, required: true },
-    member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true }, // `ObjectId`로 변경
+    member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true },
 }, { timestamps: true });
 
 const Avatar = mongoose.model('Avatar', avatarSchema);

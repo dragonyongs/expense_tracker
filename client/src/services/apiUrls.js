@@ -16,4 +16,5 @@ export const API_URLS = {
     AUTH_LOGOUT: '/api/auth/logout',
     AVATARS: '/api/avatars',
     PHONES: '/api/phones',
+    PROFILES: 'api/profiles',
 };

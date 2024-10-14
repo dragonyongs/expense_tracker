@@ -106,7 +106,7 @@ const Profile = () => {
             const { data: currentContacts } = await axios.get(`${API_URLS.PHONES}/${user.member_id}`);
             
             const newContactsPromises = contacts
-                .filter(c => !c._id && !currentContacts.some(existing => 
+                .filter(c => !c._id && !currentContacts.some(existing =>
                     existing.phone_number === c.phone_number && existing.phone_type === c.phone_type))
                 .map(contact => axios.post(`${API_URLS.PHONES}`, { member_id: user.member_id, ...contact }));
             
@@ -114,22 +114,59 @@ const Profile = () => {
                 .filter(c => c._id)
                 .map(contact => axios.put(`${API_URLS.PHONES}/${contact._id}`, { ...contact }));
             
-            const deleteContactsPromises = deletedContacts.map(contactId => 
+            const deleteContactsPromises = deletedContacts.map(contactId =>
                 axios.delete(`${API_URLS.PHONES}/${contactId}`)
             );
-            
-            // 아바타 정보 저장 요청 추가
+    
+            // 아바타 정보 저장 요청
             const avatarSavePromise = axios.put(`${API_URLS.AVATARS}/${user.member_id}`, avatarConfig);
-            await avatarSavePromise; // 아바타 저장 요청 기다리기
-            console.log("Sending avatar config:", avatarConfig); // 요청 전에 로그 출력
-            // 병렬로 모든 요청 처리 (연락처 및 아바타)
+            const avatarResponse = await avatarSavePromise; // 아바타 저장 요청 기다리기
+            const avatarId = avatarResponse.data._id; // 새로 생성된 아바타 ID
+    
+            // 프로필 존재 여부 확인
+            let profileResponse;
+            try {
+                profileResponse = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+            } catch (error) {
+                // 프로필이 없으면 404 에러가 발생할 수 있으므로 무시
+                profileResponse = null;
+            }
+    
+            let profilePromise;
+    
+            if (profileResponse && profileResponse.data) {
+                // 프로필이 존재하면 업데이트
+                const profileData = {
+                    avatar_id: avatarId,
+                    phones: contacts.map(c => c._id), // 연락처 ID 배열
+                    dates: [], // 날짜 배열 (필요시 추가)
+                    addresses: [] // 주소 배열 (필요시 추가)
+                };
+
+
+                console.log('profileResponse.data', profileResponse.data);
+                const profileId = profileResponse.data._id; // 프로필 ID 추출
+                profilePromise = axios.put(`${API_URLS.PROFILES}/${profileId}`, profileData); // 프로필 ID로 업데이트
+            } else {
+                // 프로필이 존재하지 않으면 새로 생성
+                const profileData = {
+                    member_id: user.member_id,
+                    avatar_id: avatarId,
+                    phones: contacts.map(c => c._id), // 연락처 ID 배열
+                    dates: [], // 날짜 배열 (필요시 추가)
+                    addresses: [] // 주소 배열 (필요시 추가)
+                };
+                profilePromise = axios.post(`${API_URLS.PROFILES}`, profileData);
+            }
+    
+            // 병렬로 모든 요청 처리
             await Promise.all([
                 ...newContactsPromises,
                 ...updateContactsPromises,
                 ...deleteContactsPromises,
-                avatarSavePromise // 아바타 저장 요청 추가
+                profilePromise // 프로필 저장 요청 추가
             ]);
-                        
+            
             // 데이터 재호출
             await fetchProfileData();
     

@@ -5,12 +5,12 @@ const memberSchema = new mongoose.Schema({
     member_name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    profile_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile', default: null },
-    status_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Status', default: null },  // 기본값 null
-    team_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Team', default: null },
     rank: { type: String, default: null },
     position: { type: String, default: null },
-    role_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null },      // 기본값 null
+    profile_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile', default: null },
+    team_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Team', default: null },
+    role_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null },
+    status_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Status', default: null },
 }, { timestamps: true });
 
 // Pre-save hook to dynamically set status_id and role_id if not provided

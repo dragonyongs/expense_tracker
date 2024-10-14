@@ -13,6 +13,8 @@ const AdminMembers = () => {
     const [selectedMember, setSelectedMember] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('전체');
     const [filteredMembers, setFilteredMembers] = useState([]);
+    const [pendingMembers, setPendingMembers] = useState([]);
+    const [pendingMembersCount, setPendingMembersCount] = useState(0);
     const [password, setPassword] = useState('');
     const [statuses, setStatuses] = useState([]);
     const [roles, setRoles] = useState([]);
@@ -31,22 +33,26 @@ const AdminMembers = () => {
     useEffect(() => {
         filterMembers();
     }, [selectedCategory, members]);
-    
-    const toggleDrawer = () => {
-        setIsOpen((prevState) => !prevState);
-        setPassword('');
-    };
 
     const filterMembers = () => {
         let filtered = [...members];
-
+    
         if (selectedCategory === '요청') {
             filtered = members.filter(member => member.status_id.status_name === 'pending');
         } else if (selectedCategory === '전체') {
             filtered = members.filter(member => member.role_id.role_name !== 'super_admin');
         }
-        
+    
+        // 요청 카테고리에서의 pending 멤버 수를 직접 계산
+        const filterPendingMembers = filtered.filter(member => member.status_id.status_name === 'pending');
+        setPendingMembers(filterPendingMembers);
+        setPendingMembersCount(filterPendingMembers.length); // 직접 계산한 값을 사용
         setFilteredMembers(filtered);
+    };
+    
+    const toggleDrawer = () => {
+        setIsOpen((prevState) => !prevState);
+        setPassword('');
     };
 
     const handleCategoryClick = (category) => {
@@ -211,7 +217,7 @@ const AdminMembers = () => {
                         className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '요청' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
                         onClick={() => handleCategoryClick('요청')}
                     >
-                        요청
+                        요청 ({pendingMembersCount})
                     </li>
                 </ul>
                 <div className="flex items-center justify-between mb-4 px-3">
@@ -254,7 +260,7 @@ const AdminMembers = () => {
                                                     {member_name}
                                                 </p>
                                                 <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                                    {isPending ? `승인` : team_id?.team_name || ''}
+                                                    {isPending ? `미승인` : team_id?.team_name || ''}
                                                 </p>
                                             </div>
                                             <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
