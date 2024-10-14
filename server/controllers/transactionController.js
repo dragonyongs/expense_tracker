@@ -173,7 +173,7 @@ exports.createTransaction = async (req, res) => {
 
     } catch (error) {
         console.error('트랜잭션 생성 중 오류 발생:', error);
-        res.status(500).json({ message: '서버 오류가 발생했습니다.', error });
+        res.status(500).json({ message: error.message || '서버 오류가 발생했습니다.', error});
     }
 };
 

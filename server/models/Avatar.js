@@ -5,6 +5,7 @@ const avatarSchema = new mongoose.Schema({
     faceColor: { type: String, required: true },
     earSize: { type: String, enum: ['small', 'big'], required: true },
     eyeStyle: { type: String, enum: ['circle', 'oval', 'smile'], required: true },
+    eyeBrowStyle: { type: String, enum: ['up', 'upWoman'], required: true },
     noseStyle: { type: String, enum: ['short', 'long', 'round'], required: true },
     mouthStyle: { type: String, enum: ['laugh', 'smile', 'peace'], required: true },
     shirtStyle: { type: String, enum: ['hoody', 'short', 'polo'], required: true },

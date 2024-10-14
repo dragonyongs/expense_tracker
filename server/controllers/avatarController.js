@@ -3,7 +3,7 @@ const Avatar = require('../models/Avatar');
 // 아바타 생성 또는 업데이트
 const upsertAvatar = async (req, res) => {
     const { memberId } = req.params;
-    console.log(memberId);
+    // console.log(memberId);
     try {
         // 해당 memberId로 아바타가 있는지 확인
         let avatar = await Avatar.findOne({ member_id: memberId });

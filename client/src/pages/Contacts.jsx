@@ -17,7 +17,6 @@ function Contacts() {
         try {
             const response = await axios.get(API_URLS.MEMBERS);
             const contacts = response.data.filter(member => member.role_id.role_name !== 'super_admin');
-            console.log(contacts);
             setMEmbers(contacts); 
         } catch (error) {
             console.error('Error fetching memebers: ', error);

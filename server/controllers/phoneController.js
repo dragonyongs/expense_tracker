@@ -52,24 +52,21 @@ exports.getPhones = async (req, res) => {
 // Update a phone contact by ID
 exports.updatePhone = async (req, res) => {
     try {
-        // 1. 연락처 업데이트
+        // 연락처 업데이트
         const updatedPhone = await Phone.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        console.log("updatedPhone:", updatedPhone);
         
-        // 2. 연락처가 존재하지 않을 경우 처리
         if (!updatedPhone) return res.status(404).json({ message: 'Phone not found' });
 
-        // 3. 프로필에 업데이트된 연락처 반영 (선택 사항)
         const profile = await Profile.findOne({ phones: req.params.id });
         if (profile) {
-            // 프로필에 해당 연락처 ID가 포함되어 있을 경우
-            profile.phones = profile.phones.map(phoneId => 
+            profile.phones = profile.phones.map(phoneId =>
                 phoneId.toString() === req.params.id ? updatedPhone._id : phoneId
             );
             await profile.save();
+            console.log('Profile updated:', profile); // 중복된 로그 방지
         }
 
-        console.log('profile update', profile);
-        // 4. 업데이트된 연락처 반환
         res.status(200).json(updatedPhone);
     } catch (error) {
         res.status(400).json({ message: error.message });

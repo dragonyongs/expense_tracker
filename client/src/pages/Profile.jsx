@@ -72,10 +72,10 @@ const Profile = () => {
     }, []);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && contacts.length === 0) {  // 데이터가 없을 때만 호출
             fetchProfileData();
         }
-    }, [isOpen]);
+    }, [isOpen, contacts.length]);
     
     const handleAddContact = () => {
         const newContact = {
@@ -103,17 +103,28 @@ const Profile = () => {
     const handleSave = async () => {
         setLoading(true);
         try {
+            // 현재 연락처 가져오기
             const { data: currentContacts } = await axios.get(`${API_URLS.PHONES}/${user.member_id}`);
             
+            // 새로운 연락처 추가
             const newContactsPromises = contacts
-                .filter(c => !c._id && !currentContacts.some(existing =>
-                    existing.phone_number === c.phone_number && existing.phone_type === c.phone_type))
-                .map(contact => axios.post(`${API_URLS.PHONES}`, { member_id: user.member_id, ...contact }));
-            
+            .filter(c => !c._id) // 새로 추가된 연락처만 필터링
+            .map(contact => axios.post(`${API_URLS.PHONES}`, { member_id: user.member_id, ...contact }));
+
+            // 기존 연락처 업데이트 - 변경 사항이 있는 경우만
             const updateContactsPromises = contacts
-                .filter(c => c._id)
+                .filter(c => c._id) // 기존 연락처만 필터링
+                .filter(c => { // 기존 값과 변경된 값 비교
+                    const currentContact = currentContacts.find(cc => cc._id === c._id);
+                    return currentContact && (
+                        currentContact.phone_number !== c.phone_number ||
+                        currentContact.phone_type !== c.phone_type ||
+                        currentContact.extension !== c.extension
+                    );
+                })
                 .map(contact => axios.put(`${API_URLS.PHONES}/${contact._id}`, { ...contact }));
             
+            // 삭제된 연락처 요청
             const deleteContactsPromises = deletedContacts.map(contactId =>
                 axios.delete(`${API_URLS.PHONES}/${contactId}`)
             );
@@ -128,33 +139,31 @@ const Profile = () => {
             try {
                 profileResponse = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
             } catch (error) {
-                // 프로필이 없으면 404 에러가 발생할 수 있으므로 무시
-                profileResponse = null;
+                profileResponse = null; // 프로필이 없으면 null
             }
     
             let profilePromise;
-    
+
             if (profileResponse && profileResponse.data) {
                 // 프로필이 존재하면 업데이트
-                const profileData = {
-                    avatar_id: avatarId,
-                    phones: contacts.map(c => c._id), // 연락처 ID 배열
-                    dates: [], // 날짜 배열 (필요시 추가)
-                    addresses: [] // 주소 배열 (필요시 추가)
-                };
-
-
-                console.log('profileResponse.data', profileResponse.data);
-                const profileId = profileResponse.data._id; // 프로필 ID 추출
-                profilePromise = axios.put(`${API_URLS.PROFILES}/${profileId}`, profileData); // 프로필 ID로 업데이트
+                if (!avatarId || profileResponse.data.avatar_id !== avatarId) { // 중복 방지 조건 추가
+                    const profileData = {
+                        avatar_id: avatarId,
+                        phones: contacts.map(c => c._id),
+                        dates: [],
+                        addresses: []
+                    };
+                    const profileId = profileResponse.data._id;
+                    profilePromise = axios.put(`${API_URLS.PROFILES}/${profileId}`, profileData);
+                }
             } else {
-                // 프로필이 존재하지 않으면 새로 생성
+                // 프로필이 없을 때만 생성
                 const profileData = {
                     member_id: user.member_id,
                     avatar_id: avatarId,
-                    phones: contacts.map(c => c._id), // 연락처 ID 배열
-                    dates: [], // 날짜 배열 (필요시 추가)
-                    addresses: [] // 주소 배열 (필요시 추가)
+                    phones: contacts.map(c => c._id),
+                    dates: [],
+                    addresses: []
                 };
                 profilePromise = axios.post(`${API_URLS.PROFILES}`, profileData);
             }
@@ -166,7 +175,7 @@ const Profile = () => {
                 ...deleteContactsPromises,
                 profilePromise // 프로필 저장 요청 추가
             ]);
-            
+
             // 데이터 재호출
             await fetchProfileData();
     

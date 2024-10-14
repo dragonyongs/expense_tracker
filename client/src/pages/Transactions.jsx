@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthProvider';
 import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance"; 
@@ -15,10 +15,12 @@ const calculateAvailableBalance = (card) => {
 };
 
 const Transactions = () => {
+
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
     const [depositType, setDepositType] = useState('');
-    const [expenceType, setExpenceType] = useState('');
+    const [expenceType, setExpenceType] = useState('TeamCard');
+    const expenceTypeRef = useRef(null);
     const [cardBalance, setCardBalance] = useState(0);
     const [teamFund, setTeamFund] = useState(0);
     const [errMsg, setErrMsg] = useState('');
@@ -35,6 +37,13 @@ const Transactions = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
+    useEffect(() => {
+        if (expenceTypeRef.current) {
+            expenceTypeRef.current.focus(); // 라디오 버튼에 포커스를 설정 (필요한 경우)
+        }
+    }, []);
+
 
     useEffect(() => {
         setErrMsg('');
@@ -144,14 +153,16 @@ const Transactions = () => {
 
     const handleError = (error) => {
         if (error.response) {
-            return error.response.data.error || "오류가 발생했습니다.";
+            return error.response.data.message || "오류가 발생했습니다.";
+        } else if (error.message) {
+            return error.message || "오류가 발생했습니다.";
         } else if (error.request) {
             return "서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.";
         } else {
-            return error.message || "알 수 없는 오류가 발생했습니다.";
+            return "알 수 없는 오류가 발생했습니다.";
         }
     };
-
+    
     const handleSave = async () => {
         try {
             setErrMsg('');
@@ -200,6 +211,7 @@ const Transactions = () => {
 
         } catch (error) {
             const errorMsg = handleError(error); // 오류 메시지 문자열로 변환
+            console.log('errorMsg', errorMsg);
             setErrMsg(errorMsg); // 문자열로 상태 업데이트
         }
     }
@@ -424,7 +436,7 @@ const Transactions = () => {
 
                         { user.position === '팀장' && (
                             <div>
-                                <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">지출 카드</h3>
+                                <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 카드</h3>
                                 <ul className="grid w-full gap-2 grid-cols-2">
                                         <li>
                                             <input
@@ -435,7 +447,7 @@ const Transactions = () => {
                                                 className="hidden peer"
                                                 checked={expenceType === 'TeamCard'}
                                                 onChange={() => { setExpenceType('TeamCard'); }}
-                                                
+                                                ref={expenceTypeRef}
                                                 required
                                             />
                                             <label

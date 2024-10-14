@@ -38,6 +38,7 @@ const AvatarComponent = () => {
                 {renderStyleAndColorButton('hairStyle', 'hairColor', '헤어')}
                 {renderStyleAndColorButton('hatStyle', 'hatColor', '모자')}
                 {renderStyleButton('eyeStyle', '눈')}
+                {renderStyleButton('eyeBrowStyle', '눈썹')}
                 {renderStyleButton('glassesStyle', '안경')}
                 {renderStyleButton('noseStyle', '코')}
                 {renderStyleButton('mouthStyle', '입')}

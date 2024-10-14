@@ -53,7 +53,7 @@ exports.getProfileById = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
     const { id } = req.params; // 프로필 ID를 받아옵니다
-    console.log('Profile ID:', id);
+    // console.log('Profile ID:', id);
     
     try {
         const updatedProfile = await Profile.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
