@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const router = express.Router();
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // 로그인 경로
 router.post('/login', authController.login);

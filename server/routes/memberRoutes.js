@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const memberController = require('../controllers/memberController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // Create a new member
-router.post('/', memberController.createMember);
+router.post('/', authMiddleware, memberController.createMember);
 
 // Get all members
-router.get('/', memberController.getAllMembers);
+router.get('/', authMiddleware, memberController.getAllMembers);
 
 // Get a member by ID
-router.get('/:id', memberController.getMemberById);
+router.get('/:id', authMiddleware, memberController.getMemberById);
 
 // Update a member by ID
-router.put('/:id', memberController.updateMember);
+router.put('/:id', authMiddleware, memberController.updateMember);
 
 // Delete a member by ID
-router.delete('/:id', memberController.deleteMember);
+router.delete('/:id', authMiddleware, memberController.deleteMember);
 
 module.exports = router;

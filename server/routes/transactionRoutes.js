@@ -13,7 +13,7 @@ router.get('/', authMiddleware, transactionController.getAllTransactions);
 router.get('/deposits', authMiddleware, transactionController.getAllDeposits);
 
 // 카드별 트랜잭션 조회
-router.get('/card/:cardId', transactionController.getCardTransactions);
+router.get('/card/:cardId', authMiddleware, transactionController.getCardTransactions);
 
 // Get transactions by year and month
 router.get('/:year/:month', authMiddleware, transactionController.getTransactionsByYearAndMonth);

@@ -11,6 +11,7 @@ const authMiddleware = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         req.user = decoded;
+        
         next();
     } catch (error) {
         console.log('Token verification failed:', error); // 디버깅용 로그

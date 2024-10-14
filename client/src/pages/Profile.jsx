@@ -91,7 +91,7 @@ const calculateYearsSinceEntry = (dates) => {
 
     // 입사 날짜가 없을 경우 0을 반환
     if (entryDates.length === 0) {
-        return 0; // 또는 다른 기본값을 반환할 수 있습니다
+        return { years: 0, days: 0 }; // 객체로 반환
     }
 
     const latestEntryDate = entryDates.reduce((latest, date) => {
@@ -106,7 +106,13 @@ const calculateYearsSinceEntry = (dates) => {
     const isPastAnniversary = now.getMonth() > latestEntryDate.getMonth() || 
         (now.getMonth() === latestEntryDate.getMonth() && now.getDate() >= latestEntryDate.getDate());
 
-    return yearsDifference + (isPastAnniversary ? 1 : 0);
+    // 일 수 계산
+    const daysDifference = Math.floor((now - latestEntryDate) / (1000 * 60 * 60 * 24));
+
+    return {
+        years: yearsDifference + (isPastAnniversary ? 1 : 0),
+        days: daysDifference
+    };
 };
 
 const Profile = () => {
@@ -264,7 +270,7 @@ const Profile = () => {
     const personalPhoneNumber = personalContact ? personalContact.phone_number : '번호 없음';
     
     // 컴포넌트 내에서 사용 예시
-    const yearsSinceEntry = calculateYearsSinceEntry(dates);
+    const { years, days } = calculateYearsSinceEntry(dates);
     
     // if (yearsSinceEntry > 0) {
     //     return <div className='absolute top-6 right-6 text-md text-slate-500'>
@@ -284,7 +290,9 @@ const Profile = () => {
 
                 <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
                     <div className='absolute top-6 right-6 text-md text-slate-500'>
-                        {yearsSinceEntry > 0 && `입사 ${yearsSinceEntry}년차`}
+                        {years >= 2 
+                            ? `입사 ${years}년차` 
+                            : (days > 0 && `입사 ${days}일차`)}
                     </div>
                     <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
                         <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
@@ -302,11 +310,9 @@ const Profile = () => {
                         </p>
                         <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
                             <span className='pl-2 pr-1'>{member?.team_id?.team_name}</span>
-                            {member?.position === '팀장' ? (
-                                '팀장'
-                            ) : member?.position === '팀원' ? (
-                                member.rank
-                            ) : null}
+                            {member?.position === '팀장' ||  member?.position === '파트장' ? (
+                                member.position
+                            ) : member.rank}
                         </p>
                         <p className='text-slate-500'>What is good today, may be a cliche tomorrow.</p>
                     </div>
