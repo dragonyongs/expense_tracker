@@ -37,7 +37,8 @@ exports.getProfileById = async (req, res) => {
     try {
         const profile = await Profile.findOne({ member_id: memberID})
             .populate('phones')
-            .populate('avatar_id');
+            .populate('avatar_id')
+            .populate('member_id');
             // .populate('addresses')
             // .populate('dates');
 

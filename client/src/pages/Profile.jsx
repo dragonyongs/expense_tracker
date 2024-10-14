@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react'
 import { AuthContext } from '../context/AuthProvider';
 import { ThreeDots } from 'react-loader-spinner';
-import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash } from "react-icons/lu";
+import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash, LuCake } from "react-icons/lu";
 import { AiOutlineMail } from "react-icons/ai";
 import { LiaFaxSolid } from "react-icons/lia";
 import { TbUserEdit } from "react-icons/tb";
@@ -44,138 +44,194 @@ const renderContactLabel = (type) => {
     }
 };
 
+const renderDateIcon = (type) => {
+    switch (type) {
+        case 'birthday':
+            return <LuCake />;
+        default:
+            return <LuCalendarDays />;
+    }
+};
+
+const renderDateLabel = (type) => {
+    switch (type) {
+        case 'entry':
+            return '입사';
+        case 'leave':
+            return '퇴사';
+        case 'hiatus':
+            return '휴직';
+        case 'birthday':
+            return '생일';
+        default:
+            return '알수없음';
+    }
+};
+
+const formatDateForInput = (dateString) => {
+    if (!dateString) return ''; // 빈 값 처리
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // yyyy-MM-dd 형식으로 반환
+};
+
+const formatDateToKorean = (dateString) => {
+    if (!dateString) return ''; // 빈 값 처리
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}년 ${month}월 ${day}일`; // 한국어 형식으로 반환
+};
+
+const calculateYearsSinceEntry = (dates) => {
+    // entry 타입의 날짜를 필터링
+    const entryDates = dates.filter(date => date.date_type === 'entry');
+    
+    // 가장 최근의 입사 날짜 찾기
+    const latestEntryDate = entryDates.reduce((latest, date) => {
+        const currentDate = new Date(date.date);
+        return currentDate > latest ? currentDate : latest;
+    }, new Date(0)); // 초기값으로 과거의 날짜를 설정
+
+    // 현재 날짜와 최근 입사일 차이 계산
+    const now = new Date();
+    const yearsDifference = now.getFullYear() - latestEntryDate.getFullYear();
+
+    // 만약 입사일이 아직 지나지 않았다면 -1을 반환
+    return yearsDifference - (now.getMonth() < latestEntryDate.getMonth() || 
+        (now.getMonth() === latestEntryDate.getMonth() && now.getDate() < latestEntryDate.getDate()) ? 1 : 0);
+};
+
 const Profile = () => {
     const isMobile = useMobile();
-
     const { avatarConfig } = useContext(AvatarContext);
-
     const { user } = useContext(AuthContext);
+    
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const [contacts, setContacts] = useState([]);  // 연락처 배열
-    const [deletedContacts, setDeletedContacts] = useState([]); // 삭제된 연락처 ID를 추적
+    const [member, setMember] = useState({});
 
+    const [contacts, setContacts] = useState([]);
+    const [deletedContacts, setDeletedContacts] = useState([]);
+
+    const [dates, setDates] = useState([]);
+    const [deletedDates, setDeletedDates] = useState([]);
+
+    // 데이터를 한 번에 가져오는 함수
     const fetchProfileData = async () => {
         try {
-            const contactsRes = await  axios.get(`${API_URLS.PHONES}/${user.member_id}`);
-    
+            const [contactsRes, datesRes, memberRes] = await Promise.all([
+                axios.get(`${API_URLS.PHONES}/${user.member_id}`),
+                axios.get(`${API_URLS.DATES}/${user.member_id}`),
+                axios.get(`${API_URLS.MEMBERS}/${user.member_id}`)
+            ]);
             setContacts(contactsRes.data || []);
-
+            setDates(datesRes.data || []);
+            setMember(memberRes.data || {});
         } catch (error) {
             console.error('데이터 불러오기 실패:', error);
         }
     };
-    
+
     useEffect(() => {
         fetchProfileData();
     }, []);
 
     useEffect(() => {
-        if (isOpen && contacts.length === 0) {  // 데이터가 없을 때만 호출
+        if (isOpen && contacts.length === 0 && dates.length === 0) {
             fetchProfileData();
         }
-    }, [isOpen, contacts.length]);
-    
-    const handleAddContact = () => {
-        const newContact = {
-            phone_type: '',
-            phone_number: '',
-            extension: '',
-        };
-        setContacts((prevContacts) => [...prevContacts, newContact]);
+    }, [isOpen, contacts.length, dates.length]);
+
+    // 공통적으로 추가 및 업데이트 처리를 위한 함수
+    const handleAddItem = (setFunction, newItem) => {
+        setFunction((prevItems) => [...prevItems, newItem]);
     };
-    
-    const handleUpdateContact = (index, field, value) => {
-        const updatedContacts = contacts.map((contact, i) => 
-            i === index ? { ...contact, [field]: value } : contact
+
+    const handleUpdateItem = (setFunction, items, index, field, value) => {
+        const updatedItems = items.map((item, i) => 
+            i === index ? { ...item, [field]: value } : item
         );
-        setContacts(updatedContacts);
+        setFunction(updatedItems);
     };
-    
-    const handleRemoveContact = (index) => {
-        const removedContact = contacts[index]; // 삭제된 연락처 정보 가져오기
-        const updatedContacts = contacts.filter((_, i) => i !== index);
-        setContacts(updatedContacts);
-        setDeletedContacts((prev) => [...prev, removedContact._id]); // 삭제된 연락처 ID 추가
+
+    const handleRemoveItem = (setFunction, items, setDeleted, index) => {
+        const removedItem = items[index];
+        const updatedItems = items.filter((_, i) => i !== index);
+        setFunction(updatedItems);
+        setDeleted((prev) => [...prev, removedItem._id]);
     };
-    
+
+    const handleAddContact = () => handleAddItem(setContacts, { phone_type: '', phone_number: '', extension: '' });
+    const handleAddDate = () => handleAddItem(setDates, { date_type: '', date: '' });
+
+    const handleUpdateContact = (index, field, value) => handleUpdateItem(setContacts, contacts, index, field, value);
+    const handleUpdateDate = (index, field, value) => handleUpdateItem(setDates, dates, index, field, value);
+
+    const handleRemoveContact = (index) => handleRemoveItem(setContacts, contacts, setDeletedContacts, index);
+    const handleRemoveDate = (index) => handleRemoveItem(setDates, dates, setDeletedDates, index);
+
+    // 연락처 및 일자 저장 로직
     const handleSave = async () => {
         setLoading(true);
         try {
-            // 현재 연락처 가져오기
-            const { data: currentContacts } = await axios.get(`${API_URLS.PHONES}/${user.member_id}`);
-            
-            // 새로운 연락처 추가
-            const newContactsPromises = contacts
-            .filter(c => !c._id) // 새로 추가된 연락처만 필터링
-            .map(contact => axios.post(`${API_URLS.PHONES}`, { member_id: user.member_id, ...contact }));
-
-            // 기존 연락처 업데이트 - 변경 사항이 있는 경우만
-            const updateContactsPromises = contacts
-                .filter(c => c._id) // 기존 연락처만 필터링
-                .filter(c => { // 기존 값과 변경된 값 비교
-                    const currentContact = currentContacts.find(cc => cc._id === c._id);
-                    return currentContact && (
-                        currentContact.phone_number !== c.phone_number ||
-                        currentContact.phone_type !== c.phone_type ||
-                        currentContact.extension !== c.extension
-                    );
-                })
-                .map(contact => axios.put(`${API_URLS.PHONES}/${contact._id}`, { ...contact }));
-            
-            // 삭제된 연락처 요청
-            const deleteContactsPromises = deletedContacts.map(contactId =>
-                axios.delete(`${API_URLS.PHONES}/${contactId}`)
-            );
+            // 데이터 가져오기
+            const [contactsResponse, datesResponse] = await Promise.all([
+                axios.get(`${API_URLS.PHONES}/${user.member_id}`),
+                axios.get(`${API_URLS.DATES}/${user.member_id}`)
+            ]);
     
-            // 아바타 정보 저장 요청
-            const avatarSavePromise = axios.put(`${API_URLS.AVATARS}/${user.member_id}`, avatarConfig);
-            const avatarResponse = await avatarSavePromise; // 아바타 저장 요청 기다리기
-            const avatarId = avatarResponse.data._id; // 새로 생성된 아바타 ID
+            const currentContacts = Array.isArray(contactsResponse.data) ? contactsResponse.data : [];
+            const currentDates = Array.isArray(datesResponse.data) ? datesResponse.data : [];
     
-            // 프로필 존재 여부 확인
-            let profileResponse;
-            try {
-                profileResponse = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
-            } catch (error) {
-                profileResponse = null; // 프로필이 없으면 null
-            }
+            // 연락처 및 일자에 대해 새로운 항목과 업데이트, 삭제 항목 처리
+            const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
+                const newItems = items.filter(item => !item._id);
+                const updatedItems = items.filter(item => item._id).filter(item => {
+                    const currentItem = currentItems.find(ci => ci._id === item._id);
+                    return currentItem && Object.keys(item).some(field => item[field] !== currentItem[field]);
+                });
+                const deletedItemsRequests = deletedItems.map(id => axios.delete(`${apiUrl}/${id}`));
     
-            let profilePromise;
-
-            if (profileResponse && profileResponse.data) {
-                // 프로필이 존재하면 업데이트
-                if (!avatarId || profileResponse.data.avatar_id !== avatarId) { // 중복 방지 조건 추가
-                    const profileData = {
-                        avatar_id: avatarId,
-                        phones: contacts.map(c => c._id),
-                        dates: [],
-                        addresses: []
-                    };
-                    const profileId = profileResponse.data._id;
-                    profilePromise = axios.put(`${API_URLS.PROFILES}/${profileId}`, profileData);
-                }
+                const newItemsPromises = newItems.map(item => axios.post(apiUrl, { member_id: memberId, ...item }));
+                const updateItemsPromises = updatedItems.map(item => axios.put(`${apiUrl}/${item._id}`, { ...item }));
+    
+                return [...newItemsPromises, ...updateItemsPromises, ...deletedItemsRequests];
+            };
+    
+            // 연락처와 일자 처리
+            const contactPromises = processItems(contacts, currentContacts, API_URLS.PHONES, deletedContacts, user.member_id);
+            const datePromises = processItems(dates, currentDates, API_URLS.DATES, deletedDates, user.member_id);
+    
+            // 아바타 정보 저장
+            const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${user.member_id}`, avatarConfig);
+            const avatarId = avatarResponse.data._id;
+    
+            // 프로필 업데이트 또는 생성
+            const profileResponse = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+            const profileData = {
+                avatar_id: avatarId,
+                phones: contacts.map(c => c._id),
+                dates: dates.map(d => d._id),
+                addresses: [] // 주소 처리 추가 예정
+            };
+    
+            if (profileResponse.data) {
+                await axios.put(`${API_URLS.PROFILES}/${profileResponse.data._id}`, profileData);
             } else {
-                // 프로필이 없을 때만 생성
-                const profileData = {
-                    member_id: user.member_id,
-                    avatar_id: avatarId,
-                    phones: contacts.map(c => c._id),
-                    dates: [],
-                    addresses: []
-                };
-                profilePromise = axios.post(`${API_URLS.PROFILES}`, profileData);
+                await axios.post(`${API_URLS.PROFILES}`, { member_id: user.member_id, ...profileData });
             }
     
             // 병렬로 모든 요청 처리
             await Promise.all([
-                ...newContactsPromises,
-                ...updateContactsPromises,
-                ...deleteContactsPromises,
-                profilePromise // 프로필 저장 요청 추가
+                ...contactPromises,
+                ...datePromises
             ]);
-
+    
             // 데이터 재호출
             await fetchProfileData();
     
@@ -203,6 +259,9 @@ const Profile = () => {
     
     const personalPhoneNumber = personalContact ? personalContact.phone_number : '번호 없음';
     
+    // 컴포넌트 내에서 사용 예시
+    const yearsSinceEntry = calculateYearsSinceEntry(dates);
+
 
     return (
         <>
@@ -216,7 +275,7 @@ const Profile = () => {
 
                 <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
                     <div className='absolute top-6 right-6 text-md text-slate-500'>
-                        입사 N년차
+                        입사 {yearsSinceEntry}년차
                     </div>
                     <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
                         <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
@@ -228,9 +287,18 @@ const Profile = () => {
 
                     <div>
                         <p className='text-slate-800'>
-                            1900.00.00(양) 🎂
+                            {dates.filter(date => date.date_type === 'birthday').map(date => (
+                                <span key={date._id}>{formatDateToKorean(date.date)} 🎂</span>
+                            ))}
                         </p>
-                        <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span> 퍼블리싱팀 팀장</p>
+                        <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
+                            <span className='pl-2 pr-1'>{member.team_id.team_name}</span>
+                            {member?.position === '팀장' ? (
+                                '팀장'
+                            ) : member?.position === '팀원' ? (
+                                member.rank
+                            ) : null}
+                        </p>
                         <p className='text-slate-500'>What is good today, may be a cliche tomorrow.</p>
                     </div>
                     <div>
@@ -294,32 +362,26 @@ const Profile = () => {
                     </ul>
                 </div>
 
-                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
-                    <ul role="list" className="divide-y divide-gray-200">
-                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
-                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuCalendarDays /><span className='w-7 text-nowrap'>생일</span>
+                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                        {dates.length === 0 ? (
+                            <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                <p className="font-semibold text-center">등록된 데이터가 없습니다.</p>
                             </div>
-                            <span className=''>1900년 0월 0일 (양)</span>
-                        </li>
-                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
-                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuCalendarDays /><span className='w-7 text-nowrap'>입사</span>
-                            </div>
-                            <span className=''>2017년 2월 1일</span>
-                        </li>
-                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
-                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuCalendarDays /><span className='w-7 text-nowrap'>퇴사</span>
-                            </div>
-                            <span className=''>2022년 3월 30일</span>
-                        </li>
-                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
-                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuCalendarDays /><span className='w-7 text-nowrap'>입사</span>
-                            </div>
-                            <span className=''>2022년 10월 2일</span>
-                        </li>
+                        ) : (
+                            dates.map((date, index) => (
+                                <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                    <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                        {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
+                                        {renderDateIcon(date.date_type)}
+                                        <span className='w-10 text-nowrap'>{renderDateLabel(date.date_type)}</span>
+                                    </div>
+                                    <span>
+                                        {formatDateToKorean(date.date)}
+                                    </span>
+                                </li>
+                            )))
+                        }
                     </ul>
                 </div>
             </div>
@@ -383,6 +445,54 @@ const Profile = () => {
                                             />
                                         )}
                                         <button onClick={() => handleRemoveContact(index)} className='flex justify-center items-center w-1/6 py-1 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
+                                            <LuTrash className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                    </div>
+
+                    <div className='flex flex-col gap-y-10 mt-10'>
+                        <div className="flex flex-col space-y-4 dark:text-slate-400">
+                            <div className='flex justify-between items-center'>
+                                <label className='font-semibold text-xl'>
+                                    일자
+                                </label>
+                                <button onClick={handleAddDate} className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
+                                    추가
+                                </button>
+                            </div>
+                            {dates.length === 0 ? (
+                                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
+                                    <p className="font-semibold text-center">일자 정보가 없습니다.</p>
+                                </div>
+                            ) : (
+                                dates.map((date, index) => (
+                                    <div key={index} className="flex w-full space-x-2">
+                                        <select
+                                            value={date.date_type || ''}
+                                            onChange={(e) => handleUpdateDate(index, 'date_type', e.target.value)}
+                                            className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                        >
+                                            <option>선택</option>
+                                            <option value="entry">입사</option>
+                                            <option value="leave">퇴사</option>
+                                            <option value="hiatus">휴직</option>
+                                            <option value="birthday">생일</option>
+                                        </select>
+                                        <input
+                                            type="date"
+                                            value={formatDateForInput(dates[index].date) || ''}
+                                            onChange={(e) => handleUpdateDate(index, 'date', e.target.value)}
+                                            className="w-4/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
+                                            placeholder="일자 선택"
+                                            autoComplete='off'
+                                            required
+                                        />
+                                        
+                                        <button onClick={() => handleRemoveDate(index)} className='flex justify-center items-center w-1/6 py-1 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
                                             <LuTrash className="w-4 h-4" />
                                         </button>
                                     </div>

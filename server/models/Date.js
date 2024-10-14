@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 
 const datesSchema = new mongoose.Schema({
-    entry_date: { type: Date, default: null },  // 입사일
-    leave_date: { type: Date, default: null },  // 퇴사일
-    hiatus_date: { type: Date, default: null }, // 휴직일
+    date_type: { type: String, enum: ['entry', 'leave', 'hiatus', 'birthday'], required: true },
+    date: { type: Date, default: null },
     member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true } // 멤버 참조
 }, { timestamps: true });
 
