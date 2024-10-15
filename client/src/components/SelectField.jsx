@@ -11,7 +11,7 @@ const SelectField = ({ label, id, value, onChange, options = [], placeholder = "
                 <select
                     id={id}
                     name={id}
-                    className={`${className} w-full p-2.5 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 placeholder:text-slate-400 ${!disabled ? '' : 'bg-slate-200 text-gray-800'} dark:bg-slate-900 dark:disabled:border-slate-600 dark:disabled:text-slate-600 dark:placeholder-slate-400 dark:text-white appearance-none`}
+                    className={`${className} w-full p-2.5 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 placeholder:text-slate-400 bg-slate-200 text-gray-800 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 ${!disabled ? '' : 'disabled:border-slate-300 disabled:text-slate-300 disabled:bg-slate-200 disabled:placeholder:text-slate-300 dark:disabled:border-slate-700 dark:disabled:bg-slate-900 dark:disabled:text-slate-700 dark:disabled:placeholder:text-slate-600'} appearance-none`}
                     value={value}
                     onChange={onChange}
                     required={required}

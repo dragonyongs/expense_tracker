@@ -19,7 +19,7 @@ const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
     const [depositType, setDepositType] = useState('');
-    const [expenceType, setExpenceType] = useState('');
+    const [expenceType, setExpenceType] = useState('TeamCard');
     const expenceTypeRef = useRef(null);
     const expenceMerchantRef = useRef(null);
     const [cardBalance, setCardBalance] = useState(0);
@@ -514,7 +514,7 @@ const Transactions = () => {
                             id="transaction_date" 
                             type='date'
                             value={selectedTransaction?.transaction_date.split("T")[0] || ""}
-                            className={"bg-white border border-slate-200"}
+                            className={"flex-1 bg-white border border-slate-200"}
                             onChange={(e) => setSelectedTransaction({ ...selectedTransaction, transaction_date: e.target.value })}
                             placeholder=""
                             disabled={!expenceType}
