@@ -19,8 +19,9 @@ const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
     const [depositType, setDepositType] = useState('');
-    const [expenceType, setExpenceType] = useState('TeamCard');
+    const [expenceType, setExpenceType] = useState('');
     const expenceTypeRef = useRef(null);
+    const expenceMerchantRef = useRef(null);
     const [cardBalance, setCardBalance] = useState(0);
     const [teamFund, setTeamFund] = useState(0);
     const [errMsg, setErrMsg] = useState('');
@@ -38,13 +39,13 @@ const Transactions = () => {
     const [userCards, setUserCards] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
+
     useEffect(() => {
         if (expenceTypeRef.current) {
-            expenceTypeRef.current.focus(); // 라디오 버튼에 포커스를 설정 (필요한 경우)
+            expenceMerchantRef.current.focus(); 
         }
-    }, []);
-
-
+    }, [expenceType]);
+    
     useEffect(() => {
         setErrMsg('');
     }, [transactions.length])
@@ -446,8 +447,8 @@ const Transactions = () => {
                                                 value="TeamCard" // 기본 팀카드 사용
                                                 className="hidden peer"
                                                 checked={expenceType === 'TeamCard'}
-                                                onChange={() => { setExpenceType('TeamCard'); }}
                                                 ref={expenceTypeRef}
+                                                onChange={() => { setExpenceType('TeamCard'); }}
                                                 required
                                             />
                                             <label
@@ -493,6 +494,8 @@ const Transactions = () => {
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedTransaction({ ...selectedTransaction, merchant_name: e.target.value })}
                             placeholder="상호명 입력"
+                            ref={expenceMerchantRef}
+                            disabled={!expenceType}
                             required={true}
                         />
                         <InputField 
@@ -503,6 +506,7 @@ const Transactions = () => {
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedTransaction({ ...selectedTransaction, transaction_amount: e.target.value })}
                             placeholder="지출금액 입력"
+                            disabled={!expenceType}
                             required={true}
                         />
                         <InputField 
@@ -513,6 +517,7 @@ const Transactions = () => {
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedTransaction({ ...selectedTransaction, transaction_date: e.target.value })}
                             placeholder=""
+                            disabled={!expenceType}
                             required={true}
                         />
                         <InputField 
@@ -522,6 +527,7 @@ const Transactions = () => {
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedTransaction({ ...selectedTransaction, menu_name: e.target.value })}
                             placeholder="메뉴명(옵션) 입력"
+                            disabled={!expenceType}
                         />
                         <SelectField
                             label="사용 카드"
@@ -530,7 +536,8 @@ const Transactions = () => {
                             onChange={handleCardChange}
                             options={userCards.map(card => ({ value: card._id, label: card.card_number }))}
                             placeholder="카드 선택"
-                            required
+                            disabled={!expenceType}
+                            required={true}
                         />
 
 
