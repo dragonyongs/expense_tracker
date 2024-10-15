@@ -1,9 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { memo } from 'react';
 import { GoHome } from "react-icons/go";
-import { PiPencilSimpleLine } from "react-icons/pi";
 import { RxAvatar } from "react-icons/rx";
 import { PiCardsThree, PiAddressBookTabsLight } from "react-icons/pi";
+import { GoCreditCard } from "react-icons/go";
 
 
 const TabBarComponent = () => {
@@ -56,7 +56,7 @@ const TabBarComponent = () => {
             {/* {memberRoles.includes(user?.role) && ( */}
                 <button type="button" className={`flex flex-col items-center ${isActiveTab('/transactions') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleTransactions}>
                     <div className='flex items-center justify-center w-8 h-8'>
-                        <PiPencilSimpleLine className="text-2xl" />
+                        <GoCreditCard className="text-2xl" />
                     </div>
                     <span className="text-sm">내카드</span>
                 </button>

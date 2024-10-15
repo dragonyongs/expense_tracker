@@ -17,5 +17,6 @@ export const API_URLS = {
     AVATARS: '/api/avatars',
     PHONES: '/api/phones',
     DATES: '/api/dates',
+    ADDRESSES: '/api/addresses',
     PROFILES: '/api/profiles',
 };

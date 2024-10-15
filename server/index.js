@@ -18,6 +18,7 @@ const statusRoutes = require('./routes/statusRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const phoneRoutes = require('./routes/phoneRoutes');
 const dateRoutes = require('./routes/dateRoutes');
+const addressRoutes = require('./routes/addressRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const avatarRoutes = require('./routes/avatarRoutes');
 
@@ -43,6 +44,7 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/phones', phoneRoutes);
 app.use('/api/dates', dateRoutes);
+app.use('/api/addresses', addressRoutes);
 app.use('/api/avatars', avatarRoutes);
 
 // MongoDB 연결
