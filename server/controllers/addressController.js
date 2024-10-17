@@ -46,22 +46,30 @@ exports.getAddresses = async (req, res) => {
 
 exports.updateAddress = async (req, res) => {
     try {
-        const updatedAddressRes = await Address.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        // 주소 업데이트
+        const updatedAddress = await Address.findByIdAndUpdate(req.params.id, req.body, { new: true });
         console.log("updatedAddress:", updatedAddress);
-        
-        if (!updatedAddressRes) return res.status(404).json({ message: 'Address not found' });
 
-        const profileRes = await Profile.findOne({ addresses: req.params.id });
-        if (profileRes) {
-            profileRes.addresses = profileRes.addresses.map(addressId =>
-                addressId.toString() === req.params.id ? updatedAddressRes._id : addressId
+        if (!updatedAddress) return res.status(404).json({ message: 'Address not found' });
+
+        // 프로필에서 해당 주소 ID를 찾아서 업데이트
+        const profile = await Profile.findOne({ addresses: req.params.id });
+        if (profile) {
+            // addresses 배열에서 해당 주소 ID를 찾아 업데이트된 주소로 교체
+            profile.addresses = profile.addresses.map(addressId =>
+                addressId.toString() === req.params.id ? updatedAddress._id : addressId
             );
-            await profileRes.save();
-            console.log('Profile updated:', profileRes); // 중복된 로그 방지
+
+            console.log('Profile before saving:', profile);
+            await profile.save(); // 프로필 저장
+            console.log('Profile after saving:', profile);
+        } else {
+            console.log('Profile not found for the address ID.');
         }
 
-        res.status(200).json(updatedAddressRes);
+        res.status(200).json(updatedAddress);
     } catch (error) {
+        console.error('Error updating address:', error);
         res.status(400).json({ message: error.message });
     }
 };
