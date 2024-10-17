@@ -212,7 +212,7 @@ const Profile = () => {
     
 
     // 데이터를 한 번에 가져오는 함수
-    const fetchProfileData = async () => {
+    {/* const fetchProfileData = async () => {
         try {
             const [contactsRes, addressesRes, datesRes, memberRes, profileRes] = await Promise.all([
                 axios.get(`${API_URLS.PHONES}/${user.member_id}`),
@@ -230,28 +230,29 @@ const Profile = () => {
             console.error('데이터 불러오기 실패:', error);
         }
     };
+*/}
 
-    // const fetchProfileData = async () => {
-    //     try {
-    //         const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+     const fetchProfileData = async () => {
+         try {
+             const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
             
-    //         console.log('Fetched Profile Data:', profileRes); // 응답 데이터 출력
+             console.log('Fetched Profile Data:', profileRes); // 응답 데이터 출력
     
-    //         if (!profileRes || !profileRes.data) {
-    //             throw new Error('프로필 데이터를 가져오지 못했습니다.');
-    //         }
+             if (!profileRes || !profileRes.data) {
+                 throw new Error('프로필 데이터를 가져오지 못했습니다.');
+             }
     
-    //         const profileData = profileRes.data || {};
+             const profileData = profileRes.data || {};
             
-    //         setContacts(profileData.phones || []);
-    //         setAddresses(profileData.addresses || []);
-    //         setDates(profileData.dates || []);
-    //         setMember(profileData.member_id || {});
-    //         setIntroduction(profileData.introduction || '');
-    //     } catch (error) {
-    //         console.error('데이터 불러오기 실패:', error);
-    //     }
-    // };
+             setContacts(profileData.phones || []);
+             setAddresses(profileData.addresses || []);
+             setDates(profileData.dates || []);
+             setMember(profileData.member_id || {});
+             setIntroduction(profileData.introduction || '');
+         } catch (error) {
+             console.error('데이터 불러오기 실패:', error);
+         }
+    };
     
     useEffect(() => {
         fetchProfileData();
