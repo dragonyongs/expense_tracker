@@ -72,16 +72,7 @@ exports.updateDate = async (req, res) => {
         
         if (!updatedDate) return res.status(404).json({ message: 'Date not found' });
 
-        // 프로필에서 날짜 ID를 업데이트
-        const profile = await Profile.findOne({ dates: req.params.id });
-        if (profile) {
-            profile.dates = profile.dates.map(dateId =>
-                dateId.toString() === req.params.id ? updatedDate._id : dateId
-            );
-            await profile.save();
-            console.log('Profile updated:', profile);
-        }
-        
+        // 날짜만 업데이트하고, 프로필의 dates 배열은 수정하지 않음
         res.status(200).json(updatedDate);
 
     } catch (error) {
@@ -98,9 +89,16 @@ exports.deleteDate = async (req, res) => {
 
         // 삭제 후 프로필에서 해당 날짜 ID 제거
         const profile = await Profile.findOne({ dates: req.params.id });
+        
         if (profile) {
+            // dates 배열에서 삭제할 날짜 ID 제거
             profile.dates = profile.dates.filter(dateId => dateId.toString() !== req.params.id);
-            await profile.save();
+            
+            console.log('Profile before saving (after delete):', profile);
+            await profile.save(); // 프로필 저장
+            console.log('Profile after saving (after delete):', profile);
+        } else {
+            console.log('Profile not found for the date ID.');
         }
 
         res.status(200).json({ message: 'Date deleted successfully' });
