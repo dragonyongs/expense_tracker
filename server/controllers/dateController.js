@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const DateModel = require('../models/Date'); // 모델 이름을 Date에서 DateModel로 변경
 const Profile = require('../models/Profile');
 
@@ -12,10 +13,11 @@ exports.createDate = async (req, res) => {
             date
         });
 
-        console.log('newDate', newDate);
+        console.log('newDate (before save):', newDate);
 
         // 날짜 저장
         const savedDate = await newDate.save();
+        console.log('savedDate (after save):', savedDate); // 저장된 후의 상태 확인
 
         // 프로필 조회
         let profile = await Profile.findOne({ member_id });
@@ -29,14 +31,19 @@ exports.createDate = async (req, res) => {
         }
 
         // 날짜 ID가 이미 존재하지 않는 경우에만 추가
-        if (!profile.dates.includes(savedDate._id)) {
+        if (!profile.dates.some(dateId => dateId.toString() === savedDate._id.toString())) {
             profile.dates.push(savedDate._id);
         }
 
-        console.log('profile', profile);
+        console.log('profile (before save):', profile);
+        console.log('profile.dates after push:', profile.dates); // dates 배열 확인
         
         // 프로필 저장
         await profile.save();
+
+        // 프로필 저장 후 다시 한 번 확인 (populate 사용)
+        const updatedProfile = await Profile.findOne({ member_id }).populate('dates');
+        console.log('Updated profile with populated dates:', updatedProfile);
 
         // 생성된 날짜 반환
         res.status(201).json(savedDate);
