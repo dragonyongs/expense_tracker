@@ -72,7 +72,22 @@ exports.updateDate = async (req, res) => {
         
         if (!updatedDate) return res.status(404).json({ message: 'Date not found' });
 
-        // 날짜만 업데이트하고, 프로필의 dates 배열은 수정하지 않음
+        // 프로필에서 날짜 ID를 찾아서 업데이트
+        const profile = await Profile.findOne({ dates: req.params.id });
+
+        if (profile) {
+            // dates 배열에서 해당 날짜 ID를 찾아 업데이트된 날짜로 교체
+            profile.dates = profile.dates.map(dateId =>
+                dateId.toString() === req.params.id ? updatedDate._id : dateId
+            );
+            
+            console.log('Profile before saving:', profile);
+            await profile.save(); // 프로필 저장
+            console.log('Profile after saving:', profile);
+        } else {
+            console.log('Profile not found for the date ID.');
+        }
+        
         res.status(200).json(updatedDate);
 
     } catch (error) {
