@@ -212,7 +212,7 @@ const Profile = () => {
     
 
     // 데이터를 한 번에 가져오는 함수
-    {/* const fetchProfileData = async () => {
+     const fetchProfileData = async () => {
         try {
             const [contactsRes, addressesRes, datesRes, memberRes, profileRes] = await Promise.all([
                 axios.get(`${API_URLS.PHONES}/${user.member_id}`),
@@ -230,8 +230,8 @@ const Profile = () => {
             console.error('데이터 불러오기 실패:', error);
         }
     };
-*/}
 
+{/*
      const fetchProfileData = async () => {
          try {
              const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
@@ -253,7 +253,7 @@ const Profile = () => {
              console.error('데이터 불러오기 실패:', error);
          }
     };
-    
+    */}
     useEffect(() => {
         fetchProfileData();
 
