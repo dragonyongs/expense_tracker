@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react'
 import { AuthContext } from '../context/AuthProvider';
 import { ThreeDots } from 'react-loader-spinner';
-import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash, LuCake } from "react-icons/lu";
+import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash, LuCake, LuActivity } from "react-icons/lu";
 import { AiOutlineMail } from "react-icons/ai";
 import { CiDeliveryTruck } from "react-icons/ci";
 
 import { LiaFaxSolid } from "react-icons/lia";
 import { TbUserEdit } from "react-icons/tb";
-import { RiSignpostLine } from "react-icons/ri";
+// import { RiSignpostLine } from "react-icons/ri";
 import ProfileDrawer from '../components/ProfileDrawer';
 import axios from "../services/axiosInstance"; 
 import { AvatarContext } from '../context/AvatarContext';
@@ -105,13 +105,25 @@ const formatDateForInput = (dateString) => {
     return `${year}-${month}-${day}`; // yyyy-MM-dd 형식으로 반환
 };
 
-const formatDateToKorean = (dateString) => {
+const formatDateToKorean = (dateString, format = 'full') => {
     if (!dateString) return ''; // 빈 값 처리
     const date = new Date(dateString);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}년 ${month}월 ${day}일`; // 한국어 형식으로 반환
+
+    if (format === 'full') {
+        return `${year}년 ${month}월 ${day}일`; // 전체 형식
+    } else if (format === 'monthDay') {
+        return `${month}월 ${day}일`; // 월과 일만
+    }
+    return ''; // 기본값
+};
+
+const isTodayBirthday = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    return date.getDate() === today.getDate() && date.getMonth() === today.getMonth();
 };
 
 const calculateYearsSinceEntry = (dates) => {
@@ -147,22 +159,18 @@ const Profile = () => {
     const isMobile = useMobile();
     const { avatarConfig } = useContext(AvatarContext);
     const { user } = useContext(AuthContext);
-    
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-
     const [member, setMember] = useState({});
-
+    const [introduction, setIntroduction] = useState('');
     const [contacts, setContacts] = useState([]);
     const [deletedContacts, setDeletedContacts] = useState([]);
-
     const [dates, setDates] = useState([]);
     const [deletedDates, setDeletedDates] = useState([]);
-
     const [addresses, setAddresses] = useState([]);
     const [deletedAddresses, setDeletedAddresses] = useState([]);
-
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+    const [errMsg, setErrMsg] = useState('');
 
     const loadDaumPostcodeScript = () => {
         return new Promise((resolve) => {
@@ -174,24 +182,77 @@ const Profile = () => {
         });
     };
 
+    // const fetchProfileData = async () => {
+    //     try {
+    //         console.log('fetchProfileData', `${API_URLS.PROFILES}/${user.member_id}`)
+    //         const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+    //         console.log('Fetched Profile Data:', profileRes.data); // 응답 데이터 출력
+    
+    //         if (!profileRes || !profileRes.data) {
+    //             throw new Error('프로필 데이터를 가져오지 못했습니다.');
+    //         }
+    
+    //         const profileData = profileRes.data || {};
+            
+    //         setContacts(profileData.phones || []);
+    //         setAddresses(profileData.addresses || []);
+    //         setDates(profileData.dates || []);
+    //         setMember(profileData.member_id || {});
+    //         setIntroduction(profileData.introduction || '');
+    
+    //         // 상태가 올바르게 업데이트되었는지 확인
+    //         console.log('Contacts:', profileData.phones);
+    //         console.log('Addresses:', profileData.addresses);
+    //         console.log('Dates:', profileData.dates);
+    //         console.log('Member:', profileData.member_id);
+    //     } catch (error) {
+    //         console.error('데이터 불러오기 실패:', error);
+    //     }
+    // };
+    
+
     // 데이터를 한 번에 가져오는 함수
     const fetchProfileData = async () => {
         try {
-            const [contactsRes, addressesRes, datesRes, memberRes] = await Promise.all([
+            const [contactsRes, addressesRes, datesRes, memberRes, profileRes] = await Promise.all([
                 axios.get(`${API_URLS.PHONES}/${user.member_id}`),
                 axios.get(`${API_URLS.ADDRESSES}/${user.member_id}`),
                 axios.get(`${API_URLS.DATES}/${user.member_id}`),
-                axios.get(`${API_URLS.MEMBERS}/${user.member_id}`)
+                axios.get(`${API_URLS.MEMBERS}/${user.member_id}`),
+                axios.get(`${API_URLS.PROFILES}/${user.member_id}`)
             ]);
             setContacts(contactsRes.data || []);
             setAddresses(addressesRes.data || []);
             setDates(datesRes.data || []);
             setMember(memberRes.data || {});
+            setIntroduction(profileRes.data.introduction || '');
         } catch (error) {
             console.error('데이터 불러오기 실패:', error);
         }
     };
 
+    // const fetchProfileData = async () => {
+    //     try {
+    //         const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+            
+    //         console.log('Fetched Profile Data:', profileRes); // 응답 데이터 출력
+    
+    //         if (!profileRes || !profileRes.data) {
+    //             throw new Error('프로필 데이터를 가져오지 못했습니다.');
+    //         }
+    
+    //         const profileData = profileRes.data || {};
+            
+    //         setContacts(profileData.phones || []);
+    //         setAddresses(profileData.addresses || []);
+    //         setDates(profileData.dates || []);
+    //         setMember(profileData.member_id || {});
+    //         setIntroduction(profileData.introduction || '');
+    //     } catch (error) {
+    //         console.error('데이터 불러오기 실패:', error);
+    //     }
+    // };
+    
     useEffect(() => {
         fetchProfileData();
 
@@ -212,9 +273,12 @@ const Profile = () => {
     };
 
     const handleUpdateItem = (setFunction, items, index, field, value) => {
+        if (!items[index]) return; // index 유효성 검증
         const updatedItems = items.map((item, i) => 
             i === index ? { ...item, [field]: value } : item
         );
+    
+        console.log('handleUpdateItem', updatedItems);
         setFunction(updatedItems);
     };
 
@@ -222,7 +286,15 @@ const Profile = () => {
         const removedItem = items[index];
         const updatedItems = items.filter((_, i) => i !== index);
         setFunction(updatedItems);
-        setDeleted((prev) => [...prev, removedItem._id]);
+    
+        if (removedItem._id) {
+            setDeleted((prev) => [...prev, removedItem._id]);
+        }
+    };
+
+    // 자기소개 추가 또는 업데이트 처리
+    const handleUpdateIntroduction = (value) => {
+        setIntroduction(value);
     };
 
     const handleAddContact = () => handleAddItem(setContacts, { phone_type: '', phone_number: '', extension: '' });
@@ -232,6 +304,11 @@ const Profile = () => {
     const handleRemoveContact = (index) => handleRemoveItem(setContacts, contacts, setDeletedContacts, index);
     const handleRemoveAddress = (index) => handleRemoveItem(setAddresses, addresses, setDeletedAddresses, index);
     const handleRemoveDate = (index) => handleRemoveItem(setDates, dates, setDeletedDates, index);
+
+    // 자기소개 입력 처리
+    const handleIntroductionChange = (event) => {
+        handleUpdateIntroduction(event.target.value);
+    };
 
     const handleDaumPostCode = (index) => {
         if (!isScriptLoaded) return;
@@ -253,19 +330,106 @@ const Profile = () => {
     };
     
     // 연락처 및 일자 저장 로직
-    const handleSave = async () => {
-        setLoading(true);
-        try {
-            // 데이터 가져오기
-            const [contactsResponse, addressesResponse, datesResponse] = await Promise.all([
-                axios.get(`${API_URLS.PHONES}/${user.member_id}`),
-                axios.get(`${API_URLS.ADDRESSES}/${user.member_id}`),
-                axios.get(`${API_URLS.DATES}/${user.member_id}`)
-            ]);
+    // const handleSave = async () => {
+    //     setLoading(true);
+    //     try {
+    //         // 데이터 가져오기
+    //         const [contactsResponse, addressesResponse, datesResponse] = await Promise.all([
+    //             axios.get(`${API_URLS.PHONES}/${user.member_id}`),
+    //             axios.get(`${API_URLS.ADDRESSES}/${user.member_id}`),
+    //             axios.get(`${API_URLS.DATES}/${user.member_id}`)
+    //         ]);
     
-            const currentContacts = Array.isArray(contactsResponse.data) ? contactsResponse.data : [];
-            const currentAddresses = Array.isArray(addressesResponse.data) ? addressesResponse.data : [];
-            const currentDates = Array.isArray(datesResponse.data) ? datesResponse.data : [];
+    //         const currentContacts = Array.isArray(contactsResponse.data) ? contactsResponse.data : [];
+    //         const currentAddresses = Array.isArray(addressesResponse.data) ? addressesResponse.data : [];
+    //         const currentDates = Array.isArray(datesResponse.data) ? datesResponse.data : [];
+    
+    //         // 연락처 및 일자에 대해 새로운 항목과 업데이트, 삭제 항목 처리
+    //         const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
+    //             const newItems = items.filter(item => !item._id);
+    //             const updatedItems = items.filter(item => item._id).filter(item => {
+    //                 const currentItem = currentItems.find(ci => ci._id === item._id);
+    //                 return currentItem && Object.keys(item).some(field => item[field] !== currentItem[field]);
+    //             });
+    //             const deletedItemsRequests = deletedItems.map(id => axios.delete(`${apiUrl}/${id}`));
+    
+    //             const newItemsPromises = newItems.map(item => axios.post(apiUrl, { member_id: memberId, ...item }));
+    //             const updateItemsPromises = updatedItems.map(item => axios.put(`${apiUrl}/${item._id}`, { ...item }));
+    
+    //             return [...newItemsPromises, ...updateItemsPromises, ...deletedItemsRequests];
+    //         };
+    
+    //         // 연락처와 일자 처리
+    //         const contactPromises = processItems(contacts, currentContacts, API_URLS.PHONES, deletedContacts, user.member_id);
+    //         const addressPromises = processItems(addresses, currentAddresses, API_URLS.ADDRESSES, deletedAddresses, user.member_id);
+    //         const datePromises = processItems(dates, currentDates, API_URLS.DATES, deletedDates, user.member_id);
+    
+    //         // 아바타 정보 저장
+    //         const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${user.member_id}`, avatarConfig);
+    //         const avatarId = avatarResponse.data._id;
+    
+    //         // 프로필 업데이트 또는 생성
+    //         const profileResponse = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+    //         const profileData = {
+    //             avatar_id: avatarId,
+    //             phones: contacts.map(c => c._id),
+    //             dates: dates.map(d => d._id),
+    //             addresses: addresses.map(d => d._id),
+    //             introduction
+    //         };
+    
+    //         if (profileResponse.data) {
+    //             await axios.put(`${API_URLS.PROFILES}/${profileResponse.data._id}`, profileData);
+    //         } else {
+    //             await axios.post(`${API_URLS.PROFILES}`, { member_id: user.member_id, ...profileData });
+    //         }
+    
+    //         // 병렬로 모든 요청 처리
+    //         await Promise.all([
+    //             ...contactPromises,
+    //             ...addressPromises,
+    //             ...datePromises
+    //         ]);
+    
+    //         // 데이터 재호출
+    //         await fetchProfileData();
+    
+    //     } catch (error) {
+    //         console.error('데이터 저장 오류:', error);
+    //     } finally {
+    //         setLoading(false);
+    //         setIsOpen(false);
+    //     }
+    // };
+
+    const handleSave = async () => {
+        let hasError = false;
+        setLoading(true);
+        setErrMsg(''); // 이전 오류 메시지 초기화
+        
+        try {
+            // 연락처의 전화 유형 검증
+            contacts.forEach((contact, index) => {
+                if (!contact.phone_type) {
+                    setErrMsg(`연락처 ${index + 1}의 전화 유형을 선택해주세요.`);
+                    hasError = true;
+                }
+            });
+
+            // 에러가 있는 경우 저장 로직 실행 중단
+            if (hasError) {
+                return; // 오류 메시지가 설정되었으므로 저장을 중단
+            }
+
+            // 프로필 데이터 가져오기
+            const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+            const profileData = profileRes.data || {};
+    
+            // 프로필에서 연락처, 주소, 날짜, 자기소개 할당
+            const currentContacts = profileData.phones || [];
+            const currentAddresses = profileData.addresses || [];
+            const currentDates = profileData.dates || [];
+            const currentIntroduction = introduction || profileData.introduction;
     
             // 연락처 및 일자에 대해 새로운 항목과 업데이트, 삭제 항목 처리
             const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
@@ -274,37 +438,48 @@ const Profile = () => {
                     const currentItem = currentItems.find(ci => ci._id === item._id);
                     return currentItem && Object.keys(item).some(field => item[field] !== currentItem[field]);
                 });
-                const deletedItemsRequests = deletedItems.map(id => axios.delete(`${apiUrl}/${id}`));
-    
+
+                console.log('newItems:', apiUrl, newItems); // 새로 추가된 연락처 확인
+                console.log('updatedItems:', apiUrl, updatedItems); // 수정된 연락처 확인
+                console.log('items:', items); // 수정된 연락처 확인
+            
+                // 삭제할 항목이 있을 경우에만 삭제 요청을 처리
+                const deletedItemsRequests = deletedItems.length > 0 
+                    ? deletedItems.map(id => axios.delete(`${apiUrl}/${id}`)) 
+                    : [];
+            
                 const newItemsPromises = newItems.map(item => axios.post(apiUrl, { member_id: memberId, ...item }));
                 const updateItemsPromises = updatedItems.map(item => axios.put(`${apiUrl}/${item._id}`, { ...item }));
-    
+            
                 return [...newItemsPromises, ...updateItemsPromises, ...deletedItemsRequests];
             };
+            
+
+            const userId = user.member_id;
     
-            // 연락처와 일자 처리
-            const contactPromises = processItems(contacts, currentContacts, API_URLS.PHONES, deletedContacts, user.member_id);
-            const addressPromises = processItems(addresses, currentAddresses, API_URLS.ADDRESSES, deletedAddresses, user.member_id);
-            const datePromises = processItems(dates, currentDates, API_URLS.DATES, deletedDates, user.member_id);
-    
+            // 연락처와 주소, 날짜 처리
+            const contactPromises = processItems(contacts, currentContacts, API_URLS.PHONES, deletedContacts, userId);
+            const addressPromises = processItems(addresses, currentAddresses, API_URLS.ADDRESSES, deletedAddresses, userId);
+            const datePromises = processItems(dates, currentDates, API_URLS.DATES, deletedDates, userId);
+
+
             // 아바타 정보 저장
-            const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${user.member_id}`, avatarConfig);
-            const avatarId = avatarResponse.data._id;
-    
-            // 프로필 업데이트 또는 생성
-            const profileResponse = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
-            const profileData = {
-                avatar_id: avatarId,
-                phones: contacts.map(c => c._id),
-                dates: dates.map(d => d._id),
-                addresses: addresses.map(d => d._id),
-            };
-    
-            if (profileResponse.data) {
-                await axios.put(`${API_URLS.PROFILES}/${profileResponse.data._id}`, profileData);
-            } else {
-                await axios.post(`${API_URLS.PROFILES}`, { member_id: user.member_id, ...profileData });
+            const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${userId}`, avatarConfig);
+            if (!avatarResponse || !avatarResponse.data) {
+                throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
             }
+            const avatarId = avatarResponse.data._id;
+
+            // 프로필 업데이트
+            const profileUpdateData = {
+                avatar_id: avatarId,
+                phones: contacts.length ? contacts.map(c => c._id).filter(id => id) : undefined,
+                dates: dates.length ? dates.map(d => d._id).filter(id => id) : undefined,
+                addresses: addresses.length ? addresses.map(a => a._id).filter(id => id) : undefined,
+                introduction: currentIntroduction || ''
+            };
+
+            console.log('profileUpdateData before sending:', profileUpdateData);
     
             // 병렬로 모든 요청 처리
             await Promise.all([
@@ -312,6 +487,13 @@ const Profile = () => {
                 ...addressPromises,
                 ...datePromises
             ]);
+
+            if (profileData._id) { // profileData의 _id가 존재할 경우 업데이트
+                console.log('profileData._id', profileData._id)
+                await axios.put(`${API_URLS.PROFILES}/${profileData._id}`, profileUpdateData);
+            } else {
+                await axios.post(`${API_URLS.PROFILES}`, { member_id: user.member_id, ...profileUpdateData });
+            }
     
             // 데이터 재호출
             await fetchProfileData();
@@ -338,8 +520,17 @@ const Profile = () => {
         [contacts]
     );
     
-    const personalPhoneNumber = personalContact ? personalContact.phone_number : '번호 없음';
+    const companyContact = useMemo(() => 
+        contacts.find(contact => contact.phone_type === 'company_phone'), 
+        [contacts]
+    );
     
+    // const personalPhoneNumber = personalContact ? personalContact.phone_number : '번호 없음';
+    // const companyPhoneNumber = companyContact ? companyContact.phone_number : '번호 없음';
+    // const companyExtension = companyContact && companyContact.extension ? `(${companyContact.extension})` : '';
+    
+    const birthdayDates = dates.filter(date => date.date_type === 'birthday');
+
     // 컴포넌트 내에서 사용 예시
     const { years, days } = calculateYearsSinceEntry(dates);
 
@@ -354,39 +545,55 @@ const Profile = () => {
             <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
 
                 <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
-                    <div className='absolute top-6 right-6 text-md text-slate-500'>
-                        {years >= 2 
+                    <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
+                        <LuActivity />
+                    {years >= 2 
                             ? `입사 ${years}년차` 
                             : (days > 0 && `입사 ${days}일차`)}
                     </div>
                     <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
                         <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
-                        {/* <Avatar className="w-full h-full rounded-none" style={{borderRadius: 'none'}} {...avatarConfig} /> */}
                     </div>
                     <div className='font-bold text-3xl'>
                         {user.name}
                     </div>
 
                     <div>
-                        <p className='text-slate-800'>
-                            {dates.filter(date => date.date_type === 'birthday').map(date => (
-                                <span key={date._id}>{formatDateToKorean(date.date)} 🎂</span>
-                            ))}
-                        </p>
                         <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
                             <span className='pl-2 pr-1'>{member?.team_id?.team_name}</span>
                             {member?.position === '팀장' ||  member?.position === '파트장' ? (
                                 member.position
                             ) : member.rank}
                         </p>
-                        <p className='text-slate-500'>What is good today, may be a cliche tomorrow.</p>
+                        <p className='text-slate-500'>{introduction || ''}</p>
+                        {/* What is good today, may be a cliche tomorrow. */}
                     </div>
-                    <div>
+                    <div className='flex flex-col space-y-1 font-normal text-md'>
+                        {birthdayDates.length > 0 && (
+                            <div className='flex items-center gap-x-2'>
+                                <LuCake /> {birthdayDates.map((date, index) => (
+                                    <span key={index}>
+                                        {formatDateToKorean(date.date, 'monthDay')}
+                                        {isTodayBirthday(date.date) && ' 🎂'}
+                                    </span>
+                                ))}
+                            </div>
+                        )} 
+
+                        {personalContact && personalContact.phone_number && (
+                            <div className='flex items-center gap-x-2'>
+                                <LuSmartphone /> {personalContact.phone_number}
+                            </div>
+                        )}
+
+                        {companyContact && companyContact.phone_number && (
+                            <div className='flex items-center gap-x-2'>
+                                <LuBuilding /> {companyContact.phone_number} {companyContact.extension ? `(${companyContact.extension})` : ''}
+                            </div>
+                        )}
+
                         <div className='flex items-center gap-x-2'>
-                            <LuSmartphone /> <p className='font-normal text-lg'>{personalPhoneNumber}</p>
-                        </div>
-                        <div className='flex items-center gap-x-2'>
-                            <AiOutlineMail /> <p className='font-normal text-lg'>{user.email}</p>
+                            <AiOutlineMail /> {user.email}
                         </div>
                     </div>
                     <div className='flex gap-x-3 mt-4'>
@@ -405,11 +612,9 @@ const Profile = () => {
                             contacts.map((contact, index) => (
                                 <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
                                     <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                        {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
                                         {renderContactIcon(contact.phone_type)}
                                         <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
                                     </div>
-                                    {/* 내선 번호가 있는 경우 함께 출력 */}
                                     <span>
                                         {contact.phone_number} {contact.extension && `(${contact.extension})`}
                                     </span>
@@ -440,28 +645,6 @@ const Profile = () => {
                         }
                     </ul>
                 </div>
-                {/* <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm'>
-                    <ul role="list" className="divide-y divide-gray-200">
-                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
-                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuBuilding /><span className='w-7 text-nowrap'>회사</span>
-                            </div>
-                            <span className=''>서울시 강남구 강남대로62길 23, 역삼빌딩 3층</span>
-                        </li>
-                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
-                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <LuHome /><span className='w-7 text-nowrap'>집</span>
-                            </div>
-                            <span className=''>서울시 동대문구 약령시로00길 00, 0동 000호(청량리동)</span>
-                        </li>
-                        <li className='flex items-center gap-x-4 py-3 sm:py-4'>
-                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                <RiSignpostLine /><span className='w-7 text-nowrap'>택배</span>
-                            </div>
-                            <span className=''>서울시 강남구 강남대로62길 3, 한진빌딩 5층</span>
-                        </li>
-                    </ul>
-                </div> */}
 
                 <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
@@ -473,7 +656,6 @@ const Profile = () => {
                             dates.map((date, index) => (
                                 <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
                                     <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                        {/* 연락처 타입에 맞는 아이콘과 라벨을 표시 */}
                                         {renderDateIcon(date.date_type)}
                                         <span className='w-10 text-nowrap'>{renderDateLabel(date.date_type)}</span>
                                     </div>
@@ -495,10 +677,43 @@ const Profile = () => {
             >
                 <div className={`overflow-y-auto ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6`}>
                     <div className="flex flex-col items-center mb-4">
-                        <AvatarComponent className="w-24 h-24" {...avatarConfig} />;
+                        <AvatarComponent className="w-24 h-24" {...avatarConfig} />
                     </div>
 
                     <div className='flex flex-col gap-y-10'>
+                        <div className="flex flex-col space-y-4 dark:text-slate-400">
+                            <div className='flex justify-between items-center'>
+                                <label className='font-semibold text-xl'>
+                                    자기소개
+                                </label>
+                            </div>
+                            <input
+                            type="text"
+                            value={introduction}
+                            onChange={handleIntroductionChange}
+                            className='w-full py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500'
+                            placeholder="자기소개를 입력하세요"
+                        />
+                        </div>
+                        {/* {introduction.length === 0 ? (
+                                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
+                                    <p className="font-semibold text-center">자기소개가 정보가 없습니다.</p>
+                                </div>
+                            ) : (
+                                <input
+                                    type="text"
+                                    value={introduction || ''}
+                                    onChange={handleIntroductionChange}
+                                    className="w-4/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
+                                    placeholder="자기소개 입력"
+                                    autoComplete='off'
+                                    required
+                                />
+                            )
+                        } */}
+                    </div>
+
+                    <div className='flex flex-col gap-y-10 mt-10'>
                         <div className="flex flex-col space-y-4 dark:text-slate-400">
                             <div className='flex justify-between items-center'>
                                 <label className='font-semibold text-xl'>
@@ -540,7 +755,7 @@ const Profile = () => {
                                             <input
                                                 type="text"
                                                 value={contact.extension || ''}
-                                                onChange={(e) => handleUpdateItem(index, 'extension', e.target.value)}
+                                                onChange={(e) => handleUpdateItem(setContacts, contacts, index, 'extension', e.target.value)}
                                                 className={`${contact.phone_type === 'company_phone' ? 'w-1/6' : 'hidden'} py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500 }`}
                                                 placeholder="내선(옵션)"
                                             />

@@ -7,13 +7,12 @@ input[type="date"] {
     appearance: none;
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
-    background-color: #fff;
+    background-color: #f1f5f9;
     color: #333;
 }
 
-/* 다크 모드 스타일 */
 .dark input[type="date"] {
     background-color: #344055;
     border: 1px solid #475569;

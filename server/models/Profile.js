@@ -6,6 +6,7 @@ const profileSchema = new mongoose.Schema({
     addresses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Address' }],
     member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true }, 
     avatar_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Avatar', default: null },
+    introduction: { type: String, default: '' }
 }, { timestamps: true });
 
 const Profile = mongoose.model('Profile', profileSchema);
