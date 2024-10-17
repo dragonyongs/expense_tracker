@@ -6,6 +6,7 @@ const InputField = forwardRef((props, ref) => {
         id, 
         value = '', 
         onChange, 
+        onClick,
         placeholder, 
         className = "bg-slate-100 border-0", 
         type = "text", 
@@ -27,6 +28,7 @@ const InputField = forwardRef((props, ref) => {
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
+                onClick={onClick} 
                 required={required}
                 disabled={disabled}
                 autoComplete="off"

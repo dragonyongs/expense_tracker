@@ -16,7 +16,9 @@ exports.createCard = async (req, res) => {
 // Get all cards
 exports.getAllCards = async (req, res) => {
     try {
-        const cards = await Card.find().populate('account_id').populate('member_id');
+        const cards = await Card.find()
+            .populate('account_id', 'account_number bank_name')
+            .populate('member_id', 'member_name rank position');
         res.json(cards);
     } catch (err) {
         res.status(400).json({ error: err.message });

@@ -70,7 +70,7 @@ exports.createTransaction = async (req, res) => {
             }
 
             // 잔액에서 지출 처리
-            let usedAmount = 0; // 실제 사용된 금액
+            let usedAmount = Number(0); // 실제 사용된 금액
 
             // expense_type에 따라 처리
             if (expense_type === 'TeamFund') {
@@ -107,7 +107,7 @@ exports.createTransaction = async (req, res) => {
                 transaction_date,
                 merchant_name: sanitizedMerchantName,
                 menu_name: sanitizedMenuName,
-                transaction_amount: usedAmount,
+                transaction_amount: Number(usedAmount),
                 transaction_type,
                 deposit_type,
                 expense_type
@@ -124,26 +124,26 @@ exports.createTransaction = async (req, res) => {
             });
 
         } else if (transaction_type === 'income') {
-            let depositAmount = 0;
+            let depositAmount = Number(0);
 
             // 입금 유형별 처리 로직
             if (deposit_type === 'RegularDeposit') {
                 // 매월 정기 입금 (기본 10만 원)
-                const maxLimit = 100000;
+                const maxLimit = card.limit || 100000;
                 depositAmount = Math.min(maxLimit - card.balance, transaction_amount);
-                card.balance += depositAmount;
+                card.balance += Number(depositAmount);
             } else if (deposit_type === 'AdditionalDeposit') {
                 // 추가 입금
                 depositAmount = transaction_amount;
-                card.balance += depositAmount;
+                card.balance += Number(depositAmount);
             } else if (deposit_type === 'TransportationExpense') {
                 // 여비 교통비 입금
                 depositAmount = transaction_amount;
-                card.balance += depositAmount;  // 여비 교통비는 추가 금액이므로 그대로 반영
+                card.balance += Number(depositAmount);  // 여비 교통비는 추가 금액이므로 그대로 반영
             } else if (deposit_type === 'TeamFund') {
                 // 팀 운영비 입금
                 depositAmount = transaction_amount;  // 팀 운영비는 별도 관리
-                card.team_fund += depositAmount;  // 팀 운영비 잔액 추가
+                card.team_fund += Number(depositAmount);  // 팀 운영비 잔액 추가
             }
 
             // 트랜잭션 기록 (입금 금액)

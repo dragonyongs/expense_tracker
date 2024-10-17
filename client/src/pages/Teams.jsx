@@ -31,7 +31,7 @@ function Teams() {
     };
 
     useEffect(() => {
-        fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}`);
+        fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${user.member_id}`);
         calculateRemainingDays(); // 날짜 계산 추가
     }, []);
 

@@ -13,7 +13,7 @@ router.get('/', authMiddleware, accountController.getAllAccounts);
 router.get('/accountsWithCards', authMiddleware, accountController.getAccountsAndCards);
 
 // Get an Member Accounts with cards
-router.get('/memberAccountsWithCards', authMiddleware, accountController.getMemberAccountsAndCards);
+router.get('/memberAccountsWithCards/:id', authMiddleware, accountController.getMemberAccountsAndCards);
 
 // Get an account by ID
 router.get('/:id', authMiddleware, accountController.getAccountById);

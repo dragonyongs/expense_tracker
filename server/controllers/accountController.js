@@ -15,7 +15,8 @@ exports.createAccount = async (req, res) => {
 // Get all accounts
 exports.getAllAccounts = async (req, res) => {
     try {
-        const accounts = await Account.find().populate('team_id');
+        const accounts = await Account.find()
+            .populate('team_id', 'team_name department_id');
         res.json(accounts);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -92,7 +93,12 @@ exports.getAccountsAndCards = async (req, res) => {
 exports.getMemberAccountsAndCards = async (req, res) => {
     try {
         // const userId = req.user.member_id; // 로그인한 사용자의 ID
-        const userTeamId = req.user.team_id; // 사용자의 팀 ID
+        const memberId = req.params.id;
+
+        const memberCard = await Card.findOne({member_id: memberId})
+            .populate('member_id', 'team_id')
+
+        const userTeamId = memberCard.member_id.team_id; // 사용자의 팀 ID
 
         // 로그인 사용자의 팀 ID와 일치하는 계좌를 가져옴
         const accounts = await Account.find({ team_id: userTeamId })
@@ -101,8 +107,6 @@ exports.getMemberAccountsAndCards = async (req, res) => {
                 select: 'team_name'
             })
             .lean();
-
-            // console.log('accounts', accounts);
 
         // 각 계좌에 연결된 카드 정보 가져오기 (사용자 본인의 카드 포함)
         const accountData = await Promise.all(accounts.map(async (account) => {

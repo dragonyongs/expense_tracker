@@ -39,7 +39,6 @@ const Transactions = () => {
     const [userCards, setUserCards] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
-
     useEffect(() => {
         if (expenceTypeRef.current) {
             expenceMerchantRef.current.focus(); 
@@ -514,7 +513,7 @@ const Transactions = () => {
                             id="transaction_date" 
                             type='date'
                             value={selectedTransaction?.transaction_date.split("T")[0] || ""}
-                            className={"flex-1 bg-white border border-slate-200"}
+                            className={"bg-white border border-slate-200"}
                             onChange={(e) => setSelectedTransaction({ ...selectedTransaction, transaction_date: e.target.value })}
                             placeholder=""
                             disabled={!expenceType}

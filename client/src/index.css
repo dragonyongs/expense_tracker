@@ -2,10 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-    input[type="date"] {
-        @apply px-4 py-2 border rounded;
-    }
+input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #333;
+}
+
+/* 다크 모드 스타일 */
+.dark input[type="date"] {
+    background-color: #344055;
+    border: 1px solid #475569;
+    color: #e2e8f0;
 }
 
 .instructions {

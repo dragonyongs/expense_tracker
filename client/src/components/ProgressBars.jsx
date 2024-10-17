@@ -4,7 +4,6 @@ function ProgressBars({ spentPercentage, isWarning }) {
     const [progressWidth, setProgressWidth] = useState(0);
 
     useEffect(() => {
-        // spentPercentage가 계산되었을 때 애니메이션 적용
         const timer = setTimeout(() => {
             setProgressWidth(spentPercentage);
         }, 100);
@@ -12,7 +11,6 @@ function ProgressBars({ spentPercentage, isWarning }) {
         return () => clearTimeout(timer);
     }, [spentPercentage]);
 
-    // 빨간색 조건이 충족되면 빨간색, 그 외에는 기존의 로직을 따름
     const progressBarColor = isWarning 
         ? 'bg-red-500'
         : spentPercentage === 100 
