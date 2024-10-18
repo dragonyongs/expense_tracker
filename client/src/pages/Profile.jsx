@@ -1,13 +1,5 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react'
+import React, { useState, useEffect, useContext, useMemo, useRef } from 'react'
 import { AuthContext } from '../context/AuthProvider';
-import { ThreeDots } from 'react-loader-spinner';
-import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash, LuCake, LuActivity } from "react-icons/lu";
-import { AiOutlineMail } from "react-icons/ai";
-import { CiDeliveryTruck } from "react-icons/ci";
-
-import { LiaFaxSolid } from "react-icons/lia";
-import { TbUserEdit } from "react-icons/tb";
-// import { RiSignpostLine } from "react-icons/ri";
 import ProfileDrawer from '../components/ProfileDrawer';
 import axios from "../services/axiosInstance"; 
 import { AvatarContext } from '../context/AvatarContext';
@@ -15,6 +7,13 @@ import AvatarComponent from '../components/AvatarComponent';
 import AvatarPreview from '../components/AvatarPreview';
 import { useMobile } from '../context/MobileContext';
 import { API_URLS } from '../services/apiUrls';
+
+import { ThreeDots } from 'react-loader-spinner';
+import { LuBuilding, LuSmartphone, LuHome, LuCalendarDays, LuTrash, LuCake, LuActivity } from "react-icons/lu";
+import { AiOutlineMail } from "react-icons/ai";
+import { CiDeliveryTruck } from "react-icons/ci";
+import { LiaFaxSolid } from "react-icons/lia";
+import { TbUserEdit } from "react-icons/tb";
 
 const renderContactIcon = (type) => {
     switch (type) {
@@ -156,6 +155,7 @@ const calculateYearsSinceEntry = (dates) => {
 };
 
 const Profile = () => {
+
     const isMobile = useMobile();
     const { avatarConfig } = useContext(AvatarContext);
     const { user } = useContext(AuthContext);
@@ -172,7 +172,7 @@ const Profile = () => {
 
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const [errMsg, setErrMsg] = useState('');
-
+    
     const loadDaumPostcodeScript = () => {
         return new Promise((resolve) => {
             const script = document.createElement('script');
@@ -183,34 +183,6 @@ const Profile = () => {
         });
     };
 
-    // const fetchProfileData = async () => {
-    //     try {
-    //         console.log('fetchProfileData', `${API_URLS.PROFILES}/${user.member_id}`)
-    //         const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
-    //         console.log('Fetched Profile Data:', profileRes.data); // 응답 데이터 출력
-    
-    //         if (!profileRes || !profileRes.data) {
-    //             throw new Error('프로필 데이터를 가져오지 못했습니다.');
-    //         }
-    
-    //         const profileData = profileRes.data || {};
-            
-    //         setContacts(profileData.phones || []);
-    //         setAddresses(profileData.addresses || []);
-    //         setDates(profileData.dates || []);
-    //         setMember(profileData.member_id || {});
-    //         setIntroduction(profileData.introduction || '');
-    
-    //         // 상태가 올바르게 업데이트되었는지 확인
-    //         console.log('Contacts:', profileData.phones);
-    //         console.log('Addresses:', profileData.addresses);
-    //         console.log('Dates:', profileData.dates);
-    //         console.log('Member:', profileData.member_id);
-    //     } catch (error) {
-    //         console.error('데이터 불러오기 실패:', error);
-    //     }
-    // };
-    
     // 데이터를 한 번에 가져오는 함수
     const fetchProfileData = async () => {
         try {
@@ -231,29 +203,6 @@ const Profile = () => {
         }
     };
 
-    {/*
-        const fetchProfileData = async () => {
-            try {
-                const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
-                
-                console.log('Fetched Profile Data:', profileRes); // 응답 데이터 출력
-        
-                if (!profileRes || !profileRes.data) {
-                    throw new Error('프로필 데이터를 가져오지 못했습니다.');
-                }
-        
-                const profileData = profileRes.data || {};
-                
-                setContacts(profileData.phones || []);
-                setAddresses(profileData.addresses || []);
-                setDates(profileData.dates || []);
-                setMember(profileData.member_id || {});
-                setIntroduction(profileData.introduction || '');
-            } catch (error) {
-                console.error('데이터 불러오기 실패:', error);
-            }
-        };
-    */}
     useEffect(() => {
         fetchProfileData();
 
@@ -261,12 +210,6 @@ const Profile = () => {
             setIsScriptLoaded(true);  // 스크립트가 성공적으로 로드되면 상태를 업데이트
         });
     }, []);
-
-    // useEffect(() => {
-    //     if (isOpen && contacts.length === 0 && addresses.length === 0 && dates.length === 0) {
-    //         fetchProfileData();
-    //     }
-    // }, [isOpen, contacts.length, addresses.length, dates.length]);
 
     // 공통적으로 추가 및 업데이트 처리를 위한 함수
     const handleAddItem = (setFunction, newItem) => {
@@ -329,79 +272,6 @@ const Profile = () => {
             }
         }).open();
     };
-    
-    // 연락처 및 일자 저장 로직
-    // const handleSave = async () => {
-    //     setLoading(true);
-    //     try {
-    //         // 데이터 가져오기
-    //         const [contactsResponse, addressesResponse, datesResponse] = await Promise.all([
-    //             axios.get(`${API_URLS.PHONES}/${user.member_id}`),
-    //             axios.get(`${API_URLS.ADDRESSES}/${user.member_id}`),
-    //             axios.get(`${API_URLS.DATES}/${user.member_id}`)
-    //         ]);
-    
-    //         const currentContacts = Array.isArray(contactsResponse.data) ? contactsResponse.data : [];
-    //         const currentAddresses = Array.isArray(addressesResponse.data) ? addressesResponse.data : [];
-    //         const currentDates = Array.isArray(datesResponse.data) ? datesResponse.data : [];
-    
-    //         // 연락처 및 일자에 대해 새로운 항목과 업데이트, 삭제 항목 처리
-    //         const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
-    //             const newItems = items.filter(item => !item._id);
-    //             const updatedItems = items.filter(item => item._id).filter(item => {
-    //                 const currentItem = currentItems.find(ci => ci._id === item._id);
-    //                 return currentItem && Object.keys(item).some(field => item[field] !== currentItem[field]);
-    //             });
-    //             const deletedItemsRequests = deletedItems.map(id => axios.delete(`${apiUrl}/${id}`));
-    
-    //             const newItemsPromises = newItems.map(item => axios.post(apiUrl, { member_id: memberId, ...item }));
-    //             const updateItemsPromises = updatedItems.map(item => axios.put(`${apiUrl}/${item._id}`, { ...item }));
-    
-    //             return [...newItemsPromises, ...updateItemsPromises, ...deletedItemsRequests];
-    //         };
-    
-    //         // 연락처와 일자 처리
-    //         const contactPromises = processItems(contacts, currentContacts, API_URLS.PHONES, deletedContacts, user.member_id);
-    //         const addressPromises = processItems(addresses, currentAddresses, API_URLS.ADDRESSES, deletedAddresses, user.member_id);
-    //         const datePromises = processItems(dates, currentDates, API_URLS.DATES, deletedDates, user.member_id);
-    
-    //         // 아바타 정보 저장
-    //         const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${user.member_id}`, avatarConfig);
-    //         const avatarId = avatarResponse.data._id;
-    
-    //         // 프로필 업데이트 또는 생성
-    //         const profileResponse = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
-    //         const profileData = {
-    //             avatar_id: avatarId,
-    //             phones: contacts.map(c => c._id),
-    //             dates: dates.map(d => d._id),
-    //             addresses: addresses.map(d => d._id),
-    //             introduction
-    //         };
-    
-    //         if (profileResponse.data) {
-    //             await axios.put(`${API_URLS.PROFILES}/${profileResponse.data._id}`, profileData);
-    //         } else {
-    //             await axios.post(`${API_URLS.PROFILES}`, { member_id: user.member_id, ...profileData });
-    //         }
-    
-    //         // 병렬로 모든 요청 처리
-    //         await Promise.all([
-    //             ...contactPromises,
-    //             ...addressPromises,
-    //             ...datePromises
-    //         ]);
-    
-    //         // 데이터 재호출
-    //         await fetchProfileData();
-    
-    //     } catch (error) {
-    //         console.error('데이터 저장 오류:', error);
-    //     } finally {
-    //         setLoading(false);
-    //         setIsOpen(false);
-    //     }
-    // };
 
     const handleSave = async () => {
         let hasError = false;
@@ -444,7 +314,7 @@ const Profile = () => {
             const currentContacts = profileData.phones || [];
             const currentAddresses = profileData.addresses || [];
             const currentDates = profileData.dates || [];
-            const currentIntroduction = introduction || profileData.introduction;
+            // const currentIntroduction = introduction || profileData.introduction;
     
             // 연락처 및 일자에 대해 새로운 항목과 업데이트, 삭제 항목 처리
             const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
@@ -473,15 +343,6 @@ const Profile = () => {
             const contactPromises = processItems(contacts, currentContacts, API_URLS.PHONES, deletedContacts, userId);
             const addressPromises = processItems(addresses, currentAddresses, API_URLS.ADDRESSES, deletedAddresses, userId);
             const datePromises = processItems(dates, currentDates, API_URLS.DATES, deletedDates, userId);
-
-            // 프로필 업데이트
-            // const profileUpdateData = {
-            //     avatar_id: avatarId,
-            //     phones: contacts.length ? contacts.map(c => c._id).filter(id => id) : undefined,
-            //     dates: dates.length ? dates.map(d => d._id).filter(id => id) : undefined,
-            //     addresses: addresses.length ? addresses.map(a => a._id).filter(id => id) : undefined,
-            //     introduction: currentIntroduction || ''
-            // };
 
             const profileUpdateData = {
                 phones: contacts.length ? contacts.map(c => c._id).filter(id => id) : undefined,
@@ -539,10 +400,6 @@ const Profile = () => {
         [contacts]
     );
     
-    // const personalPhoneNumber = personalContact ? personalContact.phone_number : '번호 없음';
-    // const companyPhoneNumber = companyContact ? companyContact.phone_number : '번호 없음';
-    // const companyExtension = companyContact && companyContact.extension ? `(${companyContact.extension})` : '';
-    
     const birthdayDates = dates.filter(date => date.date_type === 'birthday');
 
     // 컴포넌트 내에서 사용 예시
@@ -554,13 +411,13 @@ const Profile = () => {
                 <div className='text-2xl' >
                     <span className='font-semibold'>프로필</span>
                 </div>
-                <button className='flex justify-center p-3 dark:text-slate-300 rounded-md active:bg-gray-100 active:text-gray-400 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit className='w-6 h-6'/></button>
+                {/* <button className='flex justify-center p-3 dark:text-slate-300 rounded-md active:bg-gray-100 active:text-gray-400 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit className='w-6 h-6'/></button> */}
             </header>
             <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
 
                 <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
                     <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
-                        <LuActivity />
+                    {days > 0 && <LuActivity /> }
                     {years >= 2 
                             ? `입사 ${years}년차` 
                             : (days > 0 && `입사 ${days}일차`)}
@@ -580,7 +437,6 @@ const Profile = () => {
                             ) : member.rank}
                         </p>
                         <p className='text-slate-500'>{introduction || ''}</p>
-                        {/* What is good today, may be a cliche tomorrow. */}
                     </div>
                     <div className='flex flex-col space-y-1 font-normal text-md'>
                         {birthdayDates.length > 0 && (
@@ -611,8 +467,8 @@ const Profile = () => {
                         </div>
                     </div>
                     <div className='flex gap-x-3 mt-4'>
-                        <button className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100' disabled>이미지 저장</button>
                         <button className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100' disabled>QR 연락처</button>
+                        <button className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:text-slate-300 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit />프로필 수정</button>
                     </div>
                 </div>
 
@@ -709,22 +565,6 @@ const Profile = () => {
                             placeholder="자기소개를 입력하세요"
                         />
                         </div>
-                        {/* {introduction.length === 0 ? (
-                                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
-                                    <p className="font-semibold text-center">자기소개가 정보가 없습니다.</p>
-                                </div>
-                            ) : (
-                                <input
-                                    type="text"
-                                    value={introduction || ''}
-                                    onChange={handleIntroductionChange}
-                                    className="w-4/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                                    placeholder="자기소개 입력"
-                                    autoComplete='off'
-                                    required
-                                />
-                            )
-                        } */}
                     </div>
 
                     <div className='flex flex-col gap-y-10 mt-10'>

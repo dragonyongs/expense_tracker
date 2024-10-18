@@ -574,9 +574,6 @@ exports.updateTransaction = async (req, res) => {
                 }
             }
 
-            // 1. 금액 0 원으로 수정 복구 금액이 팀펀드가 이나라 
-        
-            // (3) 차감된 금액 기록 업데이트
             transaction.teamFundDeducted = newTeamFundDeducted; // 팀펀드 차감 금액 업데이트
             transaction.rolloverAmounted = newRolloverAmounted; // 이월 금액 업데이트
         }
