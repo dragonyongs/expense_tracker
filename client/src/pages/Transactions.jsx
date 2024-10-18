@@ -11,7 +11,7 @@ import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 
 const calculateAvailableBalance = (card) => {
-    return Number(card.balance) + Number(card.rollover_amount);
+    return Number(card.balance) + Number(card.rollover_amount) + Number(card.team_fund);
 };
 
 const Transactions = () => {
@@ -33,7 +33,11 @@ const Transactions = () => {
         menu_name: "",
         transaction_amount: "",
         transaction_type: "",
+        expense_type: "",
+        rolloverAmounted: "",
+        teamFundDeducted: "",        
     });
+    const [prevTransaction, setPrevTransaction] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
@@ -77,6 +81,16 @@ const Transactions = () => {
         }
     };
 
+    // const fetchSelectedTransaction = async () => {
+    //     try {
+    //         const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+    //         const prevTransaction = response.data;
+    //         setPrevTransaction(prevTransaction);
+    //     } catch (error) {
+    //         console.error('Error fetching transactions for the current month:', error);
+    //     }
+    // }
+
     useEffect(() => {
         fetchTransactionsForCurrentMonth();
         fetchCards();
@@ -116,6 +130,9 @@ const Transactions = () => {
     
 
     const handleOpenDrawer = (transaction) => {
+
+        setPrevTransaction(transaction);
+
         setSelectedTransaction({
             ...transaction,
             card_id: transaction.card_id._id ? transaction.card_id : transaction.card_id // 카드 ID가 객체인 경우 문자열로 변환
@@ -166,33 +183,63 @@ const Transactions = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
-    
+
             const cardId = selectedTransaction.card_id._id || userCards[0]._id;
             const transactionData = {
                 card_id: cardId,
                 transaction_date: selectedTransaction.transaction_date,
                 merchant_name: selectedTransaction.merchant_name,
                 menu_name: selectedTransaction.menu_name,
-                transaction_amount: selectedTransaction.transaction_amount,
+                transaction_amount: Number(selectedTransaction.transaction_amount), // 숫자로 변환
                 transaction_type: "expense",
                 expense_type: expenceType,
             };
-
-            if (selectedTransaction.transaction_type === "income") {
-                transactionData.deposit_type = selectedTransaction.deposit_type || "AdditionalDeposit";
-            }
     
-            const card = cards.find(card => card._id === cardId);
+            // 카드 정보 가져오기
+            const cardResponse = await axios.get(`${API_URLS.CARDS}/${cardId}`);
+            const card = cardResponse.data; // API를 통해 카드 정보 가져오기
             if (!card) {
                 throw new Error("해당 카드를 찾을 수 없습니다.");
+            }
+    
+            if (selectedTransaction.transaction_type === "income") {
+                transactionData.deposit_type = selectedTransaction.deposit_type || "AdditionalDeposit";
             }
     
             // **신규 등록일 때만 잔액 부족 여부 확인**
             if (!isEditing) {
                 const availableBalance = calculateAvailableBalance(card);
-                if (Number(selectedTransaction.transaction_amount) > availableBalance) {
+                if (Number(transactionData.transaction_amount) > availableBalance) {
                     throw new Error(`잔액 부족: 사용 가능한 금액은 ${availableBalance.toLocaleString()}원 입니다.`);
                 }
+            }
+    
+            // 변경 여부 확인 (각 필드가 수정되었는지 확인)
+            const originalAmount = Number(prevTransaction.transaction_amount); // 원래 금액
+            const currentAmount = Number(transactionData.transaction_amount); // 현재 입력된 금액
+    
+            const isAmountChanged = currentAmount !== originalAmount;
+            const isMerchantChanged = transactionData.merchant_name !== prevTransaction.merchant_name;
+            const isMenuChanged = transactionData.menu_name !== prevTransaction.menu_name;
+            const isDateChanged = transactionData.transaction_date !== prevTransaction.transaction_date;
+            const isExpenseTypeChanged = transactionData.expense_type !== prevTransaction.expense_type;
+    
+            console.log('변경 여부 확인:', {
+                transaction_amount: currentAmount,
+                selectedTransaction_amount: originalAmount,
+                isAmountChanged,
+                isMerchantChanged,
+                isMenuChanged,
+                isDateChanged,
+                isExpenseTypeChanged
+            });
+    
+            const isTransactionChanged = isAmountChanged || isMerchantChanged || isMenuChanged || isDateChanged || isExpenseTypeChanged;
+    
+            if (!isTransactionChanged) {
+                console.log("변경된 내용이 없습니다. 저장 요청을 중단합니다.");
+                handleCloseDrawer(); // 변경 사항이 없으면 드로어만 닫음
+                return;
             }
     
             // 트랜잭션 저장
@@ -202,19 +249,19 @@ const Transactions = () => {
             } else {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
-
+    
             await fetchTransactionsForCurrentMonth();
             await fetchCards();
-
-             // 에러가 발생하지 않으면 드로어 닫기
+    
+            // 에러가 발생하지 않으면 드로어 닫기
             handleCloseDrawer();
-
+    
         } catch (error) {
             const errorMsg = handleError(error); // 오류 메시지 문자열로 변환
             console.log('errorMsg', errorMsg);
             setErrMsg(errorMsg); // 문자열로 상태 업데이트
         }
-    }
+    };
 
     const handleDeleteConfirm = () => {
         setIsDeleteConfirmOpen(true);
@@ -224,60 +271,73 @@ const Transactions = () => {
         setIsDeleteConfirmOpen(false);
     };
 
+    // const handleDelete = async () => {
+    //     try {
+    //         // 선택된 거래 내역의 정보 조회
+    //         const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+    //         const transactionData = response.data;
+    //         const transactionDate = new Date(transactionData.transaction_date); // 거래된 날짜
+    //         const transactionAmount = parseFloat(transactionData.transaction_amount);
+    
+    //         // 해당 거래 내역의 카드 정보 조회
+    //         const cardResponse = await axios.get(`${API_URLS.CARDS}/${transactionData.card_id}`);
+    //         const cardData = cardResponse.data;
+    //         let updatedBalance = parseFloat(cardData.balance);
+    //         let rolloverAmount = parseFloat(cardData.rollover_amount);
+    
+    //         // 해당 거래 이후의 거래 내역이 있는지 확인
+    //         const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${transactionData.card_id}`);
+    //         const transactions = transactionsResponse.data;
+    
+    //         // 거래 이후에 발생한 거래가 있는지 확인
+    //         const hasPostTransactionTransactions = transactions.some(transaction => {
+    //             const txnDate = new Date(transaction.transaction_date);
+    //             return txnDate > transactionDate && transaction.transaction_type === 'expense';
+    //         });
+    
+    //         if (hasPostTransactionTransactions) {
+    //             // 거래 이후에 발생한 거래가 있으면 삭제 방지
+    //             setErrMsg("이 거래 이후에 사용된 내역이 있어 삭제할 수 없습니다.");
+    //             console.warn('거래 이후 사용 내역이 있어 삭제가 불가능합니다.');
+    //             return;
+    //         }
+    
+    //         // 거래 내역의 금액을 차감하여 balance 업데이트
+    //         if (transactionData.deposit_type === 'TeamFund') {
+    //             // 팀 운영비인 경우
+    //             updatedBalance = Math.max(updatedBalance, 0); // 카드 잔액은 음수가 될 수 없음
+    //         } else {
+    //             // 일반 지출의 경우
+    //             if (updatedBalance + rolloverAmount < transactionAmount) {
+    //                 const remainingAmountToDeduct = transactionAmount - (updatedBalance + rolloverAmount);
+    //                 updatedBalance = Math.max(updatedBalance - remainingAmountToDeduct, 0);
+    //                 rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
+    //             } else {
+    //                 // 일반 카드에서 지출할 경우
+    //                 updatedBalance += transactionAmount; // 삭제로 인해 잔액 복구
+    //             }
+    //         }
+    
+    //         // 거래 내역 삭제
+    //         await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+    //         console.log('거래 내역 삭제 완료');
+    
+    //         // 거래 내역 갱신
+    //         fetchTransactionsForCurrentMonth();
+    //         fetchCards();
+    
+    //         // 삭제 확인 모달 닫기
+    //         setIsDeleteConfirmOpen(false);
+    //         handleCloseDrawer();
+    //     } catch (error) {
+    //         setErrMsg("삭제 중 오류가 발생했습니다.");
+    //         console.error('삭제 중 오류:', error);
+    //     }
+    // };
+
     const handleDelete = async () => {
         try {
-            // 선택된 거래 내역의 정보 조회
-            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
-            const transactionData = response.data;
-            const transactionDate = new Date(transactionData.transaction_date); // 거래된 날짜
-            const transactionAmount = parseFloat(transactionData.transaction_amount);
-    
-            // 해당 거래 내역의 카드 정보 조회
-            const cardResponse = await axios.get(`${API_URLS.CARDS}/${transactionData.card_id}`);
-            const cardData = cardResponse.data;
-            let updatedBalance = parseFloat(cardData.balance);
-            let rolloverAmount = parseFloat(cardData.rollover_amount);
-    
-            // 해당 거래 이후의 거래 내역이 있는지 확인
-            const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${transactionData.card_id}`);
-            const transactions = transactionsResponse.data;
-    
-            // 거래 이후에 발생한 거래가 있는지 확인
-            const hasPostTransactionTransactions = transactions.some(transaction => {
-                const txnDate = new Date(transaction.transaction_date);
-                return txnDate > transactionDate && transaction.transaction_type === 'expense';
-            });
-    
-            if (hasPostTransactionTransactions) {
-                // 거래 이후에 발생한 거래가 있으면 삭제 방지
-                setErrMsg("이 거래 이후에 사용된 내역이 있어 삭제할 수 없습니다.");
-                console.warn('거래 이후 사용 내역이 있어 삭제가 불가능합니다.');
-                return;
-            }
-    
-            // 거래 내역의 금액을 차감하여 balance 업데이트
-            if (transactionData.deposit_type === 'TeamFund') {
-                // 팀 운영비인 경우
-                updatedBalance = Math.max(updatedBalance, 0); // 카드 잔액은 음수가 될 수 없음
-            } else {
-                // 일반 지출의 경우
-                if (updatedBalance + rolloverAmount < transactionAmount) {
-                    const remainingAmountToDeduct = transactionAmount - (updatedBalance + rolloverAmount);
-                    updatedBalance = Math.max(updatedBalance - remainingAmountToDeduct, 0);
-                    rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
-                } else {
-                    // 일반 카드에서 지출할 경우
-                    updatedBalance += transactionAmount; // 삭제로 인해 잔액 복구
-                }
-            }
-    
-            // 카드의 balance와 rollover_amount 업데이트
-            // await axios.put(`${API_URLS.CARDS}/${transactionData.card_id}`, {
-            //     balance: updatedBalance,
-            //     rollover_amount: rolloverAmount,
-            // });
-    
-            // 거래 내역 삭제
+            // 서버에 트랜잭션 삭제 요청
             await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
             console.log('거래 내역 삭제 완료');
     

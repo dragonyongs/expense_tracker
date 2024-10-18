@@ -14,7 +14,9 @@ const transactionSchema = new mongoose.Schema({
             return this.transaction_type === 'income'; // deposit일 경우에만 필수
         }
     },
-    expense_type: { type: String, enum: ['RegularExpense', 'TeamCard', 'TeamFund'] }
+    expense_type: { type: String, enum: ['RegularExpense', 'TeamCard', 'TeamFund'] },
+    rolloverAmounted: { type: Number, default:0 },
+    teamFundDeducted: { type: Number, default: 0 }, // 추가된 부분
 }, { timestamps: true });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
