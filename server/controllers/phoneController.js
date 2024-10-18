@@ -6,7 +6,6 @@ exports.createPhone = async (req, res) => {
     try {
         const { member_id, phone_type, phone_number, extension } = req.body;
 
-        // 1. 새 연락처 생성
         const newPhone = new Phone({
             member_id,
             phone_type,
@@ -14,35 +13,17 @@ exports.createPhone = async (req, res) => {
             extension
         });
 
-        // 2. 연락처 저장
         const savedPhone = await newPhone.save();
         console.log('savedPhone:', savedPhone); // 저장된 연락처 확인
 
-        // 3. 프로필 조회
         let profile = await Profile.findOne({ member_id });
 
-        // 4. 프로필이 없는 경우 새로운 프로필 생성
-        if (!profile) {
-            profile = new Profile({
-                member_id,
-                phones: [] // 초기에는 빈 배열
-            });
-        }
-
-        // 5. 연락처 ID가 이미 존재하지 않는 경우에만 추가
         if (!profile.phones.some(phoneId => phoneId.toString() === savedPhone._id.toString())) {
             profile.phones.push(savedPhone._id);
         }
 
-        // 6. 프로필 저장
         await profile.save();
-        console.log('Profile saved:', profile);
 
-        // 7. 프로필 저장 후 다시 한 번 확인 (populate 사용)
-        const updatedProfile = await Profile.findOne({ member_id }).populate('phones');
-        console.log('Updated profile with populated phones:', updatedProfile);
-
-        // 8. 생성된 연락처 반환
         res.status(201).json(savedPhone);
     } catch (error) {
         console.error('Error creating phone:', error);

@@ -61,12 +61,11 @@ exports.getProfiles = async (req, res) => {
 };
 
 exports.getProfileById = async (req, res) => {
-    const memberId = req.params.member_id;
-    console.log('memberID----', memberId);
+    const member_id = req.params.member_id;
 
     try {
         // 프로필 조회
-        let profile = await Profile.findOne({ member_id: memberId })
+        let profile = await Profile.findOne({ member_id: member_id })
             .populate('phones', 'phone_type phone_number extension')
             .populate('avatar_id')
             .populate({
@@ -80,33 +79,9 @@ exports.getProfileById = async (req, res) => {
             .populate('addresses', 'address_type address_name address_line1 address_line2 postal_code')
             .populate('dates', 'date_type date');
 
-        // 프로필이 존재하지 않는 경우 새로운 프로필 생성
-        if (!profile) {
-            const profileData = {
-                member_id: memberID,
-                avatar_id: null, // 기본값 설정
-                introduction: '',
-                phones: [],
-                dates: [],
-                addresses: []
-            };
-
-            // 새로운 프로필 생성
-            profile = new Profile(profileData);
-            await profile.save();
-
-            // 생성된 프로필의 _id를 멤버 컬렉션에 업데이트
-            await Member.findByIdAndUpdate(
-                memberID,
-                { profile_id: profile._id }, // profile_id 필드에 프로필 ID 저장
-                { new: true } // 업데이트된 문서를 반환
-            );
-
-            return res.status(201).json(profile); // 새로 생성된 프로필 반환
-        }
-
         res.status(200).json(profile); // 기존 프로필 반환
     } catch (error) {
+        console.error('Error fetching profile:', error);
         res.status(500).json({ message: error.message });
     }
 };

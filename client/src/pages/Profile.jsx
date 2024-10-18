@@ -169,6 +169,7 @@ const Profile = () => {
     const [deletedDates, setDeletedDates] = useState([]);
     const [addresses, setAddresses] = useState([]);
     const [deletedAddresses, setDeletedAddresses] = useState([]);
+
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const [errMsg, setErrMsg] = useState('');
 
@@ -211,7 +212,7 @@ const Profile = () => {
     // };
     
     // 데이터를 한 번에 가져오는 함수
-     const fetchProfileData = async () => {
+    const fetchProfileData = async () => {
         try {
             const [contactsRes, addressesRes, datesRes, memberRes, profileRes] = await Promise.all([
                 axios.get(`${API_URLS.PHONES}/${user.member_id}`),
@@ -229,28 +230,29 @@ const Profile = () => {
             console.error('데이터 불러오기 실패:', error);
         }
     };
-{/*
-     const fetchProfileData = async () => {
-         try {
-             const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
-            
-             console.log('Fetched Profile Data:', profileRes); // 응답 데이터 출력
-    
-             if (!profileRes || !profileRes.data) {
-                 throw new Error('프로필 데이터를 가져오지 못했습니다.');
-             }
-    
-             const profileData = profileRes.data || {};
-            
-             setContacts(profileData.phones || []);
-             setAddresses(profileData.addresses || []);
-             setDates(profileData.dates || []);
-             setMember(profileData.member_id || {});
-             setIntroduction(profileData.introduction || '');
-         } catch (error) {
-             console.error('데이터 불러오기 실패:', error);
-         }
-    };
+
+    {/*
+        const fetchProfileData = async () => {
+            try {
+                const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
+                
+                console.log('Fetched Profile Data:', profileRes); // 응답 데이터 출력
+        
+                if (!profileRes || !profileRes.data) {
+                    throw new Error('프로필 데이터를 가져오지 못했습니다.');
+                }
+        
+                const profileData = profileRes.data || {};
+                
+                setContacts(profileData.phones || []);
+                setAddresses(profileData.addresses || []);
+                setDates(profileData.dates || []);
+                setMember(profileData.member_id || {});
+                setIntroduction(profileData.introduction || '');
+            } catch (error) {
+                console.error('데이터 불러오기 실패:', error);
+            }
+        };
     */}
     useEffect(() => {
         fetchProfileData();
@@ -260,11 +262,11 @@ const Profile = () => {
         });
     }, []);
 
-    useEffect(() => {
-        if (isOpen && contacts.length === 0 && addresses.length === 0 && dates.length === 0) {
-            fetchProfileData();
-        }
-    }, [isOpen, contacts.length, addresses.length, dates.length]);
+    // useEffect(() => {
+    //     if (isOpen && contacts.length === 0 && addresses.length === 0 && dates.length === 0) {
+    //         fetchProfileData();
+    //     }
+    // }, [isOpen, contacts.length, addresses.length, dates.length]);
 
     // 공통적으로 추가 및 업데이트 처리를 위한 함수
     const handleAddItem = (setFunction, newItem) => {
@@ -407,6 +409,8 @@ const Profile = () => {
         setErrMsg(''); // 이전 오류 메시지 초기화
         
         try {
+            const userId = user.member_id;
+
             // 연락처의 전화 유형 검증
             contacts.forEach((contact, index) => {
                 if (!contact.phone_type) {
@@ -423,6 +427,18 @@ const Profile = () => {
             // 프로필 데이터 가져오기
             const profileRes = await axios.get(`${API_URLS.PROFILES}/${user.member_id}`);
             const profileData = profileRes.data || {};
+            
+            // 아바타 정보 저장
+            let avatarId = profileData.avatar_id; // 기존에 avatar_id가 있을 경우 초기화
+
+            // 아바타 설정이 변경되었을 때만 아바타를 저장
+            if (Object.keys(avatarConfig).length > 0) {
+                const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${userId}`, avatarConfig);
+                if (!avatarResponse || !avatarResponse.data) {
+                    throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
+                }
+                avatarId = avatarResponse.data._id; // 새로 저장된 아바타의 ID 저장
+            }
     
             // 프로필에서 연락처, 주소, 날짜, 자기소개 할당
             const currentContacts = profileData.phones || [];
@@ -453,33 +469,39 @@ const Profile = () => {
                 return [...newItemsPromises, ...updateItemsPromises, ...deletedItemsRequests];
             };
             
-
-            const userId = user.member_id;
-    
             // 연락처와 주소, 날짜 처리
             const contactPromises = processItems(contacts, currentContacts, API_URLS.PHONES, deletedContacts, userId);
             const addressPromises = processItems(addresses, currentAddresses, API_URLS.ADDRESSES, deletedAddresses, userId);
             const datePromises = processItems(dates, currentDates, API_URLS.DATES, deletedDates, userId);
 
-
-            // 아바타 정보 저장
-            const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${userId}`, avatarConfig);
-            if (!avatarResponse || !avatarResponse.data) {
-                throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
-            }
-            const avatarId = avatarResponse.data._id;
-
             // 프로필 업데이트
+            // const profileUpdateData = {
+            //     avatar_id: avatarId,
+            //     phones: contacts.length ? contacts.map(c => c._id).filter(id => id) : undefined,
+            //     dates: dates.length ? dates.map(d => d._id).filter(id => id) : undefined,
+            //     addresses: addresses.length ? addresses.map(a => a._id).filter(id => id) : undefined,
+            //     introduction: currentIntroduction || ''
+            // };
+
             const profileUpdateData = {
-                avatar_id: avatarId,
                 phones: contacts.length ? contacts.map(c => c._id).filter(id => id) : undefined,
                 dates: dates.length ? dates.map(d => d._id).filter(id => id) : undefined,
                 addresses: addresses.length ? addresses.map(a => a._id).filter(id => id) : undefined,
-                introduction: currentIntroduction || ''
+                introduction: introduction || profileData.introduction || '',
             };
 
-            console.log('profileUpdateData before sending:', profileUpdateData);
-    
+            // avatarId가 있을 경우에만 프로필에 추가
+            if (avatarId) {
+                profileUpdateData.avatar_id = avatarId;
+            }
+
+            // 프로필 업데이트
+            if (profileData._id) { // 프로필 ID가 있을 경우 업데이트
+                await axios.put(`${API_URLS.PROFILES}/${profileData._id}`, profileUpdateData);
+            } else { // 새로운 프로필 생성
+                await axios.post(`${API_URLS.PROFILES}`, { member_id: userId, ...profileUpdateData });
+            }
+
             // 병렬로 모든 요청 처리
             await Promise.all([
                 ...contactPromises,
@@ -487,13 +509,6 @@ const Profile = () => {
                 ...datePromises
             ]);
 
-            if (profileData._id) { // profileData의 _id가 존재할 경우 업데이트
-                console.log('profileData._id', profileData._id)
-                await axios.put(`${API_URLS.PROFILES}/${profileData._id}`, profileUpdateData);
-            } else {
-                await axios.post(`${API_URLS.PROFILES}`, { member_id: user.member_id, ...profileUpdateData });
-            }
-    
             // 데이터 재호출
             await fetchProfileData();
     

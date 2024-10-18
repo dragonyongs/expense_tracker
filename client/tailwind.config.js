@@ -44,7 +44,7 @@ export default {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
         'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 168px)',
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px)',
-        'pending-screen': 'calc((var(--vh, 1vh) * 100) - 48px)',
+        'pending-screen': 'calc((var(--vh, 1vh) * 100) - 63px)',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px)',
         'profile-screen': 'calc((var(--vh, 1vh) * 100) - 44px)',
         'profileDrawerMobile-screen': 'calc((var(--vh, 1vh) * 100) - 246px)',

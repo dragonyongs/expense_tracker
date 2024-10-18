@@ -3,7 +3,7 @@ const Avatar = require('../models/Avatar');
 // 아바타 생성 또는 업데이트
 const upsertAvatar = async (req, res) => {
     const { memberId } = req.params;
-    // console.log(memberId);
+
     try {
         // 해당 memberId로 아바타가 있는지 확인
         let avatar = await Avatar.findOne({ member_id: memberId });
@@ -18,11 +18,15 @@ const upsertAvatar = async (req, res) => {
             await avatar.save();
             res.status(201).json(avatar);
         }
+
     } catch (error) {
+        // 중복 키 에러 처리
+        if (error.code === 11000) {
+            return res.status(400).json({ error: '해당 사용자에 대한 아바타가 이미 존재합니다.' });
+        }
         res.status(400).json({ error: error.message });
     }
 };
-
 // 아바타 가져오기
 const getAvatarByMemberId = async (req, res) => {
     const { memberId } = req.params;

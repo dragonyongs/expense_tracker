@@ -91,7 +91,7 @@ const Signup = () => {
             setEmail('');
             setMatchPwd('');
 
-            localStorage.setItem('savedEmail', response?.data?.email);
+            localStorage.setItem('savedEmail', email);
 
             navigate('/');
         

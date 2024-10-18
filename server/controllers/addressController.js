@@ -18,13 +18,6 @@ exports.createAddress = async (req, res) => {
 
         let profileRes = await Profile.findOne({ member_id });
 
-        if (!profileRes) {
-            profileRes = new Profile({
-                member_id,
-                phones: []
-            });
-        }
-        
         profileRes.addresses.push(saveAddress._id);
         await profileRes.save();
 

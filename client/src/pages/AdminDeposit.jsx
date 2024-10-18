@@ -79,6 +79,10 @@ const AdminDeposit = () => {
     }, [isOpen, isDeleteConfirmOpen]); // Drawer가 열리거나 삭제 모달이 열릴 때만 호출
     
     useEffect(() => {
+        // selectUserPosition이 변경될 때마다 해당 값을 확인
+    }, [selectUserPosition]);
+    
+    useEffect(() => {
         if (selectedUser) {
             fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${selectedUser}`, setAccounts);
         }
@@ -577,7 +581,7 @@ const AdminDeposit = () => {
                                         {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
                                     </label>
                                 </li>
-                                { selectUserPosition === '팀장' && (
+                                { (selectUserPosition === '팀장' || selectUserPosition === '파트장') && (
                                     <li>
                                         <input
                                             type="radio"
@@ -622,7 +626,7 @@ const AdminDeposit = () => {
                                     disabled={!depositType}
                                 />
                             {/* )} */}
-                            {depositType === "TeamFund" && (
+                            {selectUserPosition === '팀장' && depositType === "TeamFund" && (
                                 <div className="mt-2 text-gray-500">
                                     <span>팀 인원: {calculateTeamMembersCount()}명</span> {/* 팀원 수만 표시 */}
                                 </div>

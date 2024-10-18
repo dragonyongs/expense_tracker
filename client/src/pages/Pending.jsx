@@ -29,7 +29,7 @@ const Pending = () => {
                         현재 관리자의 승인을<br />
                         기다리고 있습니다.
                     </h1>
-                    <div className='absolute bottom-8 -right-6 w-60 h-auto invert'>
+                    <div className='absolute bottom-8 -right-6 w-60 h-auto dark:invert'>
                         <img src="../pending.png" alt="pending" />
                     </div>
                 </div>

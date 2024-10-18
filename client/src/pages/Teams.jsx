@@ -84,7 +84,16 @@ function Teams() {
                         accounts
                             .filter(account => {
                                 const isTeamLeader = account.cards.some(card => card.position === "팀장");
-                                return userPosition === "팀장" || !isTeamLeader;
+                                const isPartLeader = account.cards.some(card => card.position === "파트장");
+
+                                // 팀장일 경우 모든 카드 보기
+                                if (userPosition === "팀장") return true;
+
+                                // 파트장인 경우 팀장 카드 제외
+                                if (userPosition === "파트장") return !isTeamLeader;
+
+                                // 팀원인 경우 팀장과 파트장 카드 제외
+                                return !(isTeamLeader || isPartLeader);
                             })
                             .sort((a, b) => {
                                 const aIsLeader = a.cards.some(card => card.position === "팀장");
@@ -94,9 +103,9 @@ function Teams() {
                             .map(account => {
                                 const totalBalance = account.cards.reduce((sum, card) => sum + card.balance, 0);
                                 const teamMembersCount = account.cards.filter(card => card.position !== '팀장').length;
-        
+
                                 // 팀 운영비 계산
-                                const teamOperatingFundBalance = account.cards.find(card => card.position === "팀장")?.team_fund || 0; // 팀장의 team_fund 가져오기
+                                const teamOperatingFundBalance = account.cards.find(card => card.position === "팀장")?.team_fund || 0;
                                 const teamOperatingFundPercentage = handleTeamOperatingFundSpent(account);
 
                                 return (
@@ -105,23 +114,29 @@ function Teams() {
                                         <h3 className='text-2xl tracking-tight text-gray-700 dark:text-slate-300 mt-2 dark:font-thin'>
                                             <span className='font-bold text-black dark:text-slate-300 dark:font-normal'>{(totalBalance + teamOperatingFundBalance).toLocaleString()}원</span> {totalBalance > 0 ? "남음" : ""}
                                         </h3>
-        
+
                                         <div className='mt-8'>
                                             {account.cards
-                                                .filter(card => userPosition === "팀장" || card.position !== "팀장")
+                                                .filter(card => {
+                                                    // 팀장일 경우 모든 카드 보기
+                                                    if (userPosition === "팀장") return true;
+
+                                                    // 파트장인 경우 팀장 카드 제외
+                                                    if (userPosition === "파트장") return card.position !== "팀장";
+
+                                                    // 팀원인 경우 팀장과 파트장 카드 제외
+                                                    return card.position !== "팀장" && card.position !== "파트장";
+                                                })
                                                 .map(card => {
-                                                    // 기본 금액 (모두 동일하게 10만 원)
                                                     const totalAmount = card.limit + card.rollover_amount;
                                                     const spentAmount = card.limit - card.balance;
                                                     const spentPercentage = totalAmount > 0 ? (spentAmount / totalAmount) * 100 : 0;
-        
-                                                    // 팀원 수에 따라 기준 금액 설정 (1만원을 팀원 수로 나눈 금액)
+
                                                     const individualLimit = 10000 / teamMembersCount;
                                                     const isLimit = individualLimit < card.balance;
-        
-                                                    // 잔액이 기준 금액보다 많고 남은 일수가 7일 이하일 때 빨간색 표시
+
                                                     const isWarning = isLimit && remainingDays <= 7;
-        
+
                                                     return (
                                                         <div key={card.card_number} className='mb-10'>
                                                             <div className='flex justify-between mb-4'>
@@ -141,7 +156,7 @@ function Teams() {
                                                         </div>
                                                     );
                                                 })}
-        
+
                                             {/* 팀장의 운영비 표시 */}
                                             {account.cards.some(card => card.position === "팀장") && (
                                                 <div className='mb-10'>
@@ -158,12 +173,12 @@ function Teams() {
                                                     </div>
                                                     <ProgressBars spentPercentage={teamOperatingFundPercentage} isWarning={false} />
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })
-                    )}
+                                )}
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
             </div>
         </>
     );
