@@ -573,6 +573,8 @@ exports.updateTransaction = async (req, res) => {
                     }
                 }
             }
+
+            // 1. 금액 0 원으로 수정 복구 금액이 팀펀드가 이나라 
         
             // (3) 차감된 금액 기록 업데이트
             transaction.teamFundDeducted = newTeamFundDeducted; // 팀펀드 차감 금액 업데이트
@@ -608,25 +610,25 @@ exports.deleteTransaction = async (req, res) => {
             const teamFundDeducted = transaction.teamFundDeducted; // 팀 펀드에서 차감된 금액
             const rolloverAmountDeducted = transaction.rolloverAmounted; // 이월 금액에서 차감된 금액
 
-            // 팀 펀드 복구
-            card.team_fund += teamFundDeducted;
-            console.log('팀 운영비 복구 완료!');
+            // 기존의 지출 타입을 확인
+            const previousExpenseType = transaction.expense_type;
 
-            // 이월 금액 복구
-            card.rollover_amount += rolloverAmountDeducted;
-            console.log('이월 금액 복구 완료!');
-
-            // 카드 잔액 복구
-            const totalDeducted = teamFundDeducted + rolloverAmountDeducted;
-            card.balance += transactionAmount - totalDeducted; // 카드 잔액에 차감된 금액을 더함
-            card.balance = Math.max(card.balance, 0); // 카드 잔액은 음수가 되지 않도록 설정
-            console.log('카드 잔액에서 복구 완료!');
+            if (previousExpenseType === 'TeamFund') {
+                // 팀펀드에서 지출한 경우
+                card.team_fund += teamFundDeducted; // 팀펀드 복구
+                card.rollover_amount += rolloverAmountDeducted; // 이월 금액 복구
+                console.log('팀 운영비 복구 완료!');
+                console.log('최종 팀 운영비:', card.team_fund);
+                console.log('최종 이월 금액:', card.rollover_amount);
+            } else {
+                // 카드 잔액에서 지출한 경우
+                const totalDeducted = teamFundDeducted + rolloverAmountDeducted; 
+                card.balance += transactionAmount - totalDeducted; // 카드 잔액 복구
+                card.balance = Math.max(card.balance, 0); // 카드 잔액은 음수가 되지 않도록 설정
+                console.log('카드 잔액 복구 완료!');
+                console.log('최종 카드 잔액:', card.balance);
+            }
         }
-
-        // 카드 잔액 및 팀 운영비 최종 상태 출력
-        console.log('최종 카드 잔액:', card.balance);
-        console.log('최종 팀 운영비:', card.team_fund);
-        console.log('최종 이월 금액:', card.rollover_amount);
 
         await card.save(); // 업데이트된 카드 잔액 저장
         await transaction.deleteOne(); // 트랜잭션 삭제
