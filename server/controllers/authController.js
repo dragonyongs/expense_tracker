@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Member = require('../models/Member');
+const RefreshToken = require('../models/RefreshToken');
 
 const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
@@ -30,6 +31,37 @@ const setAccessTokenCookie = (res, token) => {
 };
 
 // Login
+// exports.login = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+
+//         const member = await Member.findOne({ email });
+//         if (!member || !(await bcrypt.compare(password, member.password))) {
+//             return res.status(401).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });
+//         }
+        
+//         const accessToken = generateAccessToken(member);
+//         const refreshToken = jwt.sign({ id: member._id }, refreshTokenSecret, { expiresIn: '1d' });
+//         refreshTokens[refreshToken] = member._id;
+
+//         setAccessTokenCookie(res, accessToken);
+
+//         res.status(200).json({
+//             user: {
+//                 email: member.email,
+//                 name: member.member_name,
+//                 member_id: member._id,
+//                 status_id: member.status_id,
+//                 role_id: member.role_id,
+//                 team_id: member.team_id
+//             },
+//             refreshToken
+//         });
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// };
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -38,11 +70,18 @@ exports.login = async (req, res) => {
         if (!member || !(await bcrypt.compare(password, member.password))) {
             return res.status(401).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });
         }
-        
+
         const accessToken = generateAccessToken(member);
         const refreshToken = jwt.sign({ id: member._id }, refreshTokenSecret, { expiresIn: '1d' });
-        refreshTokens[refreshToken] = member._id;
 
+        // 리프레시 토큰을 데이터베이스에 저장
+        const storedRefreshToken = new RefreshToken({
+            member: member._id,
+            token: refreshToken
+        });
+        await storedRefreshToken.save();
+
+        // 액세스 토큰 쿠키 설정
         setAccessTokenCookie(res, accessToken);
 
         res.status(200).json({
@@ -62,17 +101,39 @@ exports.login = async (req, res) => {
 };
 
 // Logout
-exports.logout = (req, res) => {
+// exports.logout = (req, res) => {
+//     const { refreshToken } = req.body;
+
+//     if (!refreshToken || !(refreshToken in refreshTokens)) {
+//         return res.status(401).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
+//     }
+
+//     // 리프레시 토큰 삭제
+//     delete refreshTokens[refreshToken];
+
+//     // 액세스 토큰 쿠키 삭제
+//     res.clearCookie('accessToken', {
+//         httpOnly: true,
+//         secure: process.env.NODE_ENV === 'production',
+//         sameSite: 'strict',
+//         path: '/'
+//     });
+
+//     res.status(200).json({ message: '로그아웃되었습니다.' });
+// };
+// 로그아웃 시 리프레시 토큰 삭제
+exports.logout = async (req, res) => {
     const { refreshToken } = req.body;
 
-    if (!refreshToken || !(refreshToken in refreshTokens)) {
-        return res.status(401).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
+    // 리프레시 토큰이 없다면 오류 반환
+    if (!refreshToken) {
+        return res.status(400).json({ error: '리프레시 토큰이 필요합니다.' });
     }
 
-    // 리프레시 토큰 삭제
-    delete refreshTokens[refreshToken];
+    // 데이터베이스에서 리프레시 토큰 삭제
+    await RefreshToken.deleteOne({ token: refreshToken });
 
-    // 액세스 토큰 쿠키 삭제
+    // 쿠키에서 액세스 토큰 삭제
     res.clearCookie('accessToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -84,13 +145,46 @@ exports.logout = (req, res) => {
 };
 
 // Refresh Access Token
+// exports.refreshToken = async (req, res) => {
+//     const { refreshToken } = req.body;
+
+//     if (!refreshToken || !(refreshToken in refreshTokens)) {
+//         return res.status(403).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
+//     }
+
+//     jwt.verify(refreshToken, refreshTokenSecret, async (err, decoded) => {
+//         if (err) {
+//             return res.status(403).json({ error: '리프레시 토큰 검증 실패' });
+//         }
+
+//         const member = await Member.findById(decoded.id);
+//         if (!member) {
+//             return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+//         }
+
+//         const newAccessToken = generateAccessToken(member);
+//         setAccessTokenCookie(res, newAccessToken);
+
+//         res.status(200).json({ accessToken: newAccessToken });
+//     });
+// };
+
 exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
 
-    if (!refreshToken || !(refreshToken in refreshTokens)) {
+    // 리프레시 토큰이 없다면 오류 반환
+    if (!refreshToken) {
+        return res.status(403).json({ error: '리프레시 토큰이 필요합니다.' });
+    }
+
+    // 데이터베이스에서 리프레시 토큰 찾기
+    const storedRefreshToken = await RefreshToken.findOne({ token: refreshToken });
+
+    if (!storedRefreshToken) {
         return res.status(403).json({ error: '유효하지 않은 리프레시 토큰입니다.' });
     }
 
+    // 토큰 검증
     jwt.verify(refreshToken, refreshTokenSecret, async (err, decoded) => {
         if (err) {
             return res.status(403).json({ error: '리프레시 토큰 검증 실패' });
@@ -107,6 +201,7 @@ exports.refreshToken = async (req, res) => {
         res.status(200).json({ accessToken: newAccessToken });
     });
 };
+
 
 // Check if user is authenticated
 exports.isAuthenticated = (req, res) => {
