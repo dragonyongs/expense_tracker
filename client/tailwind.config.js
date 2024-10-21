@@ -37,6 +37,7 @@ export default {
       },
       minHeight: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
+        'profile-screen': 'calc((var(--vh, 1vh) * 100) - 44px)',
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 77px )',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px )',
       },

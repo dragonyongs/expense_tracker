@@ -468,7 +468,7 @@ const Profile = () => {
                     </div>
                     <div className='flex gap-x-3 mt-4'>
                         <button className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100' disabled>QR 연락처</button>
-                        <button className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:text-slate-300 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit />프로필 수정</button>
+                        <button className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:border-blue-800 dark:text-blue-800 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit />프로필 수정</button>
                     </div>
                 </div>
 

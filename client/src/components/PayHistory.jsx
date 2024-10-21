@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance";
+import { RiArrowRightSLine } from "react-icons/ri";
 
 const PayHistory = () => {
     const [transactions, setTransactions] = useState([]);
@@ -23,7 +25,10 @@ const PayHistory = () => {
 
     return (
         <div className='flex flex-col pb-2 xl:px-4'>
-            <h3 className='mt-8 mb-2 px-6 font-semibold text-2xl dark:text-slate-400 dark:font-normal'>최근 결제</h3>
+            <div className="flex justify-between items-center mt-8 mb-2 px-6">
+                <h3 className='font-semibold text-2xl dark:text-slate-400 dark:font-normal'>최근 결제</h3>
+                <Link to={'/transactions'} className='flex items-center gap-x-1 text-slate-400'>전체 <RiArrowRightSLine /></Link>
+            </div>
             {filteredTransactions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-dashboard-screen">
                     <img src="/icon-wallet.png" alt="No Transactions" className="mb-4 w-32 h-32 dark:invert dark:opacity-40" />
@@ -35,7 +40,7 @@ const PayHistory = () => {
                         {filteredTransactions
                             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                             .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
-                            .slice(0, 4)
+                            .slice(0,10)
                             .map(transaction => (
                                 <li key={transaction._id} className='flex justify-between items-center py-3'>
                                     <div className="flex-1 min-w-0">

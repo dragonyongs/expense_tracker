@@ -63,7 +63,7 @@ const TabBarComponent = () => {
             {/* )} */}
 
             {/* {memberRoles.includes(user?.role) && ( */}
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/members') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={hadleContacts}>
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/contacts') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={hadleContacts}>
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiAddressBookTabsLight className="text-2xl" />
                     </div>

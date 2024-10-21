@@ -16,7 +16,7 @@ const Side = () => {
                     </div>
                     <div className="dark:text-slate-500">
                         <h5>밥은 먹었어요?</h5>
-                        <h4 className="font-semibold text-lg">임직원 <span className="text-orange-500 dark:text-indigo-600">월 10만원 지원!</span></h4>
+                        <h4 className="font-semibold text-lg">임직원 <span className="text-purple-500 dark:text-indigo-600">월 10만원 지원!</span></h4>
                     </div>
                 </li>
                 <li className="flex items-center mt-6 space-x-6">
@@ -25,7 +25,7 @@ const Side = () => {
                     </div>
                     <div className="dark:text-slate-500">
                         <h5>여비교통비 지원</h5>
-                        <h4 className="font-semibold text-lg">행사 참여 교통비 <span className="text-orange-500 dark:text-indigo-600">별도 입금!</span></h4>
+                        <h4 className="font-semibold text-lg">행사 참여 교통비 <span className="text-purple-500 dark:text-indigo-600">별도 입금!</span></h4>
                     </div>
                 </li>
             </ul>
