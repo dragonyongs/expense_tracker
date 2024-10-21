@@ -45,6 +45,40 @@ exports.getCardTransactions = async (req, res) => {
 exports.createTransaction = async (req, res) => {
     const { card_id, transaction_date, merchant_name, menu_name, transaction_amount, transaction_type, deposit_type, expense_type } = req.body;
 
+
+    // 금액 차감 함수
+    const subtractAmount = (sourceAmount, amountNeeded) => {
+        const usedAmount = Math.min(sourceAmount, amountNeeded);
+        return { remainingAmount: amountNeeded - usedAmount, usedAmount };
+    };
+
+    // TeamFund 지출 처리 로직
+    const handleTeamFundExpense = (card, remainingAmount) => {
+        console.log('Team 카드 잔액', card.team_fund);
+        console.log('지출 금액', remainingAmount);
+
+        if (card.team_fund >= remainingAmount) {
+            card.team_fund -= remainingAmount;
+            return { remainingAmount: 0, teamFundUsed: remainingAmount };
+        } else {
+            throw new Error('팀 운영비 잔액이 부족합니다.');
+        }
+    };
+
+    // 잔액 차감 로직
+    const handleBalanceExpense = (card, remainingAmount) => {
+        const { remainingAmount: remainingAfterBalance, usedAmount: balanceUsed } = subtractAmount(card.balance, remainingAmount);
+        card.balance -= balanceUsed;
+        return { remainingAmount: remainingAfterBalance, cardBalanceUsed: balanceUsed };
+    };
+
+    // 이월 금액 차감 로직
+    const handleRolloverExpense = (card, remainingAmount) => {
+        const { remainingAmount: remainingAfterRollover, usedAmount: rolloverUsed } = subtractAmount(card.rollover_amount, remainingAmount);
+        card.rollover_amount -= rolloverUsed;
+        return { remainingAmount: remainingAfterRollover, rolloverUsed };
+    };
+
     try {
         // 입력 값 정리 함수 (제어 문자 제거 및 공백 제거)
         const sanitizeInput = (input) => input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
@@ -62,108 +96,53 @@ exports.createTransaction = async (req, res) => {
 
         let remainingAmount = Number(transaction_amount); // 거래 금액 초기화
 
+        // 지출 처리
         if (transaction_type === 'expense') {
-            // 현재 잔액과 이월 금액 합산
-            const availableBalance = Number(card.balance + card.rollover_amount + card.team_fund);
-            
-            // 잔액과 이월 금액을 기준으로 결제 가능 여부 확인
-            if (remainingAmount > availableBalance) {
-                return res.status(400).json({ error: '잔액 및 이월 금액이 부족합니다.' });
-            }
-        
-            // 지출 처리
-            let usedAmount = 0; // 요청 금액
-            let rolloverUsed = 0; // 이월 사용 금액
-            let teamFundUsed = 0; // 팀 펀드 사용 금액
-            let cardBalanceUsed = 0; // 카드 잔액 사용 금액
-        
-            // 팀 운영비인 경우
-            if (expense_type === 'TeamFund') {
-                // 팀 펀드에서 사용 처리
-                if (card.team_fund >= remainingAmount) {
-                    card.team_fund -= remainingAmount; // 팀 펀드에서 차감
-                    teamFundUsed = remainingAmount;
-                    usedAmount = remainingAmount; // 요청 금액 기록
-                } else {
-                    // 팀 펀드가 부족하면 오류 반환
-                    return res.status(400).json({ error: '팀 운영비 잔액이 부족합니다.' });
-                }
-            } else {
-                // 다른 유형의 지출 처리
-                // 카드 잔액에서 지출 처리
-                if (card.balance >= remainingAmount) {
-                    card.balance -= remainingAmount;
-                    cardBalanceUsed = remainingAmount; // 잔액에서 사용된 금액 기록
-                    usedAmount = remainingAmount;
-                } else {
-                    // 잔액이 부족한 경우
-                    cardBalanceUsed = card.balance; // 잔액 전부 사용
-                    usedAmount += card.balance;
-                    remainingAmount -= card.balance;
-                    card.balance = 0;
-        
-                    // 이월 금액에서 남은 금액 차감
-                    if (remainingAmount > 0) {
-                        if (card.rollover_amount >= remainingAmount) {
-                            card.rollover_amount -= remainingAmount;
-                            rolloverUsed = remainingAmount; // 이월 금액에서 사용된 금액 기록
-                            usedAmount += remainingAmount;
-                            remainingAmount = 0; // 남은 금액 처리 완료
-                        } else {
-                            rolloverUsed = card.rollover_amount; // 이월 금액 전부 사용
-                            usedAmount += card.rollover_amount;
-                            remainingAmount -= card.rollover_amount;
-        
-                            card.rollover_amount = 0;
+            // let { remainingAmount } = transaction_amount;
+            let usedAmount = 0;
+            let rolloverUsed = 0;
+            let teamFundUsed = 0;
+            let cardBalanceUsed = 0;
 
-                            // 팀 운영비에서 남은 금액 차감
-                            if (remainingAmount > 0) {
-                                if (card.team_fund >= remainingAmount) {
-                                    card.team_fund -= remainingAmount;
-                                    teamFundUsed = remainingAmount; // 팀 운영비에서 사용된 금액 기록
-                                    usedAmount += remainingAmount;
-                                    remainingAmount = 0; // 남은 금액 처리 완료
-                                } else {
-                                    return res.status(400).json({ error: '잔액, 이월 금액 및 팀 운영비 잔액이 부족합니다.' });
-                                }
-                                console.log('팀펀드 차감 후:', card.team_fund); // 차감 후 상태 출력
-                            }
-                        }
+            if (expense_type === 'TeamFund') {
+                // TeamFund에서 전액 처리
+                ({ remainingAmount, teamFundUsed } = handleTeamFundExpense(card, remainingAmount));
+            } else {
+                // 일반 지출 처리
+                ({ remainingAmount, cardBalanceUsed } = handleBalanceExpense(card, remainingAmount));
+
+                if (remainingAmount > 0) {
+                    // 잔액 부족 시 이월 금액 사용
+                    ({ remainingAmount, rolloverUsed } = handleRolloverExpense(card, remainingAmount));
+
+                    if (remainingAmount > 0) {
+                        // 이월 금액도 부족하면 TeamFund 사용
+                        ({ remainingAmount, teamFundUsed } = handleTeamFundExpense(card, remainingAmount));
                     }
                 }
             }
-        
-            // 트랜잭션 기록 (사용 금액)
+
+            // 트랜잭션 기록
             const transaction = new Transaction({
                 card_id,
                 transaction_date,
                 merchant_name: sanitizedMerchantName,
                 menu_name: sanitizedMenuName,
-                transaction_amount: Number(usedAmount), // 사용된 총 금액 기록
+                transaction_amount: transaction_amount - remainingAmount, // 총 사용 금액
                 transaction_type,
                 deposit_type,
                 expense_type,
-                rolloverAmounted: rolloverUsed, // 이월 사용 금액
-                teamFundDeducted: teamFundUsed // 팀 펀드에서 차감된 금액 기록
+                rolloverAmounted: rolloverUsed,
+                teamFundDeducted: teamFundUsed,
             });
-        
-            // 트랜잭션 저장 및 카드 정보 업데이트
+
             await transaction.save();
-            console.log('expense 업데이트 전 카드 정보:', card);
             await card.save();
-            console.log('expense 업데이트 후 카드 정보:', card);
-        
-            // 콘솔 로그 추가
-            console.log('요청 지출 금액 :', usedAmount); // 요청 금액
-            console.log('이월 사용 금액 :', rolloverUsed); // 이월 사용 금액
-            console.log('팀펀드 사용금액:', teamFundUsed); // 팀 펀드 사용 금액
-            console.log('카드 잔액 사용금액:', cardBalanceUsed); // 카드 잔액 사용 금액
-            console.log('팀펀드 사용후 잔액:', card.team_fund); // 저장 후 팀펀드 잔액
-        
-            res.status(201).json({ 
-                message: '트랜잭션 처리 성공', 
-                transaction: transaction.toObject(), 
-                card: card.toObject() 
+
+            res.status(201).json({
+                message: '트랜잭션 처리 성공',
+                transaction: transaction.toObject(),
+                card: card.toObject()
             });
         } else if (transaction_type === 'income') {
             let depositAmount = Number(0);
@@ -518,7 +497,7 @@ exports.updateTransaction = async (req, res) => {
             ...(transaction_date !== undefined && { transaction_date }),
             ...(sanitizedMerchantName !== undefined && { merchant_name: sanitizedMerchantName }),
             ...(sanitizedMenuName !== undefined && { menu_name: sanitizedMenuName }),
-            ...(expense_type !== undefined && { expense_type }) // 추가된 부분
+            ...(expense_type !== undefined && { expense_type })
         };
 
         const transaction = await Transaction.findById(req.params.id);
@@ -527,55 +506,96 @@ exports.updateTransaction = async (req, res) => {
         const card = await Card.findById(transaction.card_id);
         if (!card) return res.status(404).json({ message: 'Card not found' });
 
-        const previousAmount = transaction.transaction_amount;
-        const newAmount = transaction_amount !== undefined ? transaction_amount : previousAmount;
+        const previousAmount = transaction.transaction_amount; // 기존 트랜잭션 금액
+        const newAmount = transaction_amount !== undefined ? Number(transaction_amount) : previousAmount; // 수정된 트랜잭션 금액
+        const difference = newAmount - previousAmount; // 금액 차이
 
-        // 기존의 지출 타입을 확인
+        console.log("이전 금액:", previousAmount);
+        console.log("새로운 금액:", newAmount);
+        console.log("금액 차이:", difference);
+
+        // 기존 지출 타입 확인
         const previousExpenseType = transaction.expense_type;
 
         // 지출 타입이 변경되었는지 확인
         const isExpenseTypeChanged = expense_type && expense_type !== previousExpenseType;
 
-        if (transaction_type === 'expense') {
-            // (1) 이전에 지출된 금액 복구
-            if (previousExpenseType === 'TeamFund') {
-                card.team_fund += transaction.teamFundDeducted; // 이전 차감된 팀 운영비 복구
+        // 금액 차이가 있을 경우 처리
+        if (transaction_type === 'expense' && (difference !== 0 || isExpenseTypeChanged)) {
+            console.log("이전 지출 타입:", previousExpenseType);
+            console.log("팀카드 > 차액 팀운영비 사용 금액:", transaction.teamFundDeducted);
+
+            // (1) 기존 금액 복구 로직
+            if (previousExpenseType === 'TeamFund' && transaction.teamFundDeducted > 0) {
+                card.team_fund += transaction.teamFundDeducted; // 팀 운영비 복구
             }
-        
+            if (transaction.rolloverAmounted > 0) {
+                card.rollover_amount += transaction.rolloverAmounted; // 이월 금액 복구
+            }
+
+            // 카드 잔액 복구
+            if (previousExpenseType === 'TeamCard') {
+                card.balance += previousAmount; // 기존 카드 잔액 복구
+            }
+
             // (2) 새로운 금액 차감 로직
-            let remainingAmount = newAmount - previousAmount; // 증가된 금액
-            let newTeamFundDeducted = 0; // 새로운 팀펀드 차감 금액
+            let remainingAmount = newAmount; // 수정된 금액을 기준으로 계산
+            let newTeamFundDeducted = 0;
             let newRolloverAmounted = 0;
-        
-            // 카드 잔액과 이월 잔액이 0인 경우
-            if (card.balance === 0 && card.rollover_amount === 0) {
-                // 팀 운영비에서 차감
-                newTeamFundDeducted = transaction.teamFundDeducted + remainingAmount; // 기존 차감 금액 + 증가된 금액
-                if (newTeamFundDeducted <= card.team_fund) {
-                    card.team_fund -= remainingAmount; // 팀펀드에서 차감
-                } else {
-                    return res.status(400).json({ error: '팀 운영비 잔액이 부족합니다.' });
-                }
-            } else {
-                // 카드 잔액에서 먼저 차감
-                if (remainingAmount <= card.balance) {
-                    card.balance -= remainingAmount;
-                } else {
-                    remainingAmount -= card.balance; // 카드 잔액이 부족한 경우
-                    card.balance = 0;
-        
-                    // 부족한 금액을 이월 금액에서 차감
-                    if (remainingAmount <= card.rollover_amount) {
-                        newRolloverAmounted = remainingAmount;
-                        card.rollover_amount -= remainingAmount;
+
+            console.log('팀운영비 잔액: ', card.team_fund);
+            console.log('새로 지출 금액: ', remainingAmount);
+
+            // 새로운 지출 타입이 'TeamFund'일 경우
+            if (expense_type === 'TeamFund') {
+                if (difference > 0) {
+                    // 금액이 증가한 경우
+                    if (card.team_fund >= difference) {
+                        card.team_fund -= difference;
+                        newTeamFundDeducted = difference;
                     } else {
-                        return res.status(400).json({ error: '잔액 및 이월 금액이 부족합니다.' });
+                        return res.status(400).json({ error: '팀 운영비 잔액이 부족합니다.' });
                     }
+                } else if (difference < 0) {
+                    // 금액이 감소한 경우
+                    card.team_fund += Math.abs(difference); // 차액만큼 팀 운영비에 추가
+                    newTeamFundDeducted = 0; // 차감된 금액 없으므로 0으로 설정
+                }
+            } else { // 새로운 지출 타입이 'TeamCard'일 경우
+                if (difference > 0) {
+                    // 금액이 증가한 경우
+                    if (card.balance >= difference) {
+                        card.balance -= difference;
+                    } else {
+                        remainingAmount -= card.balance;
+                        card.balance = 0;
+
+                        // 이월 잔액에서 차감
+                        if (remainingAmount <= card.rollover_amount) {
+                            newRolloverAmounted = remainingAmount;
+                            card.rollover_amount -= remainingAmount;
+                        } else {
+                            remainingAmount -= card.rollover_amount;
+                            card.rollover_amount = 0;
+
+                            // 남은 금액을 팀 운영비에서 차감
+                            if (remainingAmount <= card.team_fund) {
+                                card.team_fund -= remainingAmount;
+                                newTeamFundDeducted = remainingAmount;
+                            } else {
+                                return res.status(400).json({ error: '잔액, 이월 금액 및 팀 운영비가 부족합니다.' });
+                            }
+                        }
+                    }
+                } else if (difference < 0) {
+                    // 금액이 감소한 경우
+                    card.balance += Math.abs(difference); // 차액만큼 카드 잔액에 추가
                 }
             }
 
-            transaction.teamFundDeducted = newTeamFundDeducted; // 팀펀드 차감 금액 업데이트
-            transaction.rolloverAmounted = newRolloverAmounted; // 이월 금액 업데이트
+            // 새로운 차감 금액 업데이트
+            transaction.teamFundDeducted = newTeamFundDeducted;
+            transaction.rolloverAmounted = newRolloverAmounted;
         }
 
         // 카드 정보 저장

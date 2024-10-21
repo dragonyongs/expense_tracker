@@ -180,10 +180,96 @@ const Transactions = () => {
         }
     };
     
+    // const handleSave = async () => {
+    //     try {
+    //         setErrMsg('');
+    
+    //         const cardId = selectedTransaction.card_id._id || userCards[0]._id;
+    //         const transactionData = {
+    //             card_id: cardId,
+    //             transaction_date: selectedTransaction.transaction_date,
+    //             merchant_name: selectedTransaction.merchant_name,
+    //             menu_name: selectedTransaction.menu_name,
+    //             transaction_amount: Number(selectedTransaction.transaction_amount), // 숫자로 변환
+    //             transaction_type: "expense",
+    //             expense_type: expenceType,
+    //         };
+    
+    //         // 금액이 유효한지 확인 (NaN 체크)
+    //         if (isNaN(transactionData.transaction_amount) || transactionData.transaction_amount < 0) {
+    //             throw new Error("유효하지 않은 거래 금액입니다.");
+    //         }
+    
+    //         // 카드 정보 가져오기
+    //         const cardResponse = await axios.get(`${API_URLS.CARDS}/${cardId}`);
+    //         const card = cardResponse.data; // API를 통해 카드 정보 가져오기
+    //         if (!card) {
+    //             throw new Error("해당 카드를 찾을 수 없습니다.");
+    //         }
+    
+    //         if (selectedTransaction.transaction_type === "income") {
+    //             transactionData.deposit_type = selectedTransaction.deposit_type || "AdditionalDeposit";
+    //         }
+    
+    //         // **수정 시에도 잔액 부족 여부 확인**
+    //         const availableBalance = calculateAvailableBalance(card);
+    //         if (Number(transactionData.transaction_amount) > availableBalance) {
+    //             throw new Error(`잔액 부족: 사용 가능한 금액은 ${availableBalance.toLocaleString()}원 입니다.`);
+    //         }
+    
+    //         // 변경 여부 확인 (각 필드가 수정되었는지 확인)
+    //         const originalAmount = Number(prevTransaction.transaction_amount); // 원래 금액
+    //         const currentAmount = Number(transactionData.transaction_amount); // 현재 입력된 금액
+    
+    //         const isAmountChanged = currentAmount !== originalAmount;
+    //         const isMerchantChanged = transactionData.merchant_name !== prevTransaction.merchant_name;
+    //         const isMenuChanged = transactionData.menu_name !== prevTransaction.menu_name;
+    //         const isDateChanged = transactionData.transaction_date !== prevTransaction.transaction_date;
+    //         const isExpenseTypeChanged = transactionData.expense_type !== prevTransaction.expense_type;
+    
+    //         console.log('변경 여부 확인:', {
+    //             transaction_amount: currentAmount,
+    //             selectedTransaction_amount: originalAmount,
+    //             isAmountChanged,
+    //             isMerchantChanged,
+    //             isMenuChanged,
+    //             isDateChanged,
+    //             isExpenseTypeChanged
+    //         });
+    
+    //         const isTransactionChanged = isAmountChanged || isMerchantChanged || isMenuChanged || isDateChanged || isExpenseTypeChanged;
+    
+    //         if (!isTransactionChanged) {
+    //             console.log("변경된 내용이 없습니다. 저장 요청을 중단합니다.");
+    //             handleCloseDrawer(); // 변경 사항이 없으면 드로어만 닫음
+    //             return;
+    //         }
+    
+    //         // 트랜잭션 저장
+    //         if (isEditing) {
+    //             await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
+    //             console.log('거래 내역 수정 완료');
+    //         } else {
+    //             await axios.post(API_URLS.TRANSACTIONS, transactionData);
+    //         }
+    
+    //         await fetchTransactionsForCurrentMonth();
+    //         await fetchCards();
+    
+    //         // 에러가 발생하지 않으면 드로어 닫기
+    //         handleCloseDrawer();
+    
+    //     } catch (error) {
+    //         const errorMsg = handleError(error); // 오류 메시지 문자열로 변환
+    //         console.log('errorMsg', errorMsg);
+    //         setErrMsg(errorMsg); // 문자열로 상태 업데이트
+    //     }
+    // };
+
     const handleSave = async () => {
         try {
             setErrMsg('');
-
+    
             const cardId = selectedTransaction.card_id._id || userCards[0]._id;
             const transactionData = {
                 card_id: cardId,
@@ -195,6 +281,11 @@ const Transactions = () => {
                 expense_type: expenceType,
             };
     
+            // 금액이 유효한지 확인 (NaN 체크)
+            if (isNaN(transactionData.transaction_amount) || transactionData.transaction_amount < 0) {
+                throw new Error("유효하지 않은 거래 금액입니다.");
+            }
+    
             // 카드 정보 가져오기
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${cardId}`);
             const card = cardResponse.data; // API를 통해 카드 정보 가져오기
@@ -202,48 +293,26 @@ const Transactions = () => {
                 throw new Error("해당 카드를 찾을 수 없습니다.");
             }
     
-            if (selectedTransaction.transaction_type === "income") {
-                transactionData.deposit_type = selectedTransaction.deposit_type || "AdditionalDeposit";
-            }
+            const originalAmount = Number(prevTransaction.transaction_amount); // 기존 트랜잭션 금액
+            const currentAmount = Number(transactionData.transaction_amount); // 수정된 금액
+            const amountDifference = currentAmount - originalAmount; // 금액 차액
     
-            // **신규 등록일 때만 잔액 부족 여부 확인**
-            if (!isEditing) {
+            // 차액이 양수면 (기존보다 더 많이 사용) 잔액이 충분한지 확인
+            if (amountDifference > 0) {
                 const availableBalance = calculateAvailableBalance(card);
-                if (Number(transactionData.transaction_amount) > availableBalance) {
-                    throw new Error(`잔액 부족: 사용 가능한 금액은 ${availableBalance.toLocaleString()}원 입니다.`);
+                if (amountDifference > availableBalance) {
+                    throw new Error(`잔액 부족: 추가로 사용할 수 있는 금액은 ${availableBalance.toLocaleString()}원 입니다.`);
                 }
             }
     
-            // 변경 여부 확인 (각 필드가 수정되었는지 확인)
-            const originalAmount = Number(prevTransaction.transaction_amount); // 원래 금액
-            const currentAmount = Number(transactionData.transaction_amount); // 현재 입력된 금액
+            // 차액 반영하여 팀펀드 잔액 수정
+            const newTeamFundBalance = card.team_fund - amountDifference;
     
-            const isAmountChanged = currentAmount !== originalAmount;
-            const isMerchantChanged = transactionData.merchant_name !== prevTransaction.merchant_name;
-            const isMenuChanged = transactionData.menu_name !== prevTransaction.menu_name;
-            const isDateChanged = transactionData.transaction_date !== prevTransaction.transaction_date;
-            const isExpenseTypeChanged = transactionData.expense_type !== prevTransaction.expense_type;
-    
-            console.log('변경 여부 확인:', {
-                transaction_amount: currentAmount,
-                selectedTransaction_amount: originalAmount,
-                isAmountChanged,
-                isMerchantChanged,
-                isMenuChanged,
-                isDateChanged,
-                isExpenseTypeChanged
-            });
-    
-            const isTransactionChanged = isAmountChanged || isMerchantChanged || isMenuChanged || isDateChanged || isExpenseTypeChanged;
-    
-            if (!isTransactionChanged) {
-                console.log("변경된 내용이 없습니다. 저장 요청을 중단합니다.");
-                handleCloseDrawer(); // 변경 사항이 없으면 드로어만 닫음
-                return;
-            }
-    
-            // 트랜잭션 저장
+            // 트랜잭션 저장 (수정)
             if (isEditing) {
+                console.log('newTeamFundBalance', newTeamFundBalance);
+                transactionData.transaction_amount = selectedTransaction.transaction_amount; // 팀펀드 잔액 반영
+                console.log('transactionData', transactionData);
                 await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
                 console.log('거래 내역 수정 완료');
             } else {
@@ -262,7 +331,7 @@ const Transactions = () => {
             setErrMsg(errorMsg); // 문자열로 상태 업데이트
         }
     };
-
+    
     const handleDeleteConfirm = () => {
         setIsDeleteConfirmOpen(true);
     };

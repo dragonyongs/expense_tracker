@@ -15,7 +15,7 @@ const transactionSchema = new mongoose.Schema({
         }
     },
     expense_type: { type: String, enum: ['RegularExpense', 'TeamCard', 'TeamFund'] },
-    rolloverAmounted: { type: Number, default:0 },
+    rolloverAmounted: { type: Number, default: 0 },
     teamFundDeducted: { type: Number, default: 0 }, // 추가된 부분
 }, { timestamps: true });
 
