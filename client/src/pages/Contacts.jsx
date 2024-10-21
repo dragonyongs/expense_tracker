@@ -4,6 +4,7 @@ import { API_URLS } from '../services/apiUrls';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import CommonDrawer from '../components/CommonDrawer';
 import AvatarPreview from '../components/AvatarPreview';
+import { genConfig } from 'react-nice-avatar';
 
 function Contacts() {
     const [contacts, setContacts ] = useState([]);
@@ -53,8 +54,6 @@ function Contacts() {
         delivery: '배송',
     };
 
-    const avatarConfig = selectedContact?.avatar_id;
-
     // 팀별로 연락처 필터링 함수
     const groupByTeam = (contacts) => {
         return contacts.reduce((groups, contact) => {
@@ -69,6 +68,30 @@ function Contacts() {
 
     const groupedContacts = groupByTeam(contacts);
 
+    const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
+
+    const genders = ['man', 'woman'];
+    const hairStyles = ['normal', 'thick', 'mohawk', 'womanLong', 'womanShort'];
+    const bgColors = ['#ffedef', '#e8fcbf', '#fcf7c7']; // 원하는 배경 색상 추가
+    const noAvatar = {
+        sex: getRandomElement(genders), // 랜덤 성별
+        faceColor: '#F9CBAE', // 피부색 (고정)
+        earSize: 'normal', // 귀 크기 (고정)
+        hairColor: getRandomElement(['#4A3C3A', '#C2B280', '#A52A2A']), // 랜덤 머리 색상
+        hairStyle: getRandomElement(hairStyles), // 랜덤 머리 스타일
+        hairColorRandom: '', // 랜덤 머리 색상 (비워둠)
+        hatColor: '', // 모자 색상 (고정)
+        hatStyle: '', // 모자 스타일 (고정)
+        eyeStyle: 'oval', // 눈 스타일 (고정)
+        glassesStyle: '', // 안경 스타일 (고정)
+        noseStyle: 'normal', // 코 스타일 (고정)
+        mouthStyle: 'smile', // 입 스타일 (고정)
+        shirtStyle: 'tshirt', // 티셔츠 스타일 (고정)
+        shirtColor: '#3B5998', // 티셔츠 색상 (고정)
+        bgColor: getRandomElement(bgColors), // 랜덤 배경 색상
+        isGradient: false // 그라데이션 여부 (고정)
+    };
+    
     return (
         <>
             <header className="flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800">
@@ -83,6 +106,7 @@ function Contacts() {
                         <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
                             {groupedContacts[teamName].map((contact) => {
                                 const { extension } = getCompanyPhoneInfo(contact.phones);
+
                                 return (
                                     <li
                                         key={contact._id}
@@ -90,8 +114,10 @@ function Contacts() {
                                         onClick={() => handleOpenDrawer(contact)}
                                     >
                                         <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
-                                            {contact?.avatar_id && (
-                                                <AvatarPreview avatarConfig={contact?.avatar_id} shape="circle" className="w-10 h-10" />
+                                            {contact?.avatar_id ? (
+                                                <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className="w-10 h-10"/>
+                                            ) : (
+                                                <AvatarPreview avatarConfig={ noAvatar } shape="circle" className="w-10 h-10"/>
                                             )}
                                         </div>
                                         <div className="flex-1">
@@ -114,8 +140,10 @@ function Contacts() {
                 <div className="overflow-y-auto h-profile-screen">
                     <div className="py-4 flex flex-col items-center gap-y-4 bg-blue-600 dark:bg-blue-900">
                         <div className="flex justify-center items-center w-24 h-24 bg-white border border-slate-200 rounded-full dark:text-white dark:border-white dark:bg-transparent">
-                            {selectedContact?.avatar_id && (
+                            {selectedContact?.avatar_id ? (
                                 <AvatarPreview avatarConfig={selectedContact?.avatar_id} shape="circle" />
+                            ) : (
+                                <AvatarPreview avatarConfig={ noAvatar } shape="circle" />
                             )}
                         </div>
                         <div className="font-semibold text-xl text-white">

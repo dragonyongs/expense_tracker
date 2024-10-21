@@ -65,7 +65,8 @@ const setAccessTokenCookie = (res, token) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        console.log(email, password);
+        
         const member = await Member.findOne({ email });
         if (!member || !(await bcrypt.compare(password, member.password))) {
             return res.status(401).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });

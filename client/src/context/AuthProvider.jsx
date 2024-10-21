@@ -94,16 +94,20 @@ export function AuthProvider({ children }) {
             // 로그인 성공 처리
             setIsAuthenticated(true);
             setUser(data.user);
-
+    
             const statusResponse = await axios.get(`${API_URLS.STATUSES}/${data.user.status_id}`);
             const status = statusResponse.data.status_name;
-
+    
             navigate(status === 'pending' ? '/pending' : '/');
-            // handleLoginSuccess(data);
-
         } catch (error) {
             console.error('Login failed:', error);
-            throw error;
+    
+            // 서버에서 에러 메시지를 반환하는 경우, 에러 메시지를 명확하게 출력
+            if (error.response && error.response.data) {
+                throw new Error(error.response.data.message || '로그인 실패');
+            } else {
+                throw new Error('네트워크 오류 또는 서버 문제');
+            }
         }
     };
 
