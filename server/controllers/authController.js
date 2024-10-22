@@ -65,7 +65,6 @@ const setAccessTokenCookie = (res, token) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(email, password);
         
         const member = await Member.findOne({ email });
         if (!member || !(await bcrypt.compare(password, member.password))) {
