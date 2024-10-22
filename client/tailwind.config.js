@@ -31,6 +31,7 @@ export default {
       },
       colors: {
         'newBlue' : '#0532ff',
+        'starBlue' : '#0433FF'
       },
       maxHeight: {
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px )',
