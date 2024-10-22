@@ -10,11 +10,18 @@ const Dashboard = () => {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
 
     useEffect(() => {
-        window.addEventListener('beforeinstallprompt', (e) => {
+        const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
-        });
-    }, []);   
+        };
+    
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        
+        // Cleanup function
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
+    }, []);
 
     const handleInstallClick = () => {
         if (deferredPrompt) {
@@ -44,8 +51,8 @@ const Dashboard = () => {
                         <PayHistory />
                     </div>
                 ) }
-                <div className='fixed bottom-4 right-8'>
-                    <button onClick={handleInstallClick}>Install App</button>
+                <div className='z-110 fixed bottom-24 right-6'>
+                    <button onClick={handleInstallClick} className='py-2 px-4 rounded-full bg-white text-blue-600 border border-blue-100 shadow-md'>Install App</button>
                 </div>
             </div>
             

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Routes, Route, Router } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -29,6 +29,22 @@ const AdminDeposit = React.lazy(() => import('./pages/AdminDeposit'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 const App = () => {
+
+    useEffect(() => {
+        const registerServiceWorker = async () => {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    console.log('Service Worker registered with scope:', registration.scope);
+                } catch (error) {
+                    console.error('Service Worker registration failed:', error);
+                }
+            }
+        };
+    
+        registerServiceWorker();
+    }, []);
+
     React.useEffect(() => {
         setScreenHeight();
         window.addEventListener('resize', setScreenHeight);
