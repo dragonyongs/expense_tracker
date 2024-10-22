@@ -10,7 +10,7 @@ const ASSETS_TO_CACHE = [
     "/manifest.webmanifest",
     "/pwa-192x192.png",
     "/pwa-512x512.png",
-    "/src/main.js",
+    "/src/main.jsx",
 ];
 
 // 설치 이벤트: 서비스 워커가 처음 설치될 때 캐시 생성
@@ -41,20 +41,50 @@ event.waitUntil(
 
 self.addEventListener("fetch", (event) => {
     if (event.request.url.includes("/api/")) {
+        const token = localStorage.getItem('authToken'); // 로컬 스토리지에서 인증 토큰 가져오기
+        const headers = new Headers(event.request.headers);
+
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`); // 헤더에 인증 토큰 추가
+        }
+
+        const modifiedRequest = new Request(event.request, {
+            headers: headers,
+        });
+
         event.respondWith(
-        caches.open("api-cache").then((cache) => {
-            return fetch(event.request)
-            .then((response) => {
-                cache.put(event.request.url, response.clone());
-                return response;
+            caches.open("api-cache").then((cache) => {
+                return fetch(modifiedRequest)
+                .then((response) => {
+                    if (response.ok) {
+                        cache.put(event.request.url, response.clone());
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    return caches.match(event.request);
+                });
             })
-            .catch(() => {
-                return caches.match(event.request);
-            });
-        })
         );
     }
 });
+
+// self.addEventListener("fetch", (event) => {
+//     if (event.request.url.includes("/api/")) {
+//         event.respondWith(
+//         caches.open("api-cache").then((cache) => {
+//             return fetch(event.request)
+//             .then((response) => {
+//                 cache.put(event.request.url, response.clone());
+//                 return response;
+//             })
+//             .catch(() => {
+//                 return caches.match(event.request);
+//             });
+//         })
+//         );
+//     }
+// });
 
 
 // fetch 이벤트: 네트워크 요청이 발생할 때 캐시에서 제공하거나, 네트워크에서 가져오는 로직
