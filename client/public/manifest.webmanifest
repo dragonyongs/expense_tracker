@@ -4,7 +4,7 @@
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "lang": "en",
+    "lang": "ko",
     "scope": "/",
     "description": "카드 지출 관리 웹앱",
     "theme_color": "#0433ff",
@@ -25,32 +25,6 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
-        }
-    ],
-    "screenshots": [
-        {
-            "src": "path/to/your/desktop-screenshot1.png",
-            "type": "image/png",
-            "sizes": "800x600",
-            "form_factor": "wide"
-        },
-        {
-            "src": "path/to/your/desktop-screenshot2.png",
-            "type": "image/png",
-            "sizes": "800x600",
-            "form_factor": "wide"
-        },
-        {
-            "src": "path/to/your/mobile-screenshot1.png",
-            "type": "image/png",
-            "sizes": "360x640",
-            "form_factor": "narrow"
-        },
-        {
-            "src": "path/to/your/mobile-screenshot2.png",
-            "type": "image/png",
-            "sizes": "360x640",
-            "form_factor": "narrow"
         }
     ]
 }

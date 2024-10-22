@@ -43,32 +43,32 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
-        screenshots: [
-          {
-            src: "path/to/your/desktop-screenshot1.png",
-            type: "image/png",
-            sizes: "800x600",
-            form_factor: "wide"
-          },
-          {
-            src: "path/to/your/desktop-screenshot2.png",
-            type: "image/png",
-            sizes: "800x600",
-            form_factor: "wide"
-          },
-          {
-            src: "path/to/your/mobile-screenshot1.png",
-            type: "image/png",
-            sizes: "360x640",
-            form_factor: "narrow"
-          },
-          {
-            src: "path/to/your/mobile-screenshot2.png",
-            type: "image/png",
-            sizes: "360x640",
-            form_factor: "narrow"
-          },
-        ]
+        // screenshots: [
+        //   {
+        //     src: "path/to/your/desktop-screenshot1.png",
+        //     type: "image/png",
+        //     sizes: "800x600",
+        //     form_factor: "wide"
+        //   },
+        //   {
+        //     src: "path/to/your/desktop-screenshot2.png",
+        //     type: "image/png",
+        //     sizes: "800x600",
+        //     form_factor: "wide"
+        //   },
+        //   {
+        //     src: "path/to/your/mobile-screenshot1.png",
+        //     type: "image/png",
+        //     sizes: "360x640",
+        //     form_factor: "narrow"
+        //   },
+        //   {
+        //     src: "path/to/your/mobile-screenshot2.png",
+        //     type: "image/png",
+        //     sizes: "360x640",
+        //     form_factor: "narrow"
+        //   },
+        // ]
       },
     }),
   ],
