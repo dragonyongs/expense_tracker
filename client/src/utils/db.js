@@ -24,15 +24,19 @@ const openDatabase = () => {
 };
 
 // 데이터 추가 함수
-const addData = async (data) => {
+const addData = async (key, data) => {
     const db = await openDatabase();
     const transaction = db.transaction(storeName, "readwrite");
     const store = transaction.objectStore(storeName);
-    store.put(data); // 데이터 추가 또는 업데이트
+
+    // 데이터 객체에 key를 추가
+    const dataWithKey = { ...data, id: key }; // key를 id로 설정
+
+    store.put(dataWithKey); // 데이터 추가 또는 업데이트
 
     return new Promise((resolve, reject) => {
         transaction.oncomplete = () => {
-            resolve(data.id); // 추가된 데이터의 ID 반환
+            resolve(dataWithKey.id); // 추가된 데이터의 ID 반환
         };
         transaction.onerror = (event) => {
             reject(event.target.error);

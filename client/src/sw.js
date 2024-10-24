@@ -41,12 +41,12 @@ self.addEventListener("activate", (event) => {
 });
 
 // 메시지 리스너: 메인 스크립트에서 액세스 토큰 수신
-let accessToken = null;
-self.addEventListener('message', (event) => {
-    if (event.data.action === 'setToken') {
-        accessToken = event.data.token; // 메인 스크립트에서 받은 액세스 토큰 저장
-    }
-});
+// let accessToken = null;
+// self.addEventListener('message', (event) => {
+//     if (event.data.action === 'setToken') {
+//         accessToken = event.data.token; // 메인 스크립트에서 받은 액세스 토큰 저장
+//     }
+// });
 
 // Fetch 이벤트
 self.addEventListener("fetch", (event) => {
@@ -69,8 +69,12 @@ self.addEventListener("fetch", (event) => {
             .then((response) => {
                 if (response.ok) {
                     return response.clone().json().then(data => {
-                        // IndexedDB에 데이터 추가
-                        return addData(data).then(() => response); // 데이터 추가 후 원본 응답 반환
+                        if (data && data.id) { // 데이터 객체에 id가 있는지 확인
+                            return addData(data.id, data).then(() => response); // 데이터 추가 후 원본 응답 반환
+                        } else {
+                            console.error("Data does not contain an 'id' field:", data);
+                            return response; // 'id'가 없으면 응답 반환
+                        }
                     });
                 }
                 return response; // 원본 응답 반환
