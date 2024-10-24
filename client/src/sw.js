@@ -114,11 +114,11 @@ self.addEventListener("fetch", (event) => {
             .then((response) => {
                 if (response.ok) {
                     return response.clone().json().then(data => {
-                        console.log("API data received:", data); // API 응답 로그
+                        // console.log("API data received:", data); // API 응답 로그
                         if (data && data.id) { // 데이터 객체에 id가 있는지 확인
                             return addData(data.id, data).then(() => response); // 데이터 추가 후 원본 응답 반환
                         } else {
-                            console.error("Data does not contain an 'id' field:", data);
+                            // console.error("Data does not contain an 'id' field:", data);
                             return response; // 'id'가 없으면 응답 반환
                         }
                     });

@@ -13,11 +13,11 @@ const Dashboard = () => {
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
+            console.log('beforeinstallprompt event fired'); // 로그 추가
         };
     
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         
-        // Cleanup function
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
@@ -37,11 +37,16 @@ const Dashboard = () => {
         }
     };
 
+    const isAppInstalled = () => {
+        // 일반적으로 iOS Safari에서 PWA가 설치된 경우
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    };
+
     return (
         <>
             <Header />
             <div className='flex flex-col w-full'>  
-                {user.role === ('super_admin') ? (
+                {user.role === 'super_admin' ? (
                     <div className='p-8'>
                         <p>{user.role}</p>
                     </div>
@@ -51,11 +56,16 @@ const Dashboard = () => {
                         <PayHistory />
                     </div>
                 ) }
-                <div className='z-110 fixed bottom-24 right-6'>
-                    <button onClick={handleInstallClick} className='py-2 px-4 rounded-full bg-white text-blue-600 border border-blue-100 shadow-md'>Install App</button>
-                </div>
+                {!isAppInstalled() && deferredPrompt && (
+                    <div className='z-110 fixed bottom-24 right-6'>
+                        <button 
+                            onClick={handleInstallClick} 
+                            className='py-2 px-4 rounded-full bg-white text-blue-600 border border-blue-100 shadow-md'>
+                            Install App
+                        </button>
+                    </div>
+                )}
             </div>
-            
         </>
     );
 };

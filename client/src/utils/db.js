@@ -32,11 +32,11 @@ const addData = async (key, data) => {
     // 데이터 객체에 key를 추가
     const dataWithKey = { ...data, id: key }; // key를 id로 설정
 
-    console.log("Storing data in IndexedDB:", dataWithKey); // 데이터 저장 전 로그
+    // console.log("Storing data in IndexedDB:", dataWithKey); // 데이터 저장 전 로그
 
     // keyPath에 해당하는 id 값이 없는 경우를 처리
     if (!dataWithKey.id) {
-        console.error("No ID provided for data:", dataWithKey); // ID 없는 경우 에러 로그
+        // console.error("No ID provided for data:", dataWithKey); // ID 없는 경우 에러 로그
         throw new Error("ID is required to store data in IndexedDB.");
     }
 
@@ -44,11 +44,11 @@ const addData = async (key, data) => {
 
     return new Promise((resolve, reject) => {
         transaction.oncomplete = () => {
-            console.log("Data successfully stored with id:", dataWithKey.id); // 저장 완료 로그
+            // console.log("Data successfully stored with id:", dataWithKey.id); // 저장 완료 로그
             resolve(dataWithKey.id); // 추가된 데이터의 ID 반환
         };
         transaction.onerror = (event) => {
-            console.error("Failed to store data in IndexedDB:", event.target.error); // 에러 로그
+            // console.error("Failed to store data in IndexedDB:", event.target.error); // 에러 로그
             reject(event.target.error);
         };
     });
