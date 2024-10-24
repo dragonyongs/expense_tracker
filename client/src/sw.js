@@ -153,10 +153,10 @@ self.addEventListener("fetch", (event) => {
                             return Promise.all(data.map(item => {
                                 const id = item._id || item.id; // 적절한 ID 필드 사용
                                 if (id) {
-                                    console.log("Storing item with id:", id); // 저장할 ID 로그
+                                    // console.log("Storing item with id:", id); // 저장할 ID 로그
                                     return addData(id, { ...item, id: id }); // id 필드를 추가하여 데이터 저장
                                 } else {
-                                    console.error("No ID available for item:", item);
+                                    // console.error("No ID available for item:", item);
                                     return Promise.resolve(); // ID가 없는 경우, 계속 진행
                                 }
                             })).then(() => response); // 모든 데이터 저장 후 원본 응답 반환
@@ -168,7 +168,7 @@ self.addEventListener("fetch", (event) => {
                             // console.log("Storing single item with id:", id); // 저장할 ID 로그
                             return addData(id, { ...data, id: id }).then(() => response); // id 필드를 추가하여 데이터 저장
                         } else {
-                            console.error("Data does not contain an 'id' field:", data);
+                            // console.error("Data does not contain an 'id' field:", data);
                             return response; // 'id'가 없으면 원본 응답 반환
                         }
                     });
