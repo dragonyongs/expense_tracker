@@ -28,11 +28,11 @@ const addData = async (data) => {
     const db = await openDatabase();
     const transaction = db.transaction(storeName, "readwrite");
     const store = transaction.objectStore(storeName);
-    store.add(data); // 데이터 추가
+    store.put(data); // 데이터 추가 또는 업데이트
 
     return new Promise((resolve, reject) => {
         transaction.oncomplete = () => {
-            resolve("Data added successfully");
+            resolve(data.id); // 추가된 데이터의 ID 반환
         };
         transaction.onerror = (event) => {
             reject(event.target.error);
@@ -66,7 +66,7 @@ const deleteData = async (id) => {
 
     return new Promise((resolve, reject) => {
         transaction.oncomplete = () => {
-            resolve("Data deleted successfully");
+            resolve(id); // 삭제된 데이터의 ID 반환
         };
         transaction.onerror = (event) => {
             reject(event.target.error);

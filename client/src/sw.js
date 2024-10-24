@@ -1,5 +1,5 @@
 import { precacheAndRoute } from 'workbox-precaching';
-import { addData, getData, deleteData } from './utils/db'; // db.js에서 관련 함수 import
+import { addData, getData } from './utils/db'; // db.js에서 관련 함수 import
 
 precacheAndRoute(self.__WB_MANIFEST);
 
@@ -51,10 +51,13 @@ self.addEventListener('message', (event) => {
 // Fetch 이벤트
 self.addEventListener("fetch", (event) => {
     if (event.request.url.includes("/api/")) {
+        const cookies = event.request.headers.get('Cookie');
+        const token = getCookie('accessToken', cookies); // 쿠키에서 액세스 토큰 가져오기
+
         const headers = new Headers(event.request.headers);
         
-        if (accessToken) {
-            headers.append('Authorization', `Bearer ${accessToken}`); // 헤더에 인증 토큰 추가
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`); // 토큰 추가
         }
 
         const modifiedRequest = new Request(event.request, {
@@ -65,16 +68,15 @@ self.addEventListener("fetch", (event) => {
             fetch(modifiedRequest)
             .then((response) => {
                 if (response.ok) {
-                    // 성공적으로 응답받으면 IndexedDB에 저장
                     return response.clone().json().then(data => {
-                        addData('api_data', data); // 'api_data'라는 스토리지에 데이터 추가
-                        return response;
+                        // IndexedDB에 데이터 추가
+                        return addData(data).then(() => response); // 데이터 추가 후 원본 응답 반환
                     });
                 }
-                return response;
+                return response; // 원본 응답 반환
             })
             .catch(() => {
-                // 네트워크 오류가 발생한 경우 IndexedDB에서 데이터 가져오기
+                // 네트워크 오류 발생 시 IndexedDB에서 데이터 가져오기
                 return getData('api_data').then(data => {
                     if (data) {
                         return new Response(JSON.stringify(data), {
@@ -87,3 +89,50 @@ self.addEventListener("fetch", (event) => {
         );
     }
 });
+
+// 쿠키에서 특정 이름의 값을 가져오는 함수
+function getCookie(name, cookies) {
+    const value = `; ${cookies}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
+// self.addEventListener("fetch", (event) => {
+//     if (event.request.url.includes("/api/")) {
+//         const headers = new Headers(event.request.headers);
+        
+//         if (accessToken) {
+//             headers.append('Authorization', `Bearer ${accessToken}`); // 헤더에 인증 토큰 추가
+//         }
+
+//         const modifiedRequest = new Request(event.request, {
+//             headers: headers,
+//         });
+
+//         event.respondWith(
+//             fetch(modifiedRequest)
+//             .then((response) => {
+//                 if (response.ok) {
+//                     // 성공적으로 응답받으면 IndexedDB에 저장
+//                     return response.clone().json().then(data => {
+//                         addData('api_data', data); // 'api_data'라는 스토리지에 데이터 추가
+//                         return response;
+//                     });
+//                 }
+//                 return response;
+//             })
+//             .catch(() => {
+//                 // 네트워크 오류가 발생한 경우 IndexedDB에서 데이터 가져오기
+//                 return getData('api_data').then(data => {
+//                     if (data) {
+//                         return new Response(JSON.stringify(data), {
+//                             headers: { 'Content-Type': 'application/json' }
+//                         });
+//                     }
+//                     return new Response('No data available', { status: 404 });
+//                 });
+//             })
+//         );
+//     }
+// });
