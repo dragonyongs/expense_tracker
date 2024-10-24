@@ -58,6 +58,35 @@ axiosInstance.interceptors.request.use((config) => {
 //     return Promise.reject(error);
 // });
 
+// axiosInstance.interceptors.response.use(
+//     response => response,
+//     async error => {
+//         const originalRequest = error.config;
+//         const navigate = useNavigate();
+
+//         if (error.response.status === 401 && !originalRequest._retry) {
+//             originalRequest._retry = true;
+//             try {
+//                 const { data } = await axiosInstance.post('/api/auth/refresh-token', {
+//                     refreshToken: localStorage.getItem('refreshToken')
+//                 });
+
+//                 // New access token received, retry original request
+//                 axios.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+//                 return axiosInstance(originalRequest);
+//             } catch (refreshError) {
+//                 // Refresh token invalid, log out
+//                 localStorage.removeItem('refreshToken');
+//                 localStorage.removeItem('status');
+//                 navigate('/signin');
+//                 return Promise.reject(refreshError);
+//             }
+//         }
+
+//         return Promise.reject(error);
+//     }
+// );
+
 axiosInstance.interceptors.response.use(
     response => response,
     async error => {
@@ -67,16 +96,14 @@ axiosInstance.interceptors.response.use(
         if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const { data } = await axiosInstance.post('/api/auth/refresh-token', {
-                    refreshToken: localStorage.getItem('refreshToken')
-                });
+                // 서버에서 리프레시 토큰을 사용해 새 액세스 토큰 요청
+                const { data } = await axiosInstance.post('/api/auth/refresh-token');
 
-                // New access token received, retry original request
+                // 새로운 액세스 토큰을 받아서 요청 재시도
                 axios.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                // Refresh token invalid, log out
-                localStorage.removeItem('refreshToken');
+                // 리프레시 토큰이 유효하지 않으면 로그아웃
                 localStorage.removeItem('status');
                 navigate('/signin');
                 return Promise.reject(refreshError);

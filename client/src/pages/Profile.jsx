@@ -324,9 +324,9 @@ const Profile = () => {
                     return currentItem && Object.keys(item).some(field => item[field] !== currentItem[field]);
                 });
 
-                console.log('newItems:', apiUrl, newItems); // 새로 추가된 연락처 확인
-                console.log('updatedItems:', apiUrl, updatedItems); // 수정된 연락처 확인
-                console.log('items:', items); // 수정된 연락처 확인
+                // console.log('newItems:', apiUrl, newItems); // 새로 추가된 연락처 확인
+                // console.log('updatedItems:', apiUrl, updatedItems); // 수정된 연락처 확인
+                // console.log('items:', items); // 수정된 연락처 확인
             
                 // 삭제할 항목이 있을 경우에만 삭제 요청을 처리
                 const deletedItemsRequests = deletedItems.length > 0 

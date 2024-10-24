@@ -9,13 +9,16 @@ function Logout({isDashBoard, role}) {
     const { logout } = useContext(AuthContext);
 
     const handleLogout = async () => {
+        console.log('Logout button clicked'); // 버튼 클릭 확인
         try {
             await logout();
+            console.log('Logout request sent'); // 로그아웃 요청 전송 확인
             navigate('/signin');
         } catch (error) {
             console.error('Logout Error: ', error);
         }
     };
+    
 
     return (
         <div className='relative leading-none'>

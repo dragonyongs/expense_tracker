@@ -54,8 +54,8 @@ exports.createTransaction = async (req, res) => {
 
     // TeamFund 지출 처리 로직
     const handleTeamFundExpense = (card, remainingAmount) => {
-        console.log('Team 카드 잔액', card.team_fund);
-        console.log('지출 금액', remainingAmount);
+        // console.log('Team 카드 잔액', card.team_fund);
+        // console.log('지출 금액', remainingAmount);
 
         if (card.team_fund >= remainingAmount) {
             card.team_fund -= remainingAmount;
@@ -180,9 +180,9 @@ exports.createTransaction = async (req, res) => {
 
             // 트랜잭션 저장 및 카드 정보 업데이트
             await transaction.save();
-            console.log('expense 업데이트 전 카드 정보:', card);
+            // console.log('expense 업데이트 전 카드 정보:', card);
             await card.save();
-            console.log('expense 업데이트 후 카드 정보:', card);
+            // console.log('expense 업데이트 후 카드 정보:', card);
 
             res.status(201).json({ 
                 message: '트랜잭션 처리 성공', 
@@ -510,9 +510,9 @@ exports.updateTransaction = async (req, res) => {
         const newAmount = transaction_amount !== undefined ? Number(transaction_amount) : previousAmount; // 수정된 트랜잭션 금액
         const difference = newAmount - previousAmount; // 금액 차이
 
-        console.log("이전 금액:", previousAmount);
-        console.log("새로운 금액:", newAmount);
-        console.log("금액 차이:", difference);
+        // console.log("이전 금액:", previousAmount);
+        // console.log("새로운 금액:", newAmount);
+        // console.log("금액 차이:", difference);
 
         // 기존 지출 타입 확인
         const previousExpenseType = transaction.expense_type;
@@ -522,8 +522,8 @@ exports.updateTransaction = async (req, res) => {
 
         // 금액 차이가 있을 경우 처리
         if (transaction_type === 'expense' && (difference !== 0 || isExpenseTypeChanged)) {
-            console.log("이전 지출 타입:", previousExpenseType);
-            console.log("팀카드 > 차액 팀운영비 사용 금액:", transaction.teamFundDeducted);
+            // console.log("이전 지출 타입:", previousExpenseType);
+            // console.log("팀카드 > 차액 팀운영비 사용 금액:", transaction.teamFundDeducted);
 
             // (1) 기존 금액 복구 로직
             if (previousExpenseType === 'TeamFund' && transaction.teamFundDeducted > 0) {
@@ -634,16 +634,16 @@ exports.deleteTransaction = async (req, res) => {
                 // 팀펀드에서 지출한 경우
                 card.team_fund += teamFundDeducted; // 팀펀드 복구
                 card.rollover_amount += rolloverAmountDeducted; // 이월 금액 복구
-                console.log('팀 운영비 복구 완료!');
-                console.log('최종 팀 운영비:', card.team_fund);
-                console.log('최종 이월 금액:', card.rollover_amount);
+                // console.log('팀 운영비 복구 완료!');
+                // console.log('최종 팀 운영비:', card.team_fund);
+                // console.log('최종 이월 금액:', card.rollover_amount);
             } else {
                 // 카드 잔액에서 지출한 경우
                 const totalDeducted = teamFundDeducted + rolloverAmountDeducted; 
                 card.balance += transactionAmount - totalDeducted; // 카드 잔액 복구
                 card.balance = Math.max(card.balance, 0); // 카드 잔액은 음수가 되지 않도록 설정
-                console.log('카드 잔액 복구 완료!');
-                console.log('최종 카드 잔액:', card.balance);
+                // console.log('카드 잔액 복구 완료!');
+                // console.log('최종 카드 잔액:', card.balance);
             }
         }
 
