@@ -109,46 +109,46 @@ self.addEventListener("fetch", (event) => {
             headers: headers,
         });
 
-        event.respondWith(
-            fetch(modifiedRequest)
-            .then((response) => {
-                if (response.ok) {
-                    return response.clone().json().then(data => {
-                        // console.log("API data received:", data); // API 응답 로그
-                        if (data && data.id) { // 데이터 객체에 id가 있는지 확인
-                            return addData(data.id, data).then(() => response); // 데이터 추가 후 원본 응답 반환
-                        } else {
-                            // console.error("Data does not contain an 'id' field:", data);
-                            return response; // 'id'가 없으면 응답 반환
-                        }
-                    });
-                }
-                return response; // 원본 응답 반환
-            })
-            .catch(() => {
-                // 네트워크 오류 발생 시 IndexedDB에서 데이터 가져오기
-                console.warn("Network error, trying to fetch data from IndexedDB");
-                return getData('api_data').then(data => {
-                    if (data) {
-                        return new Response(JSON.stringify(data), {
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                    }
-                    return new Response('No data available', { status: 404 });
-                });
-            })
-        );
+        // event.respondWith(
+        //     fetch(modifiedRequest)
+        //     .then((response) => {
+        //         if (response.ok) {
+        //             return response.clone().json().then(data => {
+        //                 // console.log("API data received:", data); // API 응답 로그
+        //                 if (data && data.id) { // 데이터 객체에 id가 있는지 확인
+        //                     return addData(data.id, data).then(() => response); // 데이터 추가 후 원본 응답 반환
+        //                 } else {
+        //                     // console.error("Data does not contain an 'id' field:", data);
+        //                     return response; // 'id'가 없으면 응답 반환
+        //                 }
+        //             });
+        //         }
+        //         return response; // 원본 응답 반환
+        //     })
+        //     .catch(() => {
+        //         // 네트워크 오류 발생 시 IndexedDB에서 데이터 가져오기
+        //         console.warn("Network error, trying to fetch data from IndexedDB");
+        //         return getData('api_data').then(data => {
+        //             if (data) {
+        //                 return new Response(JSON.stringify(data), {
+        //                     headers: { 'Content-Type': 'application/json' }
+        //                 });
+        //             }
+        //             return new Response('No data available', { status: 404 });
+        //         });
+        //     })
+        // );
 
         event.respondWith(
             fetch(modifiedRequest)
             .then((response) => {
                 if (response.ok) {
                     return response.clone().json().then(data => {
-                        console.log("API data received:", data); // API 응답 로그
+                        // console.log("API data received:", data); // API 응답 로그
         
                         // 데이터가 배열인 경우 처리
                         if (Array.isArray(data)) {
-                            console.log("Received array data");
+                            // console.log("Received array data");
 
                             return Promise.all(data.map(item => {
                                 const id = item._id || item.id; // 적절한 ID 필드 사용
@@ -165,7 +165,7 @@ self.addEventListener("fetch", (event) => {
                         // 단일 객체 처리
                         const id = data._id || data.id; // 적절한 ID 필드 사용
                         if (id) {
-                            console.log("Storing single item with id:", id); // 저장할 ID 로그
+                            // console.log("Storing single item with id:", id); // 저장할 ID 로그
                             return addData(id, { ...data, id: id }).then(() => response); // id 필드를 추가하여 데이터 저장
                         } else {
                             console.error("Data does not contain an 'id' field:", data);
