@@ -70,20 +70,26 @@ export function AuthProvider({ children }) {
         try {
             const { data } = await axiosInstance.post(`${API_URLS.AUTH_LOGIN}`, credentials);
             const { accessToken, refreshToken } = data; // 리프레시 토큰도 포함
-    
+
             // 액세스 토큰을 헤더에 설정
             axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    
+
+            // 서비스 워커에 액세스 토큰 전달
+            navigator.serviceWorker.ready.then(registration => {
+                registration.active.postMessage({ action: 'setToken', token: accessToken });
+            });
+
             // 리프레시 토큰을 저장 (로컬 스토리지나 쿠키에)
             localStorage.setItem('refreshToken', refreshToken);
-    
+
             // 로그인 성공 처리
             setIsAuthenticated(true);
             setUser(data.user);
-    
+
             const statusResponse = await axios.get(`${API_URLS.STATUSES}/${data.user.status_id}`);
             const status = statusResponse.data.status_name;
-    
+
+            // 상태에 따라 리다이렉션
             navigate(status === 'pending' ? '/pending' : '/');
         } catch (error) {
             console.error('Login failed:', error);
