@@ -36,11 +36,7 @@ const App = () => {
     useEffect(() => {
         const metaTag = document.querySelector("meta[name='theme-color']");
         if (metaTag) {
-            if (location.pathname === '/') {
-                // 메인 페이지일 때 색상 설정
-                metaTag.setAttribute("content", "#0433FF");
-            } else {
-                // 메인 페이지가 아닐 때 색상 설정
+            if (location.pathname !== '/') {
                 metaTag.setAttribute("content", "#dce8f5");
             }
         }
