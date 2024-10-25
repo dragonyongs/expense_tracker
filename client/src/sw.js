@@ -70,7 +70,9 @@ self.addEventListener("fetch", (event) => {
                     const fetchPromise = fetch(modifiedRequest)
                     .then((response) => {
                         if (response.ok) {
-                            response.clone().json().then(data => {
+                            // Response를 clone하여 저장
+                            const clonedResponse = response.clone();
+                            clonedResponse.json().then(data => {
                                 if (Array.isArray(data)) {
                                     // 배열 데이터 저장
                                     Promise.all(data.map(item => {
@@ -106,7 +108,7 @@ self.addEventListener("fetch", (event) => {
                                 headers: { "Content-Type": "application/json" }
                             });
                         }
-                    })
+                    });
 
                     // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
                     return cachedResponse || fetchPromise;
@@ -121,8 +123,9 @@ self.addEventListener("fetch", (event) => {
                     const fetchPromise = fetch(event.request)
                         .then((response) => {
                             // 최신 응답을 캐시에 저장
+                            const clonedResponse = response.clone();
                             caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(event.request, response.clone());
+                                cache.put(event.request, clonedResponse);
                             });
                             return response;
                         })
