@@ -66,32 +66,28 @@ const getData = async (key) => {
         const db = await openDatabase();
         const transaction = db.transaction(storeName, "readonly");
         const store = transaction.objectStore(storeName);
-
-        // 키 값이 존재하는지 확인
-        if (key) {
-            return new Promise((resolve, reject) => {
-                const request = store.get(key);
-
-                request.onsuccess = (event) => {
-                    const data = event.target.result;
-                    if (data) {
-                        console.log('Data found:', data);
-                        resolve(data); // 데이터를 성공적으로 가져온 경우 반환
-                    } else {
-                        console.log('No data found for key:', key);
-                        resolve(null); // 데이터가 없으면 null 반환
-                    }
-                };
-
-                request.onerror = (event) => {
-                    console.error('Failed to get data:', event.target.error);
-                    reject(event.target.error);
-                };
-            });
-        } else {
+        
+        if (!key) {
             console.error('No key specified');
-            return null;
+            return null;  // 키가 없을 경우 null 반환
         }
+
+        return new Promise((resolve, reject) => {
+            const request = store.get(key);
+            request.onsuccess = (event) => {
+                const data = event.target.result;
+                if (data) {
+                    resolve(data);  // 데이터를 성공적으로 가져옴
+                } else {
+                    console.warn('No data found for key:', key);
+                    resolve(null);  // 키에 해당하는 데이터가 없을 경우 null 반환
+                }
+            };
+            request.onerror = (event) => {
+                console.error("Error fetching data:", event.target.error);
+                reject(event.target.error);
+            };
+        });
     } catch (error) {
         console.error("Failed to get data from IndexedDB:", error);
         throw error;

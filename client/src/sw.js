@@ -136,11 +136,10 @@ self.addEventListener("fetch", (event) => {
                         })
                         .catch(async () => {
                             // 네트워크 요청이 실패했을 때 IndexedDB에서 데이터 가져오기 시도
-                            // 요청 URL을 key로 사용해 데이터를 가져옴
-                            const key = event.request.url;
+                            const key = event.request.url;  // 요청 URL을 키로 사용
                             const cachedData = await getData(key);
-
-                            if (cachedData) {
+                            
+                            if (cachedData && cachedData.length > 0) {
                                 // IndexedDB 데이터가 있으면 이를 반환
                                 return new Response(JSON.stringify(cachedData), {
                                     headers: { "Content-Type": "application/json" }
@@ -150,7 +149,7 @@ self.addEventListener("fetch", (event) => {
                                 return caches.match('/offline.html');
                             }
                         });
-
+        
                     // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
                     return cachedResponse || fetchPromise;
                 })
