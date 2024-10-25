@@ -68,47 +68,45 @@ self.addEventListener("fetch", (event) => {
             caches.match(modifiedRequest)
                 .then((cachedResponse) => {
                     const fetchPromise = fetch(modifiedRequest)
-                    .then((response) => {
-                        if (response.ok) {
-                            // Response를 clone하여 저장
-                            const clonedResponse = response.clone();
-                            clonedResponse.json().then(data => {
-                                if (Array.isArray(data)) {
-                                    // 배열 데이터 저장
-                                    Promise.all(data.map(item => {
-                                        const id = item._id || item.id;
+                        .then((response) => {
+                            if (response.ok) {
+                                const clonedResponse = response.clone();
+                                clonedResponse.json().then(data => {
+                                    if (Array.isArray(data)) {
+                                        // 배열 데이터 저장
+                                        Promise.all(data.map(item => {
+                                            const id = item._id || item.id;
+                                            if (id) {
+                                                return addData(id, { ...item, id: id });
+                                            } else {
+                                                return Promise.resolve();
+                                            }
+                                        }));
+                                    } else {
+                                        // 단일 객체 데이터 저장
+                                        const id = data._id || data.id;
                                         if (id) {
-                                            return addData(id, { ...item, id: id });
-                                        } else {
-                                            return Promise.resolve();
+                                            addData(id, { ...data, id: id });
                                         }
-                                    }));
-                                } else {
-                                    // 단일 객체 데이터 저장
-                                    const id = data._id || data.id;
-                                    if (id) {
-                                        addData(id, { ...data, id: id });
                                     }
-                                }
-                            });
-    
-                            return response; // 최신 응답 반환
-                        }
-                        return response; // 서버 응답 오류 시 원본 응답 반환
-                    })
-                    .catch(async () => {
-                        // 네트워크 요청 실패 시 IndexedDB에서 데이터 가져오기
-                        const cachedData = await getData();
-                        if (cachedData.length > 0) {
-                            return new Response(JSON.stringify(cachedData), {
-                                headers: { "Content-Type": "application/json" }
-                            });
-                        } else {
-                            return new Response('[]', {
-                                headers: { "Content-Type": "application/json" }
-                            });
-                        }
-                    });
+                                });
+                                return response;
+                            }
+                            return response;
+                        })
+                        .catch(async () => {
+                            // 네트워크 요청이 실패했을 때 IndexedDB에서 데이터 가져오기
+                            const cachedData = await getData();
+                            if (cachedData.length > 0) {
+                                // IndexedDB 데이터가 있으면 이를 반환
+                                return new Response(JSON.stringify(cachedData), {
+                                    headers: { "Content-Type": "application/json" }
+                                });
+                            } else {
+                                // IndexedDB 데이터가 없으면 오프라인 페이지 반환
+                                return caches.match('/offline.html');
+                            }
+                        });
 
                     // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
                     return cachedResponse || fetchPromise;
@@ -129,9 +127,18 @@ self.addEventListener("fetch", (event) => {
                             });
                             return response;
                         })
-                        .catch(() => {
-                            // 네트워크 요청이 실패했을 때 오프라인 페이지 제공
-                            return caches.match('/offline.html');
+                        .catch(async () => {
+                            // 네트워크 요청이 실패했을 때 IndexedDB에서 데이터 가져오기 시도
+                            const cachedData = await getData();
+                            if (cachedData.length > 0) {
+                                // IndexedDB 데이터가 있으면 이를 반환
+                                return new Response(JSON.stringify(cachedData), {
+                                    headers: { "Content-Type": "application/json" }
+                                });
+                            } else {
+                                // IndexedDB 데이터가 없으면 오프라인 페이지 반환
+                                return caches.match('/offline.html');
+                            }
                         });
 
                     // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
