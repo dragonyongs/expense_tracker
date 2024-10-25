@@ -8,12 +8,15 @@ const openDatabase = () => {
 
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
+            console.log("Upgrading database...");
             if (!db.objectStoreNames.contains(storeName)) {
-                db.createObjectStore(storeName, { keyPath: "id" }); // id를 키로 사용하는 객체 저장소 생성
+                db.createObjectStore(storeName, { keyPath: "id" });
+                console.log(`Object store ${storeName} created.`);
             }
         };
 
         request.onsuccess = (event) => {
+            console.log("Database opened successfully.");
             resolve(event.target.result);
         };
 
@@ -31,8 +34,8 @@ const addData = async (key, data) => {
         const transaction = db.transaction(storeName, "readwrite");
         const store = transaction.objectStore(storeName);
 
-        // 데이터 객체에 key를 추가
-        const dataWithKey = { ...data, id: key }; // key를 id로 설정
+        // 데이터 객체에 key를 추가 (keyPath가 id로 설정되었을 경우)
+        const dataWithKey = { ...data, id: key || data.id || data._id };
 
         // keyPath에 해당하는 id 값이 없는 경우 처리
         if (!dataWithKey.id) {
