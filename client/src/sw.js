@@ -123,9 +123,13 @@ async function handleApiRequest(request) {
         } else {
             if (endpoint.includes('/auth/isAuthenticated')) {
                 cachedData = await getData('auth-status');
+                console.log("Cached Data:", cachedData); // 데이터 구조 확인
+            
                 if (cachedData && cachedData.length > 0) {
                     const authData = handleAuthError(cachedData && cachedData.length > 0 ? cachedData[0] : null);
-
+                    console.log("Auth Data:", authData); // authData 확인
+            
+                    // authData가 유효한지 검사
                     if (authData && authData.user) {
                         const statusId = authData.user.status_id; // status_id에 올바르게 접근
                         console.log("Status ID:", statusId);
@@ -138,7 +142,6 @@ async function handleApiRequest(request) {
                             headers: { 'Content-Type': 'application/json' }
                         });
                     }
-                    
                 } else {
                     // 데이터가 없을 경우 처리
                     return new Response(JSON.stringify({ isAuthenticated: false }), {
@@ -146,6 +149,7 @@ async function handleApiRequest(request) {
                     });
                 }
             }
+            
         }
     }
 }
