@@ -58,7 +58,10 @@ async function cacheApiResponse(request, response) {
         const endpoint = url.pathname;
         
         // API 엔드포인트별 데이터 저장
-        if (Array.isArray(data)) {
+        if (endpoint === '/api/auth/isAuthenticated') {
+            // 인증 상태 저장
+            await addData('auth-status', { ...data, endpoint, timestamp: Date.now() });
+        } else if (Array.isArray(data)) {
             await Promise.all(data.map(item => {
                 const id = item._id || item.id;
                 if (id) {
@@ -101,7 +104,7 @@ async function handleApiRequest(request) {
         
         // IndexedDB에서 데이터 검색
         let cachedData;
-        if (endpoint.includes('/auth/isAuthenticated')) {
+        if (endpoint === '/api/auth/isAuthenticated') {
             // 인증 상태 처리
             cachedData = await getData('auth-status');
             return new Response(JSON.stringify(cachedData || { isAuthenticated: true }), {
