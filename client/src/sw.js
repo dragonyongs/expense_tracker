@@ -111,7 +111,7 @@ async function handleApiRequest(request) {
     } catch (error) {
         console.log('Fetching from IndexedDB for:', endpoint);
         console.error("Fetch failed, attempting to get cached data:", error);
-        
+
         // IndexedDB에서 데이터 검색
         let cachedData;
         if (endpoint === '/api/auth/isAuthenticated') {
@@ -124,11 +124,21 @@ async function handleApiRequest(request) {
             if (endpoint.includes('/auth/isAuthenticated')) {
                 cachedData = await getData('auth-status');
                 if (cachedData && cachedData.length > 0) {
-                    // const authStatus = cachedData[0]; // 데이터가 배열로 반환되므로 첫 번째 요소 사용
-                    const authStatus = handleAuthError(cachedData && cachedData.length > 0 ? cachedData[0] : null);
-                    return new Response(JSON.stringify(authStatus), {
-                        headers: { 'Content-Type': 'application/json' }
-                    });
+                    const authData = handleAuthError(cachedData && cachedData.length > 0 ? cachedData[0] : null);
+
+                    if (authData && authData.user) {
+                        const statusId = authData.user.status_id; // status_id에 올바르게 접근
+                        console.log("Status ID:", statusId);
+                        return new Response(JSON.stringify(authData), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } else {
+                        console.error("Auth data is missing or invalid:", authData);
+                        return new Response(JSON.stringify({ isAuthenticated: false }), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
                 } else {
                     // 데이터가 없을 경우 처리
                     return new Response(JSON.stringify({ isAuthenticated: false }), {
