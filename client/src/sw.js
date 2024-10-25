@@ -68,50 +68,45 @@ self.addEventListener("fetch", (event) => {
             caches.match(modifiedRequest)
                 .then((cachedResponse) => {
                     const fetchPromise = fetch(modifiedRequest)
-                        .then((response) => {
-                            if (response.ok) {
-                                response.clone().json().then(data => {
-                                    if (Array.isArray(data)) {
-                                        // 배열 데이터 저장
-                                        Promise.all(data.map(item => {
-                                            const id = item._id || item.id;
-                                            if (id) {
-                                                return addData(id, { ...item, id: id });
-                                            } else {
-                                                return Promise.resolve();
-                                            }
-                                        }));
-                                    } else {
-                                        // 단일 객체 데이터 저장
-                                        const id = data._id || data.id;
+                    .then((response) => {
+                        if (response.ok) {
+                            response.clone().json().then(data => {
+                                if (Array.isArray(data)) {
+                                    // 배열 데이터 저장
+                                    Promise.all(data.map(item => {
+                                        const id = item._id || item.id;
                                         if (id) {
-                                            addData(id, { ...data, id: id });
+                                            return addData(id, { ...item, id: id });
+                                        } else {
+                                            return Promise.resolve();
                                         }
+                                    }));
+                                } else {
+                                    // 단일 객체 데이터 저장
+                                    const id = data._id || data.id;
+                                    if (id) {
+                                        addData(id, { ...data, id: id });
                                     }
-                                });
-
-                                // 최신 데이터로 캐시 업데이트
-                                caches.open('api-cache').then((cache) => {
-                                    cache.put(modifiedRequest, response.clone());
-                                });
-
-                                return response; // 최신 응답 반환
-                            }
-                            return response; // 서버 응답 오류 시 원본 응답 반환
-                        })
-                        .catch(async () => {
-                            // 네트워크 요청 실패 시 IndexedDB에서 데이터 가져오기
-                            const cachedData = await getData();
-                            if (cachedData.length > 0) {
-                                return new Response(JSON.stringify(cachedData), {
-                                    headers: { "Content-Type": "application/json" }
-                                });
-                            } else {
-                                return new Response('[]', {
-                                    headers: { "Content-Type": "application/json" }
-                                });
-                            }
-                        });
+                                }
+                            });
+    
+                            return response; // 최신 응답 반환
+                        }
+                        return response; // 서버 응답 오류 시 원본 응답 반환
+                    })
+                    .catch(async () => {
+                        // 네트워크 요청 실패 시 IndexedDB에서 데이터 가져오기
+                        const cachedData = await getData();
+                        if (cachedData.length > 0) {
+                            return new Response(JSON.stringify(cachedData), {
+                                headers: { "Content-Type": "application/json" }
+                            });
+                        } else {
+                            return new Response('[]', {
+                                headers: { "Content-Type": "application/json" }
+                            });
+                        }
+                    })
 
                     // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
                     return cachedResponse || fetchPromise;
