@@ -50,6 +50,13 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+    const url = new URL(event.request.url);
+        
+    // chrome-extension 스킴을 가진 요청을 무시
+    if (url.protocol === 'chrome-extension:') {
+        return;
+    }
+
     if (event.request.url.includes("/api/")) {
         // API 요청을 위한 Stale-While-Revalidate 전략
         const cookies = event.request.headers.get('Cookie');
@@ -129,8 +136,11 @@ self.addEventListener("fetch", (event) => {
                         })
                         .catch(async () => {
                             // 네트워크 요청이 실패했을 때 IndexedDB에서 데이터 가져오기 시도
-                            const cachedData = await getData();
-                            if (cachedData.length > 0) {
+                            // 요청 URL을 key로 사용해 데이터를 가져옴
+                            const key = event.request.url;
+                            const cachedData = await getData(key);
+
+                            if (cachedData) {
                                 // IndexedDB 데이터가 있으면 이를 반환
                                 return new Response(JSON.stringify(cachedData), {
                                     headers: { "Content-Type": "application/json" }
