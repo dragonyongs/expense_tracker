@@ -72,6 +72,9 @@ export default defineConfig({
       },
     }),
   ],
+  alias: {
+    '@context': '/src/context',
+  },
   server: {
     proxy: {
       '/api': {
