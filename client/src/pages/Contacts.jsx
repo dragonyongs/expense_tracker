@@ -4,6 +4,7 @@ import { API_URLS } from '../services/apiUrls';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import CommonDrawer from '../components/CommonDrawer';
 import AvatarPreview from '../components/AvatarPreview';
+import { genConfig } from 'react-nice-avatar';
 
 function Contacts() {
     const [contacts, setContacts ] = useState([]);
@@ -56,40 +57,45 @@ function Contacts() {
     // 팀별로 연락처 필터링 함수
     const groupByTeam = (contacts) => {
         return contacts.reduce((groups, contact) => {
-            const teamName = contact?.member_id?.team_id?.team_name || '미지정 팀';
-            if (!groups[teamName]) {
-                groups[teamName] = [];
+            const teamName = contact?.member_id?.team_id?.team_name;
+            if (teamName) {
+                if (!groups[teamName]) {
+                    groups[teamName] = [];
+                }
+
+                groups[teamName].push(contact);
             }
-            groups[teamName].push(contact);
             return groups;
         }, {});
     };
 
     const groupedContacts = groupByTeam(contacts);
 
-    const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
+    // const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
 
-    const genders = ['man', 'woman'];
-    const hairStyles = ['normal', 'thick', 'mohawk', 'womanLong', 'womanShort'];
-    const bgColors = ['#ffedef', '#e8fcbf', '#fcf7c7']; // 원하는 배경 색상 추가
-    const noAvatar = {
-        sex: getRandomElement(genders), // 랜덤 성별
-        faceColor: '#F9CBAE', // 피부색 (고정)
-        earSize: 'normal', // 귀 크기 (고정)
-        hairColor: getRandomElement(['#4A3C3A', '#C2B280', '#A52A2A']), // 랜덤 머리 색상
-        hairStyle: getRandomElement(hairStyles), // 랜덤 머리 스타일
-        hairColorRandom: '', // 랜덤 머리 색상 (비워둠)
-        hatColor: '', // 모자 색상 (고정)
-        hatStyle: '', // 모자 스타일 (고정)
-        eyeStyle: 'oval', // 눈 스타일 (고정)
-        glassesStyle: '', // 안경 스타일 (고정)
-        noseStyle: 'normal', // 코 스타일 (고정)
-        mouthStyle: 'smile', // 입 스타일 (고정)
-        shirtStyle: 'tshirt', // 티셔츠 스타일 (고정)
-        shirtColor: '#3B5998', // 티셔츠 색상 (고정)
-        bgColor: getRandomElement(bgColors), // 랜덤 배경 색상
-        isGradient: false // 그라데이션 여부 (고정)
-    };
+    // const genders = ['man', 'woman'];
+    // const hairStyles = ['normal', 'thick', 'mohawk', 'womanLong', 'womanShort'];
+    // const hairColor = ['#4A3C3A', '#C2B280', '#A52A2A'];
+    // const bgColors = ['#ffedef', '#e8fcbf', '#fcf7c7'];
+    // const earSize = ["small","big"];
+    // const noAvatar = {
+    //     sex: getRandomElement(genders),
+    //     faceColor: '#F9CBAE',
+    //     earSize: getRandomElement(earSize),
+    //     hairColor: getRandomElement(hairColor),
+    //     hairStyle: getRandomElement(hairStyles),
+    //     hairColorRandom: '',
+    //     hatColor: '',
+    //     hatStyle: '',
+    //     eyeStyle: 'oval',
+    //     glassesStyle: '',
+    //     noseStyle: 'normal',
+    //     mouthStyle: 'smile',
+    //     shirtStyle: 'tshirt',
+    //     shirtColor: '#3B5998',
+    //     bgColor: getRandomElement(bgColors),
+    //     isGradient: false 
+    // };
     
     return (
         <>
@@ -98,10 +104,10 @@ function Contacts() {
                     <span className="font-semibold">연락망</span>
                 </div>
             </header>
-            <div className="pb-6 px-6 space-y-6">
-                {groupedContacts.length !== 0 ? (
+            <div className="pb-6 px-6 space-y-3">
+                {groupedContacts.length === 0 ? (
                     <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
-                        <p className="font-semibold text-center"> 데이터를 불러 올 수 없습니다.</p>
+                        <p className="font-semibold text-center">연락망의 데이터가 없습니다.</p>
                     </div>
                 ) : (
                     Object.keys(groupedContacts).map((teamName) => (
@@ -121,7 +127,7 @@ function Contacts() {
                                                 {contact?.avatar_id ? (
                                                     <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className="w-10 h-10"/>
                                                 ) : (
-                                                    <AvatarPreview avatarConfig={ noAvatar } shape="circle" className="w-10 h-10"/>
+                                                    <AvatarPreview avatarConfig={ genConfig() } shape="circle" className="w-10 h-10"/>
                                                 )}
                                             </div>
                                             <div className="flex-1">
@@ -149,7 +155,7 @@ function Contacts() {
                             {selectedContact?.avatar_id ? (
                                 <AvatarPreview avatarConfig={selectedContact?.avatar_id} shape="circle" />
                             ) : (
-                                <AvatarPreview avatarConfig={ noAvatar } shape="circle" />
+                                <AvatarPreview avatarConfig={ genConfig() } shape="circle" />
                             )}
                         </div>
                         <div className="font-semibold text-xl text-white">

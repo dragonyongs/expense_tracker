@@ -406,139 +406,140 @@ const Profile = () => {
     const { years, days } = calculateYearsSinceEntry(dates);
 
     return (
-        <>
-            <header className={`flex justify-between items-center py-4 pl-6 pr-3 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
-                <div className='text-2xl' >
-                    <span className='font-semibold'>프로필</span>
-                </div>
-                {/* <button className='flex justify-center p-3 dark:text-slate-300 rounded-md active:bg-gray-100 active:text-gray-400 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit className='w-6 h-6'/></button> */}
-            </header>
-            <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
+        <>  
+            <div className={`transition-all ${isOpen && 'pt-4 bg-slate-400'}`}>
+                <header className={`flex justify-between items-center py-4 pl-6 pr-3 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+                    <div className='text-2xl' >
+                        <span className='font-semibold'>프로필</span>
+                    </div>
+                    {/* <button className='flex justify-center p-3 dark:text-slate-300 rounded-md active:bg-gray-100 active:text-gray-400 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit className='w-6 h-6'/></button> */}
+                </header>
+                <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
 
-                <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
-                    <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
-                    {days > 0 && <LuActivity /> }
-                    {years >= 2 
-                            ? `입사 ${years}년차` 
-                            : (days > 0 && `입사 ${days}일차`)}
-                    </div>
-                    <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
-                        <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
-                    </div>
-                    <div className='font-bold text-3xl'>
-                        {user.name}
-                    </div>
+                    <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
+                        <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
+                        {days > 0 && <LuActivity /> }
+                        {years >= 2 
+                                ? `입사 ${years}년차` 
+                                : (days > 0 && `입사 ${days}일차`)}
+                        </div>
+                        <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
+                            <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
+                        </div>
+                        <div className='font-bold text-3xl'>
+                            {user.name}
+                        </div>
 
-                    <div>
-                        <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
-                            <span className='pl-2 pr-1'>{member?.team_id?.team_name}</span>
-                            {member?.position === '팀장' ||  member?.position === '파트장' ? (
-                                member.position
-                            ) : member.rank}
-                        </p>
-                        <p className='text-slate-500'>{introduction || ''}</p>
-                    </div>
-                    <div className='flex flex-col space-y-1 font-normal text-md'>
-                        {birthdayDates.length > 0 && (
+                        <div>
+                            <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
+                                <span className='pl-2 pr-1'>{member?.team_id?.team_name}</span>
+                                {member?.position === '팀장' ||  member?.position === '파트장' ? (
+                                    member.position
+                                ) : member.rank}
+                            </p>
+                            <p className='text-slate-500'>{introduction || ''}</p>
+                        </div>
+                        <div className='flex flex-col space-y-1 font-normal text-md'>
+                            {birthdayDates.length > 0 && (
+                                <div className='flex items-center gap-x-2'>
+                                    <LuCake /> {birthdayDates.map((date, index) => (
+                                        <span key={index}>
+                                            {formatDateToKorean(date.date, 'monthDay')}
+                                            {isTodayBirthday(date.date) && ' 🎂'}
+                                        </span>
+                                    ))}
+                                </div>
+                            )} 
+
+                            {personalContact && personalContact.phone_number && (
+                                <div className='flex items-center gap-x-2'>
+                                    <LuSmartphone /> {personalContact.phone_number}
+                                </div>
+                            )}
+
+                            {companyContact && companyContact.phone_number && (
+                                <div className='flex items-center gap-x-2'>
+                                    <LuBuilding /> {companyContact.phone_number} {companyContact.extension ? `(${companyContact.extension})` : ''}
+                                </div>
+                            )}
+
                             <div className='flex items-center gap-x-2'>
-                                <LuCake /> {birthdayDates.map((date, index) => (
-                                    <span key={index}>
-                                        {formatDateToKorean(date.date, 'monthDay')}
-                                        {isTodayBirthday(date.date) && ' 🎂'}
-                                    </span>
-                                ))}
+                                <AiOutlineMail /> {user.email}
                             </div>
-                        )} 
-
-                        {personalContact && personalContact.phone_number && (
-                            <div className='flex items-center gap-x-2'>
-                                <LuSmartphone /> {personalContact.phone_number}
-                            </div>
-                        )}
-
-                        {companyContact && companyContact.phone_number && (
-                            <div className='flex items-center gap-x-2'>
-                                <LuBuilding /> {companyContact.phone_number} {companyContact.extension ? `(${companyContact.extension})` : ''}
-                            </div>
-                        )}
-
-                        <div className='flex items-center gap-x-2'>
-                            <AiOutlineMail /> {user.email}
+                        </div>
+                        <div className='flex gap-x-3 mt-4'>
+                            <button className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100' disabled>QR 연락처</button>
+                            <button className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:border-blue-800 dark:text-blue-800 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit />프로필 수정</button>
                         </div>
                     </div>
-                    <div className='flex gap-x-3 mt-4'>
-                        <button className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100' disabled>QR 연락처</button>
-                        <button className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:border-blue-800 dark:text-blue-800 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit />프로필 수정</button>
+
+                    <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                            {contacts.length === 0 ? (
+                                <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                    <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
+                                </div>
+                            ) : (
+                                contacts.map((contact, index) => (
+                                    <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                        <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                            {renderContactIcon(contact.phone_type)}
+                                            <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
+                                        </div>
+                                        <span>
+                                            {contact.phone_number} {contact.extension && `(${contact.extension})`}
+                                        </span>
+                                    </li>
+                                )))
+                            }
+                        </ul>
+                    </div>
+
+                    <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                            {addresses.length === 0 ? (
+                                <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                    <p className="font-semibold text-center">주소 정보가 없습니다.</p>
+                                </div>
+                            ) : (
+                                addresses.map((address, index) => (
+                                    <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                        <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                            {renderAddressIcon(address.address_type)}
+                                            <span className='w-10 text-nowrap'>{renderAddressLabel(address.address_type)}</span>
+                                        </div>
+                                        <span>
+                                            {`${address.address_line1} ${address.address_line2} `}
+                                        </span>
+                                    </li>
+                                )))
+                            }
+                        </ul>
+                    </div>
+
+                    <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                        <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                            {dates.length === 0 ? (
+                                <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                    <p className="font-semibold text-center">생일 및 입사 정보가 없습니다.</p>
+                                </div>
+                            ) : (
+                                dates.map((date, index) => (
+                                    <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                        <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                            {renderDateIcon(date.date_type)}
+                                            <span className='w-10 text-nowrap'>{renderDateLabel(date.date_type)}</span>
+                                        </div>
+                                        <span>
+                                            {formatDateToKorean(date.date)}
+                                        </span>
+                                    </li>
+                                )))
+                            }
+                        </ul>
                     </div>
                 </div>
-
-                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
-                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
-                        {contacts.length === 0 ? (
-                            <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
-                            </div>
-                        ) : (
-                            contacts.map((contact, index) => (
-                                <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
-                                    <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                        {renderContactIcon(contact.phone_type)}
-                                        <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
-                                    </div>
-                                    <span>
-                                        {contact.phone_number} {contact.extension && `(${contact.extension})`}
-                                    </span>
-                                </li>
-                            )))
-                        }
-                    </ul>
-                </div>
-
-                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
-                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
-                        {addresses.length === 0 ? (
-                            <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                <p className="font-semibold text-center">주소 정보가 없습니다.</p>
-                            </div>
-                        ) : (
-                            addresses.map((address, index) => (
-                                <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
-                                    <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                        {renderAddressIcon(address.address_type)}
-                                        <span className='w-10 text-nowrap'>{renderAddressLabel(address.address_type)}</span>
-                                    </div>
-                                    <span>
-                                        {`${address.address_line1} ${address.address_line2} `}
-                                    </span>
-                                </li>
-                            )))
-                        }
-                    </ul>
-                </div>
-
-                <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
-                    <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
-                        {dates.length === 0 ? (
-                            <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                <p className="font-semibold text-center">생일 및 입사 정보가 없습니다.</p>
-                            </div>
-                        ) : (
-                            dates.map((date, index) => (
-                                <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
-                                    <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                        {renderDateIcon(date.date_type)}
-                                        <span className='w-10 text-nowrap'>{renderDateLabel(date.date_type)}</span>
-                                    </div>
-                                    <span>
-                                        {formatDateToKorean(date.date)}
-                                    </span>
-                                </li>
-                            )))
-                        }
-                    </ul>
-                </div>
             </div>
-
             <ProfileDrawer
                 isOpen={isOpen}
                 title={"프로필 수정"}
