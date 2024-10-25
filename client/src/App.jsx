@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Routes, Route, Router } from 'react-router-dom';
+import { Routes, Route, useLocation, Router } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
@@ -8,6 +8,7 @@ import Loading from './components/Loading';
 import { AvatarProvider } from './context/AvatarContext';
 import { MobileProvider } from './context/MobileContext';
 import { DarkModeProvider, useDarkMode } from './context/DarkModeContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 import './App.css';
 
@@ -29,6 +30,21 @@ const AdminDeposit = React.lazy(() => import('./pages/AdminDeposit'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 const App = () => {
+
+    const location = useLocation();
+
+    useEffect(() => {
+        const metaTag = document.querySelector("meta[name='theme-color']");
+        if (metaTag) {
+            if (location.pathname === '/') {
+                // 메인 페이지일 때 색상 설정
+                metaTag.setAttribute("content", "#0433FF");
+            } else {
+                // 메인 페이지가 아닐 때 색상 설정
+                metaTag.setAttribute("content", "#dce8f5");
+            }
+        }
+    }, [location.pathname]); // 경로가 변경될 때마다 실행
 
     useEffect(() => {
         const registerServiceWorker = async () => {
@@ -56,95 +72,99 @@ const App = () => {
             <Suspense fallback={<Loading />}>
                 <MobileProvider>
                     <DarkModeProvider>
-                        <AvatarProvider>
-                            <Routes>
-                                <Route path="/" element={<Layout />}>
-                                    {/* public routes */}
-                                    <Route path="signin" element={<Signin />} />
-                                    <Route path="signup" element={<Signup />} />
-                                    <Route path="pending" element={<Pending />} />
+                        <ThemeProvider>
 
-                                    {/* protected routes */}
-                                    <Route path="/" element={
-                                        <ProtectedRoute>
-                                            <Dashboard />
-                                        </ProtectedRoute>
-                                    } />
+                            <AvatarProvider>
+                                <Routes>
+                                    <Route path="/" element={<Layout />}>
+                                        {/* public routes */}
+                                        <Route path="signin" element={<Signin />} />
+                                        <Route path="signup" element={<Signup />} />
+                                        <Route path="pending" element={<Pending />} />
 
-                                    <Route path="/transactions" element={
-                                        <ProtectedRoute>
-                                            <Transactions />
-                                        </ProtectedRoute>
-                                    } />
+                                        {/* protected routes */}
+                                        <Route path="/" element={
+                                            <ProtectedRoute>
+                                                <Dashboard />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    <Route path="/teams" element={
-                                        <ProtectedRoute>
-                                            <Teams />
-                                        </ProtectedRoute>
-                                    } />
+                                        <Route path="/transactions" element={
+                                            <ProtectedRoute>
+                                                <Transactions />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    <Route path='/contacts' element= {
-                                        <ProtectedRoute>
-                                            <Contacts />
-                                        </ProtectedRoute>
-                                    } />
+                                        <Route path="/teams" element={
+                                            <ProtectedRoute>
+                                                <Teams />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    <Route path='/profile' element= {
-                                        <ProtectedRoute>
-                                            <Profile />
-                                        </ProtectedRoute>
-                                    } />
+                                        <Route path='/contacts' element= {
+                                            <ProtectedRoute>
+                                                <Contacts />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    {/* 관리자만 접근 가능 */}
-                                    <Route path="/admin" element={
-                                        <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin', 'ms_admin']}>
-                                            <Admin />
-                                        </ProtectedRoute>
-                                    } />
+                                        <Route path='/profile' element= {
+                                            <ProtectedRoute>
+                                                <Profile />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    {/* 관리자와 인사관리자 접근 가능 */}
-                                    <Route path="/admin/members" element={
-                                        <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
-                                            <AdminMembers />
-                                        </ProtectedRoute>
-                                    } />
+                                        {/* 관리자만 접근 가능 */}
+                                        <Route path="/admin" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin', 'ms_admin']}>
+                                                <Admin />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    <Route path="/admin/departments" element={
-                                        <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
-                                            <AdminDepartments />
-                                        </ProtectedRoute>
-                                    } />
+                                        {/* 관리자와 인사관리자 접근 가능 */}
+                                        <Route path="/admin/members" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
+                                                <AdminMembers />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    <Route path="/admin/teams" element={
-                                        <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
-                                            <AdminTeams />
-                                        </ProtectedRoute>
-                                    } />
+                                        <Route path="/admin/departments" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
+                                                <AdminDepartments />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    {/* 관리자와 경지관리자 접근 가능 */}
-                                    <Route path="/admin/account" element={
-                                        <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
-                                            <AdminAccount />
-                                        </ProtectedRoute>
-                                    } />
+                                        <Route path="/admin/teams" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
+                                                <AdminTeams />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    <Route path="/admin/card" element={
-                                        <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
-                                            <AdminCard />
-                                        </ProtectedRoute>
-                                    } />
-                                    
-                                    <Route path="/admin/deposit" element={
-                                        <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
-                                            <AdminDeposit />
-                                        </ProtectedRoute>
-                                    } />
+                                        {/* 관리자와 경지관리자 접근 가능 */}
+                                        <Route path="/admin/account" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
+                                                <AdminAccount />
+                                            </ProtectedRoute>
+                                        } />
 
-                                    {/* catch all */}
-                                    <Route path="*" element={<NotFound />} />
-                                </Route>
-                            </Routes>
-                        </AvatarProvider>
+                                        <Route path="/admin/card" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
+                                                <AdminCard />
+                                            </ProtectedRoute>
+                                        } />
+                                        
+                                        <Route path="/admin/deposit" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
+                                                <AdminDeposit />
+                                            </ProtectedRoute>
+                                        } />
+
+                                        {/* catch all */}
+                                        <Route path="*" element={<NotFound />} />
+                                    </Route>
+                                </Routes>
+                            </AvatarProvider>
+
+                        </ThemeProvider>
                     </DarkModeProvider>
                 </MobileProvider>
             </Suspense>
