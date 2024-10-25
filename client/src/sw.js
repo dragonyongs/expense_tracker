@@ -85,6 +85,15 @@ async function cacheApiResponse(request, response) {
     }
 }
 
+const handleAuthError = (authData) => {
+    if (!authData || !authData.status_id) {
+        console.error("Authentication data is missing or invalid:", authData);
+        // 기본값 또는 다른 처리
+        return { isAuthenticated: false };
+    }
+    return authData;
+};
+
 // API 요청 처리하는 함수
 async function handleApiRequest(request) {
     const url = new URL(request.url);
@@ -101,6 +110,7 @@ async function handleApiRequest(request) {
         throw new Error('Network response was not ok');
     } catch (error) {
         console.log('Fetching from IndexedDB for:', endpoint);
+        console.error("Fetch failed, attempting to get cached data:", error);
         
         // IndexedDB에서 데이터 검색
         let cachedData;
@@ -111,19 +121,21 @@ async function handleApiRequest(request) {
                 headers: { 'Content-Type': 'application/json' }
             });
         } else {
-            // 다른 API 엔드포인트 처리
-            cachedData = await getData(endpoint);
-            
-            if (cachedData && cachedData.length > 0) {
-                return new Response(JSON.stringify(cachedData), {
-                    headers: { 'Content-Type': 'application/json' }
-                });
+            if (endpoint.includes('/auth/isAuthenticated')) {
+                cachedData = await getData('auth-status');
+                if (cachedData && cachedData.length > 0) {
+                    // const authStatus = cachedData[0]; // 데이터가 배열로 반환되므로 첫 번째 요소 사용
+                    const authStatus = handleAuthError(cachedData && cachedData.length > 0 ? cachedData[0] : null);
+                    return new Response(JSON.stringify(authStatus), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } else {
+                    // 데이터가 없을 경우 처리
+                    return new Response(JSON.stringify({ isAuthenticated: false }), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
             }
-            
-            // 캐시된 데이터가 없는 경우 빈 배열 반환
-            return new Response(JSON.stringify([]), {
-                headers: { 'Content-Type': 'application/json' }
-            });
         }
     }
 }

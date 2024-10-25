@@ -73,6 +73,7 @@ const getData = async (key) => {
                 const request = store.getAll();
                 request.onsuccess = (event) => {
                     const data = event.target.result;
+                    console.log("All data:", data); // 데이터 구조 로그
                     resolve(data || []); // 데이터가 없으면 빈 배열 반환
                 };
                 request.onerror = (event) => {
@@ -87,6 +88,7 @@ const getData = async (key) => {
             const request = store.get(key);
             request.onsuccess = (event) => {
                 const data = event.target.result;
+                console.log(`Fetched data for key ${key}:`, data);
                 resolve(data ? [data] : []); // 단일 데이터도 배열로 래핑하여 반환
             };
             request.onerror = (event) => {
