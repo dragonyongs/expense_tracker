@@ -1,3 +1,4 @@
+// service-worker.js
 import { precacheAndRoute } from 'workbox-precaching';
 import { addData, getData } from './utils/db';
 
@@ -22,7 +23,7 @@ const ASSETS_TO_CACHE = [
     "/offline.html",
 ];
 
-// 설치 이벤트: 서비스 워커가 처음 설치될 때 캐시 생성
+// 설치 이벤트
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -32,15 +33,14 @@ self.addEventListener("install", (event) => {
     );
 });
 
-// 활성화 이벤트: 캐시 정리 등 초기화 작업
+// 활성화 이벤트
 self.addEventListener('activate', (event) => {
-    const cacheWhitelist = [CACHE_NAME]; // 유지할 캐시 이름을 정의
+    const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    if (!cacheWhitelist.includes(cacheName)) { // 화이트리스트에 없는 캐시 삭제
-                        console.log(`Deleting old cache: ${cacheName}`);
+                    if (!cacheWhitelist.includes(cacheName)) {
                         return caches.delete(cacheName);
                     }
                 })
@@ -49,118 +49,118 @@ self.addEventListener('activate', (event) => {
     );
 });
 
+// API 응답을 캐시하는 함수
+async function cacheApiResponse(request, response) {
+    const clonedResponse = response.clone();
+    try {
+        const data = await clonedResponse.json();
+        const url = new URL(request.url);
+        const endpoint = url.pathname;
+        
+        // API 엔드포인트별 데이터 저장
+        if (Array.isArray(data)) {
+            await Promise.all(data.map(item => {
+                const id = item._id || item.id;
+                if (id) {
+                    return addData(endpoint + '/' + id, { 
+                        ...item, 
+                        id: id,
+                        endpoint,
+                        timestamp: Date.now()
+                    });
+                }
+            }));
+        } else if (data && (data._id || data.id)) {
+            await addData(endpoint + '/' + (data._id || data.id), {
+                ...data,
+                endpoint,
+                timestamp: Date.now()
+            });
+        }
+    } catch (error) {
+        console.error('Error caching API response:', error);
+    }
+}
+
+// API 요청 처리하는 함수
+async function handleApiRequest(request) {
+    const url = new URL(request.url);
+    const endpoint = url.pathname;
+
+    try {
+        // 온라인 상태에서의 요청 처리
+        const response = await fetch(request);
+        if (response.ok) {
+            // 성공적인 응답을 캐시에 저장
+            await cacheApiResponse(request, response.clone());
+            return response;
+        }
+        throw new Error('Network response was not ok');
+    } catch (error) {
+        console.log('Fetching from IndexedDB for:', endpoint);
+        
+        // IndexedDB에서 데이터 검색
+        let cachedData;
+        if (endpoint.includes('/auth/isAuthenticated')) {
+            // 인증 상태 처리
+            cachedData = await getData('auth-status');
+            return new Response(JSON.stringify(cachedData || { isAuthenticated: true }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } else {
+            // 다른 API 엔드포인트 처리
+            cachedData = await getData(endpoint);
+            
+            if (cachedData && cachedData.length > 0) {
+                return new Response(JSON.stringify(cachedData), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
+            // 캐시된 데이터가 없는 경우 빈 배열 반환
+            return new Response(JSON.stringify([]), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+    }
+}
+
+// Fetch 이벤트 핸들러
 self.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
-        
-    // chrome-extension 스킴을 가진 요청을 무시
+    
+    // chrome-extension 요청 무시
     if (url.protocol === 'chrome-extension:') {
         return;
     }
 
+    // API 요청 처리
     if (event.request.url.includes("/api/")) {
-        // API 요청을 위한 Stale-While-Revalidate 전략
-        const cookies = event.request.headers.get('Cookie');
-        const token = getCookie('accessToken', cookies);
-
-        const headers = new Headers(event.request.headers);
-        if (token) {
-            headers.append('Authorization', `Bearer ${token}`);
-        }
-
-        const modifiedRequest = new Request(event.request, {
-            headers: headers,
-        });
-
-        event.respondWith(
-            caches.match(modifiedRequest)
-                .then((cachedResponse) => {
-                    const fetchPromise = fetch(modifiedRequest)
-                        .then((response) => {
-                            if (response.ok) {
-                                const clonedResponse = response.clone();
-                                clonedResponse.json().then(data => {
-                                    if (Array.isArray(data)) {
-                                        // 배열 데이터 저장
-                                        Promise.all(data.map(item => {
-                                            const id = item._id || item.id;
-                                            if (id) {
-                                                return addData(id, { ...item, id: id });
-                                            } else {
-                                                return Promise.resolve();
-                                            }
-                                        }));
-                                    } else {
-                                        // 단일 객체 데이터 저장
-                                        const id = data._id || data.id;
-                                        if (id) {
-                                            addData(id, { ...data, id: id });
-                                        }
-                                    }
-                                });
-                                return response;
-                            }
-                            return response;
-                        })
-                        .catch(async () => {
-                            // 네트워크 요청이 실패했을 때 IndexedDB에서 데이터 가져오기
-                            const cachedData = await getData();
-                            if (cachedData.length > 0) {
-                                // IndexedDB 데이터가 있으면 이를 반환
-                                return new Response(JSON.stringify(cachedData), {
-                                    headers: { "Content-Type": "application/json" }
-                                });
-                            } else {
-                                // IndexedDB 데이터가 없으면 오프라인 페이지 반환
-                                return caches.match('/offline.html');
-                            }
-                        });
-
-                    // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
-                    return cachedResponse || fetchPromise;
-                })
-        );
-
+        event.respondWith(handleApiRequest(event.request));
     } else {
-        // 일반 요청에 대한 Stale-While-Revalidate 전략
+        // 정적 자산 요청 처리
         event.respondWith(
             caches.match(event.request)
                 .then((cachedResponse) => {
-                    const fetchPromise = fetch(event.request)
+                    if (cachedResponse) {
+                        return cachedResponse;
+                    }
+                    return fetch(event.request)
                         .then((response) => {
-                            // 최신 응답을 캐시에 저장
-                            const clonedResponse = response.clone();
-                            caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(event.request, clonedResponse);
-                            });
+                            if (!response || response.status !== 200 || response.type !== 'basic') {
+                                return response;
+                            }
+                            const responseToCache = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then((cache) => {
+                                    cache.put(event.request, responseToCache);
+                                });
                             return response;
                         })
-                        .catch(async () => {
-                            // 네트워크 요청이 실패했을 때 IndexedDB에서 데이터 가져오기 시도
-                            const key = event.request.url;  // 요청 URL을 키로 사용
-                            const cachedData = await getData(key);
-                            
-                            if (cachedData && cachedData.length > 0) {
-                                // IndexedDB 데이터가 있으면 이를 반환
-                                return new Response(JSON.stringify(cachedData), {
-                                    headers: { "Content-Type": "application/json" }
-                                });
-                            } else {
-                                // IndexedDB 데이터가 없으면 오프라인 페이지 반환
-                                return caches.match('/offline.html');
-                            }
+                        .catch(() => {
+                            return caches.match('/offline.html');
                         });
-        
-                    // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
-                    return cachedResponse || fetchPromise;
                 })
         );
     }
 });
-
-// 쿠키에서 특정 이름의 값을 가져오는 함수
-function getCookie(name, cookies) {
-    const value = `; ${cookies}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-}
