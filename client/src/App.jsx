@@ -36,7 +36,11 @@ const App = () => {
     useEffect(() => {
         const metaTag = document.querySelector("meta[name='theme-color']");
         if (metaTag) {
-            if (location.pathname !== '/') {
+            if (location.pathname === '/') {
+                metaTag.setAttribute("content", "#0433FF");
+            } else if (location.pathname === '/teams') {
+                metaTag.setAttribute("content", "#ffffff");
+            } else {
                 metaTag.setAttribute("content", "#dce8f5");
             }
         }
