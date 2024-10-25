@@ -163,23 +163,23 @@ function Contacts() {
                             <span className="font-normal">{selectedContact?.member_id?.position}</span>
                         </div>
                     </div>
-                    <div className="flex flex-col w-full rounded-b-md p-4 min-h-profile-screen dark:bg-slate-700 dark:text-slate-300">
+                    <div className="w-full rounded-b-md p-4 dark:bg-slate-700 dark:text-slate-300">
                         <ul className='flex flex-col gap-y-2 divide-y divide-gray-200 dark:divide-gray-600'>
                             <li className="grid grid-cols-5 w-full p-3">
-                                <span className="font-semibold text-center">소속</span>
+                                <span className="pl-2 font-semibold">소속</span>
                                 <span className="col-span-4">{selectedContact?.member_id?.team_id?.team_name}</span>
                             </li>
                             <li className="grid grid-cols-5 w-full p-3">
-                                <span className="font-semibold text-center">직급</span>
+                                <span className="pl-2 font-semibold">직급</span>
                                 <span className="col-span-4">{selectedContact?.member_id?.rank}</span>
                             </li>
                             <li className="grid grid-cols-5 w-full p-3">
-                                <span className="font-semibold text-center">이메일</span>
+                                <span className="pl-2 font-semibold">이메일</span>
                                 <span className="col-span-4">{selectedContact?.member_id?.email}</span>
                             </li>
                             {selectedContact?.phones && selectedContact.phones.map(phone => (
                                 <li key={phone._id} className="grid grid-cols-5 w-full p-3">
-                                    <span className="font-semibold text-center">{phoneTypeMapping[phone.phone_type] || phone.phone_type}</span>
+                                    <span className="pl-2 font-semibold">{phoneTypeMapping[phone.phone_type] || phone.phone_type}</span>
                                     <span className="col-span-4">
                                         {phone.phone_number} {phone.phone_type === 'company_phone' && phone.extension && `(내선: ${phone.extension})`}
                                     </span>
@@ -187,7 +187,7 @@ function Contacts() {
                             ))}
                             {selectedContact?.addresses && selectedContact.addresses.map(address => (
                                 <li key={address._id} className="grid grid-cols-5 w-full p-3">
-                                    <span className="font-semibold text-center">{addressTypeMapping[address.address_type] || address.address_type}</span>
+                                    <span className="pl-2 font-semibold">{addressTypeMapping[address.address_type] || address.address_type}</span>
                                     <span className="col-span-4">
                                         {address.address_line1}, {address.address_line2} ({address.postal_code})
                                     </span>
