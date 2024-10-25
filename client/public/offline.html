@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오프라인 상태</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
+            color: #1e90ff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .cloud-icon {
+            width: 7.5rem;
+            height: 7.5rem;
+            margin-bottom: 20px;
+        }
+
+        .offline-message {
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="offline-container">
+        <img src="/cloud-offline.svg" class="cloud-icon" alt="offline status">
+        <div class="offline-message">인터넷 접속 상태를 확인해주세요.</div>
+    </div>
+</body>
+
+</html>

@@ -3,15 +3,23 @@ import { addData, getData } from './utils/db'; // db.js에서 관련 함수 impo
 
 precacheAndRoute(self.__WB_MANIFEST);
 
-const CACHE_NAME = "StarRich-v1";
+const CACHE_NAME = "StarRich-v1-01";
 const ASSETS_TO_CACHE = [
     "/",
     "/index.html",
     "/favicon.ico",
+    "/icon-wallet.png",
+    "/pending.png",
+    "/pig-piggy-bank.svg",
+    "/credit-card.svg",
+    "/taxi-transport.svg",
+    "/cloud-offline.svg",
     "/manifest.webmanifest",
     "/pwa-192x192.png",
+    "/pwa-256x256.png",
     "/pwa-512x512.png",
     "/src/main.jsx",
+    "/offline.html",
 ];
 
 // 설치 이벤트: 서비스 워커가 처음 설치될 때 캐시 생성
@@ -43,13 +51,13 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener("fetch", (event) => {
     if (event.request.url.includes("/api/")) {
+        // API 요청을 위한 Stale-While-Revalidate 전략
         const cookies = event.request.headers.get('Cookie');
-        const token = getCookie('accessToken', cookies); // 쿠키에서 액세스 토큰 가져오기
+        const token = getCookie('accessToken', cookies);
 
         const headers = new Headers(event.request.headers);
-        
         if (token) {
-            headers.append('Authorization', `Bearer ${token}`); // 토큰 추가
+            headers.append('Authorization', `Bearer ${token}`);
         }
 
         const modifiedRequest = new Request(event.request, {
@@ -57,47 +65,79 @@ self.addEventListener("fetch", (event) => {
         });
 
         event.respondWith(
-            fetch(modifiedRequest)
-            .then((response) => {
-                if (response.ok) {
-                    return response.clone().json().then(data => {
-                        // 데이터가 배열인 경우 처리
-                        if (Array.isArray(data)) {
-                            return Promise.all(data.map(item => {
-                                const id = item._id || item.id; // 적절한 ID 필드 사용
-                                if (id) {
-                                    return addData(id, { ...item, id: id }); // id 필드를 추가하여 데이터 저장
-                                } else {
-                                    return Promise.resolve(); // ID가 없는 경우, 계속 진행
-                                }
-                            })).then(() => response); // 모든 데이터 저장 후 원본 응답 반환
-                        }
-        
-                        // 단일 객체 처리
-                        const id = data._id || data.id; // 적절한 ID 필드 사용
-                        if (id) {
-                            return addData(id, { ...data, id: id }).then(() => response); // id 필드를 추가하여 데이터 저장
-                        } else {
-                            return response; // 'id'가 없으면 원본 응답 반환
-                        }
-                    });
-                }
-                return response; // 원본 응답 반환
-            })
+            caches.match(modifiedRequest)
+                .then((cachedResponse) => {
+                    const fetchPromise = fetch(modifiedRequest)
+                        .then((response) => {
+                            if (response.ok) {
+                                response.clone().json().then(data => {
+                                    if (Array.isArray(data)) {
+                                        // 배열 데이터 저장
+                                        Promise.all(data.map(item => {
+                                            const id = item._id || item.id;
+                                            if (id) {
+                                                return addData(id, { ...item, id: id });
+                                            } else {
+                                                return Promise.resolve();
+                                            }
+                                        }));
+                                    } else {
+                                        // 단일 객체 데이터 저장
+                                        const id = data._id || data.id;
+                                        if (id) {
+                                            addData(id, { ...data, id: id });
+                                        }
+                                    }
+                                });
+
+                                // 최신 데이터로 캐시 업데이트
+                                caches.open('api-cache').then((cache) => {
+                                    cache.put(modifiedRequest, response.clone());
+                                });
+
+                                return response; // 최신 응답 반환
+                            }
+                            return response; // 서버 응답 오류 시 원본 응답 반환
+                        })
+                        .catch(async () => {
+                            // 네트워크 요청 실패 시 IndexedDB에서 데이터 가져오기
+                            const cachedData = await getData();
+                            if (cachedData.length > 0) {
+                                return new Response(JSON.stringify(cachedData), {
+                                    headers: { "Content-Type": "application/json" }
+                                });
+                            } else {
+                                return new Response('[]', {
+                                    headers: { "Content-Type": "application/json" }
+                                });
+                            }
+                        });
+
+                    // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
+                    return cachedResponse || fetchPromise;
+                })
         );
-        
+
     } else {
-        // API 요청이 아닌 경우 캐시에서 응답
+        // 일반 요청에 대한 Stale-While-Revalidate 전략
         event.respondWith(
             caches.match(event.request)
                 .then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse; // 캐시가 있으면 캐시 반환
-                    }
-                    return fetch(event.request).catch(() => {
-                        // 네트워크 요청이 실패했을 때 오프라인 페이지 제공
-                        return caches.match('/offline.html'); // 오프라인 페이지 제공
-                    });
+                    const fetchPromise = fetch(event.request)
+                        .then((response) => {
+                            // 최신 응답을 캐시에 저장
+                            caches.open('dynamic-cache').then((cache) => {
+                                cache.put(event.request, response.clone());
+                            });
+                            return response;
+                        })
+                        .catch(() => {
+                            // 네트워크 요청이 실패했을 때 오프라인 페이지 제공
+                            return caches.match('/offline.html');
+                        });
+
+                    // 캐시된 데이터 먼저 반환하고, 백그라운드에서 새 데이터를 가져옴
+                    return cachedResponse || fetchPromise;
                 })
         );
     }
