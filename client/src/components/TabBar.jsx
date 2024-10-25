@@ -9,7 +9,16 @@ import { GoCreditCard } from "react-icons/go";
 const TabBarComponent = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    // const { user } = useContext(AuthContext);
+
+    // const isIOS = () => {
+    //     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // };
+
+    const isSafari = () => {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    };
+
+    // const isSafariIOS = isIOS() && isSafari();
 
     const handleHome = () => {
         navigate('/');
@@ -36,7 +45,7 @@ const TabBarComponent = () => {
     };
 
     return (
-        <nav className='z-50 bg-white shadow-md pt-2 px-6 pb-4 flex justify-between border-t border-slate-100 dark:bg-slate-800 dark:border-slate-700'>
+        <nav className={`z-50 bg-white shadow-md pt-2 px-6 flex justify-between border-t border-slate-100 dark:bg-slate-800 dark:border-slate-700 ${!isSafari() ? 'pb-4' : 'pb-7'}`}>
             <button type="button" className={`flex flex-col items-center ${isActiveTab('/') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleHome}>
                 <div className='flex items-center justify-center w-8 h-8'>
                     <GoHome className="text-2xl" />

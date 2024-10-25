@@ -98,42 +98,49 @@ function Contacts() {
                     <span className="font-semibold">연락망</span>
                 </div>
             </header>
-            <div className="px-6 space-y-6"> {/* 팀별로 구분을 위한 마진 추가 */}
-                {Object.keys(groupedContacts).map((teamName) => (
-                    <div key={teamName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700">
-                        <h3 className="dark:text-slate-400">{teamName}</h3> {/* 팀명 출력 */}
-                        <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
-                            {groupedContacts[teamName].map((contact) => {
-                                const { extension } = getCompanyPhoneInfo(contact.phones);
-
-                                return (
-                                    <li
-                                        key={contact._id}
-                                        className="flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300"
-                                        onClick={() => handleOpenDrawer(contact)}
-                                    >
-                                        <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
-                                            {contact?.avatar_id ? (
-                                                <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className="w-10 h-10"/>
-                                            ) : (
-                                                <AvatarPreview avatarConfig={ noAvatar } shape="circle" className="w-10 h-10"/>
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-lg">
-                                                {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
-                                                {extension && <span className="dark:text-blue-300">({extension})</span>}
-                                            </p>
-                                        </div>
-                                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                            <MdKeyboardArrowRight className="text-2xl" />
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                        </ul>
+            <div className="pb-6 px-6 space-y-6">
+                {groupedContacts.length !== 0 ? (
+                    <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
+                        <p className="font-semibold text-center"> 데이터를 불러 올 수 없습니다.</p>
                     </div>
-                ))}
+                ) : (
+                    Object.keys(groupedContacts).map((teamName) => (
+                        <div key={teamName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700">
+                            <h3 className="dark:text-slate-400">{teamName}</h3> {/* 팀명 출력 */}
+                            <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
+                                {groupedContacts[teamName].map((contact) => {
+                                    const { extension } = getCompanyPhoneInfo(contact.phones);
+    
+                                    return (
+                                        <li
+                                            key={contact._id}
+                                            className="flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300"
+                                            onClick={() => handleOpenDrawer(contact)}
+                                        >
+                                            <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
+                                                {contact?.avatar_id ? (
+                                                    <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className="w-10 h-10"/>
+                                                ) : (
+                                                    <AvatarPreview avatarConfig={ noAvatar } shape="circle" className="w-10 h-10"/>
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-lg">
+                                                    {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
+                                                    {extension && <span className="dark:text-blue-300">({extension})</span>}
+                                                </p>
+                                            </div>
+                                            <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                <MdKeyboardArrowRight className="text-2xl" />
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ))
+                )}
+                
             </div>
             <CommonDrawer isOpen={isOpen} title="프로필 정보" className="text-white bg-starBlue  dark:bg-indigo-900" onClose={handleCloseDrawer}>
                 <div className="overflow-y-auto h-profile-screen">
