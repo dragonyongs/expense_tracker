@@ -1,5 +1,5 @@
 import { precacheAndRoute } from 'workbox-precaching';
-import { addData, getData } from './utils/db'; // db.js에서 관련 함수 import
+import { addData, getData } from './utils/db';
 
 precacheAndRoute(self.__WB_MANIFEST);
 

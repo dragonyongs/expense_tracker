@@ -47,7 +47,7 @@ const addData = async (key, data) => {
 
         return new Promise((resolve, reject) => {
             request.onsuccess = () => {
-                resolve(dataWithKey.id); // 추가된 데이터의 ID 반환
+                resolve(dataWithKey.id);
             };
             request.onerror = (event) => {
                 console.error("Error adding/updating data:", event.target.error);
@@ -67,21 +67,27 @@ const getData = async (key) => {
         const transaction = db.transaction(storeName, "readonly");
         const store = transaction.objectStore(storeName);
         
+        // key가 없으면 전체 데이터를 가져옴
         if (!key) {
-            console.error('No key specified');
-            return null;  // 키가 없을 경우 null 반환
+            return new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = (event) => {
+                    const data = event.target.result;
+                    resolve(data || []); // 데이터가 없으면 빈 배열 반환
+                };
+                request.onerror = (event) => {
+                    console.error("Error fetching all data:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
         }
 
+        // 특정 키에 대한 데이터 가져오기
         return new Promise((resolve, reject) => {
             const request = store.get(key);
             request.onsuccess = (event) => {
                 const data = event.target.result;
-                if (data) {
-                    resolve(data);  // 데이터를 성공적으로 가져옴
-                } else {
-                    console.warn('No data found for key:', key);
-                    resolve(null);  // 키에 해당하는 데이터가 없을 경우 null 반환
-                }
+                resolve(data ? [data] : []); // 단일 데이터도 배열로 래핑하여 반환
             };
             request.onerror = (event) => {
                 console.error("Error fetching data:", event.target.error);
@@ -104,7 +110,7 @@ const deleteData = async (id) => {
 
         return new Promise((resolve, reject) => {
             request.onsuccess = () => {
-                resolve(id); // 삭제된 데이터의 ID 반환
+                resolve(id);
             };
             request.onerror = (event) => {
                 console.error("Error deleting data:", event.target.error);
