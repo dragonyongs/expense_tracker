@@ -121,7 +121,7 @@ self.addEventListener("fetch", (event) => {
                     const fetchPromise = fetch(event.request)
                         .then((response) => {
                             // 최신 응답을 캐시에 저장
-                            caches.open('dynamic-cache').then((cache) => {
+                            caches.open(CACHE_NAME).then((cache) => {
                                 cache.put(event.request, response.clone());
                             });
                             return response;
