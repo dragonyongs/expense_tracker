@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState } from 'react';
 
-const ThemeContext = createContext();
+const ThemeColorContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
     const [themeColor, setThemeColor] = useState("#0433FF"); // 기본 색상 설정
 
     return (
-        <ThemeContext.Provider value={{ themeColor, setThemeColor }}>
+        <ThemeColorContext.Provider value={{ themeColor, setThemeColor }}>
             {children}
-        </ThemeContext.Provider>
+        </ThemeColorContext.Provider>
     );
 };
 
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => useContext(ThemeColorContext);

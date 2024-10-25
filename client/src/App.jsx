@@ -3,12 +3,12 @@ import { Routes, Route, useLocation, Router } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
-import { AuthProvider } from '@context/AuthProvider';
+import { AuthProvider } from './context/AuthProvider';
 import Loading from './components/Loading';
-import { AvatarProvider } from '@context/AvatarContext';
-import { MobileProvider } from '@context/MobileContext';
-import { DarkModeProvider, useDarkMode } from '@context/DarkModeContext';
-import { ThemeProvider } from '@context/ThemeContext.jsx';
+import { AvatarProvider } from './context/AvatarContext';
+import { MobileProvider } from './context/MobileContext';
+import { DarkModeProvider, useDarkMode } from './context/DarkModeContext';
+import { ThemeProvider } from './context/ThemeColorContext';
 
 import './App.css';
 
