@@ -8,7 +8,7 @@ import Loading from './components/Loading';
 import { AvatarProvider } from './context/AvatarContext';
 import { MobileProvider } from './context/MobileContext';
 import { DarkModeProvider, useDarkMode } from './context/DarkModeContext';
-import { ThemeProvider } from './context/ThemeContext';
+// import { ThemeProvider } from './context/ThemeContext';
 
 import './App.css';
 
@@ -31,16 +31,16 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 const App = () => {
 
-    const location = useLocation();
+    // const location = useLocation();
 
-    useEffect(() => {
-        const metaTag = document.querySelector("meta[name='theme-color']");
-        if (metaTag) {
-            if (location.pathname !== '/') {
-                metaTag.setAttribute("content", "#dce8f5");
-            }
-        }
-    }, [location.pathname]); // 경로가 변경될 때마다 실행
+    // useEffect(() => {
+    //     const metaTag = document.querySelector("meta[name='theme-color']");
+    //     if (metaTag) {
+    //         if (location.pathname !== '/') {
+    //             metaTag.setAttribute("content", "#dce8f5");
+    //         }
+    //     }
+    // }, [location.pathname]); // 경로가 변경될 때마다 실행
 
     useEffect(() => {
         const registerServiceWorker = async () => {
@@ -68,7 +68,7 @@ const App = () => {
             <Suspense fallback={<Loading />}>
                 <MobileProvider>
                     <DarkModeProvider>
-                        <ThemeProvider>
+                        {/* <ThemeProvider> */}
 
                             <AvatarProvider>
                                 <Routes>
@@ -160,7 +160,7 @@ const App = () => {
                                 </Routes>
                             </AvatarProvider>
 
-                        </ThemeProvider>
+                        {/* </ThemeProvider> */}
                     </DarkModeProvider>
                 </MobileProvider>
             </Suspense>
