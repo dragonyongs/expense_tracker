@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthProvider';
 import CardBalance from '../components/CardBalance';
 import PayHistory from '../components/PayHistory';
 import Header from '../components/Header';
+import { IoShareOutline } from "react-icons/io5";
 
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
@@ -16,7 +17,6 @@ const Dashboard = () => {
     });
 
     useEffect(() => {
-        // 브라우저 및 플랫폼 감지
         const detectBrowser = () => {
             const ua = window.navigator.userAgent;
             const iOS = /iPad|iPhone|iPod/.test(ua);
@@ -32,15 +32,14 @@ const Dashboard = () => {
                 isChrome: isChrome,
                 isStandalone: isStandalone,
                 showInstallPrompt: !isStandalone && (
-                    (iOS && isSafari) || // iOS Safari
-                    (!iOS && !deferredPrompt) // 기타 브라우저
+                    (iOS && isSafari) || 
+                    (!iOS && !deferredPrompt)
                 )
             });
         };
 
         detectBrowser();
 
-        // Android Chrome 설치 프롬프트 감지
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -52,7 +51,6 @@ const Dashboard = () => {
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-        // 설치 상태 변경 감지
         window.matchMedia('(display-mode: standalone)').addListener((e) => {
             setInstallState(prev => ({
                 ...prev,
@@ -89,7 +87,6 @@ const Dashboard = () => {
 
         if (isStandalone) return null;
 
-        // iOS Safari용 설치 안내
         if (isIOS && isSafari && showInstallPrompt) {
             return (
                 <div className="fixed bottom-24 right-6 flex flex-col items-end z-50">
@@ -99,17 +96,18 @@ const Dashboard = () => {
                     <div className="bg-white p-4 rounded-lg shadow-lg text-sm max-w-xs border border-gray-200">
                         <p className="font-bold mb-2">설치 방법</p>
                         <ol className="space-y-2">
-                            <li>1. 하단의 <span className="inline-block w-6 h-6 align-middle bg-contain bg-no-repeat bg-center" style={{backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxsaW5lIHgxPSIyMiIgeTE9IjIiIHgyPSIxMSIgeTI9IjEzIj48L2xpbmU+PHBvbHlnb24gcG9pbnRzPSIyMiAyIDEwIDEwIDIwIDIwIDIyIDIiPjwvcG9seWdvbj48L3N2Zz4=')}}"
-                            /> 공유 버튼을 탭하세요</li>
-                            <li>2. 스크롤을 내려서 <strong>"홈 화면에 추가"</strong>를 선택하세요</li>
-                            <li>3. "추가"를 탭하면 설치가 완료됩니다</li>
+                            <li className="flex items-center gap-2">
+    <IoShareOutline className="w-5 h-5" />
+    공유 버튼을 탭하세요
+</li>
+                            <li>스크롤을 내려서 <strong>"홈 화면에 추가"</strong>를 선택하세요</li>
+                            <li>"추가"를 탭하면 설치가 완료됩니다</li>
                         </ol>
                     </div>
                 </div>
             );
         }
 
-        // Android Chrome 등 기타 브라우저용 설치 버튼
         if (!isIOS && showInstallPrompt) {
             return (
                 <button 
@@ -145,6 +143,7 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 
 {/*
 import React, { useContext, useEffect, useState } from 'react';
