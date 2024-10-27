@@ -7,56 +7,75 @@ import Header from '../components/Header';
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
-    const [isIOS, setIsIOS] = useState(false);
-    const [isInstallable, setIsInstallable] = useState(false);
-    const [installed, setInstalled] = useState(false);
+    const [installState, setInstallState] = useState({
+        isIOS: false,
+        isSafari: false,
+        isChrome: false,
+        isStandalone: false,
+        showInstallPrompt: false
+    });
 
     useEffect(() => {
-        // iOS 디바이스 확인
-        const checkIOSDevice = () => {
+        // 브라우저 및 플랫폼 감지
+        const detectBrowser = () => {
             const ua = window.navigator.userAgent;
-            const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
-            const webkit = !!ua.match(/WebKit/i);
-            setIsIOS(iOS && webkit && !ua.match(/CriOS/i));
+            const iOS = /iPad|iPhone|iPod/.test(ua);
+            const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+            const isChrome = /Chrome/.test(ua);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                               window.navigator.standalone || 
+                               document.referrer.includes('android-app://');
+
+            setInstallState({
+                isIOS: iOS,
+                isSafari: isSafari,
+                isChrome: isChrome,
+                isStandalone: isStandalone,
+                showInstallPrompt: !isStandalone && (
+                    (iOS && isSafari) || // iOS Safari
+                    (!iOS && !deferredPrompt) // 기타 브라우저
+                )
+            });
         };
 
-        // PWA가 이미 설치되었는지 확인
-        const checkInstalled = () => {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-            if (isStandalone) {
-                setInstalled(true);
-            }
-        };
+        detectBrowser();
 
-        // 설치 가능 여부 확인
+        // Android Chrome 설치 프롬프트 감지
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
-            setIsInstallable(true);
+            setInstallState(prev => ({
+                ...prev,
+                showInstallPrompt: true
+            }));
         };
 
-        checkIOSDevice();
-        checkInstalled();
-        
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        window.addEventListener('appinstalled', () => setInstalled(true));
-        
-        // Cleanup function
+
+        // 설치 상태 변경 감지
+        window.matchMedia('(display-mode: standalone)').addListener((e) => {
+            setInstallState(prev => ({
+                ...prev,
+                isStandalone: e.matches
+            }));
+        });
+
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-            window.removeEventListener('appinstalled', () => setInstalled(true));
         };
-    }, []);
+    }, [deferredPrompt]);
 
     const handleInstallClick = async () => {
         if (deferredPrompt) {
             try {
-                const result = await deferredPrompt.prompt();
+                await deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
                 if (result.outcome === 'accepted') {
                     console.log('User accepted the install prompt');
-                    setIsInstallable(false);
-                } else {
-                    console.log('User dismissed the install prompt');
+                    setInstallState(prev => ({
+                        ...prev,
+                        showInstallPrompt: false
+                    }));
                 }
                 setDeferredPrompt(null);
             } catch (error) {
@@ -65,31 +84,37 @@ const Dashboard = () => {
         }
     };
 
-    const renderInstallButton = () => {
-        if (installed) {
-            return null; // 이미 설치된 경우 버튼 숨김
-        }
+    const InstallButton = () => {
+        const { isIOS, isSafari, showInstallPrompt, isStandalone } = installState;
 
-        if (isIOS) {
+        if (isStandalone) return null;
+
+        // iOS Safari용 설치 안내
+        if (isIOS && isSafari && showInstallPrompt) {
             return (
-                <div className="fixed bottom-24 right-6 flex flex-col items-end">
-                    <button className="py-2 px-4 rounded-full bg-white text-blue-600 border border-blue-100 shadow-md mb-2">
-                        iOS 설치 방법
+                <div className="fixed bottom-24 right-6 flex flex-col items-end z-50">
+                    <button className="py-2 px-4 rounded-full bg-blue-600 text-white shadow-md mb-2">
+                        앱 설치하기
                     </button>
-                    <div className="bg-white p-4 rounded-lg shadow-lg text-sm max-w-xs">
-                        1. Safari 브라우저의 공유 버튼을 탭하세요<br/>
-                        2. "홈 화면에 추가" 를 선택하세요<br/>
-                        3. "추가"를 탭하세요
+                    <div className="bg-white p-4 rounded-lg shadow-lg text-sm max-w-xs border border-gray-200">
+                        <p className="font-bold mb-2">설치 방법</p>
+                        <ol className="space-y-2">
+                            <li>1. 하단의 <span className="inline-block w-6 h-6 align-middle bg-contain bg-no-repeat bg-center" style={{backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxsaW5lIHgxPSIyMiIgeTE9IjIiIHgyPSIxMSIgeTI9IjEzIj48L2xpbmU+PHBvbHlnb24gcG9pbnRzPSIyMiAyIDEwIDEwIDIwIDIwIDIyIDIiPjwvcG9seWdvbj48L3N2Zz4=')}}"
+                            /> 공유 버튼을 탭하세요</li>
+                            <li>2. 스크롤을 내려서 <strong>"홈 화면에 추가"</strong>를 선택하세요</li>
+                            <li>3. "추가"를 탭하면 설치가 완료됩니다</li>
+                        </ol>
                     </div>
                 </div>
             );
         }
 
-        if (isInstallable) {
+        // Android Chrome 등 기타 브라우저용 설치 버튼
+        if (!isIOS && showInstallPrompt) {
             return (
                 <button 
                     onClick={handleInstallClick}
-                    className="fixed bottom-24 right-6 py-2 px-4 rounded-full bg-white text-blue-600 border border-blue-100 shadow-md hover:bg-blue-50 transition-colors"
+                    className="fixed bottom-24 right-6 py-2 px-4 rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-colors z-50"
                 >
                     앱 설치하기
                 </button>
@@ -103,7 +128,7 @@ const Dashboard = () => {
         <>
             <Header />
             <div className='flex flex-col w-full'>  
-                {user.role === ('super_admin') ? (
+                {user.role === 'super_admin' ? (
                     <div className='p-8'>
                         <p>{user.role}</p>
                     </div>
@@ -113,14 +138,13 @@ const Dashboard = () => {
                         <PayHistory />
                     </div>
                 )}
-                {renderInstallButton()}
+                <InstallButton />
             </div>
         </>
     );
 };
 
 export default Dashboard;
-
 
 {/*
 import React, { useContext, useEffect, useState } from 'react';
