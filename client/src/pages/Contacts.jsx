@@ -78,7 +78,7 @@ function Contacts() {
                     <span className="font-semibold">연락망</span>
                 </div>
             </header>
-            <div className="pb-6 px-6 space-y-3">
+            <div className="pb-6 px-4 space-y-3">
                 {groupedContacts.length === 0 ? (
                     <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
                         <p className="font-semibold text-center">연락망의 데이터가 없습니다.</p>
