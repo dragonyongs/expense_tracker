@@ -52,7 +52,7 @@ const Profile = () => {
     // 필요한 데이터는 data 객체에서 직접 참조
     useEffect(() => {
         fetchProfileData();
-    }, [memberId, data]);
+    }, [memberId]);
 
     if (loading) return <div className='min-h-default-screen'><Loading type="ThreeDots" /></div>;
     if (error) return <div>{error}</div>;
