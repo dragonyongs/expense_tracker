@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../context/AuthProvider';
 import ProfileDrawer from '../components/ProfileDrawer';
 import axios from "../services/axiosInstance"; 
@@ -7,6 +7,7 @@ import AvatarComponent from '../components/AvatarComponent';
 import AvatarPreview from '../components/AvatarPreview';
 import { useMobile } from '../context/MobileContext';
 import { API_URLS } from '../services/apiUrls';
+import Loading from '../components/Loading';
 
 import { ThreeDots } from 'react-loader-spinner';
 import { LuBuilding, LuSmartphone, LuTrash, LuCake, LuActivity } from "react-icons/lu";
@@ -55,10 +56,8 @@ const Profile = () => {
         fetchProfileData();
     }, [memberId]);
 
-    if (loading) return <div>로딩 중...</div>;
+    if (loading) return <div className='min-h-default-screen'><Loading type="ThreeDots" /></div>;
     if (error) return <div>{error}</div>;
-
-
 
     // 연락처 추가 함수
     const handleAddContact = () => handleAddItem('contacts', { phone_type: '', phone_number: '', extension: '' });
