@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+  import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../context/AuthProvider';
 import ProfileDrawer from '../components/ProfileDrawer';
 import axios from "../services/axiosInstance"; 
@@ -50,11 +50,9 @@ const Profile = () => {
     } = useProfileData(memberId);
 
     // 필요한 데이터는 data 객체에서 직접 참조
-    // const { contacts, addresses, dates } = data;
-
     useEffect(() => {
         fetchProfileData();
-    }, [memberId]);
+    }, [memberId, data]);
 
     if (loading) return <div className='min-h-default-screen'><Loading type="ThreeDots" /></div>;
     if (error) return <div>{error}</div>;
@@ -78,18 +76,18 @@ const Profile = () => {
     const handleRemoveDate = (index) => handleRemoveItem('dates', index);
 
     const handleUpdateContact = (index, field, value) => {
-        handleUpdateItem('contacts', index, field, value);
-        setUpdatedContacts(data.contacts);
+        const updated = handleUpdateItem('contacts', index, field, value);
+        setUpdatedContacts(updated); // handleUpdateItem의 결과로 업데이트된 items 반환
     };
 
     const handleUpdateAddress = (index, field, value) => {
-        handleUpdateItem('addresses', index, field, value);
-        setUpdatedAddresses(data.addresses);
+        const updated = handleUpdateItem('addresses', index, field, value);
+        setUpdatedAddresses(updated);
     };
 
     const handleUpdateDates = (index, field, value) => {
-        handleUpdateItem('dates', index, field, value);
-        setUpdatedDates(data.dates);
+        const updated = handleUpdateItem('dates', index, field, value);
+        setUpdatedDates(updated);
     };
 
     const handleIntroductionChange = async (event) => {
@@ -117,6 +115,7 @@ const Profile = () => {
                 const newItems = items.filter(item => !item._id); // 새 아이템들
                 const updatedItems = items.filter(item => item._id).filter(item => {
                     const currentItem = currentItems.find(ci => ci._id === item._id);
+                    console.log('Current Item:', currentItem, 'New Item:', item); // 변경 확인용 로그
                     return currentItem && Object.keys(item).some(field => item[field] !== currentItem[field]); // 변경된 아이템들
                 });
     
@@ -136,6 +135,10 @@ const Profile = () => {
                 }
                 avatarId = avatarResponse.data._id; // 새로 저장된 아바타의 ID 저장
             }
+
+            console.log('Updated Contacts:', updatedContacts);
+            console.log('Updated Addresses:', updatedAddresses);
+            console.log('Updated Dates:', updatedDates);
 
             await Promise.all([
                 axios.put(`${API_URLS.PROFILES}/${data.profileId}`, { avatar_id: avatarId, introduction: data.introduction }),
@@ -167,7 +170,7 @@ const Profile = () => {
     const { years, days } = calculateYearsSinceEntry(data.dates);
 
     return (
-        <>  
+        <>
             <div className={`transition-all ${isOpen && 'pt-4 bg-slate-400'}`}>
                 <header className={`flex justify-between items-center py-4 pl-6 pr-3 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                     <div className='text-2xl' >
