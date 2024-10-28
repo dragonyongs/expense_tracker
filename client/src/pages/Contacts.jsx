@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
 import { MdKeyboardArrowRight } from "react-icons/md";
@@ -11,35 +11,58 @@ function Contacts() {
     const [selectedContact, setSelectedContact] = useState("");
     const [isOpen, setIsOpen] = useState(false);
 
-    const fetchData = async (url, setter) => {
-        try {
-            const response = await axios.get(url);
-            setter(response.data);
-        } catch (error) {
-            console.error(`Error fetching data from ${url}:`, error);
-        }
-    }
-
     useEffect(() => {
-        fetchData(API_URLS.PROFILES, setContacts);
+        const fetchContacts = async () => {
+            try {
+                const { data } = await axios.get(API_URLS.PROFILES);
+                setContacts(data);
+            } catch (error) {
+                console.error("Error fetching contacts:", error);
+            }
+        };
+        fetchContacts();
     }, []);
 
-    const handleOpenDrawer = (member) => {
-        setSelectedContact(member);
+    // const fetchData = async (url, setter) => {
+    //     try {
+    //         const response = await axios.get(url);
+    //         setter(response.data);
+    //     } catch (error) {
+    //         console.error(`Error fetching data from ${url}:`, error);
+    //     }
+    // }
+
+    // useEffect(() => {
+    //     fetchData(API_URLS.PROFILES, setContacts);
+    // }, []);
+
+    const handleOpenDrawer = (contact) => {
+        setSelectedContact(contact);
         setIsOpen(true);
     };
 
-    const handleCloseDrawer = () => {
-        setIsOpen(false);
-    };
+    const handleCloseDrawer = () => setIsOpen(false);
 
     const getCompanyPhoneInfo = (phones) => {
         const companyPhone = phones.find(phone => phone.phone_type === 'company_phone');
-        return {
-            phone: companyPhone ? companyPhone.phone_number : '',
-            extension: companyPhone ? companyPhone.extension : ''
-        };
+        return companyPhone ? { phone: companyPhone.phone_number, extension: companyPhone.extension } : {};
     };
+
+    // 팀별로 연락처 필터링 함수
+    const groupByTeam = (contacts) => {
+        return contacts.reduce((groups, contact) => {
+            const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
+            
+            if (teamName !== '미지정팀') {
+                groups[teamName] = groups[teamName] || [];
+                groups[teamName].push(contact);
+            }
+
+            return groups;
+        }, {});
+    };
+
+    const groupedContacts = useMemo(() => groupByTeam(contacts), [contacts]);
 
     const phoneTypeMapping = {
         company_phone: '회사',
@@ -53,23 +76,6 @@ function Contacts() {
         home: '집',
         delivery: '배송',
     };
-
-    // 팀별로 연락처 필터링 함수
-    const groupByTeam = (contacts) => {
-        return contacts.reduce((groups, contact) => {
-            const teamName = contact?.member_id?.team_id?.team_name;
-            if (teamName) {
-                if (!groups[teamName]) {
-                    groups[teamName] = [];
-                }
-
-                groups[teamName].push(contact);
-            }
-            return groups;
-        }, {});
-    };
-
-    const groupedContacts = groupByTeam(contacts);
 
     return (
         <>
@@ -159,14 +165,16 @@ function Contacts() {
                                     </span>
                                 </li>
                             ))}
-                            {selectedContact?.addresses && selectedContact.addresses.map(address => (
-                                <li key={address._id} className="grid grid-cols-5 w-full p-3">
-                                    <span className="pl-2 font-semibold">{addressTypeMapping[address.address_type] || address.address_type}</span>
-                                    <span className="col-span-4">
-                                        {address.address_line1}, {address.address_line2} ({address.postal_code})
-                                    </span>
-                                </li>
-                            ))}
+                            {selectedContact?.addresses && selectedContact.addresses
+                                .filter(address => address.address_type === 'work')
+                                .map(address => (
+                                    <li key={address._id} className="grid grid-cols-5 w-full p-3">
+                                        <span className="pl-2 font-semibold">{addressTypeMapping[address.address_type] || address.address_type}</span>
+                                        <span className="col-span-4">
+                                            {address.address_line1}, {address.address_line2} ({address.postal_code})
+                                        </span>
+                                    </li>
+                                ))}
                         </ul>
                     </div>
                 </div>
