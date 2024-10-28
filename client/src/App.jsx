@@ -38,10 +38,10 @@ const App = () => {
         if (metaTag) {
             if (location.pathname === '/') {
                 metaTag.setAttribute("content", "#0433FF");
-            } else if (location.pathname === '/teams') {
-                metaTag.setAttribute("content", "#ffffff");
-            } else {
+            } else if (location.pathname === '/transactions' || location.pathname === '/contacts' || location.pathname === '/profile') {
                 metaTag.setAttribute("content", "#dce8f5");
+            } else {
+                metaTag.setAttribute("content", "#ffffff");
             }
         }
     }, [location.pathname]); // 경로가 변경될 때마다 실행
