@@ -71,32 +71,6 @@ function Contacts() {
 
     const groupedContacts = groupByTeam(contacts);
 
-    // const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
-
-    // const genders = ['man', 'woman'];
-    // const hairStyles = ['normal', 'thick', 'mohawk', 'womanLong', 'womanShort'];
-    // const hairColor = ['#4A3C3A', '#C2B280', '#A52A2A'];
-    // const bgColors = ['#ffedef', '#e8fcbf', '#fcf7c7'];
-    // const earSize = ["small","big"];
-    // const noAvatar = {
-    //     sex: getRandomElement(genders),
-    //     faceColor: '#F9CBAE',
-    //     earSize: getRandomElement(earSize),
-    //     hairColor: getRandomElement(hairColor),
-    //     hairStyle: getRandomElement(hairStyles),
-    //     hairColorRandom: '',
-    //     hatColor: '',
-    //     hatStyle: '',
-    //     eyeStyle: 'oval',
-    //     glassesStyle: '',
-    //     noseStyle: 'normal',
-    //     mouthStyle: 'smile',
-    //     shirtStyle: 'tshirt',
-    //     shirtColor: '#3B5998',
-    //     bgColor: getRandomElement(bgColors),
-    //     isGradient: false 
-    // };
-    
     return (
         <>
             <header className="flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800">
