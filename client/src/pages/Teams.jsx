@@ -67,12 +67,12 @@ function Teams() {
 
     return (
         <>
-            <header className={`flex justify-between items-center py-4 px-6 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+            <header className={`flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                 <div className='text-2xl' >
                     <span className='font-semibold'>팀계좌</span>
                 </div>
             </header>
-            <div className='flex flex-col gap-y-2'>
+            <div className='flex flex-col gap-y-2 px-6'>
                 {accounts.length === 0 ? 
                     (
                         <div className="flex flex-col justify-center items-center h-default-screen text-gray-500 dark:text-gray-400">
@@ -109,8 +109,8 @@ function Teams() {
                                 const teamOperatingFundPercentage = handleTeamOperatingFundSpent(account);
 
                                 return (
-                                    <div key={account._id} className='pt-8 px-8 bg-white shadow-sm border-t border-t-gray-200 dark:border-t-slate-700 dark:bg-slate-800 dark:text-slate-300'>
-                                        <h3 className='text-lg'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌</h3>
+                                    <div key={account._id} className='pt-8 px-8 bg-white shadow-sm rounded-xl border-t border-t-gray-200 dark:border-t-slate-700 dark:bg-slate-800 dark:text-slate-300'>
+                                        <h3 className='text-lg text-gray-500'>{account.team_id.team_name} {account.account_number.split('-')[account.account_number.split('-').length - 1]} 계좌</h3>
                                         <h3 className='text-2xl tracking-tight text-gray-700 dark:text-slate-300 mt-2 dark:font-thin'>
                                             <span className='font-bold text-black dark:text-slate-300 dark:font-normal'>{(totalBalance + teamOperatingFundBalance).toLocaleString()}원</span> {totalBalance > 0 ? "남음" : ""}
                                         </h3>
@@ -148,7 +148,7 @@ function Teams() {
                                                                     <span className={`font-bold text-black dark:font-normal dark:text-slate-200 ${isWarning ? 'text-red-600 dark:text-red-400' : '' } `}>
                                                                         {card.balance.toLocaleString()}원
                                                                     </span> 
-                                                                    <span className='text-base'>{card.balance > 0 ? "남음" : "" }</span>
+                                                                    <span className='pl-2 text-base'>{card.balance > 0 ? "남음" : "" }</span>
                                                                 </span>
                                                             </div>
                                                             
@@ -168,7 +168,7 @@ function Teams() {
                                                             <span className={`font-bold text-black dark:font-normal dark:text-slate-200`}>
                                                                 {teamOperatingFundBalance.toLocaleString()}원
                                                             </span> 
-                                                            <span className='text-base'>{teamOperatingFundBalance > 0 ? "남음" : "" }</span>
+                                                            <span className='pl-2 text-base'>{teamOperatingFundBalance > 0 ? "남음" : "" }</span>
                                                         </span>
                                                     </div>
                                                     <ProgressBars spentPercentage={teamOperatingFundPercentage} isWarning={false} />

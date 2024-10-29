@@ -3,24 +3,25 @@ import { Link } from 'react-router-dom';
 import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance";
 import { RiArrowRightSLine } from "react-icons/ri";
+import { MutatingDots } from 'react-loader-spinner';
 
 const PayHistory = () => {
     const [transactions, setTransactions] = useState([]);
-    const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         fetchData(API_URLS.TRANSACTIONS, setTransactions);
     }, []);
 
     const fetchData = async (url, setter) => {
-        setIsLoading(true); // 로딩 시작
+        setIsLoading(true);
         try {
             const response = await axios.get(url);
             setter(response.data);
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
         } finally {
-            setIsLoading(false); // 로딩 끝
+            setIsLoading(false);
         }
     };
 
@@ -35,7 +36,18 @@ const PayHistory = () => {
             </div>
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center h-dashboard-screen">
-                    <p className='text-lg text-gray-600 dark:text-gray-500'>데이터를 불러오는 중입니다...</p>
+                    <MutatingDots
+                        visible={true}
+                        height="100"
+                        width="100"
+                        color="#b8a57f"
+                        secondaryColor="#0433FF"
+                        radius="12.5"
+                        ariaLabel="mutating-dots-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                    />
+                    <p className='text-lg font-semibold text-blue-900 dark:text-gray-500'>데이터를 불러오는 중입니다.</p>
                     {/* 로딩 스켈레톤 컴포넌트 추가 가능 */}
                 </div>
             ) : filteredTransactions.length === 0 ? (

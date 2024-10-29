@@ -12,7 +12,7 @@ function ProgressBars({ spentPercentage, isWarning }) {
     }, [spentPercentage]);
 
     const progressBarColor = isWarning 
-        ? 'bg-red-500'
+        ? 'bg-red-300'
         : spentPercentage === 100 
             ? 'bg-green-500' 
             : 'bg-[#0433FF]';

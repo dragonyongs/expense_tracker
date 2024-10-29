@@ -23,8 +23,8 @@ const Dashboard = () => {
             const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
             const isChrome = /Chrome/.test(ua);
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                               window.navigator.standalone || 
-                               document.referrer.includes('android-app://');
+                                window.navigator.standalone || 
+                                document.referrer.includes('android-app://');
 
             setInstallState({
                 isIOS: iOS,
@@ -97,18 +97,18 @@ const Dashboard = () => {
                         <p className="font-bold mb-2">설치 방법</p>
                         <ol className="space-y-2">
                             <li className="flex items-center gap-2">
-    <IoShareOutline className="w-5 h-5" />
-    공유 버튼을 탭하세요
-</li>
-                            <li>스크롤을 내려서 <strong>"홈 화면에 추가"</strong>를 선택하세요</li>
-                            <li>"추가"를 탭하면 설치가 완료됩니다</li>
+                                <IoShareOutline className="w-5 h-5" />
+                                공유 버튼을 탭하세요
+                            </li>
+                            <li>스크롤을 내려서 <strong>&quot;홈 화면에 추가&quot;</strong>를 선택하세요</li>
+                            <li>&quot;추가&quot;를 탭하면 설치가 완료됩니다</li>
                         </ol>
                     </div>
                 </div>
             );
         }
 
-        if (!isIOS && showInstallPrompt) {
+        if (!isIOS && !isSafari && showInstallPrompt) {
             return (
                 <button 
                     onClick={handleInstallClick}
@@ -143,83 +143,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-
-{/*
-import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../context/AuthProvider';
-import CardBalance from '../components/CardBalance';
-import PayHistory from '../components/PayHistory';
-import Header from '../components/Header';
-
-const Dashboard = () => {
-    const { user } = useContext(AuthContext);
-
-    const [deferredPrompt, setDeferredPrompt] = useState(null);
-
-    useEffect(() => {
-        const handleBeforeInstallPrompt = (e) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
-            console.log('beforeinstallprompt event fired'); // 로그 추가
-        };
-    
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        };
-    }, []);
-
-    const handleInstallClick = () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
-            } else {
-                console.log('User dismissed the install prompt');
-            }
-            setDeferredPrompt(null);
-            });
-        }
-    };
-
-    const isAppInstalled = () => {
-        // 일반적으로 iOS Safari에서 PWA가 설치된 경우
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    };
-
-    return (
-        <>
-            <Header />
-            <div className='flex flex-col w-full'>  
-                {user.role === 'super_admin' ? (
-                    <div className='p-8'>
-                        <p>{user.role}</p>
-                    </div>
-                ) : (
-                    <div className='h-full bg-white dark:bg-slate-800'>
-                        <CardBalance role={user.role} />
-                        <PayHistory />
-                    </div>
-                ) }
-                {!isAppInstalled() && deferredPrompt && (
-                    <div className='z-110 fixed bottom-24 right-6'>
-                        <button 
-                            onClick={handleInstallClick} 
-                            className='py-2 px-4 rounded-full bg-white text-blue-600 border border-blue-100 shadow-md'>
-                            Install App
-                        </button>
-                    </div>
-                )}
-            </div>
-        </>
-    );
-};
-
-export default Dashboard;
-
-
-
-*/}

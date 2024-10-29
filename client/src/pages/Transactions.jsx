@@ -470,7 +470,7 @@ const Transactions = () => {
                 {/* 트랜잭션 목록 */}
 
                 <div className='flow-root'>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 px-3">
                         <h5 className="text-2xl font-semibold leading-none text-black dark:text-white">지출 내역</h5>
                         <button
                             type="button" 
