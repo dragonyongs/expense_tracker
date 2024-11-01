@@ -88,7 +88,8 @@ export function AuthProvider({ children }) {
 
             const statusResponse = await axios.get(`${API_URLS.STATUSES}/${data.user.status_id}`);
             const status = statusResponse.data.status_name;
-
+            console.log('status', status);
+            
             // 상태에 따라 리다이렉션
             navigate(status === 'pending' ? '/pending' : '/');
         } catch (error) {

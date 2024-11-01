@@ -109,13 +109,20 @@ const AdminDeposit = () => {
         const newDepositType = e.target.value;
         setDepositType(newDepositType);
     
+        // selectedDeposit의 deposit_type 업데이트
+        setSelectedDeposit(prev => ({
+            ...prev,
+            deposit_type: newDepositType, // 선택한 입금 타입 저장
+        }));
+    
         if (newDepositType === "RegularDeposit" && selectedCard) {
             const currentBalance = balance; // 개별 카드의 현재 잔액
             const cardLimit = cards.find(card => card._id === selectedCard)?.limit || 0;
             const result = cardLimit - currentBalance;
+    
             // 잔액이 카드 한도보다 적고 1만원 미만일 경우 입금 금액 계산
             if (result > 10000) {
-                const depositAmount = Math.max(0, cardLimit - currentBalance); // 10만원에서 현재 잔액 차감
+                const depositAmount = Math.max(0, cardLimit - currentBalance); // 카드 한도에서 현재 잔액 차감
                 setSelectedDeposit(prev => ({
                     ...prev,
                     transaction_amount: depositAmount,
@@ -123,18 +130,19 @@ const AdminDeposit = () => {
             } else {
                 setSelectedDeposit(prev => ({
                     ...prev,
-                    transaction_amount: cardLimit,
+                    transaction_amount: cardLimit, // 카드 한도만큼 설정
                 }));
             }
-        } if (newDepositType === "TransportationExpense" && selectedCard) {
+        } else if (newDepositType === "TransportationExpense" && selectedCard) {
             setSelectedDeposit(prev => ({
                 ...prev,
                 transaction_amount: 0,
             }));
         } else {
+            // 다른 입금 타입의 경우 기존 금액 유지
             setSelectedDeposit(prev => ({
                 ...prev,
-                transaction_amount: prev.transaction_amount, // 다른 입금 타입의 경우 기존 금액 유지
+                transaction_amount: prev.transaction_amount, // 현재 금액 유지
             }));
         }
     };
@@ -302,13 +310,25 @@ const AdminDeposit = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
-    
+            console.log('handleSave')
             // 선택된 카드 정보 가져오기
-            if (!selectedCard) throw new Error("선택된 카드가 없습니다.");
+            // if (!selectedCard) throw new Error("선택된 카드가 없습니다.");
+
+            if (!selectedCard) {
+                setErrMsg("선택된 카드가 없습니다.");
+                return;
+            }
+            if (!depositType) {
+                setErrMsg("선택된 입금 내역이 없습니다.");
+                return;
+            }
+
+            
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${selectedCard}`);
             const cardData = cardResponse.data;
             
-            const isTeamFund = selectedDeposit.deposit_type === 'TeamFund';
+            const isTeamFund = depositType === 'TeamFund';
+            console.log('selectedDeposit', selectedDeposit);
             let updatedBalance = parseFloat(cardData.balance);
             let rolloverAmount = parseFloat(cardData.rollover_amount);
             let teamFund = parseFloat(cardData.team_fund);
@@ -344,23 +364,13 @@ const AdminDeposit = () => {
     
             // 금액 차이를 계산하여 처리 - 수정모드
             const difference = isEditing ? depositAmount - parseFloat(existingDeposit.transaction_amount) : depositAmount;
-            console.log(difference);
             // 팀 운영비 처리
+            
             if (isTeamFund) {
+                console.log('isTeamFund > difference' , difference);
                 if (teamFund + difference < 0) throw new Error("팀 운영비가 부족합니다.");
                 teamFund += difference;
             } else {
-                // // 일반 카드 잔액 처리
-                // if (updatedBalance + difference > 100000) {
-                //     const excess = updatedBalance + difference - 100000;
-                //     rolloverAmount += excess;
-                //     updatedBalance = 100000;
-                // } else if (updatedBalance + difference < 0) {
-                //     throw new Error("잔액이 부족합니다.");
-                // } else {
-                //     updatedBalance += difference;
-                // }
-                // let updatedBalance = parseFloat(cardData.balance);
                 const memberCount = calculateTeamMembersCount(); // 팀원 수 계산
                 const threshold = 10000 / memberCount; // 차액 기준을 '1만원 / 팀원 수'로 설정
 
@@ -382,15 +392,18 @@ const AdminDeposit = () => {
 
             }
             
-            // 트랜잭션 업데이트 또는 새로운 트랜잭션 추가
+
+            console.log(selectedDeposit);
+            
+            // 트랜잭션 데이터 준비
             const transactionData = {
                 card_id: selectedCard,
-                transaction_amount: depositAmount,
+                transaction_amount: isTeamFund ? difference : depositAmount, // TeamFund의 경우 difference를 transaction_amount에 추가
                 merchant_name: '관리자',
-                menu_name: selectedDeposit?.menu_name || "월 잔액 충전",
+                menu_name: selectedDeposit?.menu_name || (isTeamFund ? "팀 운영비" : "월 잔액 충전"), // 팀 운영비일 경우 메뉴명 변경
                 transaction_type: 'income',
                 transaction_date: selectedDeposit?.transaction_date || new Date(),
-                deposit_type: selectedDeposit?.deposit_type || 'RegularDeposit',
+                deposit_type: isTeamFund ? 'TeamFund' : selectedDeposit?.deposit_type || 'RegularDeposit', // TeamFund로 depositType 설정
                 team_fund: teamFund,
             };
     
@@ -406,7 +419,7 @@ const AdminDeposit = () => {
                 rollover_amount: rolloverAmount,
                 team_fund: teamFund,
             });
-    
+
             // 상태 값 업데이트 및 모달 닫기
             console.log("카드 잔액 및 rollover_amount 업데이트 성공:", updatedBalance, rolloverAmount, teamFund);
             setBalance(updatedBalance);
