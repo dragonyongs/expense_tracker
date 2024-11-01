@@ -80,17 +80,23 @@ const useProfileData = (userId) => {
         }));
     };
 
-    const handleUpdateItem = (type, index, field, value) => {
-        setData((prevData) => {
-            const updatedData = {
-                ...prevData,
-                [type]: prevData[type].map((item, i) =>
-                    i === index ? { ...item, [field]: value } : item
-                )
-            };
-            return updatedData;
-        });
-    };
+const handleUpdateItem = (type, index, field, value) => {
+    let updatedItems;
+    
+    setData(prevData => {
+        updatedItems = prevData[type].map((item, i) =>
+            i === index ? { ...item, [field]: value } : item
+        );
+        
+        return {
+            ...prevData,
+            [type]: updatedItems
+        };
+    });
+
+    // 업데이트된 배열 반환
+    return updatedItems;
+};
 
     const handleRemoveItem = (type, index) => {
         const itemToDelete = data[type][index];
