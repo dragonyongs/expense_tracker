@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import axios from "../services/axiosInstance";
+import React, { useEffect, useState } from 'react'
+import axios from "../services/axiosInstance"; 
 import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { IoAddCircleOutline } from "react-icons/io5";
-import AdminHeader from '../components/AdminHeader';
+import AdminHader from '../components/AdminHader';
 
 const AdminTeams = () => {
     const [teams, setTeams] = useState([]);
