@@ -188,23 +188,17 @@ const AdminDeposit = () => {
             });
     
             if (hasPostDepositTransactions) {
-                // 입금 이후에 발생한 거래가 있으면 삭제 방지
                 setErrMsg("이 입금 이후에 사용된 내역이 있어 삭제할 수 없습니다.");
                 console.warn('입금 이후 사용 내역이 있어 삭제가 불가능합니다.');
                 return;
             }
-    
-            // 입금 내역의 금액을 차감하여 balance 업데이트
             if (isTeamFund) {
-                // 팀 운영비인 경우 team_fund에서 차감
-                let updatedTeamFund = Math.max(parseFloat(cardData.team_fund) - depositAmount, 0); // 음수가 되지 않도록 보장
+                let updatedTeamFund = Math.max(parseFloat(cardData.team_fund) - depositAmount, 0);
     
-                // 카드의 team_fund 업데이트
                 await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
                     team_fund: updatedTeamFund,
                 });
             } else {
-                // 일반 카드 잔액에서 차감
                 if (updatedBalance - depositAmount < 0) {
                     const remainingAmountToDeduct = depositAmount - updatedBalance;
                     updatedBalance = 0;
@@ -213,21 +207,14 @@ const AdminDeposit = () => {
                     updatedBalance -= depositAmount;
                 }
     
-                // 카드의 balance와 rollover_amount 업데이트
                 await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
                     balance: updatedBalance,
                     rollover_amount: rolloverAmount,
                 });
             }
-    
-            // 입금 내역 삭제
             await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
             console.log('입금 내역 삭제 완료');
-    
-            // 입금 내역 갱신
             fetchData(`${API_URLS.DEPOSITS}`, setDeposits);
-            
-            // 삭제 확인 모달 닫기
             setIsDeleteConfirmOpen(false);
             handleCloseDrawer();
         } catch (error) {
@@ -238,21 +225,12 @@ const AdminDeposit = () => {
 
     const fetchFilteredMembers = async () => {
         try {
-            // 전체 카드 목록을 가져오기
             const cardsResponse = await axios.get(API_URLS.CARDS);
             const allCards = cardsResponse.data;
-    
-            // member_id가 있는 카드만 필터링
             const validCards = allCards.filter(card => card.member_id && card.card_number);
-    
-            // 해당 멤버들의 ID를 모은 배열 생성
             const validMemberIds = validCards.map(card => card.member_id._id);
-    
-            // 전체 멤버 목록 가져오기
             const membersResponse = await axios.get(API_URLS.MEMBERS);
             const allMembers = membersResponse.data;
-    
-            // 유효한 카드가 있는 멤버들만 필터링
             const filteredMembers = allMembers.filter(member => validMemberIds.includes(member._id));
             setUsers(filteredMembers);
         } catch (error) {
@@ -364,24 +342,44 @@ const AdminDeposit = () => {
                 }
             }
     
-            // 금액 차이를 계산하여 처리
+            // 금액 차이를 계산하여 처리 - 수정모드
             const difference = isEditing ? depositAmount - parseFloat(existingDeposit.transaction_amount) : depositAmount;
-            
+            console.log(difference);
             // 팀 운영비 처리
             if (isTeamFund) {
                 if (teamFund + difference < 0) throw new Error("팀 운영비가 부족합니다.");
                 teamFund += difference;
             } else {
-                // 일반 카드 잔액 처리
-                if (updatedBalance + difference > 100000) {
-                    const excess = updatedBalance + difference - 100000;
-                    rolloverAmount += excess;
-                    updatedBalance = 100000;
-                } else if (updatedBalance + difference < 0) {
-                    throw new Error("잔액이 부족합니다.");
+                // // 일반 카드 잔액 처리
+                // if (updatedBalance + difference > 100000) {
+                //     const excess = updatedBalance + difference - 100000;
+                //     rolloverAmount += excess;
+                //     updatedBalance = 100000;
+                // } else if (updatedBalance + difference < 0) {
+                //     throw new Error("잔액이 부족합니다.");
+                // } else {
+                //     updatedBalance += difference;
+                // }
+                // let updatedBalance = parseFloat(cardData.balance);
+                const memberCount = calculateTeamMembersCount(); // 팀원 수 계산
+                const threshold = 10000 / memberCount; // 차액 기준을 '1만원 / 팀원 수'로 설정
+
+                if (updatedBalance < threshold) {
+                    // 잔액이 1만원 미만일 경우 10만원 입금
+                    updatedBalance += 100000;
                 } else {
-                    updatedBalance += difference;
+                    // 잔액이 1만원 이상일 경우 10만원에서 현재 잔액을 뺀 금액 입금
+                    const depositAmount = 100000 - updatedBalance;
+                    updatedBalance += depositAmount;
                 }
+
+                // 초과 금액이 있는 경우 rolloverAmount에 저장
+                if (updatedBalance > 100000) {
+                    const excess = updatedBalance - 100000;
+                    rolloverAmount += excess;
+                    updatedBalance = 100000; // 한도 유지
+                }
+
             }
             
             // 트랜잭션 업데이트 또는 새로운 트랜잭션 추가
