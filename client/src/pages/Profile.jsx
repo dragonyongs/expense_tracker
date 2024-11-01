@@ -141,11 +141,11 @@ const Profile = () => {
             console.log('Updated Dates:', updatedDates);
 
             await Promise.all([
-                axios.put(`${API_URLS.PROFILES}/${data.profileId}`, { avatar_id: avatarId, introduction: data.introduction }),
-                ...processItems(data.contacts, updatedContacts || [], API_URLS.PHONES, deletedItems.contacts, memberId),
-                ...processItems(data.addresses, updatedAddresses || [], API_URLS.ADDRESSES, deletedItems.addresses, memberId),
-                ...processItems(data.dates, updatedDates || [], API_URLS.DATES, deletedItems.dates, memberId)
-            ]);
+    axios.put(`${API_URLS.PROFILES}/${data.profileId}`, { avatar_id: avatarId, introduction: data.introduction }),
+    ...processItems(updatedContacts || [], data.contacts, API_URLS.PHONES, deletedItems.contacts, memberId),
+    ...processItems(updatedAddresses || [], data.addresses, API_URLS.ADDRESSES, deletedItems.addresses, memberId),
+    ...processItems(updatedDates || [], data.dates, API_URLS.DATES, deletedItems.dates, memberId)
+]);
     
             await fetchProfileData();
         } catch (error) {
