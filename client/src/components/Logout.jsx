@@ -22,7 +22,7 @@ function Logout({isDashBoard, role}) {
 
     return (
         <div className='relative leading-none'>
-            <button className={`text-3xl ${isDashBoard && role !== 'super_admin'  ? 'text-white' : 'text-gray-700 dark:text-slate-400'}`}  onClick={handleLogout}>
+            <button className={`text-[26px] ${isDashBoard && role !== 'super_admin'  ? 'text-white' : 'text-gray-700 dark:text-slate-400'}`}  onClick={handleLogout}>
                 <MdLogout />
             </button>
         </div>

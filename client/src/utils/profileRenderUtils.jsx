@@ -37,6 +37,7 @@ const addressIcons = {
 const addressLabels = {
     home: '집',
     work: '회사',
+    work_mobile: '업무',
     delivery: '배송'
 };
 

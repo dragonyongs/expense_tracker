@@ -8,7 +8,7 @@ function DarkMode({isDashBoard, role}) {
         <div className='relative leading-none'>
             <button
                 onClick={toggleDarkMode}
-                className={`text-3xl ${isDashBoard && role !== 'super_admin' ? 'text-white' : 'text-gray-700 dark:text-slate-400'}`}
+                className={`text-[26px] ${isDashBoard && role !== 'super_admin' ? 'text-white' : 'text-gray-700 dark:text-slate-400'}`}
             >
                 {isDarkMode ? <LuSun /> :  <LuMoon />}
             </button>

@@ -93,16 +93,15 @@ const AdminDeposit = () => {
             const teamMembersCount = calculateTeamMembersCount();
             const isTeamLeader = selectUserPosition === "팀장";
             const isPartLeader = selectUserPosition === "파트장";
-            const teamFundAmount = isTeamLeader ? (teamMembersCount * 30000) : (isPartLeader ? 30000 : 0);
+            const teamFundAmount = isTeamLeader ? teamMembersCount * 30000 : isPartLeader ? 30000 : 0;
     
-            setSelectedDeposit(prev => ({
+            setSelectedDeposit((prev) => ({
                 ...prev,
                 transaction_amount: teamFundAmount,
             }));
         }
     }, [depositType, accounts]);
     
-
     // 팀원 수 계산 함수
     const calculateTeamMembersCount = () => accounts.reduce((count, account) => count + account.cards.length, 0);
     
@@ -110,23 +109,49 @@ const AdminDeposit = () => {
         const newDepositType = e.target.value;
         setDepositType(newDepositType);
     
-        // 사용자 포지션을 구해 팀장/파트장 여부 확인
-        const isTeamLeader = selectUserPosition === "팀장";
-        const isPartLeader = selectUserPosition === "파트장";
-
-        // 팀원 수에 따라 팀장과 파트장에 맞는 금액 계산
-        const teamMembersCount = isTeamLeader ? calculateTeamMembersCount() : 0; // 팀장일 경우 팀원 수 계산
-        const teamFundAmount = isTeamLeader ? (teamMembersCount * 30000) : (isPartLeader ? 30000 : 0); // 팀장 운영비 계산
-
-        setSelectedDeposit(prev => ({
-            ...prev,
-            transaction_amount: newDepositType === "RegularDeposit"
-                ? 100000 // 정기 입금 금액
-                : newDepositType === "TeamFund"
-                ? teamFundAmount // 팀 운영비 + 파트장 추가 금액
-                : prev.transaction_amount // 다른 경우는 기존 금액 유지
-        }));
+        if (newDepositType === "RegularDeposit" && selectedCard) {
+            const currentBalance = balance; // 개별 카드의 현재 잔액
+            const cardLimit = cards.find(card => card._id === selectedCard)?.limit || 0;
+            const result = cardLimit - currentBalance;
+            // 잔액이 카드 한도보다 적고 1만원 미만일 경우 입금 금액 계산
+            if (result > 10000) {
+                const depositAmount = Math.max(0, cardLimit - currentBalance); // 10만원에서 현재 잔액 차감
+                setSelectedDeposit(prev => ({
+                    ...prev,
+                    transaction_amount: depositAmount,
+                }));
+            } else {
+                setSelectedDeposit(prev => ({
+                    ...prev,
+                    transaction_amount: cardLimit,
+                }));
+            }
+        } if (newDepositType === "TransportationExpense" && selectedCard) {
+            setSelectedDeposit(prev => ({
+                ...prev,
+                transaction_amount: 0,
+            }));
+        } else {
+            setSelectedDeposit(prev => ({
+                ...prev,
+                transaction_amount: prev.transaction_amount, // 다른 입금 타입의 경우 기존 금액 유지
+            }));
+        }
     };
+    
+    useEffect(() => {
+        if (depositType === "RegularDeposit" && selectedCard) {
+            const currentBalance = balance;
+            if (currentBalance < 10000) {
+                const depositAmount = Math.max(0, 100000 - currentBalance);
+    
+                setSelectedDeposit(prev => ({
+                    ...prev,
+                    transaction_amount: depositAmount,
+                }));
+            }
+        }
+    }, [depositType, selectedCard, balance]);
 
     const handleDeleteConfirm = () => {
         setIsDeleteConfirmOpen(true);
@@ -258,7 +283,6 @@ const AdminDeposit = () => {
                 setCards(userCards); // 카드 목록 업데이트
                 setSelectedCard(userCards[0]._id); // 첫 번째 카드를 자동으로 선택
                 setBalance(userCards[0].balance); // 카드 잔액 설정
-
                 // 선택된 사용자 및 카드 정보 업데이트
                 setSelectedDeposit((prev) => ({
                     ...prev,
@@ -288,11 +312,12 @@ const AdminDeposit = () => {
         const cardId = e.target.value;
         const card = cards.find(card => card._id === cardId);
     
-        // if (card) {
+        if (card) {
             setSelectedCard(cardId);
             setBalance(card ? card.balance : 0);
             setSelectedDeposit(prev => ({ ...prev, card_id: cardId }));
-        // }
+        }
+
     };
 
     // 입금 저장 처리
