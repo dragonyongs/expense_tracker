@@ -56,7 +56,7 @@ const PayHistory = () => {
                     <p className='text-lg text-gray-600 dark:text-gray-500'>최근 결제 내역이 없습니다</p>
                 </div>
             ) : (
-                <div className="px-6">
+                <div className="px-6 min-h-dashboard-screen">
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-slate-700">
                         {filteredTransactions
                             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
