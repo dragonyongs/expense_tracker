@@ -76,19 +76,19 @@ const Profile = () => {
     const handleRemoveDate = (index) => handleRemoveItem('dates', index);
 
     const handleUpdateContact = (index, field, value) => {
-        const updated = handleUpdateItem('contacts', index, field, value);
-        setUpdatedContacts(updated); // handleUpdateItem의 결과로 업데이트된 items 반환
-    };
+    const updated = handleUpdateItem('contacts', index, field, value);
+    setUpdatedContacts(prev => updated); // 이전 상태를 참조하여 업데이트
+};
 
-    const handleUpdateAddress = (index, field, value) => {
-        const updated = handleUpdateItem('addresses', index, field, value);
-        setUpdatedAddresses(updated);
-    };
+const handleUpdateAddress = (index, field, value) => {
+    const updated = handleUpdateItem('addresses', index, field, value);
+    setUpdatedAddresses(prev => updated);
+};
 
-    const handleUpdateDates = (index, field, value) => {
-        const updated = handleUpdateItem('dates', index, field, value);
-        setUpdatedDates(updated);
-    };
+const handleUpdateDates = (index, field, value) => {
+    const updated = handleUpdateItem('dates', index, field, value);
+    setUpdatedDates(prev => updated);
+};
 
     const handleIntroductionChange = async (event) => {
         updateIntroduction(event.target.value);
