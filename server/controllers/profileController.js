@@ -89,27 +89,37 @@ exports.updateProfile = async (req, res) => {
 
     try {
         // 프로필 업데이트
-        const updatedProfile = await Profile.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-        
+        const updatedProfile = await Profile.findByIdAndUpdate(
+            id,
+            req.body,
+            {
+                new: true,
+                runValidators: true,
+                context: 'query' // Validator가 query context에서 작동하도록 설정
+            }
+        );
+
         if (!updatedProfile) {
-            console.log('No profile found with the given ID'); // 로그 추가
-            return res.status(404).json({ message: 'updateProfile: Profile not found' });
+            console.log('No profile found with the given ID');
+            return res.status(404).json({ message: 'Profile not found' });
         }
 
-        // 멤버의 profile_id가 null인 경우 업데이트
-        const member = await Member.findOne({ _id: updatedProfile.member_id });
-        if (member) {
-            await Member.findByIdAndUpdate(
-                member._id,
-                { profile_id: updatedProfile._id }, // profile_id 필드에 프로필 ID 저장
-                { new: true } // 업데이트된 문서를 반환
-            );
+        // member_id가 null이 아닌 경우에만 멤버 업데이트
+        if (updatedProfile.member_id) {
+            const member = await Member.findById(updatedProfile.member_id);
+            if (member && !member.profile_id) {
+                await Member.findByIdAndUpdate(
+                    member._id,
+                    { profile_id: updatedProfile._id },
+                    { new: true }
+                );
+            }
         }
 
         res.status(200).json(updatedProfile);
     } catch (error) {
-        console.error('Error updating profile:', error); // 에러 로그
-        res.status(400).json({ message: error.message });
+        console.error('Error updating profile:', error);
+        res.status(400).json({ message: 'Failed to update profile', error: error.message });
     }
 };
 
