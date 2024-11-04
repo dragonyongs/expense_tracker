@@ -43,29 +43,35 @@ exports.getPhones = async (req, res) => {
 
 // Update a phone contact by ID
 exports.updatePhone = async (req, res) => {
-    try {
-        // 연락처 업데이트
-        const updatedPhone = await Phone.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updatedPhone) return res.status(404).json({ message: 'Phone not found' });
+    console.log('Update Phone Request received:', {
+        params: req.params,
+        body: req.body
+    });
 
-        // 프로필에서 해당 연락처 ID를 찾아서 업데이트
+    try {
+        const updatedPhone = await Phone.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        console.log('Phone update result:', updatedPhone);
+
+        if (!updatedPhone) {
+            console.log('Phone not found with id:', req.params.id);
+            return res.status(404).json({ message: 'Phone not found' });
+        }
+
         const profile = await Profile.findOne({ phones: req.params.id });
+        console.log('Found profile:', profile ? profile._id : 'none');
+
         if (profile) {
-            // phones 배열에서 해당 연락처 ID를 찾아 업데이트된 연락처로 교체
+            console.log('Profile before update:', profile);
             profile.phones = profile.phones.map(phoneId =>
                 phoneId.toString() === req.params.id ? updatedPhone._id : phoneId
             );
-
-            console.log('Profile before saving:', profile);
-            await profile.save(); // 프로필 저장
-            console.log('Profile after saving:', profile);
-        } else {
-            console.log('Profile not found for the phone ID.');
+            await profile.save();
+            console.log('Profile after update:', profile);
         }
 
         res.status(200).json(updatedPhone);
     } catch (error) {
-        console.error('Error updating phone:', error);
+        console.error('Error in updatePhone:', error);
         res.status(400).json({ message: error.message });
     }
 };

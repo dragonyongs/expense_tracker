@@ -10,7 +10,7 @@ const useProfileData = (userId) => {
             setIsScriptLoaded(true);
         });
     }, [userId]);
-    
+
     const [data, setData] = useState({
         member: {},
         introduction: '',
@@ -57,6 +57,7 @@ const useProfileData = (userId) => {
                 avatarId: profileRes.data.avatar_id,
                 profileId: profileRes.data._id,
             });
+
             setError(null);
         } catch (error) {
             setError('프로필 데이터를 불러오는데 실패했습니다.');
@@ -80,21 +81,47 @@ const useProfileData = (userId) => {
         }));
     };
 
-const handleUpdateItem = (type, index, field, value) => {
-    let updatedItems;
-    setData((prevData) => {
-        updatedItems = prevData[type].map((item, i) =>
-            i === index ? { ...item, [field]: value } : item
-        );
-        return {
-            ...prevData,
-            [type]: updatedItems
-        };
-    });
-    // 업데이트된 배열 반환
-    return updatedItems;
-};
+    // const handleUpdateItem = (type, index, field, value) => {
 
+    //     console.log('handleUpdateItem 내부 상태:', type, index, field, value);
+        
+    //     let updatedItems;
+    //     setData((prevData) => {
+    //         updatedItems = prevData[type].map((item, i) =>
+    //             i === index ? { ...item, [field]: value } : item
+    //         );
+    //         return {
+    //             ...prevData,
+    //             [type]: updatedItems
+    //         };
+    //     });
+    //     console.log('useProfileData - updatedItems', updatedItems);
+    //     // 업데이트된 배열 반환
+    //     return updatedItems;
+    // };
+
+    const handleUpdateItem = (type, index, field, value) => {
+        setData((prevData) => {
+            if (!prevData[type] || !prevData[type][index]) {
+                console.error('Invalid index or type');
+                return prevData;
+            }
+    
+            const updatedItems = [...prevData[type]];
+            updatedItems[index] = {
+                ...updatedItems[index],
+                [field]: value,
+            };
+    
+            // console.log('Updated Items inside setData:', updatedItems);
+    
+            return {
+                ...prevData,
+                [type]: updatedItems,
+            };
+        });
+    };
+    
     const handleRemoveItem = (type, index) => {
         const itemToDelete = data[type][index];
         setData((prevData) => ({

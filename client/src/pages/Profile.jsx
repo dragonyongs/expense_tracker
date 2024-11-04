@@ -27,9 +27,9 @@ const Profile = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [errMsg, setErrMsg] = useState('');
     
-    const [updatedContacts, setUpdatedContacts] = useState([]);
-    const [updatedAddresses, setUpdatedAddresses] = useState([]);
-    const [updatedDates, setUpdatedDates] = useState([]);
+    const [contacts, setContacts] = useState([]);
+    const [addresses, setAddresses] = useState([]);
+    const [dates, setDates] = useState([]);
 
     const memberId = user.member_id;
 
@@ -52,7 +52,10 @@ const Profile = () => {
     // 필요한 데이터는 data 객체에서 직접 참조
     useEffect(() => {
         fetchProfileData();
-    }, [memberId]);
+        setContacts(data.contacts);
+        setAddresses(data.addresses);
+        setDates(data.dates);
+    }, [isOpen]);
 
     if (loading) return <div className='min-h-default-screen'><Loading type="ThreeDots" /></div>;
     if (error) return <div>{error}</div>;
@@ -76,25 +79,88 @@ const Profile = () => {
     const handleRemoveDate = (index) => handleRemoveItem('dates', index);
 
     // 연락처 업데이트 함수
-const handleUpdateContact = (index, field, value) => {
-    const updatedItems = handleUpdateItem('contacts', index, field, value);
-    setUpdatedContacts(updatedItems); // 상태를 바로 업데이트된 배열로 설정
-};
+    const handleUpdateContact = (index, field, value) => {
+        handleUpdateItem('contacts', index, field, value);
+    };
 
-const handleUpdateAddress = (index, field, value) => {
-    const updatedItems = handleUpdateItem('addresses', index, field, value);
-    setUpdatedAddresses(updatedItems);
-};
+    const handleUpdateAddress = (index, field, value) => {
+        handleUpdateItem('addresses', index, field, value);
+    };
 
-const handleUpdateDates = (index, field, value) => {
-    const updatedItems = handleUpdateItem('dates', index, field, value);
-    setUpdatedDates(updatedItems);
-};
+    const handleUpdateDates = (index, field, value) => {
+        handleUpdateItem('dates', index, field, value);
+    };
 
     const handleIntroductionChange = async (event) => {
         updateIntroduction(event.target.value);
     };
     
+    const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
+        // 새로운 아이템 (새로 추가된)
+        const newItems = items.filter(item => !item._id);
+    
+        // 업데이트된 아이템 (변경된 내용이 있는)
+        const updatedItems = items.filter(item => {
+            if (!item._id) return false;
+    
+            const currentItem = currentItems.find(ci => ci._id === item._id);
+            // 현재 아이템이 없거나, 변경사항이 없다면 업데이트하지 않음
+            if (!currentItem || JSON.stringify(currentItem) === JSON.stringify(item)) {
+                return false;
+            }
+    
+            return true;
+        });
+    
+        // 새 아이템을 추가하는 Promise
+        const newItemsPromises = newItems.map(item => {
+            return axios.post(apiUrl, { member_id: memberId, ...item });
+        });
+    
+        // 업데이트 아이템을 위한 Promise
+        const updateItemsPromises = updatedItems.map(item => {
+            const url = `${apiUrl}/${item._id}`;
+            const data = { member_id: memberId, ...item };
+    
+            return axios.put(url, data)
+                .then(response => {
+                    console.log('Update successful:', response.data);
+                    return response;
+                })
+                .catch(error => {
+                    console.error('Update failed:', {
+                        url,
+                        data,
+                        error: error.response?.data || error.message
+                    });
+                    throw error;
+                });
+        });
+    
+        // 삭제 아이템을 위한 Promise
+        const deletedItemsRequests = deletedItems.map(id => {
+            return axios.delete(`${apiUrl}/${id}`)
+                .then(response => {
+                    console.log(`Deleted item with ID: ${id}`);
+                    return response;
+                })
+                .catch(error => {
+                    console.error('Delete failed:', {
+                        url: `${apiUrl}/${id}`,
+                        error: error.response?.data || error.message
+                    });
+                    throw error;
+                });
+        });
+    
+        // 모든 Promise 반환
+        return [
+            ...newItemsPromises,
+            ...updateItemsPromises,
+            ...deletedItemsRequests
+        ];
+    };
+
     const handleSave = async () => {
         let hasError = false;
         setLoading(true);
@@ -112,21 +178,6 @@ const handleUpdateDates = (index, field, value) => {
                 return;
             }
 
-            const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
-                const newItems = items.filter(item => !item._id); // 새 아이템들
-                const updatedItems = items.filter(item => item._id).filter(item => {
-                    const currentItem = currentItems.find(ci => ci._id === item._id);
-                    console.log('Current Item:', currentItem, 'New Item:', item); // 변경 확인용 로그
-                    return currentItem && Object.keys(item).some(field => item[field] !== currentItem[field]); // 변경된 아이템들
-                });
-    
-                // 각 요청에 member_id 추가
-                const newItemsPromises = newItems.map(item => axios.post(apiUrl, { member_id: memberId, ...item }));
-                const updateItemsPromises = updatedItems.map(item => axios.put(`${apiUrl}/${item._id}`, { ...item }));
-                const deletedItemsRequests = deletedItems.map(id => axios.delete(`${apiUrl}/${id}`)); // 삭제된 아이템 요청
-                return [...newItemsPromises, ...updateItemsPromises, ...deletedItemsRequests];
-            };
-
             let avatarId = data.avatar_id;
 
             if (Object.keys(avatarConfig).length > 0) {
@@ -137,17 +188,16 @@ const handleUpdateDates = (index, field, value) => {
                 avatarId = avatarResponse.data._id; // 새로 저장된 아바타의 ID 저장
             }
 
-            console.log('Updated Contacts:', updatedContacts);
-            console.log('Updated Addresses:', updatedAddresses);
-            console.log('Updated Dates:', updatedDates);
-
             await Promise.all([
-    axios.put(`${API_URLS.PROFILES}/${data.profileId}`, { avatar_id: avatarId, introduction: data.introduction }),
-    ...processItems(updatedContacts || [], data.contacts, API_URLS.PHONES, deletedItems.contacts, memberId),
-    ...processItems(updatedAddresses || [], data.addresses, API_URLS.ADDRESSES, deletedItems.addresses, memberId),
-    ...processItems(updatedDates || [], data.dates, API_URLS.DATES, deletedItems.dates, memberId)
-]);
-    
+                axios.put(`${API_URLS.PROFILES}/${data.profileId}`, { 
+                    avatar_id: avatarId, 
+                    introduction: data.introduction 
+                }),
+                ...processItems(data.contacts || [], contacts, API_URLS.PHONES, deletedItems.contacts, memberId),
+                ...processItems(data.addresses || [], addresses, API_URLS.ADDRESSES, deletedItems.addresses, memberId),
+                ...processItems(data.dates || [], dates, API_URLS.DATES, deletedItems.dates, memberId)
+            ]);
+
             await fetchProfileData();
         } catch (error) {
             console.error('저장 오류:', error);
