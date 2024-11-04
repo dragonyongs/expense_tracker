@@ -88,17 +88,12 @@ export function AuthProvider({ children }) {
 
             const statusResponse = await axios.get(`${API_URLS.STATUSES}/${data.user.status_id}`);
             const status = statusResponse.data.status_name;
-            console.log('status', status);
+            // console.log('status', status);
             
             // 상태에 따라 리다이렉션
             navigate(status === 'pending' ? '/pending' : '/');
         } catch (error) {
-            console.error('Login failed:', error);
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.message || '로그인 실패');
-            } else {
-                throw new Error('네트워크 오류 또는 서버 문제');
-            }
+            throw new Error(error.response?.data?.error || '이메일 또는 비밀번호를 다시 확인해주세요.');
         }
     };
 

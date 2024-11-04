@@ -9,6 +9,7 @@ import { AvatarProvider } from './context/AvatarContext';
 import { MobileProvider } from './context/MobileContext';
 import { DarkModeProvider, useDarkMode } from './context/DarkModeContext';
 import { ThemeProvider } from './context/ThemeColorContext';
+import useThemeColor from './hooks/useThemeColor';
 
 import './App.css';
 
@@ -32,20 +33,8 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 const App = () => {
 
     const location = useLocation();
-
-    useEffect(() => {
-        const metaTag = document.querySelector("meta[name='theme-color']");
-        if (metaTag) {
-            if (location.pathname === '/') {
-                metaTag.setAttribute("content", "#0433FF");
-            } else if (location.pathname === '/transactions' || location.pathname === '/contacts' || location.pathname === '/profile') {
-                metaTag.setAttribute("content", "#dce8f5");
-            } else {
-                metaTag.setAttribute("content", "#ffffff");
-            }
-        }
-    }, [location.pathname]); // 경로가 변경될 때마다 실행
-
+    useThemeColor(location);
+    
     useEffect(() => {
         const registerServiceWorker = async () => {
             if ('serviceWorker' in navigator) {
