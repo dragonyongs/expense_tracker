@@ -25,7 +25,7 @@ const useProfileData = (userId) => {
         dates: []
     });
 
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const loadDaumPostcodeScript = () => {
@@ -39,7 +39,7 @@ const useProfileData = (userId) => {
     };
 
     const fetchProfileData = async () => {
-        setLoading(true);
+        setIsLoading(true);
         try {
             const [contactsRes, addressesRes, datesRes, memberRes, profileRes] = await Promise.all([
                 axios.get(`${API_URLS.PHONES}/${userId}`),
@@ -63,7 +63,7 @@ const useProfileData = (userId) => {
             setError('프로필 데이터를 불러오는데 실패했습니다.');
             console.error('데이터 불러오기 실패:', error);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
     
@@ -81,25 +81,6 @@ const useProfileData = (userId) => {
         }));
     };
 
-    // const handleUpdateItem = (type, index, field, value) => {
-
-    //     console.log('handleUpdateItem 내부 상태:', type, index, field, value);
-        
-    //     let updatedItems;
-    //     setData((prevData) => {
-    //         updatedItems = prevData[type].map((item, i) =>
-    //             i === index ? { ...item, [field]: value } : item
-    //         );
-    //         return {
-    //             ...prevData,
-    //             [type]: updatedItems
-    //         };
-    //     });
-    //     console.log('useProfileData - updatedItems', updatedItems);
-    //     // 업데이트된 배열 반환
-    //     return updatedItems;
-    // };
-
     const handleUpdateItem = (type, index, field, value) => {
         setData((prevData) => {
             if (!prevData[type] || !prevData[type][index]) {
@@ -112,8 +93,6 @@ const useProfileData = (userId) => {
                 ...updatedItems[index],
                 [field]: value,
             };
-    
-            // console.log('Updated Items inside setData:', updatedItems);
     
             return {
                 ...prevData,
@@ -167,8 +146,8 @@ const useProfileData = (userId) => {
         companyContact,
         data,
         deletedItems,
-        setLoading,
-        loading,
+        setIsLoading,
+        isLoading,
         error,
         fetchProfileData,
         handleAddItem,

@@ -5,20 +5,26 @@ import { MdKeyboardArrowRight } from "react-icons/md";
 import CommonDrawer from '../components/CommonDrawer';
 import AvatarPreview from '../components/AvatarPreview';
 import { genConfig } from 'react-nice-avatar';
+import { MutatingDots } from 'react-loader-spinner';
 
 function Contacts() {
     const [contacts, setContacts ] = useState([]);
     const [selectedContact, setSelectedContact] = useState("");
     const [isOpen, setIsOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchContacts = async () => {
+            setIsLoading(true);
+
             try {
                 const { data } = await axios.get(API_URLS.PROFILES);
                 setContacts(data);
             } catch (error) {
                 console.error("Error fetching contacts:", error);
-            }
+            } finally {
+            setIsLoading(false);
+        }
         };
         fetchContacts();
     }, []);
@@ -72,7 +78,23 @@ function Contacts() {
                 </div>
             </header>
             <div className="pb-6 px-4 space-y-3">
-                {groupedContacts.length === 0 ? (
+
+            {isLoading ? (
+                <div className="flex flex-col items-center justify-center bg-white rounded-lg h-drawer-screen">
+                    <MutatingDots
+                        visible={true}
+                        height="100"
+                        width="100"
+                        color="#b8a57f"
+                        secondaryColor="#0433FF"
+                        radius="12.5"
+                        ariaLabel="mutating-dots-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                    />
+                </div>
+            ) : (
+                groupedContacts.length === 0 ? (
                     <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
                         <p className="font-semibold text-center">연락망의 데이터가 없습니다.</p>
                     </div>
@@ -112,8 +134,9 @@ function Contacts() {
                             </ul>
                         </div>
                     ))
-                )}
-                
+                )
+            )}
+
             </div>
             <CommonDrawer isOpen={isOpen} title="프로필 정보" className="text-white bg-starBlue  dark:bg-indigo-900" onClose={handleCloseDrawer}>
                 <div className="overflow-y-auto h-profile-screen">
@@ -130,7 +153,7 @@ function Contacts() {
                             <span className="font-normal">{selectedContact?.member_id?.position}</span>
                         </div>
                         {selectedContact?.introduction ? (
-                            <div className='w-10/12 py-2 px-4 bg-blue-100 text-black text-center rounded-md'>
+                            <div className='w-10/12 py-2 px-4 bg-transparent text-white text-center'>
                                 {selectedContact.introduction}
                             </div>
                         ) : null}
