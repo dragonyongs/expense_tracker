@@ -129,9 +129,12 @@ function Contacts() {
                             {selectedContact?.member_id?.member_name}{' '}
                             <span className="font-normal">{selectedContact?.member_id?.position}</span>
                         </div>
-                        <div className='w-10/12 py-2 px-4 bg-blue-100 white text-center rounded-md'>
-                            {selectedContact?.introduction}
-                        </div>
+                        {selectedContact?.introduction ? (
+                            <div className='w-10/12 py-2 px-4 bg-blue-100 text-black text-center rounded-md'>
+                                {selectedContact.introduction}
+                            </div>
+                        ) : null}
+
                     </div>
                     <div className="w-full rounded-b-md p-4 dark:bg-slate-700 dark:text-slate-300">
                         <ul className='flex flex-col gap-y-2 divide-y divide-gray-200 dark:divide-gray-600'>
