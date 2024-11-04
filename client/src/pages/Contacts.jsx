@@ -23,19 +23,6 @@ function Contacts() {
         fetchContacts();
     }, []);
 
-    // const fetchData = async (url, setter) => {
-    //     try {
-    //         const response = await axios.get(url);
-    //         setter(response.data);
-    //     } catch (error) {
-    //         console.error(`Error fetching data from ${url}:`, error);
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     fetchData(API_URLS.PROFILES, setContacts);
-    // }, []);
-
     const handleOpenDrawer = (contact) => {
         setSelectedContact(contact);
         setIsOpen(true);
@@ -72,7 +59,7 @@ function Contacts() {
 
 
     const addressTypeMapping = {
-        work: '회사',
+        work: '근무',
         home: '집',
         delivery: '배송',
     };
@@ -142,6 +129,9 @@ function Contacts() {
                             {selectedContact?.member_id?.member_name}{' '}
                             <span className="font-normal">{selectedContact?.member_id?.position}</span>
                         </div>
+                        <div className='w-10/12 py-2 px-4 bg-blue-100 white text-center rounded-md'>
+                            {selectedContact?.introduction}
+                        </div>
                     </div>
                     <div className="w-full rounded-b-md p-4 dark:bg-slate-700 dark:text-slate-300">
                         <ul className='flex flex-col gap-y-2 divide-y divide-gray-200 dark:divide-gray-600'>
@@ -154,7 +144,7 @@ function Contacts() {
                                 <span className="col-span-4">{selectedContact?.member_id?.rank}</span>
                             </li>
                             <li className="grid grid-cols-5 w-full p-3">
-                                <span className="pl-2 font-semibold">이메일</span>
+                                <span className="pl-2 font-semibold">메일</span>
                                 <span className="col-span-4">{selectedContact?.member_id?.email}</span>
                             </li>
                             {selectedContact?.phones && selectedContact.phones.map(phone => (
