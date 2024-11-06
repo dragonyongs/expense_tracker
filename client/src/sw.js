@@ -85,14 +85,14 @@ async function cacheApiResponse(request, response) {
     }
 }
 
-const handleAuthError = (authData) => {
-    if (!authData || !authData.status_id) {
-        console.error("Authentication data is missing or invalid:", authData);
-        // 기본값 또는 다른 처리
-        return { isAuthenticated: false };
-    }
-    return authData;
-};
+// const handleAuthError = (authData) => {
+//     if (!authData || !authData.status_id) {
+//         console.error("Authentication data is missing or invalid:", authData);
+//         // 기본값 또는 다른 처리
+//         return { isAuthenticated: false };
+//     }
+//     return authData;
+// };
 
 // API 요청 처리하는 함수
 async function handleApiRequest(request) {
@@ -117,6 +117,7 @@ async function handleApiRequest(request) {
         if (endpoint === '/api/auth/isAuthenticated') {
             // 인증 상태 처리
             cachedData = await getData('auth-status');
+            console.log('cachedData', cachedData);
             return new Response(JSON.stringify(cachedData || { isAuthenticated: true }), {
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -151,7 +152,8 @@ async function handleApiRequest(request) {
             // }
             if (endpoint.includes('/auth/isAuthenticated')) {
                 const cachedData = await getData('auth-status'); // 여기서 auth-status 키를 사용
-                console.log("Cached Data:", cachedData); // 캐시된 데이터 확인
+                console.log("Cached Data.user:", cachedData.user); // 캐시된 데이터 확인
+                console.log("Cached Data.user:", cachedData.user.status_id, cachedData.user.status_id?.id ); // 캐시된 데이터 확인
             
                 if (cachedData && cachedData.user) { // user 키 확인
                     const statusId = cachedData.user.status_id; // status_id에 올바르게 접근
