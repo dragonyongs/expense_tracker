@@ -74,14 +74,35 @@ const NoCardMessage = () => (
 );
 
 const AccountList = ({ accounts, userPosition, remainingDays }) => {
-    return accounts.map(account => (
-        <AccountCard 
-            key={account._id} 
-            account={account} 
-            userPosition={userPosition} 
-            remainingDays={remainingDays} 
-        />
-    ));
+    const filteredAccounts = accounts.filter(account => {
+        const hasTeamLeader = account.cards.some(card => card.position === "팀장");
+        const hasPartLeader = account.cards.some(card => card.position === "파트장");
+
+        if (userPosition === "팀장") {
+            return !hasTeamLeader; // 팀장은 팀장 계좌 제외
+        }
+
+        if (userPosition === "파트장") {
+            return !hasTeamLeader && !hasPartLeader; // 파트장은 팀장, 파트장 계좌 제외
+        }
+
+        if (userPosition === "팀원") {
+            return !hasTeamLeader && !hasPartLeader; // 팀원은 팀장, 파트장 계좌 제외
+        }
+
+        return false;
+    });
+
+    return (
+        filteredAccounts.map(account => (
+            <AccountCard 
+                key={account._id} 
+                account={account} 
+                userPosition={userPosition} 
+                remainingDays={remainingDays} 
+            />
+        ))
+    );
 };
 
 const AccountCard = ({ account, userPosition, remainingDays }) => {
