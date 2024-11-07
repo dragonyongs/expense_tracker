@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthProvider';
-import Notification from './Notification';
+// import Notification from './Notification';
 import AdminBtn from './AdminBtn';
 import Logout from './Logout';
 import Darkmode from './DarkMode';
@@ -34,7 +34,7 @@ const Header = () => {
             </div>
             <div className='flex gap-x-4'>
                 <Darkmode isDashBoard = {isDashBoard} />
-                <Notification isDashBoard = {isDashBoard} role = {user.role} />
+                {/* <Notification isDashBoard = {isDashBoard} role = {user.role} /> */}
                 <AdminBtn isDashBoard = {isDashBoard} role = {user.role} />
                 <Logout isDashBoard = {isDashBoard} role = {user.role} />
             </div>
