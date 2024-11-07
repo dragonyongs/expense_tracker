@@ -74,36 +74,44 @@ const NoCardMessage = () => (
 );
 
 const AccountList = ({ accounts, userPosition, remainingDays }) => {
-    const filteredAccounts = accounts.filter(account => {
-        const hasTeamLeader = account.cards.some(card => card.position === "팀장");
-        const hasPartLeader = account.cards.some(card => card.position === "파트장");
+    const filteredAccounts = accounts.map(account => {
+        const filteredCards = account.cards.filter(card => {
+            if (userPosition === "팀장") {
+                // 팀장은 모든 카드를 볼 수 있음
+                return true;
+            }
 
-        if (userPosition === "팀장") {
-            return true; // 팀장은 모든 계좌를 봄
-        }
+            if (userPosition === "파트장") {
+                // 파트장은 팀장 카드를 제외한 모든 카드
+                return card.position !== "팀장";
+            }
 
-        if (userPosition === "파트장") {
-            return !hasTeamLeader; // 파트장은 팀장 계좌 제외
-        }
+            if (userPosition === "팀원") {
+                // 팀원은 팀장과 파트장을 제외한 팀원끼리만
+                return card.position === "팀원";
+            }
 
-        if (userPosition === "팀원") {
-            // 팀원은 자기 계좌와 다른 팀원 계좌만 봄
-            // 필터링을 통해 '팀원' 카드들만 확인
-            return account.cards.filter(card => card.position === "팀원").length > 0;
-        }
+            return false;
+        });
 
-        return false;
-    });
+        // 필터링된 카드가 있는 경우에만 계좌 반환
+        return {
+            ...account,
+            cards: filteredCards,
+        };
+    }).filter(account => account.cards.length > 0); // 필터링 후 카드가 남아있는 계좌만 반환
 
     return (
-        filteredAccounts.map(account => (
-            <AccountCard 
-                key={account._id} 
-                account={account} 
-                userPosition={userPosition} 
-                remainingDays={remainingDays} 
-            />
-        ))
+        <>
+            {filteredAccounts.map(account => (
+                <AccountCard
+                    key={account._id}
+                    account={account}
+                    userPosition={userPosition}
+                    remainingDays={remainingDays}
+                />
+            ))}
+        </>
     );
 };
 
