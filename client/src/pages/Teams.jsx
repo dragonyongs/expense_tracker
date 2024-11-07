@@ -87,7 +87,9 @@ const AccountList = ({ accounts, userPosition, remainingDays }) => {
         }
 
         if (userPosition === "팀원") {
-            return !hasTeamLeader && !hasPartLeader; // 팀원은 팀장, 파트장 계좌 제외
+            // 팀원은 자기 계좌와 다른 팀원 계좌만 봄
+            return account.cards.some(card => card.position === "팀원" && card.member_id === user.member_id) ||
+                account.cards.some(card => card.position === "팀원" && card.member_id !== user.member_id);
         }
 
         return false;
