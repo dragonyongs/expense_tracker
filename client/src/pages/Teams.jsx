@@ -88,8 +88,8 @@ const AccountList = ({ accounts, userPosition, remainingDays }) => {
 
         if (userPosition === "팀원") {
             // 팀원은 자기 계좌와 다른 팀원 계좌만 봄
-            return account.cards.some(card => card.position === "팀원" && card.member_id === user.member_id) ||
-                account.cards.some(card => card.position === "팀원" && card.member_id !== user.member_id);
+            // 필터링을 통해 '팀원' 카드들만 확인
+            return account.cards.filter(card => card.position === "팀원").length > 0;
         }
 
         return false;
