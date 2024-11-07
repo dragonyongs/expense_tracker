@@ -109,7 +109,8 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
                     />
                 ))}
 
-                {account.cards.some(card => card.position === "팀장") && (
+                {/* 팀장의 운영비 표시 (팀장일 경우에만) */}
+                {userPosition === "팀장" && account.cards.some(card => card.position === "팀장") && (
                     <TeamOperatingFundCard 
                         balance={teamOperatingFundBalance} 
                         percentage={teamOperatingFundPercentage} 
