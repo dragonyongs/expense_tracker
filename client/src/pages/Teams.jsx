@@ -79,11 +79,11 @@ const AccountList = ({ accounts, userPosition, remainingDays }) => {
         const hasPartLeader = account.cards.some(card => card.position === "파트장");
 
         if (userPosition === "팀장") {
-            return !hasTeamLeader; // 팀장은 팀장 계좌 제외
+            return true; // 팀장은 모든 계좌를 봄
         }
 
         if (userPosition === "파트장") {
-            return !hasTeamLeader && !hasPartLeader; // 파트장은 팀장, 파트장 계좌 제외
+            return !hasTeamLeader; // 파트장은 팀장 계좌 제외
         }
 
         if (userPosition === "팀원") {
