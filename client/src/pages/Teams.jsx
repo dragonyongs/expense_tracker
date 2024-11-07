@@ -131,9 +131,9 @@ function Teams() {
                                                     const totalAmount = card.limit + card.rollover_amount;
                                                     const spentAmount = card.limit - card.balance;
                                                     const spentPercentage = totalAmount > 0 ? (spentAmount / totalAmount) * 100 : 0;
-
+                                                    const toatalAmount = (card.balance + card.rollover_amount);
                                                     const individualLimit = 10000 / teamMembersCount;
-                                                    const isLimit = individualLimit < card.balance;
+                                                    const isLimit = individualLimit < toatalAmount;
 
                                                     const isWarning = isLimit && remainingDays <= 7;
 
@@ -146,9 +146,9 @@ function Teams() {
                                                                 </h3>
                                                                 <span className={`text-lg text-gray-400 dark:text-slate-400`}>
                                                                     <span className={`font-bold text-black dark:font-normal dark:text-slate-200 ${isWarning ? 'text-red-600 dark:text-red-400' : '' } `}>
-                                                                        {card.balance.toLocaleString()}원
+                                                                        {toatalAmount.toLocaleString()}원
                                                                     </span> 
-                                                                    <span className='pl-2 text-base'>{card.balance > 0 ? "남음" : "" }</span>
+                                                                    <span className='pl-2 text-base'>{toatalAmount > 0 ? "남음" : "" }</span>
                                                                 </span>
                                                             </div>
                                                             
@@ -173,12 +173,12 @@ function Teams() {
                                                     </div>
                                                     <ProgressBars spentPercentage={teamOperatingFundPercentage} isWarning={false} />
                                                 </div>
-                                )}
-                                </div>
-                            </div>
-                        );
-                    })
-                )}
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })
+                    )}
             </div>
         </>
     );
