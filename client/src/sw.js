@@ -196,8 +196,28 @@ async function handleApiRequest(request) {
         // 인증 API의 경우 캐시된 데이터 반환
         if (endpoint === '/api/auth/isAuthenticated') {
             const cachedData = await getData('auth-status');
-            return new Response(JSON.stringify(cachedData || { isAuthenticated: false }), {
-                headers: { 'Content-Type': 'application/json' }
+
+            if (cachedData && cachedData.user) {
+                const { user } = cachedData;
+                const { status_id } = user;
+
+                if (status_id) {
+                    return new Response(JSON.stringify(cachedData), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } else {
+                    console.error("Missing status_id in cached data:", cachedData);
+                    return new Response(JSON.stringify({ error: "Missing status_id" }), {
+                        headers: { 'Content-Type': 'application/json' },
+                        status: 400
+                    });
+                }
+            }
+
+            console.error("Invalid cached data structure:", cachedData);
+            return new Response(JSON.stringify({ isAuthenticated: false }), {
+                headers: { 'Content-Type': 'application/json' },
+                status: 400
             });
         }
 
