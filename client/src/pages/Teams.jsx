@@ -16,11 +16,15 @@ function Teams() {
     const fetchData = async (url) => {
         try {
             const response = await axios.get(url, { withCredentials: true });
-            setAccounts(response.data);
-            const userInfo = response.data.find(account => 
-                account.cards.some(card => card.member_id === user.member_id)
-            );
-            setUserPosition(userInfo ? userInfo.cards[0].position : '');
+            const fetchedAccounts = response.data;
+            
+            setAccounts(fetchedAccounts);
+    
+            const userCard = fetchedAccounts
+                .flatMap(account => account.cards)
+                .find(card => card.member_id === user.member_id);
+    
+            setUserPosition(userCard ? userCard.position : '');
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
         } finally {
@@ -74,32 +78,25 @@ const NoCardMessage = () => (
 );
 
 const AccountList = ({ accounts, userPosition, remainingDays }) => {
-    const filteredAccounts = accounts.map(account => {
-        const filteredCards = account.cards.filter(card => {
-            if (userPosition === "팀장") {
-                // 팀장은 모든 카드를 볼 수 있음
-                return true;
-            }
-
-            if (userPosition === "파트장") {
-                // 파트장은 팀장 카드를 제외한 모든 카드
-                return card.position !== "팀장";
-            }
-
-            if (userPosition === "팀원") {
-                // 팀원은 팀장과 파트장을 제외한 팀원끼리만
-                return card.position === "팀원";
-            }
-
-            return false;
-        });
-
-        // 필터링된 카드가 있는 경우에만 계좌 반환
-        return {
-            ...account,
-            cards: filteredCards,
+    const filterCardsByPosition = (cards, userPosition) => {
+        const filterRules = {
+            "팀장": () => true,
+            "파트장": card => card.position !== "팀장",
+            "팀원": card => card.position === "팀원",
         };
-    }).filter(account => account.cards.length > 0); // 필터링 후 카드가 남아있는 계좌만 반환
+    
+        return cards.filter(filterRules[userPosition] || (() => false));
+    };
+    
+    // 적용
+    const filteredAccounts = accounts.map(account => ({
+        ...account,
+        cards: filterCardsByPosition(account.cards, userPosition),
+    })).filter(account => account.cards.length > 0);
+    
+    console.log('accounts', accounts);
+    console.log('userPosition', userPosition);
+    console.log('filteredAccounts', filteredAccounts);
 
     return (
         <>
