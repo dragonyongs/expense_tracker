@@ -118,7 +118,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
     const teamOperatingFundPercentage = handleTeamOperatingFundSpent(account, totalBalance);
 
     return (
-        <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-400 dark:bg-slate-800">
+        <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-600 dark:bg-slate-700">
             <h3 className="text-md text-gray-500">
                 {account.team_id.team_name} {account.account_number.split('-').slice(-1)} 계좌
             </h3>
@@ -159,11 +159,11 @@ const CardDetail = ({ card, teamMembersCount, remainingDays }) => {
         <div className="mb-10">
             <div className="flex justify-between mb-4">
                 <h3 className="flex gap-x-2 items-center dark:text-slate-500">
-                    <span className="text-lg font-bold">{card.member_name}</span>
+                    <span className="text-lg font-bold dark:text-slate-400">{card.member_name}</span>
                     <span className="text-base">{card.position}</span>
                 </h3>
-                <span className={`text-lg ${isWarning ? 'text-red-600 dark:text-red-700' : 'dark:text-slate-400'}`}>
-                    <span className="font-bold">{totalAmount.toLocaleString()}원</span>
+                <span className={`text-lg ${isWarning ? 'text-red-600 dark:text-red-700' : ''}`}>
+                    <span className="font-bold dark:text-slate-400">{totalAmount.toLocaleString()}원</span>
                     <span className='dark:text-slate-500'>{totalAmount > 0 && " 남음"}</span>
                 </span>
             </div>
@@ -175,10 +175,10 @@ const CardDetail = ({ card, teamMembersCount, remainingDays }) => {
 const TeamOperatingFundCard = ({ balance, percentage }) => (
     <div className="mb-10">
         <div className="flex justify-between mb-4">
-            <h3 className="text-lg font-bold">팀 운영비</h3>
+            <h3 className="text-lg font-bold dark:text-slate-400">팀 운영비</h3>
             <span className="text-lg">
-                <span className="font-bold">{balance.toLocaleString()}원</span>
-                {balance > 0 && " 남음"}
+                <span className="font-bold dark:text-slate-400">{balance.toLocaleString()}원</span>
+                <span className='dark:text-slate-500'>{balance > 0 && " 남음"}</span>
             </span>
         </div>
         <ProgressBars spentPercentage={percentage} isWarning={false} />
