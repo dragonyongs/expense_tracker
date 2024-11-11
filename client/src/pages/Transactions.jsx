@@ -6,6 +6,7 @@ import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import Card from '../components/Card';
+import FlipCard from '../components/FlipCard';
 import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
@@ -338,6 +339,10 @@ const Transactions = () => {
                                 currentBalance={currentBalanceWithRollover} // 이월 금액을 포함한 잔액 전달
                                 rolloverAmount={Number(card.rollover_amount)}
                             />
+                            // <FlipCard
+                            //     key={card._id}
+                            //     cardNumber={card.card_number}
+                            // />
                         );
                     })
 
