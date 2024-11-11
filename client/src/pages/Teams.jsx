@@ -118,7 +118,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
     const teamOperatingFundPercentage = handleTeamOperatingFundSpent(account, totalBalance);
 
     return (
-        <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:bg-slate-800">
+        <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-400 dark:bg-slate-800">
             <h3 className="text-md text-gray-500">
                 {account.team_id.team_name} {account.account_number.split('-').slice(-1)} 계좌
             </h3>
@@ -158,13 +158,13 @@ const CardDetail = ({ card, teamMembersCount, remainingDays }) => {
     return (
         <div className="mb-10">
             <div className="flex justify-between mb-4">
-                <h3 className="flex gap-x-2 items-center">
+                <h3 className="flex gap-x-2 items-center dark:text-slate-500">
                     <span className="text-lg font-bold">{card.member_name}</span>
                     <span className="text-base">{card.position}</span>
                 </h3>
-                <span className={`text-lg ${isWarning ? 'text-red-600' : ''}`}>
+                <span className={`text-lg ${isWarning ? 'text-red-600 dark:text-red-700' : 'dark:text-slate-400'}`}>
                     <span className="font-bold">{totalAmount.toLocaleString()}원</span>
-                    {totalAmount > 0 && " 남음"}
+                    <span className='dark:text-slate-500'>{totalAmount > 0 && " 남음"}</span>
                 </span>
             </div>
             <ProgressBars spentPercentage={spentPercentage} isWarning={isWarning} />

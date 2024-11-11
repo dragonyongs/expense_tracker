@@ -17,45 +17,63 @@ const AdminCard = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
-    const fetchCards = async () => {
+    // const fetchCards = async () => {
+    //     try {
+    //         const response = await axios.get(API_URLS.CARDS);
+    //         setCards(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching cards:', error);
+    //     }
+    // }
+
+    // const fetchAccounts = async () => {
+    //     try {
+    //         const response = await axios.get(API_URLS.ACCOUNTS);
+    //         setAccounts(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching accounts:', error);
+    //     }
+    // }
+
+    // const fetchMembers = async () => {
+    //     try {
+    //         const response = await axios.get(API_URLS.MEMBERS);
+    //         setMembers(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching cards:', error);
+    //     }
+    // }
+
+    // useEffect(() => {
+    //     fetchCards();
+    //     fetchMembers();
+    //     fetchAccounts();
+    // }, []);
+
+    // 병렬로 데이터 로드
+    const fetchData = async () => {
         try {
-            const response = await axios.get(API_URLS.CARDS);
-            setCards(response.data);
+            const [cardsRes, accountsRes, membersRes] = await Promise.all([
+                axios.get(API_URLS.CARDS),
+                axios.get(API_URLS.ACCOUNTS),
+                axios.get(API_URLS.MEMBERS),
+            ]);
+            setCards(cardsRes.data);
+            setAccounts(accountsRes.data);
+            setMembers(membersRes.data);
         } catch (error) {
-            console.error('Error fetching cards:', error);
+            console.error('Error fetching data:', error);
         }
-    }
-
-    const fetchAccounts = async () => {
-        try {
-            const response = await axios.get(API_URLS.ACCOUNTS);
-            setAccounts(response.data);
-        } catch (error) {
-            console.error('Error fetching accounts:', error);
-        }
-    }
-
-    const fetchMembers = async () => {
-        try {
-            const response = await axios.get(API_URLS.MEMBERS);
-            setMembers(response.data);
-        } catch (error) {
-            console.error('Error fetching cards:', error);
-        }
-    }
-
-    useEffect(() => {
-        fetchCards();
-        fetchMembers();
-        fetchAccounts();
-    }, []);
-
-    const toggleDrawer = () => {
-        setIsOpen((prevState) => !prevState);
     };
 
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const toggleDrawer = () => setIsOpen((prevState) => !prevState);
+
     const handleAddCard = () => {
-        setSelectedCard({ 
+        setSelectedCard({
             card_number: '',
             limit: '',
             account_id: '',
@@ -68,7 +86,7 @@ const AdminCard = () => {
     // 수정 모드로 모달 열기
     const handleOpenDrawer = (cards) => {
         setSelectedCard(cards);
-        setIsEditing(true); // 수정 모드로 설정
+        setIsEditing(true);
         setIsOpen(true);
     };
 
@@ -79,25 +97,18 @@ const AdminCard = () => {
 
     const handleSave = async () => {
         try {
-            const cardData = {
-                ...selectedCard,
-            };
-
+            const cardData = { ...selectedCard };
             if (isEditing) {
-                // 수정 모드일 때 PUT 요청
                 await axios.put(`${API_URLS.CARDS}/${selectedCard._id}`, cardData);
                 console.log("Card updated successfully:", cardData);
             } else {
-                // 추가 모드일 때 POST 요청
                 await axios.post(API_URLS.CARDS, cardData);
                 console.log("Card added successfully:", cardData);
             }
-            
-            await fetchCards();
-            
+            await fetchData(); // 데이터 갱신
             handleCloseDrawer();
         } catch (error) {
-            console.error("Error updating Cards:", error);
+            console.error("Error saving card:", error);
         }
     };
 
@@ -113,7 +124,7 @@ const AdminCard = () => {
         try {
             await axios.delete(`${API_URLS.CARDS}/${selectedCard._id}`);
             console.log("Card deleted successfully", selectedCard.card_number);
-            await fetchCards();
+            await fetchData(); // 데이터 갱신
             handleCloseDrawer();
         } catch (error) {
             console.error("Error deleting card:", error);
@@ -121,42 +132,71 @@ const AdminCard = () => {
             setIsDeleteConfirmOpen(false);
         }
     };
+
+    // const handleAccountChange = (e) => {
+    //     const selectedAccountId = e.target.value;
+    //     const selectedAccount = accounts.find(account => account._id === selectedAccountId);
+
+    //     if (!selectedAccount) {
+    //         console.error('선택된 계좌를 찾을 수 없습니다.');
+    //         return;
+    //     }
     
+    //     setSelectedCard({
+    //         ...selectedCard,
+    //         account_id: {
+    //             _id: selectedAccount._id,
+    //             account_number: selectedAccount.account_number
+    //         }
+    //     });
+    // };
 
     const handleAccountChange = (e) => {
-        const selectedAccountId = e.target.value;
-        const selectedAccount = accounts.find(account => account._id === selectedAccountId);
-
+        const selectedAccount = accounts.find(account => account._id === e.target.value);
         if (!selectedAccount) {
             console.error('선택된 계좌를 찾을 수 없습니다.');
             return;
         }
-    
-        setSelectedCard({
-            ...selectedCard,
+        setSelectedCard(prev => ({
+            ...prev,
             account_id: {
                 _id: selectedAccount._id,
                 account_number: selectedAccount.account_number
             }
-        });
+        }));
     };
 
-    const handleMemberChange = (e) => {
-        const selectedMemberId = e.target.value;
-        const selectedMember = members.find(member => member._id === selectedMemberId);
+    // const handleMemberChange = (e) => {
+    //     const selectedMemberId = e.target.value;
+    //     const selectedMember = members.find(member => member._id === selectedMemberId);
 
+    //     if (!selectedMember) {
+    //         console.error('선택된 사용자를 찾을 수 없습니다.');
+    //         return;
+    //     }
+
+    //     setSelectedCard({
+    //         ...selectedCard,
+    //         member_id: {
+    //             _id: selectedMember._id,
+    //             member_name: selectedMember.member_name
+    //         }
+    //     });
+    // };
+
+    const handleMemberChange = (e) => {
+        const selectedMember = members.find(member => member._id === e.target.value);
         if (!selectedMember) {
             console.error('선택된 사용자를 찾을 수 없습니다.');
             return;
         }
-
-        setSelectedCard({
-            ...selectedCard,
+        setSelectedCard(prev => ({
+            ...prev,
             member_id: {
                 _id: selectedMember._id,
                 member_name: selectedMember.member_name
             }
-        });
+        }));
     };
 
     return (
