@@ -454,8 +454,12 @@ exports.getTransactionById = async (req, res) => {
 
 exports.updateTransaction = async (req, res) => {
     try {
+        // const sanitizeInput = (input) => {
+        //     return input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
+        // };
+
         const sanitizeInput = (input) => {
-            return input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
+            return input === undefined || input === null ? undefined : input.replace(/[\u0000-\u001F\u007F]/g, '').trim();
         };
 
         const { merchant_name, menu_name, transaction_amount, transaction_date, transaction_type, expense_type } = req.body;
@@ -467,7 +471,7 @@ exports.updateTransaction = async (req, res) => {
             ...(transaction_amount !== undefined && { transaction_amount }),
             ...(transaction_date !== undefined && { transaction_date }),
             ...(sanitizedMerchantName !== undefined && { merchant_name: sanitizedMerchantName }),
-            ...(sanitizedMenuName !== undefined && { menu_name: sanitizedMenuName }),
+            ...(menu_name !== undefined && { menu_name: sanitizedMenuName !== undefined ? sanitizedMenuName : '' }),
             ...(expense_type !== undefined && { expense_type }),
         };
 
