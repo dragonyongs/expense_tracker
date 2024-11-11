@@ -198,7 +198,7 @@ const Transactions = () => {
                 card_id: cardId,
                 transaction_date: selectedTransaction.transaction_date,
                 merchant_name: selectedTransaction.merchant_name,
-                menu_name: selectedTransaction.menu_name || '',
+                menu_name: selectedTransaction.menu_name,
                 transaction_amount: Number(selectedTransaction.transaction_amount), // 숫자로 변환
                 transaction_type: "expense",
                 expense_type: expenceType,
