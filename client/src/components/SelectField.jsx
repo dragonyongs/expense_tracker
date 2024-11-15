@@ -5,7 +5,7 @@ const SelectField = ({ label, id, value, onChange, options = [], placeholder = "
         <div className={`flex flex-col gap-2`}>
             <div className="flex justify-between">
                 <label htmlFor={id} className="dark:text-slate-300 dark:font-normal">{label}</label>
-                {!required ? <span className="text-sm text-slate-400">(선택)</span> : ''}
+                {!required ? <span className="text-sm text-slate-400">(선택)</span> : <button role='button' className="bg-gray-50">관리</button>}
             </div>
             <div className="relative">
                 <select

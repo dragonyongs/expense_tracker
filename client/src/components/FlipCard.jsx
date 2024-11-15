@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TbView360Arrow } from "react-icons/tb";
 import PropTypes from 'prop-types'; 
 
-const FlipCard = ( {cardNumber} ) => {
+const FlipCard = ( { userName, cardNumber, totalSpent, currentBalance } ) => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [showRotatingIcon, setShowRotatingIcon] = useState(true);
     const [animateFlip, setAnimateFlip] = useState(true); // 애니메이션 제어
@@ -23,8 +23,8 @@ const FlipCard = ( {cardNumber} ) => {
 
     return (
         <>
-            <div className={`w-72 h-48 perspective`} onClick={toggleCard}>
-                <div className={`bg-slate-800 w-72 h-48 p-4 rounded-lg shadow-xl border border-slate-700 flex items-end justify-between relative overflow-hidden transition-transform duration-300 cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}>
+            <div className={`w-96 h-56 mx-auto perspective`} onClick={toggleCard}>
+                <div className={`bg-slate-800 w-full h-full p-4 rounded-2xl shadow-xl border border-slate-700 flex items-end justify-between relative overflow-hidden transition-transform duration-300 cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}>
 
                     {/* 카드 앞면 */}
                     {!isFlipped && (
@@ -44,11 +44,11 @@ const FlipCard = ( {cardNumber} ) => {
                             {/* 카드 번호 및 사용자 이름 */}
                             <div className="text-white text-lg font-semibold z-10">
                                 <div className="mb-1"> {cardNumber ? cardNumber : '0000 0000 0000 0001'} </div>
-                                <div className="text-sm">ADMIN</div>
+                                <div className="text-sm">{userName}</div>
                             </div>
 
                             {/* 세로 텍스트 */}
-                            <div className="bg-gradient-text bg-clip-text text-gradient text-6xl font-bold -rotate-90 absolute right-0 top-10 transform translate-y-5 translate-x-24">
+                            <div className="bg-gradient-text bg-clip-text text-gradient text-6xl font-bold -rotate-90 absolute right-0 top-16 transform translate-y-5 translate-x-24">
                                 StarRich
                             </div>
                         </>
@@ -59,8 +59,8 @@ const FlipCard = ( {cardNumber} ) => {
                         <div className="absolute inset-0 bg-slate-800 flex flex-col justify-between p-4 text-white">
                             <div className="h-8 bg-gray-700 rounded"></div>
                             <div className='rotate-y-180'>
-                                <div className="text-md">이월: 1,000,000 원</div>
-                                <div className="text-md">잔액: 5,000,000 원</div>
+                                <div className="text-md">지출: {totalSpent.toLocaleString()}원</div>
+                                <div className="text-md">잔액: {currentBalance.toLocaleString()}원</div>
                             </div>
                         </div>
                     )}
@@ -80,10 +80,11 @@ const FlipCard = ( {cardNumber} ) => {
 }
 
 FlipCard.propTypes = {
-    cardNumber: PropTypes.string.isRequired, // 카드 번호는 문자열로 받음
-    // totalSpent: PropTypes.number.isRequired, // 총 지출 금액은 숫자형
-    // currentBalance: PropTypes.number.isRequired, // 현재 잔액도 숫자형
-    // rolloverAmount: PropTypes.number.isRequired
+    userName: PropTypes.string.isRequired,
+    cardNumber: PropTypes.string.isRequired,
+    totalSpent: PropTypes.number.isRequired,
+    currentBalance: PropTypes.number.isRequired,
+    rolloverAmount: PropTypes.number.isRequired
 };
 
 export default FlipCard;

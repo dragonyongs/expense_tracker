@@ -309,6 +309,11 @@ const Transactions = () => {
                 <div className='text-2xl' >
                     <span className='font-semibold'>내 카드</span>
                 </div>
+                <button
+                    type="button" 
+                    className='flex items-center gap-x-2 text-black font-semibold rounded-lg text-3xl dark:text-white'
+                    onClick={handleAddTransaction}
+                ><IoAddCircleOutline /></button>
             </header>
             <div className='flex-1 w-full p-4'>
                 {/* 카드 한도와 남은 금액 표시 */}
@@ -332,17 +337,23 @@ const Transactions = () => {
                     userCardsWithTotals.map(card => {
                         const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
                         return (
-                            <Card
-                                key={card._id} 
-                                cardNumber={card.card_number}
-                                totalSpent={Number(card.totalSpent)}
-                                currentBalance={currentBalanceWithRollover} // 이월 금액을 포함한 잔액 전달
-                                rolloverAmount={Number(card.rollover_amount)}
-                            />
-                            // <FlipCard
-                            //     key={card._id}
-                            //     cardNumber={card.card_number}
-                            // />
+                            <>
+                                {/* <Card
+                                    key={card._id} 
+                                    cardNumber={card.card_number}
+                                    totalSpent={Number(card.totalSpent)}
+                                    currentBalance={currentBalanceWithRollover}
+                                    rolloverAmount={Number(card.rollover_amount)}
+                                /> */}
+                                <FlipCard
+                                    key={card._id} 
+                                    userName={user.name}
+                                    cardNumber={card.card_number}
+                                    totalSpent={Number(card.totalSpent)}
+                                    currentBalance={currentBalanceWithRollover}
+                                    // rolloverAmount={Number(card.rollover_amount)}
+                                />
+                            </>
                         );
                     })
 
@@ -352,14 +363,14 @@ const Transactions = () => {
                 {/* 트랜잭션 목록 */}
 
                 <div className='flow-root'>
-                    <div className="flex items-center justify-between mb-4 px-3">
+                    {/* <div className="flex items-center justify-between mb-4 px-3">
                         <h5 className="text-2xl font-semibold leading-none text-black dark:text-white">지출 내역</h5>
                         <button
                             type="button" 
                             className='flex items-center gap-x-2 text-black font-semibold rounded-lg text-3xl dark:text-white'
                             onClick={handleAddTransaction}
                         ><IoAddCircleOutline /></button>
-                    </div>
+                    </div> */}
                     
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
 

@@ -56,7 +56,7 @@ const Profile = () => {
         setContacts(data.contacts);
         setAddresses(data.addresses);
         setDates(data.dates);
-    }, [isOpen]);
+    }, []);
 
     // if (loading) return <div className='min-h-default-screen'><Loading type="ThreeDots" /></div>;
     if (error) return <div>{error}</div>;

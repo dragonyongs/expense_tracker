@@ -20,6 +20,7 @@ const AdminMembers = () => {
     const [roles, setRoles] = useState([]);
     const [teams, setTeams] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [isAdminOpen, setIsAdminOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [errMsg, setErrMsg] = useState('');
 
@@ -55,6 +56,10 @@ const AdminMembers = () => {
         setPassword('');
     };
 
+    const toggleAdminDrawer = () => {
+        setIsAdminOpen((prevState) => !prevState);
+    }
+
     const handleCategoryClick = (category) => {
         setSelectedCategory(category);
     };
@@ -70,6 +75,10 @@ const AdminMembers = () => {
         // 상세 정보가 포함된 멤버로 업데이트
         setSelectedMember(fullMemberData);
     };
+
+    const handleAdminOpenDrawer = () => {
+        setIsAdminOpen(true);
+    }
 
     const handleAddDepartment = () => {
         setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
@@ -410,6 +419,14 @@ const AdminMembers = () => {
                         </form>
                     )}
                 </CommonDrawer>
+                <CommonDrawer
+                    isAdminOpen={isAdminOpen}
+                    onClose={toggleAdminDrawer}
+                    title='관리'
+                >
+                    <div>TEST</div>
+                </CommonDrawer>
+                
             </div>
         </>
     );
