@@ -6,7 +6,7 @@ import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import { IoAddCircleOutline } from "react-icons/io5";
-import AdminHader from '../components/AdminHader';
+import AdminHeader from '../components/AdminHeader';
 import AdminDrawer from '../components/AdminDrawer';
 
 const AdminMembers = () => {
@@ -225,7 +225,7 @@ const AdminMembers = () => {
 
     return (
         <>
-            <AdminHader />
+            <AdminHeader />
             <div className='flex-1 w-full p-4 sm:p-6 dark:bg-gray-800'>
                 <ul className='flex gap-x-1 mb-6'>
                     <li 

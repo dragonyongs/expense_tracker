@@ -5,7 +5,7 @@ import { API_URLS } from '../services/apiUrls';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
-import AdminHader from '../components/AdminHader';
+import AdminHeader from '../components/AdminHeader';
 
 // import { MdKeyboardArrowRight } from "react-icons/md";
 
@@ -467,7 +467,7 @@ const AdminDeposit = () => {
 
     return (
         <>
-            <AdminHader />
+            <AdminHeader />
             <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                     <div className="flex items-center justify-between mt-2 mb-4 px-3">
                         <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">입출금 거래내역</h5>

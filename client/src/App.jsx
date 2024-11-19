@@ -23,6 +23,7 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const AdminMembers = React.lazy(() => import('./pages/AdminMembers'));
+const AdminProfiles = React.lazy(() => import('./pages/AdminProfiles'));
 const AdminDepartments = React.lazy(() => import('./pages/AdminDepartments'));
 const AdminTeams = React.lazy(() => import('./pages/AdminTeams'));
 const AdminAccount = React.lazy(() => import('./pages/AdminAccount'));
@@ -113,6 +114,12 @@ const App = () => {
                                         <Route path="/admin/members" element={
                                             <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
                                                 <AdminMembers />
+                                            </ProtectedRoute>
+                                        } />
+
+                                        <Route path="/admin/profiles" element={
+                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
+                                                <AdminProfiles />
                                             </ProtectedRoute>
                                         } />
 

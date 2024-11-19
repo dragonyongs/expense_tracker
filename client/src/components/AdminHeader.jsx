@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import AdminTab from '../components/AdminTab';
 import { TbView360Arrow } from "react-icons/tb";
 
-const AdminHader = () => {
+const AdminHeader = () => {
     const { user } = useContext(AuthContext);
     const allowedRoles = ['super_admin', 'admin', 'ms_admin', 'hr_admin'];
 
@@ -24,4 +24,4 @@ const AdminHader = () => {
     )
 }
 
-export default AdminHader;
+export default AdminHeader;

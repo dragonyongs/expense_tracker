@@ -1,10 +1,10 @@
 import React from 'react';
-import AdminHader from '../components/AdminHader';
+import AdminHeader from '../components/AdminHeader';
 
 const Admin = () => {
     return (
         <>
-            <AdminHader />
+            <AdminHeader />
             <div className='flex justify-center mt-12'>
                 <h1>Admin Page</h1>
             </div>

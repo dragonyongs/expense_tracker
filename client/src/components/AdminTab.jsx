@@ -13,6 +13,7 @@ const AdminTab = () => {
 
     const tabs = [
         { path: '/admin/members', label: '회원관리', role: ['super_admin', 'admin', 'hr_admin'] },
+        { path: '/admin/profiles', label: '프로필관리', role: ['super_admin', 'admin', 'hr_admin'] },
         { path: '/admin/departments', label: '본부관리', role: ['super_admin', 'admin', 'hr_admin'] },
         { path: '/admin/teams', label: '팀관리', role: ['super_admin', 'admin', 'hr_admin'] },
         { path: '/admin/account', label: '계좌관리', role: ['super_admin', 'admin', 'ms_admin'] },
