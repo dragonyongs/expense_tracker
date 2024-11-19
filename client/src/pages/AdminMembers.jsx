@@ -7,6 +7,7 @@ import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import { IoAddCircleOutline } from "react-icons/io5";
 import AdminHader from '../components/AdminHader';
+import AdminDrawer from '../components/AdminDrawer';
 
 const AdminMembers = () => {
     const [members, setMembers] = useState([]);
@@ -20,9 +21,18 @@ const AdminMembers = () => {
     const [roles, setRoles] = useState([]);
     const [teams, setTeams] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
-    const [isAdminOpen, setIsAdminOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [errMsg, setErrMsg] = useState('');
+
+    const [isStatusDrawerOpen, setIsStatusDrawerOpen] = useState(false);
+    const [isRolesDrawerOpen, setIsRolesDrawerOpen] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedRole, setSelectedRole] = useState("");
+    
+    const handleStatusSelect = (value) => {
+        setSelectedStatus(value); // 선택된 값 업데이트
+        setIsStatusDrawerOpen(false);
+    };
 
     useEffect(() => {
         fetchMembers();
@@ -56,10 +66,6 @@ const AdminMembers = () => {
         setPassword('');
     };
 
-    const toggleAdminDrawer = () => {
-        setIsAdminOpen((prevState) => !prevState);
-    }
-
     const handleCategoryClick = (category) => {
         setSelectedCategory(category);
     };
@@ -75,10 +81,6 @@ const AdminMembers = () => {
         // 상세 정보가 포함된 멤버로 업데이트
         setSelectedMember(fullMemberData);
     };
-
-    const handleAdminOpenDrawer = () => {
-        setIsAdminOpen(true);
-    }
 
     const handleAddDepartment = () => {
         setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
@@ -364,6 +366,7 @@ const AdminMembers = () => {
                                     options={statuses.map(status => ({ value: status._id, label: status.status_description}
                                     ))}
                                     placeholder="상태 선택"
+                                    onManageClick={() => setIsStatusDrawerOpen(true)}
                                     required
                                 />
 
@@ -375,6 +378,7 @@ const AdminMembers = () => {
                                     options={roles.map(role => ({ value: role._id, label: role.role_description}
                                     ))}
                                     placeholder="권한 선택"
+                                    onManageClick={() => setIsRolesDrawerOpen(true)}
                                     required
                                 />
 
@@ -419,14 +423,22 @@ const AdminMembers = () => {
                         </form>
                     )}
                 </CommonDrawer>
-                <CommonDrawer
-                    isAdminOpen={isAdminOpen}
-                    onClose={toggleAdminDrawer}
-                    title='관리'
-                >
-                    <div>TEST</div>
-                </CommonDrawer>
-                
+                <AdminDrawer
+                    isOpen={isStatusDrawerOpen}
+                    onClose={() => setIsStatusDrawerOpen(false)}
+                    apiUrl="/api/statuses"
+                    name="status"
+                    onSelect={setSelectedStatus}
+                    onSaveComplete={fetchStatuses}
+                />
+                <AdminDrawer
+                    isOpen={isRolesDrawerOpen}
+                    onClose={() => setIsRolesDrawerOpen(false)}
+                    apiUrl="/api/roles"
+                    name="role"
+                    onSelect={setSelectedRole}
+                    onSaveComplete={fetchRoles}
+                />
             </div>
         </>
     );

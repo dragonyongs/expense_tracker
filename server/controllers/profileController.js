@@ -43,10 +43,10 @@ exports.getProfiles = async (req, res) => {
             .populate({
                 path: 'member_id',
                 select: 'member_name email team_id role_id status_id rank position',
-                populate: {
-                    path: 'team_id', // 팀 정보를 가져오기 위해 추가
-                    select: 'team_name department_id' // 가져오고 싶은 팀 필드
-                }
+                populate: [
+                    { path: 'team_id', select: 'team_name' },
+                    { path: 'role_id', select: 'role_name' }
+                ]
             })
             .populate('phones', 'phone_type phone_number extension')
             .populate('addresses', 'address_type address_name address_line1 address_line2 postal_code')
@@ -69,10 +69,10 @@ exports.getProfileById = async (req, res) => {
             .populate({
                 path: 'member_id',
                 select: 'member_name email team_id role_id status_id rank position',
-                populate: {
-                    path: 'team_id',
-                    select: 'team_name'
-                }
+                populate: [
+                    { path: 'team_id', select: 'team_name' },
+                    { path: 'role_id', select: 'role_name' }
+                ]
             })
             .populate('addresses', 'address_type address_name address_line1 address_line2 postal_code')
             .populate('dates', 'date_type date');

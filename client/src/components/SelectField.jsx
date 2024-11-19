@@ -1,11 +1,21 @@
 import { IoIosArrowDown } from 'react-icons/io';
 
-const SelectField = ({ label, id, value, onChange, options = [], placeholder = "선택하세요", className = "bg-slate-100 border-0", required = false, disabled = false }) => {
+const SelectField = ({ label, id, value, onChange, options = [], placeholder = "선택하세요", className = "bg-slate-100 border-0", required = false, disabled = false, onManageClick }) => {
     return (
         <div className={`flex flex-col gap-2`}>
             <div className="flex justify-between">
                 <label htmlFor={id} className="dark:text-slate-300 dark:font-normal">{label}</label>
-                {!required ? <span className="text-sm text-slate-400">(선택)</span> : <button role='button' className="bg-gray-50">관리</button>}
+                {!required ? 
+                    <span className="text-sm text-slate-400">(선택)</span> 
+                    : 
+                    <button 
+                        type="button" 
+                        className="bg-gray-50 text-blue-500" 
+                        onClick={onManageClick}
+                    >
+                        관리
+                    </button>
+                }
             </div>
             <div className="relative">
                 <select

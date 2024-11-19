@@ -105,16 +105,17 @@ function Contacts() {
                             <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
                                 {groupedContacts[teamName].map((contact) => {
                                     const { extension } = getCompanyPhoneInfo(contact.phones);
-    
+                                    const formerEmployee = contact?.member_id?.role_id?.role_name === 'former_employee';
+
                                     return (
                                         <li
                                             key={contact._id}
-                                            className="flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300"
+                                            className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : ''}`}
                                             onClick={() => handleOpenDrawer(contact)}
                                         >
                                             <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
                                                 {contact?.avatar_id ? (
-                                                    <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className="w-10 h-10"/>
+                                                    <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className={`w-10 h-10 ${formerEmployee ? 'opacity-40' : ''}`} />
                                                 ) : (
                                                     <AvatarPreview avatarConfig={ genConfig() } shape="circle" className="w-10 h-10"/>
                                                 )}
@@ -126,7 +127,7 @@ function Contacts() {
                                                 </p>
                                             </div>
                                             <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                <MdKeyboardArrowRight className="text-2xl" />
+                                                <MdKeyboardArrowRight className={`text-2xl ${formerEmployee ? 'text-slate-300' : ''}`} />
                                             </div>
                                         </li>
                                     );
