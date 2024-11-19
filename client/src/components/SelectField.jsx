@@ -8,13 +8,14 @@ const SelectField = ({ label, id, value, onChange, options = [], placeholder = "
                 {!required ? 
                     <span className="text-sm text-slate-400">(선택)</span> 
                     : 
-                    <button 
-                        type="button" 
-                        className="bg-gray-50 text-blue-500" 
-                        onClick={onManageClick}
-                    >
-                        관리
-                    </button>
+                    onManageClick && <button 
+                    type="button" 
+                    className="text-blue-500" 
+                    onClick={onManageClick}
+                >
+                    관리
+                </button>
+                    
                 }
             </div>
             <div className="relative">

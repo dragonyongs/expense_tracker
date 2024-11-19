@@ -102,11 +102,13 @@ const AdminDrawer = ({ isOpen, onClose, apiUrl, name, onSelect, onSaveComplete }
                             label="영문 이름"
                             value={newItemName}
                             onChange={(e) => setNewItemName(e.target.value)}
+                            required
                         />
                         <InputField
                             label="한글 설명"
                             value={newItemDescription}
                             onChange={(e) => setNewItemDescription(e.target.value)}
+                            required
                         />
                         <button
                             onClick={handleAdd}

@@ -15,7 +15,9 @@ const AdminMembers = () => {
     const [selectedCategory, setSelectedCategory] = useState('전체');
     const [filteredMembers, setFilteredMembers] = useState([]);
     const [pendingMembers, setPendingMembers] = useState([]);
+    const [resignedMembers, setResignedMembers] = useState([]);
     const [pendingMembersCount, setPendingMembersCount] = useState(0);
+    const [resignedMembersCount, setResignedMembersCount] = useState(0);
     const [password, setPassword] = useState('');
     const [statuses, setStatuses] = useState([]);
     const [roles, setRoles] = useState([]);
@@ -29,10 +31,10 @@ const AdminMembers = () => {
     const [selectedStatus, setSelectedStatus] = useState("");
     const [selectedRole, setSelectedRole] = useState("");
     
-    const handleStatusSelect = (value) => {
-        setSelectedStatus(value); // 선택된 값 업데이트
-        setIsStatusDrawerOpen(false);
-    };
+    // const handleStatusSelect = (value) => {
+    //     setSelectedStatus(value); // 선택된 값 업데이트
+    //     setIsStatusDrawerOpen(false);
+    // };
 
     useEffect(() => {
         fetchMembers();
@@ -46,18 +48,26 @@ const AdminMembers = () => {
     }, [selectedCategory, members]);
 
     const filterMembers = () => {
+        // 전체 멤버에서 각 상태별로 필터링
+        const allPendingMembers = members.filter(member => member.status_id.status_name === 'pending');
+        const allResignedMembers = members.filter(member => member.status_id.status_name === 'resigned');
+        
+        // 현재 선택된 카테고리에 따라 필터링
         let filtered = [...members];
-    
+        
         if (selectedCategory === '요청') {
-            filtered = members.filter(member => member.status_id.status_name === 'pending');
+            filtered = allPendingMembers;
         } else if (selectedCategory === '전체') {
-            filtered = members.filter(member => member.role_id.role_name !== 'super_admin');
+            filtered = members.filter(member => member.role_id.role_name !== 'super_admin' && member.status_id.status_name !== 'resigned');
+        } else if (selectedCategory === '퇴사') {
+            filtered = allResignedMembers;
         }
     
-        // 요청 카테고리에서의 pending 멤버 수를 직접 계산
-        const filterPendingMembers = filtered.filter(member => member.status_id.status_name === 'pending');
-        setPendingMembers(filterPendingMembers);
-        setPendingMembersCount(filterPendingMembers.length); // 직접 계산한 값을 사용
+        // 상태별 카운트 및 데이터 설정
+        setPendingMembers(allPendingMembers);
+        setPendingMembersCount(allPendingMembers.length);
+        setResignedMembers(allResignedMembers);
+        setResignedMembersCount(allResignedMembers.length);
         setFilteredMembers(filtered);
     };
     
@@ -230,6 +240,12 @@ const AdminMembers = () => {
                     >
                         요청 ({pendingMembersCount})
                     </li>
+                    <li 
+                        className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${selectedCategory === '퇴사' ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`} 
+                        onClick={() => handleCategoryClick('퇴사')}
+                    >
+                        퇴사 ({resignedMembersCount})
+                    </li>
                 </ul>
                 <div className="flex items-center justify-between mb-4 px-3">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
@@ -246,9 +262,10 @@ const AdminMembers = () => {
                         <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredMembers.map(({ _id, member_name, status_id, team_id, photoUrl, createdAt }) => {
                                 const isPending = status_id.status_name === 'pending';
+                                const isResigned = status_id.status_name === 'resigned';
                                 const statusClass = isPending
                                     ? 'bg-blue-600 text-white'
-                                    : 'bg-white text-gray-700 border border-gray-400';
+                                    : isResigned ? 'bg-red-600 text-red-300' : 'bg-white text-gray-700 border border-gray-400';
 
                                 return (
                                     <li
