@@ -200,52 +200,196 @@ exports.getCardTransactions = async (req, res) => {
 //     }
 // };
 // 트랜잭션 생성 및 처리 함수
-exports.createTransaction = async (req, res) => {
-    const { card_id, transaction_date, merchant_name, menu_name, transaction_amount, transaction_type, deposit_type, expense_type } = req.body;
 
+// exports.createTransaction = async (req, res) => {
+//     const { card_id, transaction_date, merchant_name, menu_name, transaction_amount, transaction_type, deposit_type, expense_type } = req.body;
+
+//     // 금액 차감 공통 함수
+//     function subtractFromSource(card, source, amount) {
+//         let usedAmount = 0;
+    
+//         if (card[source] >= amount) {
+//             usedAmount = amount;
+//             card[source] -= amount;
+//             amount = 0;
+//         } else {
+//             usedAmount = card[source];
+//             amount -= card[source];
+//             card[source] = 0;
+//         }
+    
+//         return { remainingAmount: amount, usedAmount }; // 사용된 금액과 남은 미처리 금액 반환
+//     }
+
+//     const handleTeamFundExpense = (card, remainingAmount) => {
+//         return subtractFromSource(card, 'team_fund', remainingAmount);
+//     };
+    
+//     const handleBalanceExpense = (card, remainingAmount) => {
+//         return subtractFromSource(card, 'balance', remainingAmount);
+//     };
+//     function handleRolloverExpense(card, amount) {
+//         let rolloverUsed = 0;
+    
+//         if (card.rollover_amount >= amount) {
+//             rolloverUsed = amount;
+//             card.rollover_amount -= amount;
+//             amount = 0;
+//         } else {
+//             rolloverUsed = card.rollover_amount;
+//             amount -= card.rollover_amount;
+//             card.rollover_amount = 0;
+//         }
+    
+//         return { remainingAmount: amount, rolloverUsed };
+//     }
+
+//     try {
+//         const sanitizeInput = (input) => input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
+
+//         const sanitizedMerchantName = sanitizeInput(merchant_name);
+//         const sanitizedMenuName = sanitizeInput(menu_name);
+
+//         const card = await Card.findById(card_id);
+//         if (!card) {
+//             return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
+//         }
+
+//         let remainingAmount = Number(transaction_amount);
+
+//         if (transaction_type === 'expense') {
+//             let rolloverUsed = 0;
+//             let teamFundUsed = 0;
+//             let cardBalanceUsed = 0;
+
+//             if (expense_type === 'TeamFund') {
+//                 ({ remainingAmount, teamFundUsed } = handleTeamFundExpense(card, remainingAmount));
+//             } else {
+//                 ({ remainingAmount, cardBalanceUsed } = handleBalanceExpense(card, remainingAmount));
+        
+//                 if (remainingAmount > 0) {
+//                     ({ remainingAmount, rolloverUsed } = handleRolloverExpense(card, remainingAmount));  // 이월 금액 사용
+        
+//                     if (remainingAmount > 0) {
+//                         ({ remainingAmount, teamFundUsed } = handleTeamFundExpense(card, remainingAmount));
+//                     }
+//                 }
+//             }
+
+//             if (remainingAmount > 0) {
+//                 throw new Error('잔액, 이월 금액 및 팀 운영비가 부족합니다.');
+//             }
+
+//             const transaction = new Transaction({
+//                 card_id,
+//                 transaction_date,
+//                 merchant_name: sanitizedMerchantName,
+//                 menu_name: sanitizedMenuName,
+//                 transaction_amount: transaction_amount - remainingAmount,
+//                 transaction_type,
+//                 deposit_type,
+//                 expense_type,
+//                 rolloverAmounted: rolloverUsed,
+//                 teamFundDeducted: teamFundUsed,
+//             });
+
+//             console.log('신규 트랜잭션: ', transaction);
+            
+//             await transaction.save();
+//             await card.save();
+
+//             res.status(201).json({
+//                 message: '트랜잭션 처리 성공',
+//                 transaction: transaction.toObject(),
+//                 card: card.toObject(),
+//             });
+//         } else if (transaction_type === 'income') {
+//             let depositAmount = 0;
+
+//             if (deposit_type === 'RegularDeposit') {
+//                 const maxLimit = card.limit || 100000;
+//                 depositAmount = Math.min(maxLimit - card.balance, transaction_amount);
+//                 card.balance += depositAmount;
+//             } else if (deposit_type === 'AdditionalDeposit' || deposit_type === 'TransportationExpense') {
+//                 depositAmount = transaction_amount;
+//                 console.log('TransportationExpense: ', depositAmount);
+//                 card.balance += depositAmount;
+//             } else if (deposit_type === 'TeamFund') {
+//                 depositAmount = transaction_amount;
+//                 card.team_fund += depositAmount;
+//             }
+
+//             const transaction = new Transaction({
+//                 card_id,
+//                 transaction_date,
+//                 merchant_name: sanitizedMerchantName,
+//                 menu_name: sanitizedMenuName,
+//                 transaction_amount: depositAmount,
+//                 transaction_type,
+//                 deposit_type,
+//             });
+
+//             await transaction.save();
+//             await card.save();
+
+//             res.status(201).json({
+//                 message: '트랜잭션 처리 성공',
+//                 transaction: transaction.toObject(),
+//                 card: card.toObject(),
+//             });
+//         } else {
+//             return res.status(400).json({ error: '유효하지 않은 거래 유형입니다.' });
+//         }
+//     } catch (error) {
+//         console.error('트랜잭션 생성 중 오류 발생:', error);
+//         res.status(500).json({ message: error.message || '서버 오류가 발생했습니다.', error });
+//     }
+// };
+
+exports.createTransaction = async (req, res) => {
+    const { 
+        card_id, 
+        transaction_date, 
+        merchant_name, 
+        menu_name, 
+        transaction_amount, 
+        transaction_type, 
+        deposit_type, 
+        expense_type 
+    } = req.body;
+
+    console.log('req.body', req.body);
     // 금액 차감 공통 함수
     function subtractFromSource(card, source, amount) {
-        let usedAmount = 0;
-    
-        if (card[source] >= amount) {
-            usedAmount = amount;
-            card[source] -= amount;
-            amount = 0;
-        } else {
-            usedAmount = card[source];
-            amount -= card[source];
-            card[source] = 0;
-        }
-    
-        return { remainingAmount: amount, usedAmount }; // 사용된 금액과 남은 미처리 금액 반환
+        const usedAmount = Math.min(card[source], amount);
+        card[source] -= usedAmount;
+        return { remainingAmount: amount - usedAmount, usedAmount };
     }
 
-    const handleTeamFundExpense = (card, remainingAmount) => {
-        return subtractFromSource(card, 'team_fund', remainingAmount);
-    };
-    
-    const handleBalanceExpense = (card, remainingAmount) => {
-        return subtractFromSource(card, 'balance', remainingAmount);
-    };
-    function handleRolloverExpense(card, amount) {
-        let rolloverUsed = 0;
-    
-        if (card.rollover_amount >= amount) {
-            rolloverUsed = amount;
-            card.rollover_amount -= amount;
-            amount = 0;
-        } else {
-            rolloverUsed = card.rollover_amount;
-            amount -= card.rollover_amount;
-            card.rollover_amount = 0;
+    const handleExpense = (card, expenseType, amount) => {
+        let results = {};
+        switch (expenseType) {
+            case 'TeamFund':
+                results = subtractFromSource(card, 'team_fund', amount);
+                break;
+            default:
+                results = subtractFromSource(card, 'balance', amount);
+                if (results.remainingAmount > 0) {
+                    const rolloverResults = subtractFromSource(card, 'rollover_amount', results.remainingAmount);
+                    results = { ...results, ...rolloverResults };
+                    if (rolloverResults.remainingAmount > 0) {
+                        const teamFundResults = subtractFromSource(card, 'team_fund', rolloverResults.remainingAmount);
+                        results = { ...results, ...teamFundResults };
+                    }
+                }
+                break;
         }
-    
-        return { remainingAmount: amount, rolloverUsed };
-    }
+        return results;
+    };
+
+    const sanitizeInput = (input) => input?.replace(/[\u0000-\u001F\u007F]/g, '').trim();
 
     try {
-        const sanitizeInput = (input) => input ? input.replace(/[\u0000-\u001F\u007F]/g, '').trim() : undefined;
-
         const sanitizedMerchantName = sanitizeInput(merchant_name);
         const sanitizedMenuName = sanitizeInput(menu_name);
 
@@ -257,25 +401,9 @@ exports.createTransaction = async (req, res) => {
         let remainingAmount = Number(transaction_amount);
 
         if (transaction_type === 'expense') {
-            let rolloverUsed = 0;
-            let teamFundUsed = 0;
-            let cardBalanceUsed = 0;
-
-            if (expense_type === 'TeamFund') {
-                ({ remainingAmount, teamFundUsed } = handleTeamFundExpense(card, remainingAmount));
-            } else {
-                ({ remainingAmount, cardBalanceUsed } = handleBalanceExpense(card, remainingAmount));
-        
-                if (remainingAmount > 0) {
-                    ({ remainingAmount, rolloverUsed } = handleRolloverExpense(card, remainingAmount));  // 이월 금액 사용
-        
-                    if (remainingAmount > 0) {
-                        ({ remainingAmount, teamFundUsed } = handleTeamFundExpense(card, remainingAmount));
-                    }
-                }
-            }
-
-            if (remainingAmount > 0) {
+            const { remainingAmount: finalRemaining, usedAmount: totalUsed } = handleExpense(card, expense_type, remainingAmount);
+            
+            if (finalRemaining > 0) {
                 throw new Error('잔액, 이월 금액 및 팀 운영비가 부족합니다.');
             }
 
@@ -284,16 +412,16 @@ exports.createTransaction = async (req, res) => {
                 transaction_date,
                 merchant_name: sanitizedMerchantName,
                 menu_name: sanitizedMenuName,
-                transaction_amount: transaction_amount - remainingAmount,
+                transaction_amount: transaction_amount - finalRemaining,
                 transaction_type,
                 deposit_type,
                 expense_type,
-                rolloverAmounted: rolloverUsed,
-                teamFundDeducted: teamFundUsed,
+                teamFundDeducted: totalUsed,
             });
 
-            console.log('신규 트랜잭션: ', transaction);
-            
+            console.log('transaction', transaction);
+            console.log('sanitizedMerchantName', sanitizedMerchantName);
+
             await transaction.save();
             await card.save();
 
@@ -302,19 +430,19 @@ exports.createTransaction = async (req, res) => {
                 transaction: transaction.toObject(),
                 card: card.toObject(),
             });
+
         } else if (transaction_type === 'income') {
-            let depositAmount = 0;
+            let depositAmount = transaction_amount;
 
             if (deposit_type === 'RegularDeposit') {
                 const maxLimit = card.limit || 100000;
-                depositAmount = Math.min(maxLimit - card.balance, transaction_amount);
-                card.balance += depositAmount;
-            } else if (deposit_type === 'AdditionalDeposit' || deposit_type === 'TransportationExpense') {
-                depositAmount = transaction_amount;
-                card.balance += depositAmount;
-            } else if (deposit_type === 'TeamFund') {
-                depositAmount = transaction_amount;
+                depositAmount = Math.min(maxLimit - card.balance, depositAmount);
+            }
+
+            if (deposit_type === 'TeamFund') {
                 card.team_fund += depositAmount;
+            } else {
+                card.balance += depositAmount;
             }
 
             const transaction = new Transaction({
@@ -335,14 +463,17 @@ exports.createTransaction = async (req, res) => {
                 transaction: transaction.toObject(),
                 card: card.toObject(),
             });
+
         } else {
             return res.status(400).json({ error: '유효하지 않은 거래 유형입니다.' });
         }
+
     } catch (error) {
         console.error('트랜잭션 생성 중 오류 발생:', error);
         res.status(500).json({ message: error.message || '서버 오류가 발생했습니다.', error });
     }
 };
+
 
 exports.getTransactionById = async (req, res) => {
     try {

@@ -8,6 +8,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '425px',
+      },
       animation: {
         'flip-once': 'flip-once 0.5s ease-in-out forwards', // 한 번만 플립되는 애니메이션
       },

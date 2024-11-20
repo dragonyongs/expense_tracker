@@ -13,7 +13,7 @@ const Dashboard = () => {
         isSafari: false,
         isChrome: false,
         isStandalone: false,
-        showInstallPrompt: false
+        showInstallPrompt: false,
     });
 
     useEffect(() => {
@@ -31,10 +31,7 @@ const Dashboard = () => {
                 isSafari: isSafari,
                 isChrome: isChrome,
                 isStandalone: isStandalone,
-                showInstallPrompt: !isStandalone && (
-                    (iOS && isSafari) || 
-                    (!iOS && !deferredPrompt)
-                )
+                showInstallPrompt: !isStandalone && (iOS || deferredPrompt !== null),
             });
         };
 
@@ -45,16 +42,15 @@ const Dashboard = () => {
             setDeferredPrompt(e);
             setInstallState(prev => ({
                 ...prev,
-                showInstallPrompt: true
+                showInstallPrompt: true,
             }));
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-        window.matchMedia('(display-mode: standalone)').addListener((e) => {
+        window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
             setInstallState(prev => ({
                 ...prev,
-                isStandalone: e.matches
+                isStandalone: e.matches,
             }));
         });
 
@@ -72,7 +68,7 @@ const Dashboard = () => {
                     console.log('User accepted the install prompt');
                     setInstallState(prev => ({
                         ...prev,
-                        showInstallPrompt: false
+                        showInstallPrompt: false,
                     }));
                 }
                 setDeferredPrompt(null);
