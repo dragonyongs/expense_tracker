@@ -52,8 +52,6 @@ function AdminProfiles() {
     };
 
     const handleOpenDrawer = (profile) => {
-
-        console.log(profile);
         isSelectedProfile(profile);
         setIsProfileOpen(true);
     };

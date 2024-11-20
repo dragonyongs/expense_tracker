@@ -238,7 +238,6 @@ const Transactions = () => {
                 transactionData.transaction_amount = selectedTransaction.transaction_amount; // 팀펀드 잔액 반영
                 console.log('transactionData', transactionData);
                 await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
-                console.log('거래 내역 수정 완료');
             } else {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
@@ -268,7 +267,6 @@ const Transactions = () => {
         try {
             // 서버에 트랜잭션 삭제 요청
             await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
-            console.log('거래 내역 삭제 완료');
     
             // 거래 내역 갱신
             fetchTransactionsForCurrentMonth();

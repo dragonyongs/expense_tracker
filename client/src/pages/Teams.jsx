@@ -93,11 +93,7 @@ const AccountList = ({ accounts, userPosition, remainingDays }) => {
         ...account,
         cards: filterCardsByPosition(account.cards, userPosition),
     })).filter(account => account.cards.length > 0);
-    
-    console.log('accounts', accounts);
-    console.log('userPosition', userPosition);
-    console.log('filteredAccounts', filteredAccounts);
-
+ 
     return (
         <>
             {filteredAccounts.map(account => (
