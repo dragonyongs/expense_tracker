@@ -11,12 +11,26 @@ const transactionSchema = new mongoose.Schema({
         type: String, 
         enum: ['RegularDeposit', 'TransportationExpense', 'TeamFund', 'AdditionalDeposit'], 
         required: function() {
-            return this.transaction_type === 'income'; // deposit일 경우에만 필수
+            return this.transaction_type === 'income';
         }
     },
-    expense_type: { type: String, enum: ['RegularExpense', 'TeamCard', 'TeamFund'] },
+    expense_card: { 
+        type: String, 
+        enum: ['TeamCard'], // 현재는 팀카드만 사용
+        default: 'TeamCard',
+        required: function() {
+            return this.transaction_type === 'expense';
+        }
+    },
+    expense_type: { 
+        type: String, 
+        enum: ['RegularExpense', 'TeamFund', 'TransportationExpense'], // 목적만 구분
+        required: function() {
+            return this.transaction_type === 'expense';
+        }
+    },
     rolloverAmounted: { type: Number, default: 0 },
-    teamFundDeducted: { type: Number, default: 0 }, // 추가된 부분
+    teamFundDeducted: { type: Number, default: 0 },
 }, { timestamps: true });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
