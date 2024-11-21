@@ -74,5 +74,4 @@ const migrateExpenseCardAndType = async () => {
     }
 };
 
-// 마이그레이션 실행
-migrateExpenseCardAndType();
+module.exports = { migrateExpenseCardAndType };

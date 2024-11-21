@@ -22,6 +22,9 @@ const addressRoutes = require('./routes/addressRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const avatarRoutes = require('./routes/avatarRoutes');
 
+// const { migrateExpenseCardAndType } = require('./migrations/2024-11-21-migrate-expense-card');
+// migrateExpenseCardAndType(); 
+
 const app = express();
 app.use(cookieParser());
 

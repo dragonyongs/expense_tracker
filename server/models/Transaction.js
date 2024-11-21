@@ -25,6 +25,7 @@ const transactionSchema = new mongoose.Schema({
     expense_type: { 
         type: String, 
         enum: ['RegularExpense', 'TeamFund', 'TransportationExpense'], // 목적만 구분
+        default: 'RegularExpense',
         required: function() {
             return this.transaction_type === 'expense';
         }
