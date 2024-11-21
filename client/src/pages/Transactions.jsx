@@ -59,7 +59,6 @@ const Transactions = () => {
         setErrMsg('');
     }, [transactions.length])
 
-
     // 카드와 트랜잭션 데이터 가져오기
     const fetchCards = async () => {
         setIsLoading(true);
@@ -142,7 +141,7 @@ const Transactions = () => {
         });
 
         setExpenseType(transaction.expense_type || '');
-        
+
         // 거래 타입에 따라 depositType 설정
         if (transaction.transaction_type === 'expense') {
             // 지출의 경우 depositType을 설정하지 않거나 특정 값으로 초기화
@@ -194,7 +193,8 @@ const Transactions = () => {
                 merchant_name: selectedTransaction.merchant_name,
                 menu_name: selectedTransaction.menu_name,
                 transaction_type: "expense",
-                expense_type: expenceType,
+                expense_card: expenseCard,
+                expense_type: expenseType,
             };
     
             // 기존 금액과 새로운 금액 비교
@@ -269,6 +269,11 @@ const Transactions = () => {
         };
     });
 
+    const handleExpenseTypeChange = (type) => {
+        console.log('Updated expenseType:', type);  // 값 변경 확인
+        setExpenseType(type);
+    };
+    
     return (
         <>
             <header className={`flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
@@ -442,7 +447,7 @@ const Transactions = () => {
                                                 className="hidden peer"
                                                 checked={expenseType === 'RegularExpense'}
                                                 ref={expenceTypeRef}
-                                                onChange={() => { setExpenseType('RegularExpense'); }}
+                                                onChange={() => handleExpenseTypeChange('RegularExpense')}
                                                 required
                                             />
                                             <label
@@ -464,8 +469,8 @@ const Transactions = () => {
                                             name="expenseType"
                                             value="TeamFund" // team_fund 사용 구분
                                             className="hidden peer"
-                                            checked={expenseType === 'TeamFund'}
-                                            onChange={() => setExpenseType('TeamFund')} // 상태 업데이트
+                                            checked={expenseType === 'TeamFund'}  // 조건 확인
+                                            onChange={() => handleExpenseTypeChange('TeamFund')}  // 상태 변경
                                         />
                                         <label
                                             htmlFor="expense_card_b"
