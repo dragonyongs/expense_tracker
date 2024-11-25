@@ -5,6 +5,8 @@ import { API_URLS } from '../services/apiUrls';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
+import { TbCircleMinus } from "react-icons/tb";
+
 import AdminHeader from '../components/AdminHeader';
 
 // import { MdKeyboardArrowRight } from "react-icons/md";
@@ -32,11 +34,13 @@ const AdminDeposit = () => {
         transaction_amount: "", 
         transaction_type: "",
         deposit_type: "RegularDeposit",
+        is_deducted: false,
     });
     const [membersWithDeposits, setMembersWithDeposits] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [isDeductedOpen, setIsDeductedOpen] = useState(false);
     const [errMsg, setErrMsg] = useState('');
 
     useEffect(() => {
@@ -133,7 +137,6 @@ const AdminDeposit = () => {
                     transaction_amount: depositAmount,
                 }));
             } else {
-                console.log('cardLimit', cardLimit);
                 setSelectedDeposit(prev => ({
                     ...prev,
                     transaction_amount: cardLimit, // 카드 한도만큼 설정
@@ -314,8 +317,6 @@ const AdminDeposit = () => {
                 }))
             );
 
-            console.log('users', users);
-
         } catch (error) {
             setErrMsg("사용자 목록을 불러오지 못했습니다.");
         }
@@ -365,6 +366,14 @@ const AdminDeposit = () => {
         setIsOpen(true);
     };
 
+    const handleMinusDeposit = () => {
+        setSelectedDeposit({ transaction_amount: "" });
+        setSelectedUser("");
+        setSelectedCard("");
+        setIsEditing(false);
+        setIsDeductedOpen(true);
+    };
+
     // 사용자 선택 핸들러
     const handleUserChange = async (e) => {
         const selectedUserId = e.target.value;
@@ -404,9 +413,9 @@ const AdminDeposit = () => {
         }
     };
 
-    useEffect(() => {
+    // useEffect(() => {
 
-    }, [selectedUser]);
+    // }, [selectedUser]);
         
     // 카드 선택 핸들러
     const handleCardChange = (e) => {
@@ -424,39 +433,44 @@ const AdminDeposit = () => {
     const handleSave = async () => {
         try {
             setErrMsg("");
-            if (!selectedCard || !depositType) {
-                setErrMsg("카드와 입금 유형을 선택하세요.");
+            if (!selectedUser || !selectedCard || !depositType || !selectedDeposit.transaction_amount) {
+                setErrMsg("모든 필드를 채워주세요.");
                 return;
             }
 
+            const transactionAmount = selectedDeposit.transaction_amount;
             const cardResponse = await axios.get(`${API_URLS.CARDS}/${selectedCard}`);
             const cardData = cardResponse.data;
 
-            let depositAmount;
-            if (depositType === "RegularDeposit") {
-                const teamMembersCount = calculateTeamMembersCount();
-                const updatedCards = calculateTeamDepositAmount(
-                    [cardData],
-                    teamMembersCount
-                );
-                depositAmount = updatedCards[0]?.depositAmount || 0;
-            } else if (depositType === "TransportationExpense") {
-                depositAmount = parseFloat(selectedDeposit.transaction_amount);
+            const transactionType = isDeductedOpen ? "expense" : "income";
+            let depositAmount = parseFloat(transactionAmount);
+
+            if (!isDeductedOpen) {
+                if (depositType === "RegularDeposit") {
+                    const teamMembersCount = calculateTeamMembersCount();
+                    const updatedCards = calculateTeamDepositAmount([cardData], teamMembersCount);
+                    depositAmount = updatedCards[0]?.depositAmount || 0;
+                } else if (depositType === "TransportationExpense") {
+                    depositAmount = parseFloat(selectedDeposit.transaction_amount);
+                }
             }
 
             if (depositAmount <= 0) throw new Error("유효하지 않은 입금 금액입니다.");
 
+            const menuNameDefault = isDeductedOpen
+                ? "여비교통비 차감" // 차감인 경우
+                : depositType === "TeamFund"
+                ? "팀 운영비" // 팀펀드 입금
+                : "월 잔액 충전"; // 기본 입금
             const transactionData = {
                 card_id: selectedCard,
                 transaction_amount: depositAmount,
                 merchant_name: "관리자",
                 menu_name:
-                    selectedDeposit?.menu_name ||
-                    (depositType === "TeamFund"
-                        ? "팀 운영비"
-                        : "월 잔액 충전"),
-                transaction_type: "income",
+                    selectedDeposit?.menu_name || menuNameDefault,
+                transaction_type: transactionType,
                 deposit_type: depositType,
+                is_deducted: isDeductedOpen,
                 transaction_date: selectedDeposit?.transaction_date || new Date(),
             };
 
@@ -469,7 +483,7 @@ const AdminDeposit = () => {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
 
-            fetchData(`${API_URLS.DEPOSITS}`, setDeposits);
+            fetchData(API_URLS.DEPOSITS, setDeposits);
             handleCloseDrawer();
         } catch (error) {
             console.error("입금 처리 중 오류:", error);
@@ -541,6 +555,7 @@ const AdminDeposit = () => {
 
     const handleCloseDrawer = () => {
         setIsOpen(false);
+        setIsDeductedOpen(false);
     };
 
     return (
@@ -549,13 +564,22 @@ const AdminDeposit = () => {
             <div className="flex-1 w-full p-4 sm:p-6 dark:bg-gray-800">
                     <div className="flex items-center justify-between mt-2 mb-4 px-3">
                         <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">입출금 거래내역</h5>
-                        <button
-                            type="button"
-                            className="text-black font-semibold rounded-lg text-2xl dark:text-white"
-                            onClick={handleAddDeposit}
-                        >
-                            <IoAddCircleOutline />
-                        </button>
+                        <div className='flex gap-x-3'>
+                            <button
+                                type="button"
+                                className="text-black font-semibold rounded-lg text-2xl dark:text-white"
+                                onClick={handleAddDeposit}
+                            >
+                                <IoAddCircleOutline />
+                            </button>
+                            <button
+                                type="button"
+                                className="text-black font-semibold rounded-lg text-2xl dark:text-white"
+                                onClick={handleMinusDeposit}
+                            >
+                                <TbCircleMinus />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flow-root">
@@ -577,10 +601,8 @@ const AdminDeposit = () => {
                                                         {deposit.member_name}님 {deposit.menu_name}
                                                     </p>
                                                 </div>
-                                                <div className="inline-flex gap-x-3 items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                    <span>
-                                                        {deposit.transaction_amount.toLocaleString()}원
-                                                    </span>
+                                                <div className="text-base text-gray-900 dark:text-white">
+                                                    {deposit?.is_deducted ? '-' : '+'} <span className="font-bold">{deposit.transaction_amount.toLocaleString()}</span> 원
                                                 </div>
                                             </div>
                                         </li>
@@ -726,22 +748,20 @@ const AdminDeposit = () => {
 
                         {/* 입금 금액 입력 */}
                         <div>
-                            {/* {depositType !== "RegularDeposit" && ( */}
-                                <InputField
-                                    label="입금 금액"
-                                    type="number"
-                                    id="transaction_amount"
-                                    value={selectedDeposit.transaction_amount } // 자동 계산된 금액
-                                    className={"bg-white border border-slate-200"}
-                                    onChange={(e) => setSelectedDeposit(prev => ({
-                                        ...prev,
-                                        transaction_amount: Number(e.target.value)
-                                    }))}
-                                    placeholder="입금 금액 입력"
-                                    required={true}
-                                    disabled={!depositType}
-                                />
-                            {/* )} */}
+                            <InputField
+                                label="입금 금액"
+                                type="number"
+                                id="transaction_amount"
+                                value={selectedDeposit.transaction_amount } // 자동 계산된 금액
+                                className={"bg-white border border-slate-200"}
+                                onChange={(e) => setSelectedDeposit(prev => ({
+                                    ...prev,
+                                    transaction_amount: Number(e.target.value)
+                                }))}
+                                placeholder="입금 금액 입력"
+                                required={true}
+                                disabled={!depositType}
+                            />
                             {selectUserPosition === '팀장' && depositType === "TeamFund" && (
                                 <div className="mt-2 text-gray-500">
                                     <span>팀 인원: {calculateTeamMembersCount()}명</span> {/* 팀원 수만 표시 */}
@@ -783,6 +803,100 @@ const AdminDeposit = () => {
                             }
                             <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 {isEditing ? '수정' : '추가'}
+                            </button>
+                        </div>
+                        <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">
+                            취소
+                        </button>
+                    </div>
+                </CommonDrawer>
+
+                {/* Drawer: 차감 관리 */}
+                <CommonDrawer isOpen={isDeductedOpen} onClose={handleCloseDrawer} title={isEditing ? '차감 수정' : '차감 추가'}>
+                    <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
+                        {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
+
+                        {/* 사용자 선택 */}
+                        <SelectField
+                            label="사용자"
+                            id="member_id"
+                            value={isEditing ? selectedDeposit?.card_id?.member_id : selectedUser || ""}  // selectedUser 상태로 설정
+                            onChange={handleUserChange}
+                            options={users.map(member => ({
+                                value: member._id,
+                                label: member.member_name
+                            }))}
+                            placeholder="사용자 선택"
+                            required
+                        />
+
+                        {/* 카드 선택 */}
+                        <SelectField
+                            label="카드"
+                            id="card_id"
+                            value={isEditing ? selectedDeposit?.card_id?._id : selectedCard || ""}
+                            onChange={handleCardChange}
+                            options={cards.map(card => ({ value: card._id, label: card.card_number}
+                            ))}
+                            placeholder="카드 선택"
+                            disabled={!selectedUser}
+                            required
+                        />
+                        <div>
+                            <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-slate-300 dark:font-normal">차감 구분</h3>
+                            <ul className="grid w-full gap-2 grid-cols-2">
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="deposit_type_b"
+                                        name="deposit_type"
+                                        value="TransportationExpense" // "여비교통비"
+                                        className="hidden peer"
+                                        checked={depositType === 'TransportationExpense'}
+                                        onChange={handleDepositTypeChange}
+                                        disabled={!selectedCard}
+                                    />
+                                    <label
+                                        htmlFor="deposit_type_b"
+                                        className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                                    >
+                                        <div className="block">
+                                            <div className="w-full text-md font-semibold">여비교통비</div>
+                                            <div className="w-full text-sm">금액입력</div>
+                                        </div>
+                                        {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <InputField
+                            label="입금 금액"
+                            type="number"
+                            id="transaction_amount"
+                            value={selectedDeposit.transaction_amount }
+                            className={"bg-white border border-slate-200"}
+                            onChange={(e) => setSelectedDeposit(prev => ({
+                                ...prev,
+                                transaction_amount: Number(e.target.value)
+                            }))}
+                            placeholder="차감 금액 입력"
+                            required={true}
+                            disabled={!depositType}
+                        />
+                    </div>
+
+                    {/* 저장 버튼 */}
+                    <div className="flex flex-col gap-3 pt-4 p-6">
+                        <div className='flex justify-between gap-y-4 gap-x-2'>
+                            {!isEditing ? '' : <button
+                                type="button" 
+                                className='text-red-600 font-semibold text-sm border border-red-400 px-5 py-3 rounded-lg'
+                                onClick={handleDeleteConfirm}
+                            >삭제</button>
+                            }
+                            <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                {isEditing ? '수정' : '차감'}
                             </button>
                         </div>
                         <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600">

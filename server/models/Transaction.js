@@ -32,6 +32,7 @@ const transactionSchema = new mongoose.Schema({
     },
     rolloverAmounted: { type: Number, default: 0 },
     teamFundDeducted: { type: Number, default: 0 },
+    is_deducted: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);

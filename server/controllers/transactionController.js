@@ -41,9 +41,9 @@ exports.createTransaction = async (req, res) => {
         deposit_type,
         expense_card,
         expense_type,
+        is_deducted,
     } = req.body;
 
-    console.log('req.body', req.body);
     // 금액 차감 공통 함수
     function subtractFromSource(card, source, amount) {
         const usedAmount = Math.min(card[source], amount);
@@ -52,13 +52,12 @@ exports.createTransaction = async (req, res) => {
     }
 
     const handleExpense = (card, expenseType, amount) => {
-        let remainingAmount = amount; // 잔액 차감 이후 남은 금액
-        let teamFundDeducted = 0;    // 팀펀드에서 사용한 금액
-        let rolloverAmounted = 0;    // 이월 금액에서 사용한 금액
+        let remainingAmount = amount;
+        let teamFundDeducted = 0;
+        let rolloverAmounted = 0;
     
         switch (expenseType) {
             case 'TeamFund': {
-                // 팀펀드에서 차감
                 const teamFundResult = subtractFromSource(card, 'team_fund', remainingAmount);
                 remainingAmount = teamFundResult.remainingAmount;
                 teamFundDeducted = teamFundResult.usedAmount;
@@ -66,17 +65,14 @@ exports.createTransaction = async (req, res) => {
             }
             case 'RegularExpense':
             default: {
-                // 기본적으로 팀카드 잔액에서 차감
                 const balanceResult = subtractFromSource(card, 'balance', remainingAmount);
                 remainingAmount = balanceResult.remainingAmount;
     
-                // 남은 금액이 있다면 이월 금액에서 차감
                 if (remainingAmount > 0) {
                     const rolloverResult = subtractFromSource(card, 'rollover_amount', remainingAmount);
                     remainingAmount = rolloverResult.remainingAmount;
                     rolloverAmounted = rolloverResult.usedAmount;
     
-                    // 이월 금액에서도 충당하지 못한 금액은 팀펀드에서 차감
                     if (remainingAmount > 0) {
                         const teamFundResult = subtractFromSource(card, 'team_fund', remainingAmount);
                         remainingAmount = teamFundResult.remainingAmount;
@@ -88,11 +84,10 @@ exports.createTransaction = async (req, res) => {
             }
         }
     
-        // 결과 반환
         return {
-            remainingAmount,       // 최종적으로 충당되지 않은 금액
-            teamFundDeducted,      // 팀펀드에서 사용된 금액
-            rolloverAmounted,      // 이월 금액에서 사용된 금액
+            remainingAmount, 
+            teamFundDeducted, 
+            rolloverAmounted,
         };
     };
 
@@ -109,7 +104,7 @@ exports.createTransaction = async (req, res) => {
 
         let remainingAmount = Number(transaction_amount);
 
-        if (transaction_type === 'expense') {
+        if (transaction_type === "expense" || is_deducted) {
             const {
                 remainingAmount: finalRemaining,
                 teamFundDeducted,
@@ -125,15 +120,15 @@ exports.createTransaction = async (req, res) => {
                 transaction_date,
                 merchant_name: sanitizedMerchantName,
                 menu_name: sanitizedMenuName,
-                transaction_amount: transaction_amount - finalRemaining, // 남은 금액을 뺀 사용 금액
+                transaction_amount: transaction_amount - finalRemaining,
                 transaction_type,
                 expense_card,
                 expense_type,
-                teamFundDeducted,  // 사용된 팀펀드 금액
-                rolloverAmounted,  // 사용된 이월 금액
+                teamFundDeducted,
+                rolloverAmounted,
+                is_deducted: true,
             });
         
-            console.log('transaction', transaction);
             await transaction.save();
             await card.save();
         
@@ -164,6 +159,7 @@ exports.createTransaction = async (req, res) => {
                 transaction_amount: depositAmount,
                 transaction_type,
                 deposit_type,
+                is_deducted: false, // 차감 아님
             });
 
             await transaction.save();
@@ -382,7 +378,10 @@ exports.deleteTransaction = async (req, res) => {
 
 exports.getAllDeposits = async (req, res) => {
     try {
-        const deposits = await Transaction.find({ transaction_type: "income" }).populate('card_id');
+        const deposits = await Transaction.find({ $or: [
+            { transaction_type: "income" }, 
+            { transaction_type: "expense", is_deducted: true }
+        ] }).populate('card_id');
 
         const depositWithMemberNames = await Promise.all(deposits.map(async (deposit) => {
             const card = deposit.card_id;
