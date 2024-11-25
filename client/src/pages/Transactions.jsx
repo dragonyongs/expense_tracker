@@ -451,11 +451,11 @@ const Transactions = () => {
                                                 required
                                             />
                                             <label
-                                                htmlFor="expense_card_a"
+                                                htmlFor="expense_type_a"
                                                 className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
                                             >
                                                 <div className="block">
-                                                    <div className="w-full text-md font-semibold">팀 카드</div>
+                                                    <div className="w-full text-md font-semibold">일반 지출</div>
                                                     <div className="w-full text-sm">잔액: {cardBalance.toLocaleString()}원</div>
                                                 </div>
                                                 {expenseType === 'RegularExpense' && <IoCheckmark className="w-6 h-6" />}
@@ -473,7 +473,7 @@ const Transactions = () => {
                                             onChange={() => handleExpenseTypeChange('TeamFund')}  // 상태 변경
                                         />
                                         <label
-                                            htmlFor="expense_card_b"
+                                            htmlFor="expense_type_b"
                                             className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
                                         >
                                             <div className="block">
