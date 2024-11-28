@@ -6,9 +6,13 @@ import CommonDrawer from '../components/CommonDrawer';
 import AvatarPreview from '../components/AvatarPreview';
 import { genConfig } from 'react-nice-avatar';
 import { MutatingDots } from 'react-loader-spinner';
+import { formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
+import { renderContactIcon, renderContactLabel, renderDateIcon, renderDateLabel, renderAddressIcon, renderAddressLabel } from '../utils/profileRenderUtils';
 
 function Contacts() {
     const [contacts, setContacts ] = useState([]);
+    const [selectedYears, setSelectedYears] = useState('');
+    const [selectedDays, setSelectedDays] = useState('');
     const [selectedContact, setSelectedContact] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -30,9 +34,14 @@ function Contacts() {
     }, []);
 
     const handleOpenDrawer = (contact) => {
+        const { years, days } = calculateYearsSinceEntry(contact.dates);
+        console.log(years, days);
+        setSelectedYears(years);
+        setSelectedDays(days);
         setSelectedContact(contact);
         setIsOpen(true);
     };
+
 
     const handleCloseDrawer = () => setIsOpen(false);
 
@@ -56,20 +65,6 @@ function Contacts() {
     };
 
     const groupedContacts = useMemo(() => groupByTeam(contacts), [contacts]);
-
-    const phoneTypeMapping = {
-        company_phone: '회사',
-        personal_mobile: '개인',
-        work_mobile: '업무',
-        fax: '팩스',
-    };
-
-
-    const addressTypeMapping = {
-        work: '근무',
-        home: '집',
-        delivery: '배송',
-    };
 
     return (
         <>
@@ -150,9 +145,16 @@ function Contacts() {
                                 <AvatarPreview avatarConfig={ genConfig() } shape="circle" />
                             )}
                         </div>
-                        <div className="font-semibold text-xl text-white">
-                            {selectedContact?.member_id?.member_name}{' '}
+                        <div className="flex gap-x-2 font-semibold text-xl text-white">
+                            {selectedContact?.member_id?.member_name}
                             <span className="font-normal">{selectedContact?.member_id?.position}</span>
+                            {selectedYears > 0 && selectedDays > 0 && 
+                                <span className='font-normal'>
+                                    ({selectedYears >= 2 
+                                                ? `${selectedYears}년차` 
+                                                : (selectedDays > 0 && `${selectedDays}일차`)})
+                                </span>
+                            }
                         </div>
                         {selectedContact?.introduction ? (
                             <div className='w-10/12 py-2 px-4 bg-transparent text-white text-center'>
@@ -175,9 +177,19 @@ function Contacts() {
                                 <span className="pl-2 font-semibold">메일</span>
                                 <span className="col-span-4">{selectedContact?.member_id?.email}</span>
                             </li>
+
+                            {selectedContact?.dates && selectedContact.dates.map(date => (
+                                <li key={date._id} className="grid grid-cols-5 w-full p-3">
+                                    <span className="pl-2 font-semibold">{renderDateLabel(date.date_type)}</span>
+                                    <span className="col-span-4">
+                                        {formatDateToKorean(date.date)}
+                                    </span>
+                                </li>
+                            ))}
+
                             {selectedContact?.phones && selectedContact.phones.map(phone => (
                                 <li key={phone._id} className="grid grid-cols-5 w-full p-3">
-                                    <span className="pl-2 font-semibold">{phoneTypeMapping[phone.phone_type] || phone.phone_type}</span>
+                                    <span className="pl-2 font-semibold">{renderContactLabel(phone.phone_type)}</span>
                                     <span className="col-span-4">
                                         {phone.phone_number} {phone.phone_type === 'company_phone' && phone.extension && `(내선: ${phone.extension})`}
                                     </span>
@@ -187,7 +199,7 @@ function Contacts() {
                                 .filter(address => address.address_type === 'work')
                                 .map(address => (
                                     <li key={address._id} className="grid grid-cols-5 w-full p-3">
-                                        <span className="pl-2 font-semibold">{addressTypeMapping[address.address_type] || address.address_type}</span>
+                                        <span className="pl-2 font-semibold">{renderAddressLabel(address.address_type)}</span>
                                         <span className="col-span-4">
                                             {address.address_line1}, {address.address_line2} ({address.postal_code})
                                         </span>
