@@ -126,7 +126,7 @@ exports.createTransaction = async (req, res) => {
                 expense_type,
                 teamFundDeducted,
                 rolloverAmounted,
-                is_deducted: true,
+                is_deducted,
             });
         
             await transaction.save();

@@ -86,9 +86,9 @@ const AdminDeposit = () => {
         }
     }, [isOpen, isDeleteConfirmOpen]); // Drawer가 열리거나 삭제 모달이 열릴 때만 호출
     
-    useEffect(() => {
+    // useEffect(() => {
         // selectUserPosition이 변경될 때마다 해당 값을 확인
-    }, [selectUserPosition]);
+    // }, [selectUserPosition]);
     
     useEffect(() => {
         if (selectedUser) {

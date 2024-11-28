@@ -15,8 +15,22 @@ const randomColor = () => {
 };
 
 export const AvatarProvider = ({ children }) => {
-    const { user } = useContext(AuthContext);
+    const { user } = useContext(AuthContext); // 로그인한 사용자 정보
+    const isAdmin = ['admin', 'hr_admin', 'super_admin'].includes(user?.role);
 
+    const [selectedMemberId, setSelectedMemberId] = useState(null); // 관리자가 선택한 사용자 ID
+    const currentMemberId = isAdmin ? selectedMemberId || user?.member_id : user?.member_id; // 관리자인 경우 선택된 ID 사용
+
+    const handleSelectUser = (memberId) => {
+        if (!isAdmin) return; // 관리자가 아닌 경우 아무것도 하지 않음
+        setSelectedMemberId(memberId);
+    };
+    
+    const resetSelectedUser = () => {
+        setSelectedMemberId(null); // 선택 초기화
+    };
+    
+    
     const [avatarConfig, setAvatarConfig] = useState({
         sex: 'man',
         shape: 'circle',
@@ -50,31 +64,31 @@ export const AvatarProvider = ({ children }) => {
         glassesStyle: ['none', 'round', 'square'],
 	};
 
-    const memberId = user?.member_id;
-
     useEffect(() => {
         const fetchAvatarData = async () => {
+            if (!currentMemberId) return; // ID가 없으면 중단
             try {
-                const avatarData = await getAvatar(memberId);
-                if (avatarData) {
-                    setAvatarConfig(avatarData);
-                } else {
-                    console.log("아바타 데이터가 없습니다, 랜덤 값을 사용합니다.");
-                }
+                const avatarData = await getAvatar(currentMemberId);
+                setAvatarConfig(avatarData || genConfig()); // ID에 해당하는 아바타 정보 가져오기
             } catch (error) {
-                if (error.response && error.response.status === 404) {
-                    console.log("아바타 데이터가 없어 랜덤 값을 사용합니다.");
-                } else {
-                    console.error('Error fetching avatar data:', error.message);
-                }
+                console.error('아바타 데이터 가져오기 실패:', error);
             }
         };
-    
-        if (memberId) {
-            fetchAvatarData();
-        }
-    }, [memberId]);
-    
+
+        fetchAvatarData();
+    }, [currentMemberId]);
+
+    const setAdminMode = (memberId) => {
+        setSelectedMemberId(memberId); // 관리자가 선택한 사용자 ID 설정
+    };
+
+    const resetAdminMode = () => {
+        setSelectedMemberId(null); // 관리자 모드 초기화
+    };
+
+    const updateAvatarConfig = (key, value) => {
+        setAvatarConfig((prevConfig) => ({ ...prevConfig, [key]: value })); // 아바타 설정 업데이트
+    };
 
     const generateRandomColor = useCallback(() => randomColor(), []);
 
@@ -111,6 +125,13 @@ export const AvatarProvider = ({ children }) => {
         handleStyleChange,
         handleStyleAndColorChange,
         generateRandomAvatar,
+        isAdmin,
+        handleSelectUser,
+        resetSelectedUser,
+        setAdminMode,
+        resetAdminMode,
+        updateAvatarConfig,
+        currentMemberId, // 현재 사용자 ID를 Context로 제공
     };
 
     return (

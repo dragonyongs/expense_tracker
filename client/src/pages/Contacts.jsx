@@ -60,6 +60,7 @@ function Contacts() {
     const phoneTypeMapping = {
         company_phone: '회사',
         personal_mobile: '개인',
+        work_mobile: '업무',
         fax: '팩스',
     };
 

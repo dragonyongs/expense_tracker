@@ -7,10 +7,16 @@ const upsertAvatar = async (req, res) => {
     try {
         // 해당 memberId로 아바타가 있는지 확인
         let avatar = await Avatar.findOne({ member_id: memberId });
+        // console.log('현재 아바타:', avatar); // 아바타가 존재하는지 확인
 
         if (avatar) {
+            // console.log('아바타 업데이트 시도:', req.body);
+
             // 아바타가 있으면 업데이트
             avatar = await Avatar.findOneAndUpdate({ member_id: memberId }, req.body, { new: true, runValidators: true });
+            
+            // console.log('업데이트된 아바타:', avatar); // 업데이트된 아바타 확인
+            
             res.status(200).json(avatar);
         } else {
             // 아바타가 없으면 새로 생성, member_id 추가

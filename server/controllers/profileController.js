@@ -1,5 +1,6 @@
 const Profile = require('../models/Profile');
 const Member = require('../models/Member');
+const mongoose = require('mongoose');
 
 exports.createProfile = async (req, res) => {
     try {
@@ -86,6 +87,14 @@ exports.getProfileById = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
     const { id } = req.params; // 프로필 ID
+    // console.log('id', id);
+    // console.log(mongoose.Types.ObjectId.isValid(id)); // true면 유효한 ObjectId
+    console.log('req.body', req.body);
+
+    // ID 유효성 검증
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid profile ID' });
+    }
 
     try {
         // 프로필 업데이트
@@ -94,8 +103,7 @@ exports.updateProfile = async (req, res) => {
             req.body,
             {
                 new: true,
-                runValidators: true,
-                context: 'query' // Validator가 query context에서 작동하도록 설정
+                runValidators: true
             }
         );
 
@@ -106,6 +114,11 @@ exports.updateProfile = async (req, res) => {
 
         // member_id가 null이 아닌 경우에만 멤버 업데이트
         if (updatedProfile.member_id) {
+            // member_id 유효성 검증
+            if (!mongoose.Types.ObjectId.isValid(updatedProfile.member_id)) {
+                return res.status(400).json({ message: 'Invalid member ID' });
+            }
+
             const member = await Member.findById(updatedProfile.member_id);
             if (member && !member.profile_id) {
                 await Member.findByIdAndUpdate(
@@ -122,6 +135,45 @@ exports.updateProfile = async (req, res) => {
         res.status(400).json({ message: 'Failed to update profile', error: error.message });
     }
 };
+
+// exports.updateProfile = async (req, res) => {
+//     const { id } = req.params; // 프로필 ID
+
+//     try {
+//         // 프로필 업데이트
+//         const updatedProfile = await Profile.findByIdAndUpdate(
+//             id,
+//             req.body,
+//             {
+//                 new: true,
+//                 runValidators: true,
+//                 context: 'query' // Validator가 query context에서 작동하도록 설정
+//             }
+//         );
+
+//         if (!updatedProfile) {
+//             console.log('No profile found with the given ID');
+//             return res.status(404).json({ message: 'Profile not found' });
+//         }
+
+//         // member_id가 null이 아닌 경우에만 멤버 업데이트
+//         if (updatedProfile.member_id) {
+//             const member = await Member.findById(updatedProfile.member_id);
+//             if (member && !member.profile_id) {
+//                 await Member.findByIdAndUpdate(
+//                     member._id,
+//                     { profile_id: updatedProfile._id },
+//                     { new: true }
+//                 );
+//             }
+//         }
+
+//         res.status(200).json(updatedProfile);
+//     } catch (error) {
+//         console.error('Error updating profile:', error);
+//         res.status(400).json({ message: 'Failed to update profile', error: error.message });
+//     }
+// };
 
 exports.deleteProfile= async (req, res) => {
     try {

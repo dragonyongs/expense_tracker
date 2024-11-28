@@ -4,7 +4,6 @@ import AvatarPreview from './AvatarPreview';
 
 const AvatarComponent = () => {
     const { avatarConfig, randomizeColor, handleStyleChange, handleStyleAndColorChange, generateRandomAvatar } = useContext(AvatarContext); // generateRandomAvatar를 가져옵니다.
-
     const renderStyleButton = (styleKey, label) => (
         <button 
             onClick={() => handleStyleChange(styleKey)} 

@@ -2,25 +2,35 @@ import { useState, useEffect, useMemo } from 'react';
 import axios from '../services/axiosInstance';
 import { API_URLS } from '../services/apiUrls';
 
-const useProfileData = (userId) => {
+const useProfileData = (userId, setProfile) => {
+
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
     useEffect(() => {
-        loadDaumPostcodeScript().then(() => {
-            setIsScriptLoaded(true);
-        });
+        if (userId) {
+            loadDaumPostcodeScript().then(() => {
+                setIsScriptLoaded(true);
+            });
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        if (userId) {
+            fetchProfileData();
+        }
     }, [userId]);
 
     const [data, setData] = useState({
         member: {},
         introduction: '',
-        contacts: [],
+        phones: [],
         addresses: [],
         dates: [],
+        avatarId: null, 
     });
 
     const [deletedItems, setDeletedItems] = useState({
-        contacts: [],
+        phones: [],
         addresses: [],
         dates: []
     });
@@ -41,24 +51,28 @@ const useProfileData = (userId) => {
     const fetchProfileData = async () => {
         setIsLoading(true);
         try {
-            const [contactsRes, addressesRes, datesRes, memberRes, profileRes] = await Promise.all([
+            const [phonesRes, addressesRes, datesRes, memberRes, profileRes] = await Promise.all([
                 axios.get(`${API_URLS.PHONES}/${userId}`),
                 axios.get(`${API_URLS.ADDRESSES}/${userId}`),
                 axios.get(`${API_URLS.DATES}/${userId}`),
                 axios.get(`${API_URLS.MEMBERS}/${userId}`),
                 axios.get(`${API_URLS.PROFILES}/${userId}`)
             ]);
-            setData({
+
+            const profileData = {
                 member: memberRes.data || {},
                 introduction: profileRes.data?.introduction || '',
-                contacts: contactsRes.data || [],
+                phones: phonesRes.data || [],
                 addresses: addressesRes.data || [],
                 dates: datesRes.data || [],
                 avatarId: profileRes.data.avatar_id,
                 profileId: profileRes.data._id,
-            });
+            };
 
+            setData(profileData);
             setError(null);
+
+            return profileData;
         } catch (error) {
             setError('프로필 데이터를 불러오는데 실패했습니다.');
             console.error('데이터 불러오기 실패:', error);
@@ -74,55 +88,72 @@ const useProfileData = (userId) => {
         }));
     };
 
-    const handleAddItem = (type, newItem) => {
-        setData((prevData) => ({
-            ...prevData,
-            [type]: [...prevData[type], newItem]
+    const handleAddItem = (field, newItem) => {
+        const validatedItem = {
+            address_type: newItem.address_type || 'default',
+            address_line1: newItem.address_line1 || '',
+            address_line2: newItem.address_line2 || '',
+            postal_code: newItem.postal_code || '',
+        };
+
+        setProfile((prevProfile) => ({
+            ...prevProfile,
+            [field]: [...(prevProfile[field] || []), validatedItem], // 빈 배열 초기화
         }));
     };
-
-    const handleUpdateItem = (type, index, field, value) => {
-        setData((prevData) => {
-            if (!prevData[type] || !prevData[type][index]) {
-                console.error('Invalid index or type');
-                return prevData;
+    
+    const handleUpdateItem = (key, index, field, value) => {
+        setProfile((prevProfile) => {
+            const updatedItems = [...(prevProfile[key] || [])];
+            if (index >= 0 && index < updatedItems.length) {
+                updatedItems[index] = {
+                    ...updatedItems[index],
+                    [field]: value,
+                };
+            }
+            return { ...prevProfile, [key]: updatedItems };
+        });
+    };
+    
+    const handleRemoveItem = (type, index, setDeletedItems) => {
+        setProfile((prevProfile) => {
+            const items = prevProfile[type] || [];
+    
+            if (index < 0 || index >= items.length) {
+                console.error(`Item to delete not found at index: ${index}`);
+                return prevProfile;
             }
     
-            const updatedItems = [...prevData[type]];
-            updatedItems[index] = {
-                ...updatedItems[index],
-                [field]: value,
-            };
+            const itemToDelete = items[index];
+    
+            if (itemToDelete && itemToDelete._id) {
+
+                setDeletedItems((prevDeleted) => {
+                    const updatedDeletedItems = { ...prevDeleted };
+    
+                    if (!updatedDeletedItems[type].includes(itemToDelete._id)) {
+                        updatedDeletedItems[type] = [...updatedDeletedItems[type], itemToDelete._id];
+                    }
+    
+                    return updatedDeletedItems;
+                });
+            }
     
             return {
-                ...prevData,
-                [type]: updatedItems,
+                ...prevProfile,
+                [type]: items.filter((_, i) => i !== index), // 삭제할 아이템 제외
             };
         });
     };
     
-    const handleRemoveItem = (type, index) => {
-        const itemToDelete = data[type][index];
-        setData((prevData) => ({
-            ...prevData,
-            [type]: prevData[type].filter((_, i) => i !== index)
-        }));
-        if (itemToDelete._id) {
-            setDeletedItems((prevDeleted) => ({
-                ...prevDeleted,
-                [type]: [...prevDeleted[type], itemToDelete._id]
-            }));
-        }
-    };
-
     const personalContact = useMemo(() => 
-        data.contacts.find(contact => contact.phone_type === 'personal_mobile'), 
-        [data.contacts]
+        data.phones.find(contact => contact.phone_type === 'personal_mobile'), 
+        [data.phones]
     );
     
     const companyContact = useMemo(() => 
-        data.contacts.find(contact => contact.phone_type === 'company_phone'), 
-        [data.contacts]
+        data.phones.find(contact => contact.phone_type === 'company_phone'), 
+        [data.phones]
     );
 
     const handleDaumPostCode = (index) => {
@@ -133,7 +164,6 @@ const useProfileData = (userId) => {
                 const fullAddress = data.address;
                 const postalCode = data.zonecode;
     
-                // useProfileData의 handleUpdateItem 함수로 주소 업데이트
                 handleUpdateItem('addresses', index, 'address_line1', fullAddress);
                 handleUpdateItem('addresses', index, 'postal_code', postalCode);
             }
@@ -154,6 +184,8 @@ const useProfileData = (userId) => {
         handleUpdateItem,
         handleRemoveItem,
         setData,
+        setProfile,
+        setDeletedItems,
         updateIntroduction,
     };
 };

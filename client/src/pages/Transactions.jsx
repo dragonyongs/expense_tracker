@@ -40,7 +40,8 @@ const Transactions = () => {
         expense_card: "TeamCard", // 기본값: 팀카드
         expense_type: "RegularExpense", // 기본값: 일반 지출
         rolloverAmounted: "",
-        teamFundDeducted: "",        
+        teamFundDeducted: "",
+        is_deducted: false,        
     });
     const [prevTransaction, setPrevTransaction] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -195,6 +196,7 @@ const Transactions = () => {
                 transaction_type: "expense",
                 expense_card: expenseCard,
                 expense_type: expenseType,
+                is_deducted: false,
             };
     
             // 기존 금액과 새로운 금액 비교

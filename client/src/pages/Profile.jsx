@@ -1,214 +1,46 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../context/AuthProvider';
-import ProfileDrawer from '../components/ProfileDrawer';
-import axios from "../services/axiosInstance"; 
+import ProfileEditDrawer from '../components/ProfileEditDrawer';
 import { AvatarContext } from '../context/AvatarContext';
-import AvatarComponent from '../components/AvatarComponent';
 import AvatarPreview from '../components/AvatarPreview';
-import { useMobile } from '../context/MobileContext';
-import { API_URLS } from '../services/apiUrls';
-import Loading from '../components/Loading';
-
-import { ThreeDots } from 'react-loader-spinner';
 import { MutatingDots } from 'react-loader-spinner';
-import { LuBuilding, LuSmartphone, LuTrash, LuCake, LuActivity } from "react-icons/lu";
+import { LuBuilding, LuSmartphone, LuCake, LuActivity } from "react-icons/lu";
 import { AiOutlineMail } from "react-icons/ai";
 import { TbUserEdit } from "react-icons/tb";
 import { renderContactIcon, renderContactLabel, renderDateIcon, renderDateLabel, renderAddressIcon, renderAddressLabel } from '../utils/profileRenderUtils';
-import { formatDateForInput, formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
+import { formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
 
 import useProfileData from '../hooks/useProfileData';
 
 const Profile = () => {
-    const isMobile = useMobile();
     const { avatarConfig } = useContext(AvatarContext);
+    const [ profileData, setProfileData ] = useState({});
     const { user } = useContext(AuthContext);
 
     // 초기 상태 정의
     const [isOpen, setIsOpen] = useState(false);
-    const [errMsg, setErrMsg] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const [contacts, setContacts] = useState([]);
-    const [addresses, setAddresses] = useState([]);
-    const [dates, setDates] = useState([]);
-
     const memberId = user.member_id;
 
     const { 
-        deletedItems,
         personalContact,
         companyContact,
         data, 
-        updateIntroduction,
-        isLoading, 
+        isLoading,
         error, 
         fetchProfileData, 
-        handleAddItem, 
-        handleUpdateItem, 
-        handleRemoveItem,
-        handleDaumPostCode
     } = useProfileData(memberId);
 
-    // 필요한 데이터는 data 객체에서 직접 참조
-    useEffect(() => {
-        fetchProfileData();
-        setContacts(data.contacts);
-        setAddresses(data.addresses);
-        setDates(data.dates);
-    }, []);
+    useEffect( () => {
+        const loadProfileData = async () => {
+            const result = await fetchProfileData();
+            setProfileData(result);
+        };
+    
+        loadProfileData();
+    }, [isOpen]);
 
-    // if (loading) return <div className='min-h-default-screen'><Loading type="ThreeDots" /></div>;
     if (error) return <div>{error}</div>;
 
-    // 연락처 추가 함수
-    const handleAddContact = () => handleAddItem('contacts', { phone_type: '', phone_number: '', extension: '' });
-
-    // 주소 추가 함수
-    const handleAddAddress = () => handleAddItem('addresses', { address_type: '', address_name: '', address_line1: '', address_line2: '', postal_code: '' });
-
-    // 날짜 추가 함수
-    const handleAddDate = () => handleAddItem('dates', { date_type: '', date: '' });
-
-    // 연락처 삭제 함수
-    const handleRemoveContact = (index) => handleRemoveItem('contacts', index);
-
-    // 주소 삭제 함수
-    const handleRemoveAddress = (index) => handleRemoveItem('addresses', index);
-
-    // 날짜 삭제 함수
-    const handleRemoveDate = (index) => handleRemoveItem('dates', index);
-
-    // 연락처 업데이트 함수
-    const handleUpdateContact = (index, field, value) => {
-        handleUpdateItem('contacts', index, field, value);
-    };
-
-    const handleUpdateAddress = (index, field, value) => {
-        handleUpdateItem('addresses', index, field, value);
-    };
-
-    const handleUpdateDates = (index, field, value) => {
-        handleUpdateItem('dates', index, field, value);
-    };
-
-    const handleIntroductionChange = async (event) => {
-        updateIntroduction(event.target.value);
-    };
-    
-    const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
-        // 새로운 아이템 (새로 추가된)
-        const newItems = items.filter(item => !item._id);
-    
-        // 업데이트된 아이템 (변경된 내용이 있는)
-        const updatedItems = items.filter(item => {
-            if (!item._id) return false;
-    
-            const currentItem = currentItems.find(ci => ci._id === item._id);
-            // 현재 아이템이 없거나, 변경사항이 없다면 업데이트하지 않음
-            if (!currentItem || JSON.stringify(currentItem) === JSON.stringify(item)) {
-                return false;
-            }
-    
-            return true;
-        });
-    
-        // 새 아이템을 추가하는 Promise
-        const newItemsPromises = newItems.map(item => {
-            return axios.post(apiUrl, { member_id: memberId, ...item });
-        });
-    
-        // 업데이트 아이템을 위한 Promise
-        const updateItemsPromises = updatedItems.map(item => {
-            const url = `${apiUrl}/${item._id}`;
-            const data = { member_id: memberId, ...item };
-    
-            return axios.put(url, data)
-                .then(response => {
-                    console.log('Update successful:', response.data);
-                    return response;
-                })
-                .catch(error => {
-                    console.error('Update failed:', {
-                        url,
-                        data,
-                        error: error.response?.data || error.message
-                    });
-                    throw error;
-                });
-        });
-    
-        // 삭제 아이템을 위한 Promise
-        const deletedItemsRequests = deletedItems.map(id => {
-            return axios.delete(`${apiUrl}/${id}`)
-                .then(response => {
-                    console.log(`Deleted item with ID: ${id}`);
-                    return response;
-                })
-                .catch(error => {
-                    console.error('Delete failed:', {
-                        url: `${apiUrl}/${id}`,
-                        error: error.response?.data || error.message
-                    });
-                    throw error;
-                });
-        });
-    
-        // 모든 Promise 반환
-        return [
-            ...newItemsPromises,
-            ...updateItemsPromises,
-            ...deletedItemsRequests
-        ];
-    };
-
-    const handleSave = async () => {
-        let hasError = false;
-        setLoading(true);
-        setErrMsg('');
-        try {
-
-            data.contacts.forEach((contact, index) => {
-                if (!contact.phone_type) {
-                    setErrMsg(`연락처 ${index + 1}의 전화 유형을 선택해주세요.`);
-                    hasError = true;
-                }
-            });
-
-            if (hasError) {
-                return;
-            }
-
-            let avatarId = data.avatar_id;
-
-            if (Object.keys(avatarConfig).length > 0) {
-                const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${memberId}`, avatarConfig);
-                if (!avatarResponse || !avatarResponse.data) {
-                    throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
-                }
-                avatarId = avatarResponse.data._id; // 새로 저장된 아바타의 ID 저장
-            }
-
-            await Promise.all([
-                axios.put(`${API_URLS.PROFILES}/${data.profileId}`, { 
-                    avatar_id: avatarId, 
-                    introduction: data.introduction 
-                }),
-                ...processItems(data.contacts || [], contacts, API_URLS.PHONES, deletedItems.contacts, memberId),
-                ...processItems(data.addresses || [], addresses, API_URLS.ADDRESSES, deletedItems.addresses, memberId),
-                ...processItems(data.dates || [], dates, API_URLS.DATES, deletedItems.dates, memberId)
-            ]);
-
-            await fetchProfileData();
-        } catch (error) {
-            console.error('저장 오류:', error);
-            setErrMsg('프로필 저장에 실패했습니다.'); // 사용자에게 오류 메시지 표시
-        } finally {
-            setLoading(false);
-            setIsOpen(false);
-        }
-    };
-    
     const handleOpenDrawer = () => {
         setIsOpen(true);
     };
@@ -216,10 +48,18 @@ const Profile = () => {
     const handleCloseDrawer = () => {
         setIsOpen(false);
     };
-
+    
     const birthdayDates = data.dates.filter(date => date.date_type === 'birthday');
 
     const { years, days } = calculateYearsSinceEntry(data.dates);
+
+    const handleSave = async () => {
+        try {
+            await fetchProfileData();
+        } catch (error) {
+            console.error("저장 중 오류 발생:", error);
+        }
+    };
 
     return (
         <>
@@ -313,12 +153,12 @@ const Profile = () => {
                 
                     <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
                         <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
-                            {data.contacts.length === 0 ? (
+                            {data.phones.length === 0 ? (
                                 <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
                                     <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
                                 </div>
                             ) : (
-                                data.contacts.map((contact, index) => (
+                                data.phones.map((contact, index) => (
                                     <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
                                         <div className='flex items-center space-x-2 px-2 font-semibold'>
                                             {renderContactIcon(contact.phone_type)}
@@ -378,217 +218,15 @@ const Profile = () => {
                     </div>
                 </div>
             </div>
-            <ProfileDrawer
+            <ProfileEditDrawer
                 isOpen={isOpen}
                 title={"프로필 수정"}
-                onClose={handleCloseDrawer}
+                memberId={memberId}
+                profileId={profileData.profileId}
+                userData={profileData}
                 onSave={handleSave}
-            >
-                <div className={`overflow-y-auto ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6`}>
-                    <div className="flex flex-col items-center mb-4">
-                        <AvatarComponent className="w-24 h-24" {...avatarConfig} />
-                    </div>
-
-                    <div className='flex flex-col gap-y-10'>
-                        <div className="flex flex-col space-y-4 dark:text-slate-400">
-                            <div className='flex justify-between items-center'>
-                                <label className='font-semibold text-xl'>
-                                    자기소개
-                                </label>
-                            </div>
-                            <input
-                            type="text"
-                            value={data.introduction}
-                            onChange={handleIntroductionChange}
-                            className='w-full py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500'
-                            placeholder="자기소개를 입력하세요"
-                        />
-                        </div>
-                    </div>
-
-                    <div className='flex flex-col gap-y-10 mt-10'>
-                        <div className="flex flex-col space-y-4 dark:text-slate-400">
-                            <div className='flex justify-between items-center'>
-                                <label className='font-semibold text-xl'>연락처</label>
-                                <button onClick={handleAddContact} className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
-                                    추가
-                                </button>
-                            </div>
-                            {data.contacts.length === 0 ? (
-                                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
-                                    <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
-                                </div>
-                            ) : (
-                                data.contacts.map((contact, index) => (
-                                    <div key={index} className="flex w-full space-x-2">
-                                        <select
-                                            value={contact.phone_type || ''}
-                                            onChange={(e) => handleUpdateContact(index, 'phone_type', e.target.value)}
-                                            className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
-                                        >
-                                            <option>선택</option>
-                                            <option value="company_phone">회사</option>
-                                            <option value="work_mobile">업무</option>
-                                            <option value="personal_mobile">개인</option>
-                                            <option value="fax">팩스</option>
-                                        </select>
-                                        <input
-                                            type="text"
-                                            value={contact.phone_number || ''}
-                                            onChange={(e) => handleUpdateContact(index, 'phone_number', e.target.value)}
-                                            className={`${contact.phone_type !== 'company_phone' ? 'w-4/6' : 'w-3/6'} flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500`}
-                                            placeholder="연락처 입력"
-                                            autoComplete='off'
-                                            required
-                                        />
-                                        {/* 회사 전화일 경우에만 내선 입력 필드 표시 */}
-                                        {contact.phone_type === 'company_phone' && (
-                                            <input
-                                                type="text"
-                                                value={contact.extension || ''}
-                                                onChange={(e) => handleUpdateContact(index, 'extension', e.target.value)}
-                                                className={`${contact.phone_type === 'company_phone' ? 'w-1/6' : 'hidden'} py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500`}
-                                                placeholder="내선(옵션)"
-                                            />
-                                        )}
-                                        <button onClick={() => handleRemoveContact(index)} className='flex justify-center items-center w-1/6 py-1 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
-                                            <LuTrash className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    <div className='flex flex-col gap-y-10 mt-10'>
-                        <div className="flex flex-col space-y-4 dark:text-slate-400">
-                            <div className='flex justify-between items-center'>
-                                <label className='font-semibold text-xl'>
-                                    주소
-                                </label>
-                                <button onClick={handleAddAddress} className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
-                                    추가
-                                </button>
-                            </div>
-                            {data.addresses.length === 0 ? (
-                                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
-                                    <p className="font-semibold text-center">주소 정보가 없습니다.</p>
-                                </div>
-                            ) : (
-                                data.addresses.map((address, index) => (
-                                    <div key={index} className="flex flex-col space-y-2 w-full">
-                                        <div className='flex space-x-2'>
-                                            <select
-                                                value={address.address_type || ''}
-                                                onChange={(e) => handleUpdateAddress(index, 'address_type', e.target.value)}
-                                                className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
-                                            >
-                                                <option>선택</option>
-                                                <option value="home">집</option>
-                                                <option value="work">회사</option>
-                                                <option value="delivery">배송</option>
-                                            </select>
-                                            <input
-                                                type="text"
-                                                value={address.address_line1 || ''}
-                                                onClick={() => handleDaumPostCode(index)}
-                                                onChange={(e) => handleUpdateAddress(index, 'address_line1', e.target.value)}
-                                                className="w-4/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                                                placeholder="주소 입력"
-                                                autoComplete='off'
-                                                required
-                                            />
-                                        </div>
-                                        <div className='flex space-x-2'>
-                                            <input
-                                                    type="text"
-                                                    value={address.address_line2 || ''}
-                                                    onChange={(e) => handleUpdateAddress(index, 'address_line2', e.target.value)}
-                                                    className="w-3/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                                                    placeholder="세부 주소 입력"
-                                                    autoComplete='off'
-                                                    required
-                                                />
-                                            <input
-                                                type="text"
-                                                value={address.postal_code || ''}
-                                                onChange={(e) => handleUpdateAddress(index, 'postal_code', e.target.value)}
-                                                className="w-2/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                                                placeholder="우편번호"
-                                                autoComplete='off'
-                                                required
-                                                />
-                                            <button onClick={() => handleRemoveAddress(index)} className='flex justify-center items-center w-1/6 py-1 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
-                                                <LuTrash className="w-4 h-4" />
-                                            </button>
-                                        </div>
-
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    <div className='flex flex-col gap-y-10 mt-10'>
-                        <div className="flex flex-col space-y-4 dark:text-slate-400">
-                            <div className='flex justify-between items-center'>
-                                <label className='font-semibold text-xl'>
-                                    일자
-                                </label>
-                                <button onClick={handleAddDate} className='py-1 px-3 rounded-md border border-blue-500 text-blue-600 text-sm active:bg-slate-50'>
-                                    추가
-                                </button>
-                            </div>
-                            {data.dates.length === 0 ? (
-                                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-md">
-                                    <p className="font-semibold text-center">일자 정보가 없습니다.</p>
-                                </div>
-                            ) : (
-                                data.dates.map((date, index) => (
-                                    <div key={index} className="flex w-full space-x-2">
-                                        <select
-                                            value={date.date_type || ''}
-                                            onChange={(e) => handleUpdateDates(index, 'date_type', e.target.value)}
-                                            className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
-                                        >
-                                            <option>선택</option>
-                                            <option value="entry">입사</option>
-                                            <option value="leave">퇴사</option>
-                                            <option value="hiatus">휴직</option>
-                                            <option value="birthday">생일</option>
-                                        </select>
-                                        <input
-                                            type="date"
-                                            value={formatDateForInput(data.dates[index].date) || ''}
-                                            onChange={(e) => handleUpdateDates(index, 'date', e.target.value)}
-                                            className="w-4/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                                            placeholder="일자 선택"
-                                            autoComplete='off'
-                                            required
-                                        />
-                                        
-                                        <button onClick={() => handleRemoveDate(index)} className='flex justify-center items-center w-1/6 py-1 rounded-md bg-red-500 text-white text-sm active:bg-red-700'>
-                                            <LuTrash className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* 저장 버튼 */}
-                <div className="flex flex-col gap-3 pt-4 p-6">
-                    <div className='flex justify-between gap-y-4 gap-x-2'>
-                        <button type="button" onClick={handleSave} className={`overflow-hidden min-h-10 flex justify-center items-center flex-1 w-full text-white ${loading ? 'bg-blue-800' : 'bg-blue-600'} hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700`}>
-                            {loading ? <ThreeDots color='#ffffff' width={'40px'} height={'auto'} /> : "저장"}
-                        </button>
-                    </div>
-                    <button type="button" onClick={handleCloseDrawer} className="w-full text-slate-600 dark:text-orange-300">
-                        취소
-                    </button>
-                </div>
-            </ProfileDrawer>
+                onClose={handleCloseDrawer}
+            />
         </>
     )
 }
