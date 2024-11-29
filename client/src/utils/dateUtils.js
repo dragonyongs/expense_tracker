@@ -29,40 +29,44 @@ export const isTodayBirthday = (dateString) => {
 };
 
 export const calculateYearsSinceEntry = (dates) => {
-    const entryDates = dates.filter(date => date.date_type === 'entry');
-    const leaveDates = dates.filter(date => date.date_type === 'leave');
+    const entryDates = dates.filter(date => date.date_type === 'entry').map(date => new Date(date.date));
+    const leaveDates = dates.filter(date => date.date_type === 'leave').map(date => new Date(date.date));
 
-    // 입사 날짜가 없을 경우 0을 반환
     if (entryDates.length === 0) {
-        return { years: 0, days: 0 }; // 객체로 반환
+        return { years: 0, days: 0 }; // 입사 기록이 없는 경우
     }
 
-    const latestEntryDate = entryDates.reduce((latest, date) => {
-        const currentDate = new Date(date.date);
-        return currentDate > latest ? currentDate : latest;
-    }, new Date(0));
+    // 가장 최근 입사일 및 초기 입사일 찾기
+    const latestEntryDate = entryDates.reduce((latest, date) => date > latest ? date : latest, new Date(0));
+    const earliestEntryDate = entryDates.reduce((earliest, date) => date < earliest ? date : earliest, new Date());
 
-    // 퇴사일이 있을 경우 가장 최근 퇴사일을 계산
-    const latestLeaveDate = leaveDates.reduce((latest, date) => {
-        const currentDate = new Date(date.date);
-        return currentDate > latest ? currentDate : latest;
-    }, null);
+    // 가장 최근 퇴사일 (없을 수도 있음)
+    const latestLeaveDate = leaveDates.reduce((latest, date) => date > latest ? date : latest, null);
 
-    // 기준 날짜는 오늘 날짜 또는 퇴사일 중 더 이른 날짜
     const now = new Date();
-    const endDate = latestLeaveDate && latestLeaveDate < now ? latestLeaveDate : now;
 
-    const yearsDifference = endDate.getFullYear() - latestEntryDate.getFullYear();
+    if (latestLeaveDate && latestLeaveDate > latestEntryDate) {
+        // 퇴사자인 경우: 입사일~퇴사일까지 계산
+        const totalDays = Math.floor((latestLeaveDate - latestEntryDate) / (1000 * 60 * 60 * 24));
+        const totalYears = Math.floor(totalDays / 365);
 
-    // 만약 기준 날짜가 입사일의 기념일이 지나지 않았다면 -1
-    const isPastAnniversary = endDate.getMonth() > latestEntryDate.getMonth() || 
-        (endDate.getMonth() === latestEntryDate.getMonth() && endDate.getDate() >= latestEntryDate.getDate());
+        return {
+            years: totalYears,
+            days: totalDays
+        };
+    } else {
+        // 재직 중인 경우: 초기 입사일, 퇴사 후 재입사 포함 현재까지 계산
+        const firstPeriodDays = leaveDates.length > 0
+            ? Math.floor((latestLeaveDate - earliestEntryDate) / (1000 * 60 * 60 * 24))
+            : 0;
 
-    // 일 수 계산
-    const daysDifference = Math.floor((endDate - latestEntryDate) / (1000 * 60 * 60 * 24));
+        const secondPeriodDays = Math.floor((now - latestEntryDate) / (1000 * 60 * 60 * 24));
+        const totalDays = firstPeriodDays + secondPeriodDays;
+        const totalYears = Math.floor(totalDays / 365);
 
-    return {
-        years: yearsDifference + (isPastAnniversary ? 1 : 0),
-        days: daysDifference
-    };
+        return {
+            years: totalYears,
+            days: totalDays
+        };
+    }
 };

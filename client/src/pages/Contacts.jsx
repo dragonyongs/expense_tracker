@@ -148,9 +148,9 @@ function Contacts() {
                         <div className="flex gap-x-2 font-semibold text-xl text-white">
                             {selectedContact?.member_id?.member_name}
                             <span className="font-normal">{selectedContact?.member_id?.position}</span>
-                            {selectedYears > 0 && selectedDays > 0 && 
+                            {selectedYears >= 0 && selectedDays > 0 && 
                                 <span className='font-normal'>
-                                    ({selectedYears >= 2 
+                                    ({selectedYears > 1 
                                                 ? `${selectedYears}년차` 
                                                 : (selectedDays > 0 && `${selectedDays}일차`)})
                                 </span>
