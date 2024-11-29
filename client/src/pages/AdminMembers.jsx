@@ -10,6 +10,7 @@ import AdminHeader from '../components/AdminHeader';
 import AdminDrawer from '../components/AdminDrawer';
 
 const AdminMembers = () => {
+    // 상태값 정의
     const [members, setMembers] = useState([]);
     const [selectedMember, setSelectedMember] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('전체');
@@ -25,17 +26,13 @@ const AdminMembers = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [errMsg, setErrMsg] = useState('');
-
     const [isStatusDrawerOpen, setIsStatusDrawerOpen] = useState(false);
     const [isRolesDrawerOpen, setIsRolesDrawerOpen] = useState(false);
-    const [selectedStatus, setSelectedStatus] = useState("");
-    const [selectedRole, setSelectedRole] = useState("");
-    
-    // const handleStatusSelect = (value) => {
-    //     setSelectedStatus(value); // 선택된 값 업데이트
-    //     setIsStatusDrawerOpen(false);
-    // };
+    const [selectedStatus, setSelectedStatus] = useState('');
+    const [selectedRole, setSelectedRole] = useState('');
+    const [selectedTeam, setSelectedTeam] = useState(''); // 팀 상태 추가
 
+    // useEffect: 데이터 가져오기 및 상태 초기화
     useEffect(() => {
         fetchMembers();
         fetchStatuses();
@@ -47,12 +44,11 @@ const AdminMembers = () => {
         filterMembers();
     }, [selectedCategory, members]);
 
+    // 필터링 함수: 카테고리에 따라 멤버 리스트 필터링
     const filterMembers = () => {
-        // 전체 멤버에서 각 상태별로 필터링
         const allPendingMembers = members.filter(member => member.status_id.status_name === 'pending');
         const allResignedMembers = members.filter(member => member.status_id.status_name === 'resigned');
         
-        // 현재 선택된 카테고리에 따라 필터링
         let filtered = [...members];
         
         if (selectedCategory === '요청') {
@@ -62,7 +58,7 @@ const AdminMembers = () => {
         } else if (selectedCategory === '퇴사') {
             filtered = allResignedMembers;
         }
-    
+
         // 상태별 카운트 및 데이터 설정
         setPendingMembers(allPendingMembers);
         setPendingMembersCount(allPendingMembers.length);
@@ -70,40 +66,8 @@ const AdminMembers = () => {
         setResignedMembersCount(allResignedMembers.length);
         setFilteredMembers(filtered);
     };
-    
-    const toggleDrawer = () => {
-        setIsOpen((prevState) => !prevState);
-        setPassword('');
-    };
 
-    const handleCategoryClick = (category) => {
-        setSelectedCategory(category);
-    };
-
-    const handleOpenDrawer = async (member) => {
-        setSelectedMember(member);
-        setIsEditing(true);
-        setIsOpen(true);
-
-        const response = await axios.get(`${API_URLS.MEMBERS}/${member._id}`);
-        const fullMemberData = response.data;
-
-        // 상세 정보가 포함된 멤버로 업데이트
-        setSelectedMember(fullMemberData);
-    };
-
-    const handleAddDepartment = () => {
-        setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
-        setPassword('');
-        setIsEditing(false);
-        setIsOpen(true);
-    };
-
-    const handleCloseDrawer = () => {
-        setIsOpen(false);
-        setSelectedMember(null);
-    };
-
+    // 데이터 fetch 함수들
     const fetchMembers = async () => {
         try {
             const response = await axios.get(API_URLS.MEMBERS);
@@ -122,42 +86,72 @@ const AdminMembers = () => {
         }
     };
 
-    const fetchTeams = async () => {
-        try {
-            const response = await axios.get(API_URLS.TEAMS);
-            setTeams(response.data);
-        } catch (error) {
-            console.error('Error fetching Teams:', error);
-        }
-    };
-
     const fetchRoles = async () => {
         try {
             const response = await axios.get(API_URLS.ROLES);
             setRoles(response.data);
         } catch (error) {
-            console.error('Error fetching Roles:', error);
+            console.error('Error fetching roles:', error);
         }
     };
 
+    const fetchTeams = async () => {
+        try {
+            const response = await axios.get(API_URLS.TEAMS);
+            setTeams(response.data);
+        } catch (error) {
+            console.error('Error fetching teams:', error);
+        }
+    };
+
+    // Drawer 관련 함수들
+    const toggleDrawer = () => {
+        setIsOpen(prevState => !prevState);
+        setPassword('');
+    };
+
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+    };
+
+    const handleOpenDrawer = async (member) => {
+        setSelectedMember(member);
+        setIsEditing(true);
+        setIsOpen(true);
+
+        try {
+            const response = await axios.get(`${API_URLS.MEMBERS}/${member._id}`);
+            setSelectedMember(response.data); // 상세 정보 업데이트
+        } catch (error) {
+            console.error('Error fetching member details:', error);
+        }
+    };
+
+    const handleAddDepartment = () => {
+        setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
+        setPassword('');
+        setIsEditing(false);
+        setIsOpen(true);
+    };
+
+    const handleCloseDrawer = () => {
+        setIsOpen(false);
+        setSelectedMember(null);
+    };
+
+    // 상태, 역할, 팀 변경 함수들
     const handleStatusChange = (e) => {
-        const selectedStatusId = e.target.value; // 사용자가 선택한 status의 _id
-        const selectedStatus = statuses.find(status => status._id === selectedStatusId); // 선택한 status를 찾아서
+        const selectedStatusId = e.target.value;
+        const selectedStatus = statuses.find(status => status._id === selectedStatusId);
     
-        // selectedStatus가 존재하는지 확인
         if (!selectedStatus) {
             console.error('선택된 상태를 찾을 수 없습니다.');
             return;
         }
-    
-        // 선택된 상태가 있을 경우에만 selectedMember 업데이트
+
         setSelectedMember({
             ...selectedMember,
-            status_id: {
-                _id: selectedStatus._id,  // 정확한 _id 설정
-                status_name: selectedStatus.status_name,
-                status_description: selectedStatus.status_description
-            }
+            status_id: selectedStatus
         });
     };
 
@@ -172,13 +166,9 @@ const AdminMembers = () => {
 
         setSelectedMember({
             ...selectedMember,
-            role_id: {
-                _id: selectedRole._id,
-                role_name: selectedRole.role_name,
-                role_description: selectedRole.role_description
-            }
+            role_id: selectedRole
         });
-    }
+    };
 
     const handleTeamChange = (e) => {
         const selectedTeamId = e.target.value;
@@ -191,13 +181,11 @@ const AdminMembers = () => {
 
         setSelectedMember({
             ...selectedMember,
-            team_id: {
-                _id: selectedTeam._id,
-                team_name: selectedTeam.team_name,
-            }
+            team_id: selectedTeam
         });
-    }
+    };
 
+    // 저장 함수
     const handleSave = async () => {
         try {
             const memberData = {
@@ -207,7 +195,7 @@ const AdminMembers = () => {
                 password: password.length > 0 ? password : undefined
             };
 
-            console.log(memberData);
+            console.log('Saving member data:', memberData);
             
             if (isEditing) {
                 await axios.put(`${API_URLS.MEMBERS}/${selectedMember._id}`, memberData);
@@ -219,7 +207,7 @@ const AdminMembers = () => {
             handleCloseDrawer();
         } catch (error) {
             setErrMsg(error.message);
-            console.error("Error Save member:", error);
+            console.error("Error saving member:", error);
         }
     };
 
@@ -466,3 +454,213 @@ export default AdminMembers;
                                         {/* <span className={`ml-2 p-2 text-xs font-semibold text-center rounded-lg ${member.status_id.status_name === 'pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-600'}`}>
                                             {member.status_id.status_description}
                                         </span> */}
+
+
+                                            // const [members, setMembers] = useState([]);
+    // const [selectedMember, setSelectedMember] = useState(null);
+    // const [selectedCategory, setSelectedCategory] = useState('전체');
+    // const [filteredMembers, setFilteredMembers] = useState([]);
+    // const [pendingMembers, setPendingMembers] = useState([]);
+    // const [resignedMembers, setResignedMembers] = useState([]);
+    // const [pendingMembersCount, setPendingMembersCount] = useState(0);
+    // const [resignedMembersCount, setResignedMembersCount] = useState(0);
+    // const [password, setPassword] = useState('');
+    // const [statuses, setStatuses] = useState([]);
+    // const [roles, setRoles] = useState([]);
+    // const [teams, setTeams] = useState([]);
+    // const [isOpen, setIsOpen] = useState(false);
+    // const [isEditing, setIsEditing] = useState(false);
+    // const [errMsg, setErrMsg] = useState('');
+
+    // const [isStatusDrawerOpen, setIsStatusDrawerOpen] = useState(false);
+    // const [isRolesDrawerOpen, setIsRolesDrawerOpen] = useState(false);
+    // const [selectedStatus, setSelectedStatus] = useState("");
+    // const [selectedRole, setSelectedRole] = useState("");
+
+    // useEffect(() => {
+    //     fetchMembers();
+    //     fetchStatuses();
+    //     fetchRoles();
+    //     fetchTeams();
+    // }, []);
+
+    // useEffect(() => {
+    //     filterMembers();
+    // }, [selectedCategory, members]);
+
+    // const filterMembers = () => {
+    //     // 전체 멤버에서 각 상태별로 필터링
+    //     const allPendingMembers = members.filter(member => member.status_id.status_name === 'pending');
+    //     const allResignedMembers = members.filter(member => member.status_id.status_name === 'resigned');
+        
+    //     // 현재 선택된 카테고리에 따라 필터링
+    //     let filtered = [...members];
+        
+    //     if (selectedCategory === '요청') {
+    //         filtered = allPendingMembers;
+    //     } else if (selectedCategory === '전체') {
+    //         filtered = members.filter(member => member.role_id.role_name !== 'super_admin' && member.status_id.status_name !== 'resigned');
+    //     } else if (selectedCategory === '퇴사') {
+    //         filtered = allResignedMembers;
+    //     }
+    
+    //     // 상태별 카운트 및 데이터 설정
+    //     setPendingMembers(allPendingMembers);
+    //     setPendingMembersCount(allPendingMembers.length);
+    //     setResignedMembers(allResignedMembers);
+    //     setResignedMembersCount(allResignedMembers.length);
+    //     setFilteredMembers(filtered);
+    // };
+    
+    // const toggleDrawer = () => {
+    //     setIsOpen((prevState) => !prevState);
+    //     setPassword('');
+    // };
+
+    // const handleCategoryClick = (category) => {
+    //     setSelectedCategory(category);
+    // };
+
+    // const handleOpenDrawer = async (member) => {
+    //     setSelectedMember(member);
+    //     setIsEditing(true);
+    //     setIsOpen(true);
+
+    //     const response = await axios.get(`${API_URLS.MEMBERS}/${member._id}`);
+    //     const fullMemberData = response.data;
+
+    //     // 상세 정보가 포함된 멤버로 업데이트
+    //     setSelectedMember(fullMemberData);
+    // };
+
+    // const handleAddDepartment = () => {
+    //     setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
+    //     setPassword('');
+    //     setIsEditing(false);
+    //     setIsOpen(true);
+    // };
+
+    // const handleCloseDrawer = () => {
+    //     setIsOpen(false);
+    //     setSelectedMember(null);
+    // };
+
+    // const fetchMembers = async () => {
+    //     try {
+    //         const response = await axios.get(API_URLS.MEMBERS);
+    //         setMembers(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching members:', error);
+    //     }
+    // };
+
+    // const fetchStatuses = async () => {
+    //     try {
+    //         const response = await axios.get(API_URLS.STATUSES);
+    //         setStatuses(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching statuses:', error);
+    //     }
+    // };
+
+    // const fetchTeams = async () => {
+    //     try {
+    //         const response = await axios.get(API_URLS.TEAMS);
+    //         setTeams(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching Teams:', error);
+    //     }
+    // };
+
+    // const fetchRoles = async () => {
+    //     try {
+    //         const response = await axios.get(API_URLS.ROLES);
+    //         setRoles(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching Roles:', error);
+    //     }
+    // };
+
+    // const handleStatusChange = (e) => {
+    //     const selectedStatusId = e.target.value; // 사용자가 선택한 status의 _id
+    //     const selectedStatus = statuses.find(status => status._id === selectedStatusId); // 선택한 status를 찾아서
+    
+    //     // selectedStatus가 존재하는지 확인
+    //     if (!selectedStatus) {
+    //         console.error('선택된 상태를 찾을 수 없습니다.');
+    //         return;
+    //     }
+    
+    //     // 선택된 상태가 있을 경우에만 selectedMember 업데이트
+    //     setSelectedMember({
+    //         ...selectedMember,
+    //         status_id: {
+    //             _id: selectedStatus._id,  // 정확한 _id 설정
+    //             status_name: selectedStatus.status_name,
+    //             status_description: selectedStatus.status_description
+    //         }
+    //     });
+    // };
+
+    // const handleRoleChange = (e) => {
+    //     const selectedRoleId = e.target.value;
+    //     const selectedRole = roles.find(role => role._id === selectedRoleId);
+
+    //     if (!selectedRole) {
+    //         console.error('선택된 권한을 찾을 수 없습니다.');
+    //         return;
+    //     }
+
+    //     setSelectedMember({
+    //         ...selectedMember,
+    //         role_id: {
+    //             _id: selectedRole._id,
+    //             role_name: selectedRole.role_name,
+    //             role_description: selectedRole.role_description
+    //         }
+    //     });
+    // }
+
+    // const handleTeamChange = (e) => {
+    //     const selectedTeamId = e.target.value;
+    //     const selectedTeam = teams.find(team => team._id === selectedTeamId);
+
+    //     if (!selectedTeam) {
+    //         console.error('선택된 팀을 찾을 수 없습니다.');
+    //         return;
+    //     }
+
+    //     setSelectedMember({
+    //         ...selectedMember,
+    //         team_id: {
+    //             _id: selectedTeam._id,
+    //             team_name: selectedTeam.team_name,
+    //         }
+    //     });
+    // }
+
+    // const handleSave = async () => {
+    //     try {
+    //         const memberData = {
+    //             ...selectedMember,
+    //             status_id: selectedMember?.status_id?._id || null,
+    //             team_id: selectedMember?.team_id?._id || null,
+    //             password: password.length > 0 ? password : undefined
+    //         };
+
+    //         console.log(memberData);
+            
+    //         if (isEditing) {
+    //             await axios.put(`${API_URLS.MEMBERS}/${selectedMember._id}`, memberData);
+    //         } else {
+    //             await axios.post(API_URLS.MEMBERS, memberData);
+    //         }
+            
+    //         await fetchMembers();
+    //         handleCloseDrawer();
+    //     } catch (error) {
+    //         setErrMsg(error.message);
+    //         console.error("Error Save member:", error);
+    //     }
+    // };
+    

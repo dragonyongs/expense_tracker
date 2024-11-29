@@ -36,16 +36,16 @@ const addressIcons = {
 
 const addressLabels = {
     home: '집',
-    work: '회사',
+    work: '근무지',
     work_mobile: '업무',
     delivery: '배송'
 };
 
 export const renderContactIcon = (type) => contactIcons[type] || null;
-export const renderContactLabel = (type) => contactLabels[type] || '알수없음';
+export const renderContactLabel = (type) => contactLabels[type] || '미지정';
 
 export const renderDateIcon = (type) => dateIcons[type] || dateIcons.default;
-export const renderDateLabel = (type) => dateLabels[type] || '알수없음';
+export const renderDateLabel = (type) => dateLabels[type] || '미지정';
 
 export const renderAddressIcon = (type) => addressIcons[type] || null;
-export const renderAddressLabel = (type) => addressLabels[type] || '알수없음';
+export const renderAddressLabel = (type) => addressLabels[type] || '미지정';

@@ -33,15 +33,42 @@ function Contacts() {
         fetchContacts();
     }, []);
 
+    // const handleOpenDrawer = (contact) => {
+    //     // 년차와 일수 계산
+    //     const { years, days } = calculateYearsSinceEntry(contact.dates);
+    
+    //     // 날짜 데이터를 정렬
+    //     const sortedDates = contact.dates.sort((a, b) => {
+    //         const priority = { birthday: 1, entry: 2, leave: 3 }; // 우선순위 정의
+    //         if (priority[a.date_type] !== priority[b.date_type]) {
+    //             return priority[a.date_type] - priority[b.date_type];
+    //         }
+    //         return new Date(a.date) - new Date(b.date); // 같은 유형이면 날짜순 정렬
+    //     });
+    
+    //     // 상태 업데이트
+    //     setSelectedYears(years);
+    //     setSelectedDays(days);
+    //     setSelectedContact({
+    //         ...contact,
+    //         dates: sortedDates
+    //     });
+    //     setIsOpen(true);
+    // };
     const handleOpenDrawer = (contact) => {
         const { years, days } = calculateYearsSinceEntry(contact.dates);
-        console.log(years, days);
+    
+        // 날짜 데이터 시간순 정렬
+        const sortedDates = contact.dates.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
         setSelectedYears(years);
         setSelectedDays(days);
-        setSelectedContact(contact);
+        setSelectedContact({
+            ...contact,
+            dates: sortedDates
+        });
         setIsOpen(true);
     };
-
 
     const handleCloseDrawer = () => setIsOpen(false);
 
@@ -165,47 +192,76 @@ function Contacts() {
                     </div>
                     <div className="w-full rounded-b-md p-4 dark:bg-slate-700 dark:text-slate-300">
                         <ul className='flex flex-col gap-y-2 divide-y divide-gray-200 dark:divide-gray-600'>
-                            <li className="grid grid-cols-5 w-full p-3">
+                            <li className="grid grid-cols-4 w-full p-3">
                                 <span className="pl-2 font-semibold">소속</span>
-                                <span className="col-span-4">{selectedContact?.member_id?.team_id?.team_name}</span>
+                                <span className="col-span-3">{selectedContact?.member_id?.team_id?.team_name}</span>
                             </li>
-                            <li className="grid grid-cols-5 w-full p-3">
+                            <li className="grid grid-cols-4 w-full p-3">
                                 <span className="pl-2 font-semibold">직급</span>
-                                <span className="col-span-4">{selectedContact?.member_id?.rank}</span>
+                                <span className="col-span-3">{selectedContact?.member_id?.rank}</span>
                             </li>
-                            <li className="grid grid-cols-5 w-full p-3">
+                            <li className="grid grid-cols-4 w-full p-3">
                                 <span className="pl-2 font-semibold">메일</span>
-                                <span className="col-span-4">{selectedContact?.member_id?.email}</span>
+                                <span className="col-span-3">{selectedContact?.member_id?.email}</span>
                             </li>
-
-                            {selectedContact?.dates && selectedContact.dates.map(date => (
-                                <li key={date._id} className="grid grid-cols-5 w-full p-3">
-                                    <span className="pl-2 font-semibold">{renderDateLabel(date.date_type)}</span>
-                                    <span className="col-span-4">
-                                        {formatDateToKorean(date.date)}
-                                    </span>
-                                </li>
-                            ))}
-
+                            {selectedContact?.dates && selectedContact.dates
+                                .filter(date => date.date_type === "birthday")
+                                .map(date => (
+                                    <li key={date._id} className="grid grid-cols-4 w-full p-3">
+                                        <span className="pl-2 font-semibold">{renderDateLabel(date.date_type)}</span>
+                                        <span className="col-span-3">
+                                            {formatDateToKorean(date.date)}
+                                        </span>
+                                    </li>
+                                ))}
                             {selectedContact?.phones && selectedContact.phones.map(phone => (
-                                <li key={phone._id} className="grid grid-cols-5 w-full p-3">
+                                <li key={phone._id} className="grid grid-cols-4 w-full p-3">
                                     <span className="pl-2 font-semibold">{renderContactLabel(phone.phone_type)}</span>
-                                    <span className="col-span-4">
+                                    <span className="col-span-3">
                                         {phone.phone_number} {phone.phone_type === 'company_phone' && phone.extension && `(내선: ${phone.extension})`}
                                     </span>
                                 </li>
                             ))}
+
                             {selectedContact?.addresses && selectedContact.addresses
                                 .filter(address => address.address_type === 'work')
                                 .map(address => (
-                                    <li key={address._id} className="grid grid-cols-5 w-full p-3">
+                                    <li key={address._id} className="grid grid-cols-4 w-full p-3">
                                         <span className="pl-2 font-semibold">{renderAddressLabel(address.address_type)}</span>
-                                        <span className="col-span-4">
+                                        <span className="col-span-3">
                                             {address.address_line1}, {address.address_line2} ({address.postal_code})
                                         </span>
                                     </li>
                                 ))}
                         </ul>
+
+                        {/* <ul className="relative ml-3 border-l border-gray-200">
+                            {selectedContact?.dates && selectedContact.dates.map((date, index) => (
+                                <li key={date._id} className="mb-10 ml-6">
+                                    <div className={`absolute -left-3 w-6 h-6 rounded-full ${
+                                        date.date_type === 'birthday' ? 'bg-blue-500' : 
+                                        date.date_type === 'entry' ? 'bg-green-500' : 'bg-red-500'
+                                    } flex items-center justify-center`}>
+                                        {date.date_type === 'birthday' && (
+                                            <span className="text-white text-xs font-bold">🎂</span>
+                                        )}
+                                        {date.date_type === 'entry' && (
+                                            <span className="text-white text-xs font-bold">📥</span>
+                                        )}
+                                        {date.date_type === 'leave' && (
+                                            <span className="text-white text-xs font-bold">📤</span>
+                                        )}
+                                    </div>
+                                    <time className="block mb-1 text-sm font-normal leading-none text-gray-500">
+                                        {formatDateToKorean(date.date)}
+                                    </time>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        {renderDateLabel(date.date_type)}
+                                    </p>
+                                </li>
+                            ))}
+                        </ul> */}
+
                     </div>
                 </div>
             </CommonDrawer>
