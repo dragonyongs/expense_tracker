@@ -111,8 +111,13 @@ const AdminDeposit = () => {
     }, [depositType, accounts]);
     
     // 팀원 수 계산 함수
-    const calculateTeamMembersCount = () =>
-        accounts.reduce((count, account) => count + account.cards.length, 0);
+    // const calculateTeamMembersCount = () => accounts.reduce((count, account) => count + account.cards.length, 0);
+    const calculateTeamMembersCount = () => {
+        return accounts.reduce((count, account) => {
+            const validCards = account.cards.filter(card => card.member_id.status_id.status_name !== 'resigned');
+            return count + validCards.length;
+        }, 0);
+    };
     
     const handleDepositTypeChange = (e) => {
         const newDepositType = e.target.value;
@@ -276,17 +281,17 @@ const AdminDeposit = () => {
             const allCards = cardsResponse.data;
             const validCards = allCards.filter(card => card.member_id && card.card_number);
             const validMemberIds = validCards.map(card => card.member_id._id);
-
+    
             const membersResponse = await axios.get(API_URLS.MEMBERS);
             const allMembers = membersResponse.data;
-    
+        
             const depositsResponse = await axios.get(API_URLS.DEPOSITS);
             const allDeposits = depositsResponse.data;
-    
+        
             // 이번 달 필터링
             const currentMonth = new Date().getMonth() + 1;
             const currentYear = new Date().getFullYear();
-    
+        
             const depositsThisMonth = allDeposits.filter(deposit => {
                 const depositDate = new Date(deposit.createdAt);
                 return (
@@ -294,7 +299,7 @@ const AdminDeposit = () => {
                     depositDate.getFullYear() === currentYear
                 );
             });
-    
+        
             // RegularDeposit 또는 TeamFund를 받은 사용자 ID 리스트
             const membersWithRegularDeposit = depositsThisMonth
                 .filter(deposit => deposit.deposit_type === 'RegularDeposit')
@@ -303,11 +308,13 @@ const AdminDeposit = () => {
             const membersWithTeamFund = depositsThisMonth
                 .filter(deposit => deposit.deposit_type === 'TeamFund')
                 .map(deposit => deposit.card_id.member_id);
-
-            const filteredMembers = allMembers.filter(
-                member => validMemberIds.includes(member._id) && !membersWithDeposits.includes(member._id)
+    
+            const filteredMembers = allMembers.filter(member => 
+                validMemberIds.includes(member._id) &&
+                !membersWithDeposits.includes(member._id) &&
+                member.status_id.status_name !== 'resigned'
             );
-
+    
             // 사용자 상태 저장
             setUsers(
                 filteredMembers.map(member => ({
@@ -316,11 +323,12 @@ const AdminDeposit = () => {
                     hasTeamFund: membersWithTeamFund.includes(member._id),
                 }))
             );
-
+    
         } catch (error) {
             setErrMsg("사용자 목록을 불러오지 못했습니다.");
         }
     };
+    
 
     // const fetchFilteredMembers = async () => {
     //     try {

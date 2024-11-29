@@ -17,40 +17,6 @@ const AdminCard = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
-    // const fetchCards = async () => {
-    //     try {
-    //         const response = await axios.get(API_URLS.CARDS);
-    //         setCards(response.data);
-    //     } catch (error) {
-    //         console.error('Error fetching cards:', error);
-    //     }
-    // }
-
-    // const fetchAccounts = async () => {
-    //     try {
-    //         const response = await axios.get(API_URLS.ACCOUNTS);
-    //         setAccounts(response.data);
-    //     } catch (error) {
-    //         console.error('Error fetching accounts:', error);
-    //     }
-    // }
-
-    // const fetchMembers = async () => {
-    //     try {
-    //         const response = await axios.get(API_URLS.MEMBERS);
-    //         setMembers(response.data);
-    //     } catch (error) {
-    //         console.error('Error fetching cards:', error);
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     fetchCards();
-    //     fetchMembers();
-    //     fetchAccounts();
-    // }, []);
-
-    // 병렬로 데이터 로드
     const fetchData = async () => {
         try {
             const [cardsRes, accountsRes, membersRes] = await Promise.all([
@@ -133,24 +99,6 @@ const AdminCard = () => {
         }
     };
 
-    // const handleAccountChange = (e) => {
-    //     const selectedAccountId = e.target.value;
-    //     const selectedAccount = accounts.find(account => account._id === selectedAccountId);
-
-    //     if (!selectedAccount) {
-    //         console.error('선택된 계좌를 찾을 수 없습니다.');
-    //         return;
-    //     }
-    
-    //     setSelectedCard({
-    //         ...selectedCard,
-    //         account_id: {
-    //             _id: selectedAccount._id,
-    //             account_number: selectedAccount.account_number
-    //         }
-    //     });
-    // };
-
     const handleAccountChange = (e) => {
         const selectedAccount = accounts.find(account => account._id === e.target.value);
         if (!selectedAccount) {
@@ -165,24 +113,6 @@ const AdminCard = () => {
             }
         }));
     };
-
-    // const handleMemberChange = (e) => {
-    //     const selectedMemberId = e.target.value;
-    //     const selectedMember = members.find(member => member._id === selectedMemberId);
-
-    //     if (!selectedMember) {
-    //         console.error('선택된 사용자를 찾을 수 없습니다.');
-    //         return;
-    //     }
-
-    //     setSelectedCard({
-    //         ...selectedCard,
-    //         member_id: {
-    //             _id: selectedMember._id,
-    //             member_name: selectedMember.member_name
-    //         }
-    //     });
-    // };
 
     const handleMemberChange = (e) => {
         const selectedMember = members.find(member => member._id === e.target.value);
@@ -219,28 +149,28 @@ const AdminCard = () => {
                                 데이터가 없습니다.
                             </div>
                         ) : (
-                                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {cards.map(card => {
-                                        const totalBalance = card.balance + (card.rollover_amount || 0); // 이월 금액을 합산
-                                        return (
-                                            <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
-                                                <div className="flex items-center">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                            {card.card_number}
-                                                        </p>
-                                                        <p className='inline-block dark:text-white'>{card.member_id.member_name}</p>
-                                                    </div>
-                                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                        <span className='font-bold tracking-tight'>{totalBalance.toLocaleString()}</span>원
-                                                        <MdKeyboardArrowRight className='text-2xl' />
-                                                    </div>
+                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {cards.map(card => {
+                                    const totalBalance = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0);
+                                    return (
+                                        <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
+                                            <div className="flex items-center">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                        {card.card_number}
+                                                    </p>
+                                                    <p className='inline-block dark:text-white'>{card.member_id.member_name}</p>
                                                 </div>
-                                            </li>
-                                        );
-                                    })}
+                                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                    <span className='font-bold tracking-tight'>{totalBalance.toLocaleString()}</span>원
+                                                    <MdKeyboardArrowRight className='text-2xl' />
+                                                </div>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
 
-                                </ul>
+                            </ul>
                         )}
                     </div>
                 </div>

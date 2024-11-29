@@ -56,9 +56,9 @@ const Transactions = () => {
         }
     }, [expenseCard]);
     
-    useEffect(() => {
-        setErrMsg('');
-    }, [transactions.length])
+    // useEffect(() => {
+    //     setErrMsg('');
+    // }, [transactions.length])
 
     // 카드와 트랜잭션 데이터 가져오기
     const fetchCards = async () => {
@@ -262,7 +262,7 @@ const Transactions = () => {
 
     const userCardsWithTotals = userCards.map(card => {
         const totalSpent = transactions
-            .filter(tx => tx.card_id._id === card._id && tx.transaction_type === 'expense')
+            .filter(tx => tx.card_id._id === card._id && tx.transaction_type === 'expense' && !tx.is_deducted)
             .reduce((sum, tx) => sum + Number(tx.transaction_amount), 0);
     
         return {
