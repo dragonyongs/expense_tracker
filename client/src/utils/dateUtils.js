@@ -30,6 +30,7 @@ export const isTodayBirthday = (dateString) => {
 
 export const calculateYearsSinceEntry = (dates) => {
     const entryDates = dates.filter(date => date.date_type === 'entry');
+    const leaveDates = dates.filter(date => date.date_type === 'leave');
 
     // 입사 날짜가 없을 경우 0을 반환
     if (entryDates.length === 0) {
@@ -41,15 +42,24 @@ export const calculateYearsSinceEntry = (dates) => {
         return currentDate > latest ? currentDate : latest;
     }, new Date(0));
 
-    const now = new Date();
-    const yearsDifference = now.getFullYear() - latestEntryDate.getFullYear();
+    // 퇴사일이 있을 경우 가장 최근 퇴사일을 계산
+    const latestLeaveDate = leaveDates.reduce((latest, date) => {
+        const currentDate = new Date(date.date);
+        return currentDate > latest ? currentDate : latest;
+    }, null);
 
-    // 만약 현재 날짜가 가장 최근의 입사일이 지나지 않았다면 -1을 반환
-    const isPastAnniversary = now.getMonth() > latestEntryDate.getMonth() || 
-        (now.getMonth() === latestEntryDate.getMonth() && now.getDate() >= latestEntryDate.getDate());
+    // 기준 날짜는 오늘 날짜 또는 퇴사일 중 더 이른 날짜
+    const now = new Date();
+    const endDate = latestLeaveDate && latestLeaveDate < now ? latestLeaveDate : now;
+
+    const yearsDifference = endDate.getFullYear() - latestEntryDate.getFullYear();
+
+    // 만약 기준 날짜가 입사일의 기념일이 지나지 않았다면 -1
+    const isPastAnniversary = endDate.getMonth() > latestEntryDate.getMonth() || 
+        (endDate.getMonth() === latestEntryDate.getMonth() && endDate.getDate() >= latestEntryDate.getDate());
 
     // 일 수 계산
-    const daysDifference = Math.floor((now - latestEntryDate) / (1000 * 60 * 60 * 24));
+    const daysDifference = Math.floor((endDate - latestEntryDate) / (1000 * 60 * 60 * 24));
 
     return {
         years: yearsDifference + (isPastAnniversary ? 1 : 0),

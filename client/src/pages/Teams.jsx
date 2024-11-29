@@ -13,54 +13,15 @@ function Teams() {
     const [userPosition, setUserPosition] = useState('');
     const [remainingDays, setRemainingDays] = useState(0);
 
-    // const fetchData = async (url) => {
-    //     try {
-    //         const response = await axios.get(url, { withCredentials: true });
-    //         const fetchedAccounts = response.data;
-    
-    //         // 퇴사자를 제외한 카드만 필터링
-    //         const filteredAccounts = fetchedAccounts.map(account => ({
-    //             ...account,
-    //             cards: account.cards.filter(card => card.member_id.status_id.status_name !== 'resigned')
-    //         })).filter(account => account.cards.length > 0);
-    
-    //         setAccounts(filteredAccounts);
-    
-    //         const userCard = filteredAccounts
-    //             .flatMap(account => account.cards)
-    //             .find(card => card.member_id === user.member_id);
-    
-    //         setUserPosition(userCard ? userCard.position : '');
-    //     } catch (error) {
-    //         console.error(`Error fetching data from ${url}:`, error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     const fetchData = async (url) => {
         try {
             const response = await axios.get(url, { withCredentials: true });
+            console.log(response.data);
             const fetchedAccounts = response.data;
+            
+            setAccounts(fetchedAccounts);
     
-            // 팀장인지 확인
-            const isTeamLeader = userPosition === "팀장";
-    
-            // 퇴사자를 제외한 카드만 필터링
-            const filteredAccounts = fetchedAccounts.map(account => {
-                const filteredCards = isTeamLeader 
-                    ? account.cards // 팀장은 모든 카드 포함
-                    : account.cards.filter(card => card.member_id.status_id.status_name !== 'resigned'); // 퇴사자 제외
-                
-                return {
-                    ...account,
-                    cards: filteredCards
-                };
-            }).filter(account => account.cards.length > 0); // 카드가 남은 계좌만 포함
-    
-            setAccounts(filteredAccounts);
-    
-            const userCard = filteredAccounts
+            const userCard = fetchedAccounts
                 .flatMap(account => account.cards)
                 .find(card => card.member_id === user.member_id);
     
@@ -71,7 +32,7 @@ function Teams() {
             setLoading(false);
         }
     };
-
+    
     useEffect(() => {
         fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${user.member_id}`);
         calculateRemainingDays();

@@ -1,5 +1,6 @@
 const Account = require('../models/Account');
 const Card = require('../models/Card');
+const Member = require('../models/Member');
 
 // Create a new account
 exports.createAccount = async (req, res) => {
@@ -93,7 +94,7 @@ exports.getAccountsAndCards = async (req, res) => {
 exports.getMemberAccountsAndCards = async (req, res) => {
     try {
         // const userId = req.user.member_id; // 로그인한 사용자의 ID
-        const memberId = req.params.id;
+        const memberId = req.params.memberId;
 
         const memberCard = await Card.findOne({member_id: memberId})
             .populate('member_id', 'team_id')
@@ -114,9 +115,17 @@ exports.getMemberAccountsAndCards = async (req, res) => {
                 .populate('member_id', 'member_name rank position')
                 .lean();
 
+            const member = await Member.findOne({ _id: memberId })
+                .populate('status_id', 'status_name')
+
+            // 퇴사자 제외
+            const filteredCards = cards.filter(card => {
+                return member && member.status_name !== 'resigned';
+            });
+
             return {
                 ...account,
-                cards: cards.map(card => ({
+                cards: filteredCards.map(card => ({
                     card_number: card.card_number,
                     limit: card.limit,
                     rollover_amount: card.rollover_amount,
