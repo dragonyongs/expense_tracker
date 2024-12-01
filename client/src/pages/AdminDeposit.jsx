@@ -322,12 +322,12 @@ const AdminDeposit = () => {
 
         // 사용자 상태 저장
         setUsers(
-            filteredMembers.map(member => ({
-                ...member,
-                hasRegularDeposit: membersWithRegularDeposit.includes(member._id),
-                hasTeamFund: membersWithTeamFund.includes(member._id),
-            }))
-        );
+    allMembers.map(member => ({
+        ...member,
+        hasRegularDeposit: membersWithRegularDeposit.includes(member._id) || false,
+        hasTeamFund: membersWithTeamFund.includes(member._id) || false,
+    }))
+);
 
     } catch (error) {
         setErrMsg("사용자 목록을 불러오지 못했습니다.");
@@ -683,81 +683,79 @@ const AdminDeposit = () => {
                         />
 
                         <div>
-                            <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-slate-300 dark:font-normal">입금 구분</h3>
-                            <ul className="grid w-full gap-2 grid-cols-2">
-                            {selectedUser?.hasRegularDeposit && (
-                                <li>
-                                    <input
-                                        type="radio"
-                                        id="deposit_type_a"
-                                        name="deposit_type"
-                                        value="RegularDeposit" // "정기 입금"을 실제 코드에 맞게 변경
-                                        className="hidden peer"
-                                        checked={depositType === 'RegularDeposit'}
-                                        onChange={handleDepositTypeChange}
-                                        disabled={!selectedCard}
-                                        required
-                                    />
-                                    <label
-                                        htmlFor="deposit_type_a"
-                                        className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
-                                    >
-                                        <div className="block">
-                                            <div className="w-full text-md font-semibold">정기 입금</div>
-                                            <div className="w-full text-sm">10만원</div>
-                                        </div>
-                                        {depositType === 'RegularDeposit' && <IoCheckmark className="w-6 h-6" />}
-                                    </label>
-                                </li>
-                            )}
-                                <li>
-                                    <input
-                                        type="radio"
-                                        id="deposit_type_b"
-                                        name="deposit_type"
-                                        value="TransportationExpense" // "여비교통비"
-                                        className="hidden peer"
-                                        checked={depositType === 'TransportationExpense'}
-                                        onChange={handleDepositTypeChange}
-                                        disabled={!selectedCard}
-                                    />
-                                    <label
-                                        htmlFor="deposit_type_b"
-                                        className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
-                                    >
-                                        <div className="block">
-                                            <div className="w-full text-md font-semibold">여비교통비</div>
-                                            <div className="w-full text-sm">금액입력</div>
-                                        </div>
-                                        {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
-                                    </label>
-                                </li>
-                                { (selectUserPosition === '팀장' || selectUserPosition === '파트장')  && selectedUser?.hasTeamFund && (
-                                    <li>
-                                        <input
-                                            type="radio"
-                                            id="deposit_type_c"
-                                            name="deposit_type"
-                                            value="TeamFund" // "팀운영비"
-                                            className="hidden peer"
-                                            checked={depositType === 'TeamFund'}
-                                            onChange={handleDepositTypeChange}
-                                            disabled={!selectedCard}
-                                        />
-                                        <label
-                                            htmlFor="deposit_type_c"
-                                            className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
-                                        >
-                                            <div className="block">
-                                                <div className="w-full text-md font-semibold">팀운영비</div>
-                                                <div className="w-full text-sm">팀원당 3만원</div>
-                                            </div>
-                                            {depositType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
-                                        </label>
-                                    </li>
-                                ) }
-                            </ul>
-                        </div>
+    <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-slate-300 dark:font-normal">입금 구분</h3>
+    <ul className="grid w-full gap-2 grid-cols-2">
+        <li>
+            <input
+                type="radio"
+                id="deposit_type_a"
+                name="deposit_type"
+                value="RegularDeposit" 
+                className="hidden peer"
+                checked={depositType === 'RegularDeposit'}
+                onChange={handleDepositTypeChange}
+                disabled={!selectedCard}
+                required
+            />
+            <label
+                htmlFor="deposit_type_a"
+                className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+            >
+                <div className="block">
+                    <div className="w-full text-md font-semibold">정기 입금</div>
+                    <div className="w-full text-sm">10만원</div>
+                </div>
+                {depositType === 'RegularDeposit' && <IoCheckmark className="w-6 h-6" />}
+            </label>
+        </li>
+        <li>
+            <input
+                type="radio"
+                id="deposit_type_b"
+                name="deposit_type"
+                value="TransportationExpense" 
+                className="hidden peer"
+                checked={depositType === 'TransportationExpense'}
+                onChange={handleDepositTypeChange}
+                disabled={!selectedCard}
+            />
+            <label
+                htmlFor="deposit_type_b"
+                className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+            >
+                <div className="block">
+                    <div className="w-full text-md font-semibold">여비교통비</div>
+                    <div className="w-full text-sm">금액입력</div>
+                </div>
+                {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
+            </label>
+        </li>
+        {(selectUserPosition === '팀장' || selectUserPosition === '파트장') && (
+            <li>
+                <input
+                    type="radio"
+                    id="deposit_type_c"
+                    name="deposit_type"
+                    value="TeamFund" 
+                    className="hidden peer"
+                    checked={depositType === 'TeamFund'}
+                    onChange={handleDepositTypeChange}
+                    disabled={!selectedCard || !selectedUser?.hasTeamFund}
+                />
+                <label
+                    htmlFor="deposit_type_c"
+                    className={`${!selectedCard || !selectedUser?.hasTeamFund ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                >
+                    <div className="block">
+                        <div className="w-full text-md font-semibold">팀운영비</div>
+                        <div className="w-full text-sm">팀원당 3만원</div>
+                    </div>
+                    {depositType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
+                </label>
+            </li>
+        )}
+    </ul>
+</div>
 
                         {/* 입금 금액 입력 */}
                         <div>
