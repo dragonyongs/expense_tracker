@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Status = require('./Status'); // Status 모델을 불러옴
+// const Status = require('./Status');
 
 const memberSchema = new mongoose.Schema({
     member_name: { type: String, required: true },

@@ -88,32 +88,145 @@ const useProfileData = (userId, setProfile) => {
         }));
     };
 
-    const handleAddItem = (field, newItem) => {
-        const validatedItem = {
-            address_type: newItem.address_type || 'default',
-            address_line1: newItem.address_line1 || '',
-            address_line2: newItem.address_line2 || '',
-            postal_code: newItem.postal_code || '',
+    const getItemName = (itemType, value) => {
+        const nameMapping = {
+            address: {
+                home: '집',
+                work: '회사',
+                delivery: '배송',
+            },
+            phone: {
+                company_phone: '회사',
+                work_phone: '업무',
+                work_mobile: '업무용 모바일',
+                personal_mobile: '개인',
+            },
+            date: {
+                entry: '입사일',
+                birthday: '생일',
+                leave: '퇴사',
+            },
         };
+    
+        return nameMapping[itemType]?.[value] || '알 수 없음';
+    };
+    
+    // const handleAddItem = (field, newItem) => {
+    //     const validatedItem = {
+    //         address_type: newItem.address_type || 'default',
+    //         address_line1: newItem.address_line1 || '',
+    //         address_line2: newItem.address_line2 || '',
+    //         postal_code: newItem.postal_code || '',
+    //     };
 
+    //     setProfile((prevProfile) => ({
+    //         ...prevProfile,
+    //         [field]: [...(prevProfile[field] || []), validatedItem], // 빈 배열 초기화
+    //     }));
+    // };
+    // const handleAddItem = (field, newItem) => {
+    //     const validatedItem = {
+    //         address_type: newItem.address_type || 'default',
+    //         address_line1: newItem.address_line1 || '',
+    //         address_line2: newItem.address_line2 || '',
+    //         postal_code: newItem.postal_code || '',
+    //         address_name: '', // 기본값 설정
+    //     };
+    
+    //     // address_type에 따라 address_name 설정
+    //     validatedItem.address_name = {
+    //         home: '집',
+    //         work: '회사',
+    //         delivery: '배송'
+    //     }[newItem.address_type] || ''; // address_type에 따라 이름 설정
+    
+    //     setProfile((prevProfile) => ({
+    //         ...prevProfile,
+    //         [field]: [...(prevProfile[field] || []), validatedItem], // 빈 배열 초기화
+    //     }));
+    // };
+    
+    // const handleUpdateItem = (key, index, field, value) => {
+    //     setProfile((prevProfile) => {
+    //         const updatedItems = [...(prevProfile[key] || [])];
+    //         if (index >= 0 && index < updatedItems.length) {
+    //             updatedItems[index] = {
+    //                 ...updatedItems[index],
+    //                 [field]: value,
+    //             };
+    
+    //             if (field === 'address_type') {
+    //                 updatedItems[index].address_name = {
+    //                     home: '집',
+    //                     work: '회사',
+    //                     delivery: '배송'
+    //                 }[value] || '';
+    //             }
+    //         }
+    //         return { ...prevProfile, [key]: updatedItems };
+    //     });
+    // };
+
+    const handleAddItem = (field, newItem) => {
+        const validatedItem = {};
+    
+        if (field === 'addresses') {
+            validatedItem.address_type = newItem.address_type || '';
+            validatedItem.address_line1 = newItem.address_line1 || '';
+            validatedItem.address_line2 = newItem.address_line2 || '';
+            validatedItem.postal_code = newItem.postal_code || '';
+            validatedItem.address_name = getItemName('address', validatedItem.address_type);
+        } else if (field === 'phones') {
+            validatedItem.phone_type = newItem.phone_type || '';
+            validatedItem.phone_number = newItem.phone_number || '';
+            validatedItem.extension = newItem.extension || '';
+            validatedItem.phone_name = getItemName('phone', validatedItem.phone_type);
+        } else if (field === 'dates') {
+            validatedItem.date_type = newItem.date_type || '';
+            validatedItem.date = newItem.date || '';
+            validatedItem.date_name = getItemName('date', validatedItem.date_type);
+        }
+    
         setProfile((prevProfile) => ({
             ...prevProfile,
-            [field]: [...(prevProfile[field] || []), validatedItem], // 빈 배열 초기화
+            [field]: [...(prevProfile[field] || []), validatedItem],
         }));
     };
     
     const handleUpdateItem = (key, index, field, value) => {
         setProfile((prevProfile) => {
             const updatedItems = [...(prevProfile[key] || [])];
-            if (index >= 0 && index < updatedItems.length) {
-                updatedItems[index] = {
-                    ...updatedItems[index],
-                    [field]: value,
-                };
+            if (index < 0 || index >= updatedItems.length) {
+                console.error(`Invalid index: ${index} for key: ${key}`);
+                return prevProfile; // 기존 상태 유지
             }
+    
+            updatedItems[index] = {
+                ...updatedItems[index],
+                [field]: value,
+            };
+    
+            if (field === 'address_type' || field === 'phone_type' || field === 'date_type') {
+                const itemType = field === 'address_type' ? 'address' : field === 'phone_type' ? 'phone' : 'date';
+                updatedItems[index][`${itemType}_name`] = getItemName(itemType, value);
+            }
+    
             return { ...prevProfile, [key]: updatedItems };
         });
     };
+
+    // const handleUpdateItem = (key, index, field, value) => {
+    //     setProfile((prevProfile) => {
+    //         const updatedItems = [...(prevProfile[key] || [])];
+    //         if (index >= 0 && index < updatedItems.length) {
+    //             updatedItems[index] = {
+    //                 ...updatedItems[index],
+    //                 [field]: value,
+    //             };
+    //         }
+    //         return { ...prevProfile, [key]: updatedItems };
+    //     });
+    // };
     
     const handleRemoveItem = (type, index, setDeletedItems) => {
         setProfile((prevProfile) => {

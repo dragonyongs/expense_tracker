@@ -6,6 +6,7 @@ import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import { IoAddCircleOutline } from "react-icons/io5";
+import { MdOutlineFileUpload, MdOutlineFileDownload } from "react-icons/md";
 import AdminHeader from '../components/AdminHeader';
 import AdminDrawer from '../components/AdminDrawer';
 
@@ -31,6 +32,8 @@ const AdminMembers = () => {
     const [selectedStatus, setSelectedStatus] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
     const [selectedTeam, setSelectedTeam] = useState(''); // 팀 상태 추가
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [isDataDownloadOpen, setIsDataDownloadOpen] = useState(false);
 
     // useEffect: 데이터 가져오기 및 상태 초기화
     useEffect(() => {
@@ -127,15 +130,25 @@ const AdminMembers = () => {
         }
     };
 
-    const handleAddDepartment = () => {
+    const handleAddMember = () => {
         setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
         setPassword('');
         setIsEditing(false);
         setIsOpen(true);
     };
 
+    const handleAddUpload = () => {
+        setIsUploadOpen(true);
+    }
+
+    const handleDataDownload = () => {
+        setIsDataDownloadOpen(true);
+    }
+
     const handleCloseDrawer = () => {
         setIsOpen(false);
+        setIsUploadOpen(false);
+        setIsDataDownloadOpen(false);
         setSelectedMember(null);
     };
 
@@ -237,11 +250,23 @@ const AdminMembers = () => {
                 </ul>
                 <div className="flex items-center justify-between mb-4 px-3">
                     <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">회원 목록</h5>
-                    <button
-                        type="button" 
-                        className='text-black font-semibold rounded-lg text-2xl dark:text-white'
-                        onClick={handleAddDepartment}
-                    ><IoAddCircleOutline /></button>
+                    <div className='flex gap-x-3'>
+                        <button
+                            type="button" 
+                            className='flex items-center gap-x-1 text-black font-semibold rounded-lg dark:text-white'
+                            onClick={handleAddMember}
+                        ><IoAddCircleOutline className='text-2xl'/><span className='text-xl'>추가</span></button>
+                        <button
+                            type="button" 
+                            className='flex items-center gap-x-1 text-black font-semibold rounded-lg dark:text-white'
+                            onClick={handleAddUpload}
+                        ><MdOutlineFileUpload className='text-2xl'/><span className='text-xl'>업로드</span></button>
+                        <button
+                            type="button" 
+                            className='flex items-center gap-x-1 text-black font-semibold rounded-lg dark:text-white'
+                            onClick={handleDataDownload}
+                        ><MdOutlineFileDownload className='text-2xl'/><span className='text-xl'>백업</span></button>
+                    </div>
                 </div>
                 <div className='flow-root space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700'>
                     {filteredMembers.length === 0 ? (
@@ -444,6 +469,24 @@ const AdminMembers = () => {
                     onSelect={setSelectedRole}
                     onSaveComplete={fetchRoles}
                 />
+
+                <CommonDrawer
+                    isOpen={isUploadOpen}
+                    onClose={handleCloseDrawer}
+                    title='파일 업로드'>
+
+                        <h1>파일 업로드 Drawer!</h1>
+
+                </CommonDrawer>
+
+                <CommonDrawer
+                    isOpen={isDataDownloadOpen}
+                    onClose={handleCloseDrawer}
+                    title='파일 백업 다운로드'>
+
+                        <h1>백업 Drawer!</h1>
+
+                </CommonDrawer>
             </div>
         </>
     );

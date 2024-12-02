@@ -5,6 +5,8 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 router.post('/', memberController.createMember);
 
+router.get('/backup', authMiddleware, memberController.backupMembers);
+
 router.get('/', authMiddleware, memberController.getAllMembers);
 
 router.get('/filteredMembers', authMiddleware, memberController.getFilteredMembers);

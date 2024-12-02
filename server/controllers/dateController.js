@@ -9,6 +9,7 @@ exports.createDate = async (req, res) => {
         const newDate = new DateModel({
             member_id, 
             date_type, 
+            date_name,
             date
         });
 

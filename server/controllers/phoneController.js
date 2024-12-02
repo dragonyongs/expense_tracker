@@ -4,12 +4,13 @@ const Profile = require('../models/Profile');
 // 연락처 생성 및 프로필에 추가
 exports.createPhone = async (req, res) => {
     try {
-        const { member_id, phone_type, phone_number, extension } = req.body;
+        const { member_id, phone_type, phone_number, phone_name, extension } = req.body;
 
         const newPhone = new Phone({
             member_id,
             phone_type,
             phone_number,
+            phone_name,
             extension
         });
 

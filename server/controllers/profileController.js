@@ -49,9 +49,9 @@ exports.getProfiles = async (req, res) => {
                     { path: 'role_id', select: 'role_name' }
                 ]
             })
-            .populate('phones', 'phone_type phone_number extension')
+            .populate('phones', 'phone_type phone_name phone_number extension')
             .populate('addresses', 'address_type address_name address_line1 address_line2 postal_code')
-            .populate('dates', 'date_type date')
+            .populate('dates', 'date_type date_name date')
             .populate('avatar_id');
         res.status(201).json(profile);
     } catch (error) {
@@ -65,7 +65,7 @@ exports.getProfileById = async (req, res) => {
     try {
         // 프로필 조회
         let profile = await Profile.findOne({ member_id: member_id })
-            .populate('phones', 'phone_type phone_number extension')
+            .populate('phones', 'phone_type phone_name phone_number extension')
             .populate('avatar_id')
             .populate({
                 path: 'member_id',
@@ -76,7 +76,7 @@ exports.getProfileById = async (req, res) => {
                 ]
             })
             .populate('addresses', 'address_type address_name address_line1 address_line2 postal_code')
-            .populate('dates', 'date_type date');
+            .populate('dates', 'date_type date_name date');
 
         res.status(200).json(profile); // 기존 프로필 반환
     } catch (error) {

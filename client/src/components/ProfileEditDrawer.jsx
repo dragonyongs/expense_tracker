@@ -92,9 +92,9 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
         return <div>{error}</div>;
     }
 
-    const handleAddContact = () => handleAddItem('phones', { phone_type: '', phone_number: '', extension: '' });
-    const handleAddAddress = () => handleAddItem('addresses', { address_type: '', address_name: '', address_line1: '', address_line2: '', postal_code: '' });
-    const handleAddDate = () => handleAddItem('dates', { date_type: '', date: '' });
+    const handleAddContact = () => handleAddItem('phones', { phone_type: null, phone_number: '', extension: null });
+    const handleAddAddress = () => handleAddItem('addresses', { address_type: null, address_line1: '', address_line2: '', postal_code: '', address_name: '' });
+    const handleAddDate = () => handleAddItem('dates', { date_type: null, date: '', date_name: '' });
 
     const handleRemoveContact = (index) => handleRemoveItem('phones', index, setDeletedItems);
     const handleRemoveAddress = (index) => handleRemoveItem('addresses', index, setDeletedItems);
@@ -112,23 +112,43 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
     };
     
 
-    const processItems = (items, currentItems, apiUrl, deletedItems, memberId) => {
+    const processItems = (items, currentItems, apiUrl, deletedItems, memberId, itemType) => {
         // 1. 신규 아이템 필터링
         const newItems = items.filter(item => !item._id);
         
         // 2. 업데이트된 아이템 필터링
-        const updatedItems = currentItems.filter(item => {
-            if (!item._id) return false; // 신규 항목 제외
-            const existingItem = items.find(ci => ci._id === item._id);
-            if (!existingItem || JSON.stringify(existingItem) === JSON.stringify(item)) {
-                return false;
-            }
-            return true;
-        });
+        const updatedItems = items.filter(item => {
+            const existingItem = currentItems.find(ci => ci._id === item._id);
+            if (!existingItem) return false; // 기존 항목이 없으면 업데이트 필요 없음
         
+            if (itemType === 'phones') {
+                return (
+                    existingItem.phone_type !== item.phone_type ||
+                    existingItem.phone_number !== item.phone_number ||
+                    existingItem.extension !== item.extension
+                );
+            } else if (itemType === 'addresses') {
+                return (
+                    existingItem.address_line1 !== item.address_line1 ||
+                    existingItem.address_line2 !== item.address_line2 ||
+                    existingItem.postal_code !== item.postal_code ||
+                    existingItem.address_type !== item.address_type
+                );
+            } else if (itemType === 'dates') {
+                return (
+                    existingItem.date !== item.date ||
+                    existingItem.date_type !== item.date_type
+                );
+            }
+            return false; // 예상치 못한 itemType 처리
+        });
+
         // 3. 신규 아이템 요청
         const newItemsPromises = newItems.map(item => {
-            return axios.post(apiUrl, { member_id: memberId, ...item })
+            const requestData = { member_id: memberId, ...item };
+            console.log('Request Data:', requestData); // 요청 데이터 확인
+        
+            return axios.post(apiUrl, requestData)
                 .then(response => {
                     console.log('Added item response:', response.data);
                     return response;
@@ -138,7 +158,7 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                     throw error;
                 });
         });
-    
+        
         // 4. 업데이트된 아이템 요청
         const updateItemsPromises = updatedItems.map(item => {
             const url = `${apiUrl}/${item._id}`;
@@ -182,24 +202,22 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
     };
     
     const handleSave = async () => {
-
         try {
-            let hasError = false;
             setIsLoading(true);
             setErrMsg('');
-
-            profile.phones.forEach((contact, index) => {
+    
+            // 전화 유형 검증
+            const hasError = profile.phones.some((contact, index) => {
                 if (!contact.phone_type) {
                     setErrMsg(`연락처 ${index + 1}의 전화 유형을 선택해주세요.`);
-                    hasError = true;
+                    return true;
                 }
+                return false;
             });
-
-            if (hasError) {
-                return;
-            }
-
-            let avatarId = profile.avatarId._id; 
+    
+            if (hasError) return;
+    
+            let avatarId = profile.avatarId?._id; 
             if (Object.keys(avatarConfig).length > 0) {
                 const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${targetMemberId}`, avatarConfig);
                 if (!avatarResponse || !avatarResponse.data) {
@@ -207,18 +225,21 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                 }
                 avatarId = avatarResponse.data._id;
             }
+    
             await Promise.all([
                 axios.put(`${API_URLS.PROFILES}/${profile.profileId}`, { 
                     avatar_id: avatarId, 
                     profile_id: profile.profileId, 
                     introduction: profile.introduction,
                 }),
-                ...processItems(profile.phones, userData.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId),
-                ...processItems(profile.addresses, userData.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId),
-                ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId),
+                ...processItems(profile.phones, userData.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId, 'phones'),
+                ...processItems(profile.addresses, userData.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId, 'addresses'),
+                ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId, 'dates'),
             ]);
+
+            console.log('Server Response after Save:', userData);
             
-            setProfile(profile);
+            setProfile(profile); // 여기서 profile이 올바르게 업데이트되었는지 확인
             await onSave();
         } catch (error) {
             console.error('저장 오류:', error);
@@ -228,6 +249,59 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
             onClose();
         }
     };
+    
+    
+    // const handleSave = async () => {
+
+    //     try {
+    //         let hasError = false;
+    //         setIsLoading(true);
+    //         setErrMsg('');
+
+    //         profile.phones.forEach((contact, index) => {
+    //             if (!contact.phone_type) {
+    //                 setErrMsg(`연락처 ${index + 1}의 전화 유형을 선택해주세요.`);
+    //                 hasError = true;
+    //             }
+    //         });
+
+    //         if (hasError) {
+    //             return;
+    //         }
+
+    //         let avatarId = profile.avatarId._id; 
+    //         if (Object.keys(avatarConfig).length > 0) {
+    //             const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${targetMemberId}`, avatarConfig);
+    //             if (!avatarResponse || !avatarResponse.data) {
+    //                 throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
+    //             }
+    //             avatarId = avatarResponse.data._id;
+    //         }
+    //         await Promise.all([
+    //             axios.put(`${API_URLS.PROFILES}/${profile.profileId}`, { 
+    //                 avatar_id: avatarId, 
+    //                 profile_id: profile.profileId, 
+    //                 introduction: profile.introduction,
+    //             }),
+    //             // ...processItems(profile.phones, userData.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId),
+    //             // ...processItems(profile.addresses, userData.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId),
+    //             // ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId),
+    //             ...processItems(profile.phones, userData.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId, 'phones'),
+    //             ...processItems(profile.addresses, userData.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId, 'addresses'),
+    //             ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId, 'dates'),
+            
+    //         ]);
+            
+    //         setProfile(profile);
+    //         await onSave();
+    //     } catch (error) {
+    //         console.error('저장 오류:', error);
+    //         setErrMsg('프로필 저장에 실패했습니다.'); // 사용자에게 오류 메시지 표시
+    //     } finally {
+    //         setIsLoading(false);
+    //         onClose();
+    //     }
+    // };
 
     return (
         <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' className="rounded-tr-lg rounded-tl-lg" style={isMobile ? mobileStyle : desktopStyle}>
