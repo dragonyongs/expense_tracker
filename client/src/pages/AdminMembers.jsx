@@ -54,7 +54,7 @@ const AdminMembers = () => {
         if (selectedCategory === '요청') {
             filtered = allPendingMembers;
         } else if (selectedCategory === '전체') {
-            filtered = members.filter(member => member.role_id.role_name !== 'super_admin' && member.status_id.status_name !== 'resigned');
+            filtered = members.filter(member => member.role_id.role_name !== 'super_admin');
         } else if (selectedCategory === '퇴사') {
             filtered = allResignedMembers;
         }

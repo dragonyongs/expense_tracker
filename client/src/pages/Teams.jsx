@@ -16,7 +16,6 @@ function Teams() {
     const fetchData = async (url) => {
         try {
             const response = await axios.get(url, { withCredentials: true });
-            console.log(response.data);
             const fetchedAccounts = response.data;
             
             setAccounts(fetchedAccounts);

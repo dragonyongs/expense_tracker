@@ -14,7 +14,7 @@ exports.createTeam = async (req, res) => {
 // Get all teams
 exports.getAllTeams = async (req, res) => {
     try {
-        const teams = await Team.find().populate('department_id').populate('account_ids');
+        const teams = await Team.find().populate('department_id');
         res.json(teams);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -24,7 +24,7 @@ exports.getAllTeams = async (req, res) => {
 // Get a team by ID
 exports.getTeamById = async (req, res) => {
     try {
-        const team = await Team.findById(req.params.id).populate('department_id').populate('account_ids');
+        const team = await Team.findById(req.params.id).populate('department_id');
         if (!team) return res.status(404).json({ error: 'Team not found' });
         res.json(team);
     } catch (err) {

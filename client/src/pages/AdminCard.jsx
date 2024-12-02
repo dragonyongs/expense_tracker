@@ -14,6 +14,7 @@ const AdminCard = () => {
     const [members, setMembers] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
+    const [selectUserPosition, setSelectUserPosition] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
@@ -22,7 +23,7 @@ const AdminCard = () => {
             const [cardsRes, accountsRes, membersRes] = await Promise.all([
                 axios.get(API_URLS.CARDS),
                 axios.get(API_URLS.ACCOUNTS),
-                axios.get(API_URLS.MEMBERS),
+                axios.get(API_URLS.FILTERED_MEMBERS),
             ]);
     
             setCards(cardsRes.data);
@@ -68,6 +69,7 @@ const AdminCard = () => {
     const handleOpenDrawer = (cards) => {
         setSelectedCard(cards);
         setIsEditing(true);
+        setSelectUserPosition(cards.member_id.position);
         setIsOpen(true);
     };
 
@@ -256,18 +258,17 @@ const AdminCard = () => {
                                     placeholder=""
                                     required
                                 />
-{/* 
-                                {selectedMember?.role_id?.role_name === 'red'} (
+
+                                {selectUserPosition === '팀장' &&
                                     <InputField 
                                         label="팀 운영비 잔액" 
                                         id="team_fund"
                                         type="number"
                                         value={selectedCard.team_fund || 0}
-                                        onChange={(e) => setSelectedCard({ ...selectedCard, limit: e.target.value })}
+                                        onChange={(e) => setSelectedCard({ ...selectedCard, ㅅㄷ: e.target.value })}
                                         placeholder=""
-                                        // disabled={true}
                                     />
-                                ) */}
+                                }
 
                                 <SelectField
                                     label="사용자"

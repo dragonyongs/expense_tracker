@@ -256,7 +256,7 @@ const AdminDeposit = () => {
         try {
             const [cardsResponse, membersResponse, depositsResponse] = await Promise.all([
                 axios.get(API_URLS.CARDS),
-                axios.get(API_URLS.MEMBERS),
+                axios.get(API_URLS.FILTERED_MEMBERS),
                 axios.get(API_URLS.DEPOSITS),
             ]);
     
@@ -298,17 +298,19 @@ const AdminDeposit = () => {
                 };
             });
     
-            // 필터링된 사용자 목록 생성
+            // 필터링된 사용자 목록 생성 
+            
             const filteredMembers = allMembers
-                .filter(member => 
-                    validMemberIds.includes(member._id) && // 유효한 멤버인지 확인
-                    member.role_name !== 'super_admin' && // 관리자 제외
-                    member.status_id.status_name !== 'resigned' // 퇴사자 제외
-                )
+                .filter(member => validMemberIds.includes(member._id))
+                // && 
+                //     member.role_name !== 'super_admin' && 
+                //     member.status_id.status_name !== 'resigned'
                 .map(member => ({
                     ...member,
                     ...depositStatusMap[member._id], // 입금 상태 추가
                 }));
+
+                
     
             // UI에서 라디오 버튼 조건부 노출
             const updatedMembers = filteredMembers.map(member => ({
@@ -385,8 +387,10 @@ const AdminDeposit = () => {
     
         if (card) {
             setSelectedCard(cardId);
-            setBalance(card ? card.balance : 0);
-            setSelectedDeposit(prev => ({ ...prev, card_id: cardId }));
+            setBalance(card.balance);
+            // setBalance(card ? card.balance : 0);
+            // setSelectedDeposit(prev => ({ ...prev, card_id: cardId }));
+            setDepositType(card.deposit_type || 'RegularDeposit');
         }
 
     };
@@ -487,28 +491,41 @@ const AdminDeposit = () => {
         // 선택된 카드의 거래 내역 가져오기
         const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${cardId}`);
         const cardTransactions = transactionsResponse.data;
+        const depositType = deposit?.deposit_type || "RegularDeposit";
     
-        // 거래 내역이 없으면 입금 금액을 10만원으로 설정
-        if (cardTransactions.length === 0) {
-            setSelectedDeposit((prev) => ({
-                ...prev,
-                transaction_amount: 100000, // 10만원 자동 설정
-            }));
-        } else {
-            setSelectedDeposit(deposit);
+        // 카드 정보 가져오기
+        try {
+            const response = await axios.get(`${API_URLS.CARDS}/member/${memberId}`);
+            const userCards = response.data;
+            setCards(userCards); // 카드 정보를 상태에 업데이트
+    
+            if (cardTransactions.length === 0) {
+                setSelectedDeposit((prev) => ({
+                    ...prev,
+                    transaction_amount: 100000, // 10만원 자동 설정
+                    deposit_type: depositType,  // 입금 유형 설정
+                    card_id: cardId, // 카드 ID 설정
+                    member_id: memberId, // 사용자 ID 설정
+                }));
+            } else {
+                setSelectedDeposit(deposit); // 기존 deposit 정보를 사용
+            }
+    
+            // 카드 선택 초기화
+            setSelectedCard(cardId); // 선택된 카드 정보 설정
+            setSelectedUser(memberId); // 선택된 사용자 정보 설정
+    
+            setIsEditing(true);
+            setIsOpen(true);
+            setDepositType(depositType);
+    
+        } catch (error) {
+            setErrMsg("카드 정보를 가져오는 데 실패했습니다.");
         }
-    
-        // 상태 업데이트
-        setSelectedUser(memberId);
-        setSelectedCard(cardId);
-        setIsEditing(true);
-        setIsOpen(true);
-    
-        // deposit_type 값을 가져와서 초기 상태에 설정
-        setDepositType(deposit.deposit_type || "RegularDeposit");
     };
 
     const handleCloseDrawer = () => {
+        setErrMsg('');
         setIsOpen(false);
         setIsDeductedOpen(false);
     };
