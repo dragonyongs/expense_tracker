@@ -24,17 +24,29 @@ const AdminCard = () => {
                 axios.get(API_URLS.ACCOUNTS),
                 axios.get(API_URLS.MEMBERS),
             ]);
+    
             setCards(cardsRes.data);
             setAccounts(accountsRes.data);
-            setMembers(membersRes.data);
+    
+            const assignedMembers = new Set(cardsRes.data.map(card => card.member_id._id));
+    
+            if (!isEditing) {
+                const filteredMembers = membersRes.data.filter(member => !assignedMembers.has(member._id)
+                );
+
+                setMembers(filteredMembers);
+            } else {
+                const allMembers = membersRes.data.filter(member => member.status_id?.status_name !== 'resigned');
+                setMembers(allMembers);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
-
+    
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [isEditing]);
 
     const toggleDrawer = () => setIsOpen((prevState) => !prevState);
 
@@ -42,6 +54,9 @@ const AdminCard = () => {
         setSelectedCard({
             card_number: '',
             limit: '',
+            rollover_amount: '',
+            balance: '',
+            team_fund: '',
             account_id: '',
             member_id: ''
         });
@@ -116,6 +131,7 @@ const AdminCard = () => {
 
     const handleMemberChange = (e) => {
         const selectedMember = members.find(member => member._id === e.target.value);
+        
         if (!selectedMember) {
             console.error('선택된 사용자를 찾을 수 없습니다.');
             return;
@@ -225,20 +241,33 @@ const AdminCard = () => {
                                     label="현재 잔액" 
                                     id="balance"
                                     type="number"
-                                    value={(selectedCard.balance + (selectedCard.rollover_amount || 0)) || 0}  // 이월 금액을 합산
+                                    value={selectedCard.balance || 0}
+                                    onChange={(e) => setSelectedCard({ ...selectedCard, balance: e.target.value })}
                                     placeholder=""
-                                    disabled={true}
                                     required
                                 />
 
                                 <InputField 
-                                    label="팀 운영비 잔액" 
-                                    id="team_fund"
+                                    label="이월 잔액" 
+                                    id="rollover_amount"
                                     type="number"
-                                    value={selectedCard.team_fund || 0}
+                                    value={selectedCard.rollover_amount || 0}
+                                    onChange={(e) => setSelectedCard({ ...selectedCard, rollover_amount: e.target.value })}
                                     placeholder=""
-                                    disabled={true}
+                                    required
                                 />
+{/* 
+                                {selectedMember?.role_id?.role_name === 'red'} (
+                                    <InputField 
+                                        label="팀 운영비 잔액" 
+                                        id="team_fund"
+                                        type="number"
+                                        value={selectedCard.team_fund || 0}
+                                        onChange={(e) => setSelectedCard({ ...selectedCard, limit: e.target.value })}
+                                        placeholder=""
+                                        // disabled={true}
+                                    />
+                                ) */}
 
                                 <SelectField
                                     label="사용자"

@@ -14,16 +14,15 @@ import AdminHeader from '../components/AdminHeader';
 const AdminDeposit = () => {
     const [users, setUsers] = useState([]);
     const [cards, setCards] = useState([]);
-    const [cardTransactions, setCardTransactions] = useState([]);
-    const [depositsThisMonth, setDepositsThisMonth] = useState([]);
+    const [depositType, setDepositType] = useState(''); // 초기값 빈 문자열
+    const [selectedCard, setSelectedCard] = useState(null); // 선택된 카드
+    const [teamFundAmount, setTeamFundAmount] = useState(0); // 팀 운영비 계산 금액
     const [selectUserPosition, setSelectUserPosition] = useState('');
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState("");
-    const [selectedCard, setSelectedCard] = useState("");
     const [deposits, setDeposits] = useState([]);
     const [balance, setBalance] = useState('');
-    const [depositType, setDepositType] = useState("");
     const [selectedDeposit, setSelectedDeposit] = useState({
         _id: "",
         member_name: "",
@@ -36,7 +35,6 @@ const AdminDeposit = () => {
         deposit_type: "RegularDeposit",
         is_deducted: false,
     });
-    const [membersWithDeposits, setMembersWithDeposits] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -86,10 +84,6 @@ const AdminDeposit = () => {
         }
     }, [isOpen, isDeleteConfirmOpen]); // Drawer가 열리거나 삭제 모달이 열릴 때만 호출
     
-    // useEffect(() => {
-        // selectUserPosition이 변경될 때마다 해당 값을 확인
-    // }, [selectUserPosition]);
-    
     useEffect(() => {
         if (selectedUser) {
             fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${selectedUser}`, setAccounts);
@@ -111,14 +105,8 @@ const AdminDeposit = () => {
     }, [depositType, accounts]);
     
     // 팀원 수 계산 함수
-    // const calculateTeamMembersCount = () => accounts.reduce((count, account) => count + account.cards.length, 0);
-    const calculateTeamMembersCount = () => {
-        return accounts.reduce((count, account) => {
-            const validCards = account.cards.filter(card => card.member_id.status_id.status_name !== 'resigned');
-            return count + validCards.length;
-        }, 0);
-    };
-    
+    const calculateTeamMembersCount = () => accounts.reduce((count, account) => count + account.cards.length, 0);
+
     const handleDepositTypeChange = (e) => {
         const newDepositType = e.target.value;
         setDepositType(newDepositType);
@@ -147,10 +135,14 @@ const AdminDeposit = () => {
                     transaction_amount: cardLimit, // 카드 한도만큼 설정
                 }));
             }
+        } else if (newDepositType === 'TeamFund') {
+            const teamMemberCount = calculateTeamMembersCount() || 0; // 팀원 수
+            const calculatedAmount = teamMemberCount * 30000;
+            setTeamFundAmount(calculatedAmount);
         } else if (newDepositType === "TransportationExpense" && selectedCard) {
             setSelectedDeposit(prev => ({
                 ...prev,
-                transaction_amount: null,
+                transaction_amount: '',
             }));
         } else {
             // 다른 입금 타입의 경우 기존 금액 유지
@@ -185,22 +177,7 @@ const AdminDeposit = () => {
         } else if (depositType === "TransportationExpense" && selectedCard) {
             setSelectedDeposit(prev => ({
                 ...prev,
-                transaction_amount: '', // 교통비 입금은 0으로 설정
-        //     const teamMembersCount = calculateTeamMembersCount();
-        //     const updatedCards = calculateTeamDepositAmount(cards, teamMembersCount);
-
-        //     // 선택된 카드의 계산된 입금 금액 설정
-        //     const selectedCardData = updatedCards.find(
-        //         (card) => card._id === selectedCard
-        //     );
-        //     setSelectedDeposit((prev) => ({
-        //         ...prev,
-        //         transaction_amount: selectedCardData?.depositAmount || 0,
-        //     }));
-        // } else if (newDepositType === "TransportationExpense") {
-        //     setSelectedDeposit((prev) => ({
-        //         ...prev,
-        //         transaction_amount: 0, // 교통비는 0으로 설정
+                transaction_amount: '',
             }));
         }
     }, [selectedUser, depositType, selectedCard, cards, balance]);
@@ -276,100 +253,74 @@ const AdminDeposit = () => {
     };
 
     const fetchFilteredMembers = async () => {
-    try {
-        const cardsResponse = await axios.get(API_URLS.CARDS);
-        const allCards = cardsResponse.data;
-        const validCards = allCards.filter(card => card.member_id && card.card_number);
-        const validMemberIds = validCards.map(card => card.member_id._id);
-
-        const membersResponse = await axios.get(API_URLS.MEMBERS);
-        const allMembers = membersResponse.data;
-
-        const depositsResponse = await axios.get(API_URLS.DEPOSITS);
-        const allDeposits = depositsResponse.data;
-
-        // 이번 달 필터링
-        const currentMonth = new Date().getMonth() + 1;
-        const currentYear = new Date().getFullYear();
-
-        const depositsThisMonth = allDeposits.filter(deposit => {
-            const depositDate = new Date(deposit.createdAt);
-            return (
-                depositDate.getMonth() + 1 === currentMonth &&
-                depositDate.getFullYear() === currentYear
-            );
-        });
-
-        // RegularDeposit 또는 TeamFund를 받은 사용자 ID 리스트
-        const membersWithRegularDeposit = depositsThisMonth
-            .filter(deposit => deposit.deposit_type === 'RegularDeposit')
-            .map(deposit => deposit.card_id.member_id);
-        
-        const membersWithTeamFund = depositsThisMonth
-            .filter(deposit => deposit.deposit_type === 'TeamFund')
-            .map(deposit => deposit.card_id.member_id);
-
-        // RegularDeposit 또는 TeamFund를 받은 모든 사용자 ID 리스트
-        const membersWithDeposits = [
-            ...new Set([...membersWithRegularDeposit, ...membersWithTeamFund])
-        ];
-
-        const filteredMembers = allMembers.filter(member => 
-            validMemberIds.includes(member._id) &&
-            !membersWithDeposits.includes(member._id) && // 여기서 오류 방지
-            member.status_id.status_name !== 'resigned'
-        );
-
-        // 사용자 상태 저장
-        setUsers(
-    allMembers.map(member => ({
-        ...member,
-        hasRegularDeposit: membersWithRegularDeposit.includes(member._id) || false,
-        hasTeamFund: membersWithTeamFund.includes(member._id) || false,
-    }))
-);
-
-    } catch (error) {
-        setErrMsg("사용자 목록을 불러오지 못했습니다.");
-    }
-};
+        try {
+            const [cardsResponse, membersResponse, depositsResponse] = await Promise.all([
+                axios.get(API_URLS.CARDS),
+                axios.get(API_URLS.MEMBERS),
+                axios.get(API_URLS.DEPOSITS),
+            ]);
     
-
-    // const fetchFilteredMembers = async () => {
-    //     try {
-    //         const cardsResponse = await axios.get(API_URLS.CARDS);
-    //         const allCards = cardsResponse.data;
-    //         const validCards = allCards.filter(card => card.member_id && card.card_number);
-
-    //         const validMemberIds = validCards.map(card => card.member_id._id);
-
-    //         const membersResponse = await axios.get(API_URLS.MEMBERS);
-    //         const allMembers = membersResponse.data;
-            
-    //         const depositsResponse = await axios.get(API_URLS.DEPOSITS);
-    //         const allDeposits = depositsResponse.data;
-
-    //         const currentMonth = new Date().getMonth() + 1;
-
-
-    //         const depositsThisMonth = allDeposits.filter(deposit => {
-    //             const depositDate = new Date(deposit.createdAt);
-    //             return depositDate.getMonth() + 1 === currentMonth;
-    //         });
-
-    //         const membersWithDeposits = depositsThisMonth.map(deposit => deposit.card_id.member_id);
-
-    //         const filteredMembers = allMembers.filter(
-    //             member => validMemberIds.includes(member._id) && !membersWithDeposits.includes(member._id)
-    //         );
-
-    //         console.log('filteredMembers', filteredMembers);
-            
-    //         setUsers(filteredMembers);
-    //     } catch (error) {
-    //         setErrMsg("사용자 목록을 불러오지 못했습니다.");
-    //     }
-    // };
+            const allCards = cardsResponse.data;
+            const allMembers = membersResponse.data;
+            const allDeposits = depositsResponse.data;
+    
+            // 유효 카드와 사용자 ID 매핑
+            const validCards = allCards.filter(card => card.member_id && card.card_number);
+            const validMemberIds = validCards.map(card => card.member_id._id);
+    
+            // 이번 달 필터링
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+    
+            const depositsThisMonth = allDeposits.filter(deposit => {
+                const depositDate = new Date(deposit.createdAt);
+                return (
+                    depositDate.getMonth() + 1 === currentMonth &&
+                    depositDate.getFullYear() === currentYear
+                );
+            });
+    
+            // 입금 유형에 따른 사용자 ID 수집
+            const membersWithRegularDeposit = depositsThisMonth
+                .filter(deposit => deposit.deposit_type === 'RegularDeposit')
+                .map(deposit => deposit.card_id.member_id);
+    
+            const membersWithTeamFund = depositsThisMonth
+                .filter(deposit => deposit.deposit_type === 'TeamFund')
+                .map(deposit => deposit.card_id.member_id);
+    
+            // 입금 상태를 효율적으로 관리하기 위한 객체 생성
+            const depositStatusMap = {};
+            allMembers.forEach(member => {
+                depositStatusMap[member._id] = {
+                    hasRegularDeposit: membersWithRegularDeposit.includes(member._id),
+                    hasTeamFund: membersWithTeamFund.includes(member._id),
+                };
+            });
+    
+            // 필터링된 사용자 목록 생성
+            const filteredMembers = allMembers
+                .filter(member => 
+                    validMemberIds.includes(member._id) && // 유효한 멤버인지 확인
+                    member.role_name !== 'super_admin' && // 관리자 제외
+                    member.status_id.status_name !== 'resigned' // 퇴사자 제외
+                )
+                .map(member => ({
+                    ...member,
+                    ...depositStatusMap[member._id], // 입금 상태 추가
+                }));
+    
+            // UI에서 라디오 버튼 조건부 노출
+            const updatedMembers = filteredMembers.map(member => ({
+                ...member,
+                showRadioButton: !depositStatusMap[member._id].hasRegularDeposit,
+            }));
+    
+            setUsers(updatedMembers);
+        } catch (error) {
+            setErrMsg("사용자 목록을 불러오지 못했습니다.");
+        }
+    };
 
     const handleAddDeposit = () => {
         setSelectedDeposit({ transaction_amount: "" });
@@ -421,15 +372,12 @@ const AdminDeposit = () => {
                     card_id: '', // 카드 ID 초기화
                 }));
             }
+
         } catch (error) {
             setErrMsg("카드 목록을 불러오지 못했습니다.");
         }
     };
 
-    // useEffect(() => {
-
-    // }, [selectedUser]);
-        
     // 카드 선택 핸들러
     const handleCardChange = (e) => {
         const cardId = e.target.value;
@@ -503,12 +451,6 @@ const AdminDeposit = () => {
             setErrMsg(error.response?.data?.message || error.message);
         }
     };    
-    
-    // const calculateDepositAmount = (currentBalance) => {
-    //     const threshold = 10000; 
-    //     return currentBalance < threshold ? 100000 : 100000 - currentBalance;
-    // };
-    
         const calculateTeamDepositAmount = (cards, teamMembersCount) => {
         const totalBalance = cards.reduce((sum, card) => sum + card.balance, 0);
         const threshold = 10000 / teamMembersCount; // 1인당 기준 금액
@@ -683,79 +625,80 @@ const AdminDeposit = () => {
                         />
 
                         <div>
-    <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-slate-300 dark:font-normal">입금 구분</h3>
-    <ul className="grid w-full gap-2 grid-cols-2">
-        <li>
-            <input
-                type="radio"
-                id="deposit_type_a"
-                name="deposit_type"
-                value="RegularDeposit" 
-                className="hidden peer"
-                checked={depositType === 'RegularDeposit'}
-                onChange={handleDepositTypeChange}
-                disabled={!selectedCard}
-                required
-            />
-            <label
-                htmlFor="deposit_type_a"
-                className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
-            >
-                <div className="block">
-                    <div className="w-full text-md font-semibold">정기 입금</div>
-                    <div className="w-full text-sm">10만원</div>
-                </div>
-                {depositType === 'RegularDeposit' && <IoCheckmark className="w-6 h-6" />}
-            </label>
-        </li>
-        <li>
-            <input
-                type="radio"
-                id="deposit_type_b"
-                name="deposit_type"
-                value="TransportationExpense" 
-                className="hidden peer"
-                checked={depositType === 'TransportationExpense'}
-                onChange={handleDepositTypeChange}
-                disabled={!selectedCard}
-            />
-            <label
-                htmlFor="deposit_type_b"
-                className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
-            >
-                <div className="block">
-                    <div className="w-full text-md font-semibold">여비교통비</div>
-                    <div className="w-full text-sm">금액입력</div>
-                </div>
-                {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
-            </label>
-        </li>
-        {(selectUserPosition === '팀장' || selectUserPosition === '파트장') && (
-            <li>
-                <input
-                    type="radio"
-                    id="deposit_type_c"
-                    name="deposit_type"
-                    value="TeamFund" 
-                    className="hidden peer"
-                    checked={depositType === 'TeamFund'}
-                    onChange={handleDepositTypeChange}
-                    disabled={!selectedCard || !selectedUser?.hasTeamFund}
-                />
-                <label
-                    htmlFor="deposit_type_c"
-                    className={`${!selectedCard || !selectedUser?.hasTeamFund ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
-                >
-                    <div className="block">
-                        <div className="w-full text-md font-semibold">팀운영비</div>
-                        <div className="w-full text-sm">팀원당 3만원</div>
-                    </div>
-                    {depositType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
-                </label>
-            </li>
-        )}
-    </ul>
-</div>
+                            <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-slate-300 dark:font-normal">입금 구분</h3>
+                            <ul className="grid w-full gap-2 grid-cols-2">
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="deposit_type_a"
+                                        name="deposit_type"
+                                        value="RegularDeposit"
+                                        className="hidden peer"
+                                        checked={depositType === 'RegularDeposit'}
+                                        onChange={handleDepositTypeChange}
+                                        disabled={!selectedCard || selectedUser?.hasRegularDeposit} // 입금 여부로 비활성화
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="deposit_type_a"
+                                        className={`${!selectedCard || selectedUser?.hasRegularDeposit ? 
+                                            'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 
+                                            'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                                    >
+                                        <div className="block">
+                                            <div className="w-full text-md font-semibold">정기 입금</div>
+                                            <div className="w-full text-sm">10만원</div>
+                                        </div>
+                                        {depositType === 'RegularDeposit' && <IoCheckmark className="w-6 h-6" />}
+                                    </label>
+                                </li>
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="deposit_type_b"
+                                        name="deposit_type"
+                                        value="TransportationExpense" 
+                                        className="hidden peer"
+                                        checked={depositType === 'TransportationExpense'}
+                                        onChange={handleDepositTypeChange}
+                                        disabled={!selectedCard}
+                                    />
+                                    <label
+                                        htmlFor="deposit_type_b"
+                                        className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                                    >
+                                        <div className="block">
+                                            <div className="w-full text-md font-semibold">여비교통비</div>
+                                            <div className="w-full text-sm">금액입력</div>
+                                        </div>
+                                        {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
+                                    </label>
+                                </li>
+                                {(selectUserPosition === '팀장' || selectUserPosition === '파트장') && (
+                                    <li>
+                                        <input
+                                            type="radio"
+                                            id="deposit_type_c"
+                                            name="deposit_type"
+                                            value="TeamFund" 
+                                            className="hidden peer"
+                                            checked={depositType === 'TeamFund'}
+                                            onChange={handleDepositTypeChange}
+                                        />
+                                        <label
+                                            htmlFor="deposit_type_c"
+                                            className={`${!selectedCard || !selectedUser?.hasTeamFund ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                                        >
+                                            <div className="block">
+                                                <div className="w-full text-md font-semibold">팀운영비</div>
+                                                <div className="w-full text-sm">팀원당 3만원</div>
+                                            </div>
+                                            {depositType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
+                                        </label>
+                                    </li>
+                                )}
+                            </ul>
+                        </div>
 
                         {/* 입금 금액 입력 */}
                         <div>

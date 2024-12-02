@@ -128,11 +128,21 @@ exports.createMember = async (req, res) => {
 // Get all members
 exports.getAllMembers = async (req, res) => {
     try {
+        // 모든 멤버 조회 및 관계 데이터 로드
         const members = await Member.find()
-            .populate('status_id')
-            .populate('team_id')
-            .populate('role_id')
-        res.json(members);
+            .populate('status_id', 'status_name')
+            .populate('team_id', 'team_name')
+            .populate('role_id', 'role_name')
+            .lean();
+
+        // 퇴사자 및 관리자 제외
+        const filteredMembers = members.filter(member => {
+            const isResigned = member.status_id?.status_name === 'resigned';
+            const isSuperAdmin = member.role_id?.role_name === 'super_admin';
+            return !isResigned && !isSuperAdmin;
+        });
+
+        res.json(filteredMembers);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }

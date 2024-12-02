@@ -67,15 +67,26 @@ exports.getAccountsAndCards = async (req, res) => {
             })
             .lean();
 
-        // 각 계좌에 연결된 카드 정보 가져오기
+        const members = await Member.find().lean();
+        const resignedMemberIds = members
+            .filter(member => member.status_id?.status_name === 'resigned')
+            .map(member => member._id.toString());
+
         const accountData = await Promise.all(accounts.map(async (account) => {
             const cards = await Card.find({ account_id: account._id })
-                .populate('member_id', 'member_name rank position')
+                .populate('member_id', 'member_name rank position status_id')
                 .lean();
+
+            const filteredCards = cards.filter(card => {
+                const memberId = card.member_id?._id?.toString();
+                return !resignedMemberIds.includes(memberId);
+            });
             
+            console.log('filteredCards', filteredCards);
+
             return {
                 ...account,
-                cards: cards.map(card => ({
+                cards: filteredCards.map(card => ({
                     card_number: card.card_number,
                     balance: card.balance,
                     member_name: card.member_id.member_name,
@@ -93,15 +104,22 @@ exports.getAccountsAndCards = async (req, res) => {
 
 exports.getMemberAccountsAndCards = async (req, res) => {
     try {
-        // const userId = req.user.member_id; // 로그인한 사용자의 ID
         const memberId = req.params.memberId;
 
-        const memberCard = await Card.findOne({member_id: memberId})
-            .populate('member_id', 'team_id')
+        // 멤버의 정보를 가져오며 상태(status_id) 확인
+        const member = await Member.findById(memberId)
+            .populate('status_id', 'status_name')
+            .lean();
 
-        const userTeamId = memberCard.member_id.team_id; // 사용자의 팀 ID
+        // 멤버가 존재하지 않거나 퇴사자인 경우 처리
+        if (!member || member.status_id?.status_name === 'resigned') {
+            return res.status(404).json({ error: 'Member not found or is resigned' });
+        }
 
-        // 로그인 사용자의 팀 ID와 일치하는 계좌를 가져옴
+        // 멤버의 팀 ID 가져오기
+        const userTeamId = member.team_id;
+
+        // 팀 ID에 연결된 계좌 가져오기
         const accounts = await Account.find({ team_id: userTeamId })
             .populate({
                 path: 'team_id',
@@ -109,18 +127,23 @@ exports.getMemberAccountsAndCards = async (req, res) => {
             })
             .lean();
 
-        // 각 계좌에 연결된 카드 정보 가져오기 (사용자 본인의 카드 포함)
+        // 각 계좌에 연결된 카드 정보 가져오기 (퇴사자 제외)
         const accountData = await Promise.all(accounts.map(async (account) => {
             const cards = await Card.find({ account_id: account._id })
-                .populate('member_id', 'member_name rank position')
+                .populate({
+                    path: 'member_id',
+                    populate: {
+                        path: 'status_id',
+                        select: 'status_name'
+                    },
+                    select: 'member_name rank position'
+                })
                 .lean();
 
-            const member = await Member.findOne({ _id: memberId })
-                .populate('status_id', 'status_name')
-
-            // 퇴사자 제외
+            // 퇴사자 필터링
             const filteredCards = cards.filter(card => {
-                return member && member.status_name !== 'resigned';
+                const cardMemberStatus = card.member_id?.status_id?.status_name;
+                return cardMemberStatus !== 'resigned';
             });
 
             return {
