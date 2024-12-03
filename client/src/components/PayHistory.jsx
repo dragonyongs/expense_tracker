@@ -4,26 +4,28 @@ import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance";
 import { RiArrowRightSLine } from "react-icons/ri";
 import { MutatingDots } from 'react-loader-spinner';
+import PropTypes from 'prop-types';
 
-const PayHistory = () => {
-    const [transactions, setTransactions] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+const PayHistory = ({ transactions, isLoading }) => {
 
-    useEffect(() => {
-        fetchData(API_URLS.TRANSACTIONS, setTransactions);
-    }, []);
+    // const [transactions, setTransactions] = useState([]);
+    // const [isLoading, setIsLoading] = useState(true);
 
-    const fetchData = async (url, setter) => {
-        setIsLoading(true);
-        try {
-            const response = await axios.get(url);
-            setter(response.data);
-        } catch (error) {
-            console.error(`Error fetching data from ${url}:`, error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // useEffect(() => {
+    //     fetchData(API_URLS.TRANSACTIONS, setTransactions);
+    // }, []);
+
+    // const fetchData = async (url, setter) => {
+    //     setIsLoading(true);
+    //     try {
+    //         const response = await axios.get(url);
+    //         setter(response.data);
+    //     } catch (error) {
+    //         console.error(`Error fetching data from ${url}:`, error);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     // 입금을 제외한 거래 필터링
     const filteredTransactions = transactions.filter(type => type.transaction_type !== 'income');
@@ -81,6 +83,11 @@ const PayHistory = () => {
             )}
         </div>
     );
+};
+
+PayHistory.propTypes = {
+    transactions: PropTypes.array.isRequired,
+    isLoading: PropTypes.bool.isRequired,
 };
 
 export default PayHistory;

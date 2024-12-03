@@ -5,16 +5,11 @@ import axios from "../services/axiosInstance";
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
-// import Card from '../components/Card';
 import FlipCard from '../components/FlipCard';
 import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 import { MutatingDots } from 'react-loader-spinner';
-
-const calculateAvailableBalance = (card) => {
-    return Number(card.balance) + Number(card.rollover_amount) + Number(card.team_fund);
-};
 
 const Transactions = () => {
 
@@ -56,10 +51,6 @@ const Transactions = () => {
         }
     }, [expenseCard]);
     
-    // useEffect(() => {
-    //     setErrMsg('');
-    // }, [transactions.length])
-
     // 카드와 트랜잭션 데이터 가져오기
     const fetchCards = async () => {
         setIsLoading(true);
@@ -272,7 +263,6 @@ const Transactions = () => {
     });
 
     const handleExpenseTypeChange = (type) => {
-        console.log('Updated expenseType:', type);  // 값 변경 확인
         setExpenseType(type);
     };
     
@@ -282,11 +272,11 @@ const Transactions = () => {
                 <div className='text-2xl' >
                     <span className='font-semibold'>내 카드</span>
                 </div>
-                <button
+                {/* <button
                     type="button" 
                     className='flex items-center gap-x-2 text-black font-semibold rounded-lg text-3xl dark:text-white'
                     onClick={handleAddTransaction}
-                ><IoAddCircleOutline /></button>
+                ><IoAddCircleOutline /></button> */}
             </header>
             <div className='flex-1 w-full p-4'>
                 {/* 카드 한도와 남은 금액 표시 */}
@@ -325,18 +315,18 @@ const Transactions = () => {
 
                 {/* 트랜잭션 목록 */}
 
-                <div className='flow-root'>
-                    {/* <div className="flex items-center justify-between mb-4 px-3">
-                        <h5 className="text-2xl font-semibold leading-none text-black dark:text-white">지출 내역</h5>
-                        <button
-                            type="button" 
-                            className='flex items-center gap-x-2 text-black font-semibold rounded-lg text-3xl dark:text-white'
-                            onClick={handleAddTransaction}
-                        ><IoAddCircleOutline /></button>
-                    </div> */}
-                    
+                <div className='flow-root'>                  
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
 
+                    <div className="flex items-center justify-between mb-4">
+                        <h5 className="text-lg font-semibold leading-none text-gray-500 dark:text-white">지출 내역</h5>
+                        <button
+                            type="button" 
+                            className='flex items-center gap-x-2 text-gray-500 font-semibold rounded-lg text-3xl dark:text-white'
+                            onClick={handleAddTransaction}
+                        ><IoAddCircleOutline /></button>
+                    </div>
+                    
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center h-dashboard-screen">
                             <MutatingDots

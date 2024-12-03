@@ -16,21 +16,21 @@ const Header = () => {
     useEffect(() => {
         const currentHour = new Date().getHours();
         if (currentHour >= 8 && currentHour < 10) {
-            setGreeting('GM!');
-        } else if (currentHour === 12) {
-            setGreeting('Eat up!');
+            setGreeting('좋은아침 :)');
+        } else if (currentHour <= 12 && currentHour > 13) {
+            setGreeting('맛점하세요!');
         } else if (currentHour >= 22) {
-            setGreeting('GN!');
+            setGreeting('잘자요!');
         } else {
-            setGreeting('Hello,');
+            setGreeting('좋은하루 보내요!');
         }
     }, []);
 
     return (
         <header className={`flex justify-between items-center py-4 px-6 shadow-md ${isDashBoard && user.role !== 'super_admin' ? 'bg-[#0433FF] text-white' : 'dark:bg-slate-800 dark:text-slate-200'}`}>
-            <div className='text-2xl' >
-                <span className='font-thin'>{greeting}</span>
+            <div className='text-xl' >
                 <span className="pl-2 font-semibold">{user.name.slice(1)}님</span>
+                <span className='font-normal'>, {greeting}</span>
             </div>
             <div className='flex gap-x-4'>
                 <Darkmode isDashBoard = {isDashBoard} />
