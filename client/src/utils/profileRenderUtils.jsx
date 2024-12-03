@@ -24,7 +24,7 @@ const dateIcons = {
 const dateLabels = {
     entry: '입사',
     leave: '퇴사',
-    hiatus: '휴직',
+    loa: '휴직',
     birthday: '생일'
 };
 

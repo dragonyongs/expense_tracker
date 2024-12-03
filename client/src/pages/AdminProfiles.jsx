@@ -133,7 +133,7 @@ function AdminProfiles() {
                         <ul className="list-disc pl-5 space-y-1">
                             {selectedProfile.phones.map((phone) => (
                                 <li key={phone._id}>
-                                    {`${phone.phone_type}: ${phone.phone_number}${phone.extension ? ` (내선: ${phone.extension})` : ''}`}
+                                    {`${phone.phone_name}: ${phone.phone_number}${phone.extension ? ` (내선: ${phone.extension})` : ''}`}
                                 </li>
                             ))}
                         </ul>
@@ -148,7 +148,7 @@ function AdminProfiles() {
                         <ul className="list-disc pl-5 space-y-1">
                             {selectedProfile.addresses.map((address) => (
                                 <li key={address._id}>
-                                    {`${address.address_type}: ${address.address_line1}, ${address.address_line2}, ${address.postal_code}`}
+                                    {`${address.address_name}: ${address.address_line1}, ${address.address_line2}, ${address.postal_code}`}
                                 </li>
                             ))}
                         </ul>
@@ -163,7 +163,7 @@ function AdminProfiles() {
                         <ul className="list-disc pl-5 space-y-1">
                             {selectedProfile.dates.map((date) => (
                                 <li key={date._id}>
-                                    {`${date.date_type}: ${new Date(date.date).toLocaleDateString('ko-KR')}`}
+                                    {`${date.date_name}: ${new Date(date.date).toLocaleDateString('ko-KR')}`}
                                 </li>
                             ))}
                         </ul>

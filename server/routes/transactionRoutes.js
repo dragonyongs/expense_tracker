@@ -12,6 +12,8 @@ router.get('/', authMiddleware, transactionController.getAllTransactions);
 // 입금 트랜잭션 조회
 router.get('/deposits', authMiddleware, transactionController.getAllDeposits);
 
+router.get('/deposits/:year/:month?', authMiddleware, transactionController.getFilteredDeposits);
+
 // 카드별 트랜잭션 조회
 router.get('/card/:cardId', authMiddleware, transactionController.getCardTransactions);
 

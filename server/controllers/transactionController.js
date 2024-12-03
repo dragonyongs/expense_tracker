@@ -376,6 +376,33 @@ exports.deleteTransaction = async (req, res) => {
     }
 };
 
+exports.getTransactionsByYearAndMonth = async (req, res) => {
+    try {
+        const { year, month } = req.params;
+        const userId = req.user.member_id;
+
+        const userCards = await Card.find({ member_id: userId });
+
+        const cardIds = userCards.map(card => card._id);
+
+        const startDate = new Date(`${year}-${month}-01`);
+        const endDate = new Date(startDate);
+        endDate.setMonth(endDate.getMonth() + 1);
+
+        const transactions = await Transaction.find({
+            card_id: { $in: cardIds },
+            transaction_date: { $gte: startDate, $lt: endDate }
+        })
+        .populate('card_id', 'card_number')
+        .sort({ transaction_date: -1 }); 
+
+        res.status(200).json(transactions);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching transactions by year and month', error });
+    }
+};
+
+
 exports.getAllDeposits = async (req, res) => {
     try {
         const deposits = await Transaction.find({ $or: [
@@ -402,28 +429,44 @@ exports.getAllDeposits = async (req, res) => {
     }
 }
 
-exports.getTransactionsByYearAndMonth = async (req, res) => {
+exports.getFilteredDeposits = async (req, res) => {
     try {
         const { year, month } = req.params;
-        const userId = req.user.member_id;
 
-        const userCards = await Card.find({ member_id: userId });
+        // 기본 쿼리 조건
+        let query = { 
+            $or: [
+                { transaction_type: "income" }, 
+                { transaction_type: "expense", is_deducted: true }
+            ]
+        };
 
-        const cardIds = userCards.map(card => card._id);
+        // 날짜 필터 추가
+        if (year) {
+            const start = new Date(year, month ? month - 1 : 0, 1);
+            const end = new Date(year, month ? month : 12, 1);
+            end.setMonth(end.getMonth() + 1); // 끝 날짜를 다음 달 1일로 설정
 
-        const startDate = new Date(`${year}-${month}-01`);
-        const endDate = new Date(startDate);
-        endDate.setMonth(endDate.getMonth() + 1);
+            query.transaction_date = { $gte: start, $lt: end }; // 날짜 범위 필터
+        }
 
-        const transactions = await Transaction.find({
-            card_id: { $in: cardIds },
-            transaction_date: { $gte: startDate, $lt: endDate }
-        })
-        .populate('card_id', 'card_number')
-        .sort({ transaction_date: -1 }); 
+        const deposits = await Transaction.find(query).populate('card_id');
 
-        res.status(200).json(transactions);
+        const depositWithMemberNames = await Promise.all(deposits.map(async (deposit) => {
+            const card = deposit.card_id;
+            if (card) {
+                const cardMember = await Card.findById(card._id).populate('member_id');
+
+                return {
+                    ...deposit.toObject(), // deposit 객체를 일반 객체로 변환
+                    member_name: cardMember.member_id ? cardMember.member_id.member_name : null // member_id에서 이름 추출
+                };
+            }
+            return deposit; // 카드가 없는 경우 원래 deposit 반환
+        }));
+
+        res.status(200).json(depositWithMemberNames);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching transactions by year and month', error });
+        res.status(500).json({ message: 'Error Deposits', error });
     }
 };

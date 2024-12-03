@@ -102,13 +102,14 @@ const useProfileData = (userId, setProfile) => {
                 personal_mobile: '개인',
             },
             date: {
-                entry: '입사일',
+                entry: '입사',
                 birthday: '생일',
                 leave: '퇴사',
+                loa: '휴직',
             },
         };
     
-        return nameMapping[itemType]?.[value] || '알 수 없음';
+        return nameMapping[itemType]?.[value] || '없음';
     };
     
     // const handleAddItem = (field, newItem) => {
@@ -198,7 +199,7 @@ const useProfileData = (userId, setProfile) => {
             const updatedItems = [...(prevProfile[key] || [])];
             if (index < 0 || index >= updatedItems.length) {
                 console.error(`Invalid index: ${index} for key: ${key}`);
-                return prevProfile; // 기존 상태 유지
+                return prevProfile;
             }
     
             updatedItems[index] = {

@@ -283,13 +283,13 @@ exports.backupMembers = async (req, res) => {
                 수정일: member.updatedAt,
                 전화번호: profile?.phones && profile.phones.length > 0 
                     ? profile.phones.map(phone => 
-                        `${phone.phone_type}: ${phone.phone_number}${phone.extension ? ` (${phone.extension})` : ''}`).join(', ') 
+                        `${phone.phone_name}: ${phone.phone_number}${phone.extension ? ` (${phone.extension})` : ''}`).join(', ') 
                     : '없음',
                 주소: profile?.addresses && profile.addresses.length > 0 
-                    ? profile.addresses.map(address => `${address.address_type}: ${address.address_line1} ${address.address_line2} (${address.postal_code})`).join(', ') 
+                    ? profile.addresses.map(address => `${address.address_name}: ${address.address_line1} ${address.address_line2} (${address.postal_code})`).join(', ') 
                     : '없음',
                 기념일: profile?.dates && profile.dates.length > 0 
-                    ? profile.dates.map(date => `${date.date_type}: ${new Date(date.date).toLocaleDateString()}`).join(', ') 
+                    ? profile.dates.map(date => `${date.date_name}: ${new Date(date.date).toLocaleDateString()}`).join(', ') 
                     : '없음',
                 소개: profile?.introduction || ''
             };

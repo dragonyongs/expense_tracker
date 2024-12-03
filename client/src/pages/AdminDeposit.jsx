@@ -20,7 +20,8 @@ const AdminDeposit = () => {
     const [selectUserPosition, setSelectUserPosition] = useState('');
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedUser, setSelectedUser] = useState("");
+    const [selectedUserId, setSelectedUserId] = useState("");
+    const [selectedUser, setSelectedUser] = useState({});
     const [deposits, setDeposits] = useState([]);
     const [balance, setBalance] = useState('');
     const [selectedDeposit, setSelectedDeposit] = useState({
@@ -41,28 +42,30 @@ const AdminDeposit = () => {
     const [isDeductedOpen, setIsDeductedOpen] = useState(false);
     const [errMsg, setErrMsg] = useState('');
 
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
     useEffect(() => {
         fetchFilteredMembers();
     }, []);
     
     const fetchData = async (url, setState) => {
-        setLoading(true); // 로딩 상태 설정
+        setLoading(true);
         
         try {
             const response = await axios.get(url, { withCredentials: true });
     
             if (url === API_URLS.DEPOSITS) {
                 const sortedDeposits = response.data.sort((a, b) => {
-                    // createdAt을 기준으로 정렬하고, 같은 경우 transaction_date를 기준으로 정렬
                     const dateA = new Date(a.createdAt);
                     const dateB = new Date(b.createdAt);
-                    if (dateA < dateB) return 1; // 내림차순
+                    if (dateA < dateB) return 1;
                     if (dateA > dateB) return -1;
                     
-                    // createdAt이 같을 경우 transaction_date로 정렬
                     const transDateA = new Date(a.transaction_date);
                     const transDateB = new Date(b.transaction_date);
-                    return transDateB - transDateA; // transaction_date 내림차순
+                    return transDateB - transDateA;
                 });
                 setState(sortedDeposits);
             } else {
@@ -76,33 +79,52 @@ const AdminDeposit = () => {
         }
     };
 
-    // 사용자 리스트 불러오기
     useEffect(() => {
-        fetchData(`${API_URLS.DEPOSITS}`, setDeposits);
+        fetchData(`${API_URLS.DEPOSITS}/${currentYear}/${currentMonth}`, setDeposits);
         if (isOpen || isDeleteConfirmOpen) {
             fetchFilteredMembers();
         }
     }, [isOpen, isDeleteConfirmOpen]); // Drawer가 열리거나 삭제 모달이 열릴 때만 호출
     
     useEffect(() => {
-        if (selectedUser) {
-            fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${selectedUser}`, setAccounts);
+        if (selectedUserId) {
+            fetchData(`${API_URLS.MEMBERS}/${selectedUserId}`, setSelectedUser);
+            fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${selectedUserId}`, setAccounts);
         }
-    }, [selectedUser]);
+    }, [selectedUserId]);
     
-    useEffect(() => {
-        if (depositType === "TeamFund" && accounts.length > 0) {
-            const teamMembersCount = calculateTeamMembersCount();
-            const isTeamLeader = selectUserPosition === "팀장";
-            const isPartLeader = selectUserPosition === "파트장";
-            const teamFundAmount = isTeamLeader ? teamMembersCount * 30000 : isPartLeader ? 30000 : 0;
+    // useEffect(() => {
+    //     if (depositType === "TeamFund" && accounts.length > 0) {
+    //         const teamMembersCount = calculateTeamMembersCount();
+    //         const isTeamLeader = selectUserPosition === "팀장";
+    //         const isPartLeader = selectUserPosition === "파트장";
+    //         const teamFundAmount = isTeamLeader ? teamMembersCount * 30000 : isPartLeader ? 30000 : 0;
+
+    //         setSelectedDeposit((prev) => ({
+    //             ...prev,
+    //             transaction_amount: teamFundAmount,
+    //         }));
+    //     }
+    // }, [depositType, accounts, selectUserPosition]);
     
-            setSelectedDeposit((prev) => ({
-                ...prev,
-                transaction_amount: teamFundAmount,
-            }));
-        }
-    }, [depositType, accounts]);
+    // useEffect(() => {
+    //     if (depositType === "TeamFund" && accounts.length > 0) {
+    //         const teamMembersCount = calculateTeamMembersCount();
+    //         const isTeamLeader = selectUserPosition === "팀장";
+    //         const isPartLeader = selectUserPosition === "파트장";
+    //         const teamFundAmount = isTeamLeader 
+    //             ? teamMembersCount * 30000 
+    //             : isPartLeader 
+    //                 ? 30000 
+    //                 : 0;
+    
+    //         setSelectedDeposit(prev => ({
+    //             ...prev,
+    //             transaction_amount: teamFundAmount,
+    //         }));
+    //     }
+    // }, [depositType, accounts, selectUserPosition]);
+
     
     // 팀원 수 계산 함수
     const calculateTeamMembersCount = () => accounts.reduce((count, account) => count + account.cards.length, 0);
@@ -110,52 +132,125 @@ const AdminDeposit = () => {
     const handleDepositTypeChange = (e) => {
         const newDepositType = e.target.value;
         setDepositType(newDepositType);
-
-        setSelectedDeposit((prev) => ({
-            ...prev,
-            deposit_type: newDepositType, // 선택한 입금 타입 저장
-        }));
-
-        if (newDepositType === "RegularDeposit" && selectedCard) {
-            const currentBalance = balance; // 개별 카드의 현재 잔액
-            const cardLimit = cards.find(card => card._id === selectedCard)?.limit || 0;
-            const teamMembersCount = calculateTeamMembersCount();
-            const usageQuota = (Number(10000) / teamMembersCount);
     
-            // 잔액이 카드 한도보다 적고 1만원 미만일 경우 입금 금액 계산
-            if (currentBalance > usageQuota) {
-                const depositAmount = Math.max(0, cardLimit - currentBalance); // 카드 한도에서 현재 잔액 차감
-                setSelectedDeposit(prev => ({
-                    ...prev,
-                    transaction_amount: depositAmount,
-                }));
-            } else {
-                setSelectedDeposit(prev => ({
-                    ...prev,
-                    transaction_amount: cardLimit, // 카드 한도만큼 설정
-                }));
-            }
-        } else if (newDepositType === 'TeamFund') {
-            const teamMemberCount = calculateTeamMembersCount() || 0; // 팀원 수
-            const calculatedAmount = teamMemberCount * 30000;
-            setTeamFundAmount(calculatedAmount);
-        } else if (newDepositType === "TransportationExpense" && selectedCard) {
-            setSelectedDeposit(prev => ({
-                ...prev,
-                transaction_amount: '',
-            }));
-        } else {
-            // 다른 입금 타입의 경우 기존 금액 유지
-            setSelectedDeposit(prev => ({
-                ...prev,
-                transaction_amount: prev.transaction_amount, // 현재 금액 유지
-            }));
+        const teamMembersCount = calculateTeamMembersCount();
+        const currentBalance = balance;
+        const cardLimit = cards.find(card => card._id === selectedCard)?.limit || 0;
+    
+        // 입금 금액 계산 로직
+        let depositAmount = 0;
+        if (newDepositType === "RegularDeposit") {
+            const usageQuota = Number(10000) / teamMembersCount;
+            depositAmount = currentBalance > usageQuota 
+                ? Math.max(0, cardLimit - currentBalance) 
+                : cardLimit;
+        } else if (newDepositType === "TeamFund") {
+            const isTeamLeader = selectUserPosition === "팀장";
+            const isPartLeader = selectUserPosition === "파트장";
+            depositAmount = isTeamLeader 
+                ? teamMembersCount * 30000 
+                : isPartLeader 
+                    ? 30000 
+                    : 0;
+        } else if (newDepositType === "TransportationExpense") {
+            depositAmount = ''; // 교통비는 빈 값으로 처리
         }
+    
+        // 입금명 설정 로직
+        const currentMonth = new Date().toLocaleString("ko-KR", { month: "long" });
+        const userName = selectedUser?.member_name || '';
+        const teamName = selectedUser?.team_id?.team_name || "팀";
+        let depositName = "";
+    
+        if (newDepositType === "RegularDeposit") {
+            depositName = `${userName}님 ${currentMonth} ${teamName} 팀비`;
+        } else if (newDepositType === "TeamFund") {
+            depositName = `${currentMonth} ${teamName} 팀운영비`;
+        }
+    
+        // 상태 업데이트
+        setSelectedDeposit(prev => ({
+            ...prev,
+            deposit_type: newDepositType,
+            transaction_amount: depositAmount,
+            menu_name: depositName,
+        }));
     };
+    
+    // const handleDepositTypeChange = (e) => {
+    //     const newDepositType = e.target.value;
+    //     setDepositType(newDepositType);
+
+    //     setSelectedDeposit((prev) => ({
+    //         ...prev,
+    //         deposit_type: newDepositType, // 선택한 입금 타입 저장
+    //     }));
+
+    //     if (newDepositType === "RegularDeposit" && selectedCard) {
+    //         const currentBalance = balance; // 개별 카드의 현재 잔액
+    //         const cardLimit = cards.find(card => card._id === selectedCard)?.limit || 0;
+    //         const teamMembersCount = calculateTeamMembersCount();
+    //         const usageQuota = (Number(10000) / teamMembersCount);
+    
+    //         // 잔액이 카드 한도보다 적고 1만원 미만일 경우 입금 금액 계산
+    //         if (currentBalance > usageQuota) {
+    //             const depositAmount = Math.max(0, cardLimit - currentBalance); // 카드 한도에서 현재 잔액 차감
+    //             setSelectedDeposit(prev => ({
+    //                 ...prev,
+    //                 transaction_amount: depositAmount,
+    //             }));
+    //         } else {
+    //             setSelectedDeposit(prev => ({
+    //                 ...prev,
+    //                 transaction_amount: cardLimit, // 카드 한도만큼 설정
+    //             }));
+    //         }
+    //     } else if (newDepositType === 'TeamFund') {
+    //         const teamMemberCount = calculateTeamMembersCount() || 0; // 팀원 수
+    //         const calculatedAmount = teamMemberCount * 30000;
+    //         setTeamFundAmount(calculatedAmount);
+    //     } else if (newDepositType === "TransportationExpense" && selectedCard) {
+    //         setSelectedDeposit(prev => ({
+    //             ...prev,
+    //             transaction_amount: '',
+    //         }));
+    //     } else {
+    //         // 다른 입금 타입의 경우 기존 금액 유지
+    //         setSelectedDeposit(prev => ({
+    //             ...prev,
+    //             transaction_amount: prev.transaction_amount, // 현재 금액 유지
+    //         }));
+    //     }
+        
+    //     if (selectedUser) {
+    //         const userName = selectedUser.member_name;
+    //         const teamName = selectedUser.team_id?.team_name || "팀";
+    //         const currentMonth = new Date().toLocaleString("ko-KR", { month: "long" });
+    
+    //         let depositName = ""; // 기본적으로 빈 문자열
+    
+    //         if (newDepositType === "RegularDeposit") {
+    //             // 정기 입금
+    //             depositName = `${userName}님 ${currentMonth} ${teamName} 팀비`;
+    //         } else if (newDepositType === "TransportationExpense") {
+    //             // 여비교통비: menu_name 빈 값으로 설정
+    //             depositName = "";
+    //         } else if (newDepositType === "TeamFund") {
+    //             // 팀 운영비
+    //             depositName = `${currentMonth} ${teamName} 팀운영비`;
+    //         }
+    
+    //         setSelectedDeposit((prev) => ({
+    //             ...prev,
+    //             menu_name: depositName, // 설정된 입금명 반영
+    //         }));
+    //     }
+    // };
 
     useEffect(() => {
-        // selectedUser가 변경되었을 때 실행
-        if (selectedUser && depositType === "RegularDeposit" && selectedCard) {
+        // selectedUserId가 변경되었을 때 실행
+        if (selectedUserId && depositType === "RegularDeposit" && selectedCard) {
+            
             const currentBalance = balance; // 현재 잔액
             const cardLimit = cards.find(card => card._id === selectedCard)?.limit || 0;
             const teamMembersCount = calculateTeamMembersCount(); // 팀원 수 계산
@@ -180,7 +275,7 @@ const AdminDeposit = () => {
                 transaction_amount: '',
             }));
         }
-    }, [selectedUser, depositType, selectedCard, cards, balance]);
+    }, [selectedUserId, depositType, selectedCard, cards, balance]);
 
     const handleDeleteConfirm = () => {
         setIsDeleteConfirmOpen(true);
@@ -326,7 +421,7 @@ const AdminDeposit = () => {
 
     const handleAddDeposit = () => {
         setSelectedDeposit({ transaction_amount: "" });
-        setSelectedUser("");
+        setSelectedUserId("");
         setSelectedCard("");
         setIsEditing(false);
         setIsOpen(true);
@@ -334,7 +429,7 @@ const AdminDeposit = () => {
 
     const handleMinusDeposit = () => {
         setSelectedDeposit({ transaction_amount: "" });
-        setSelectedUser("");
+        setSelectedUserId("");
         setSelectedCard("");
         setIsEditing(false);
         setIsDeductedOpen(true);
@@ -342,14 +437,18 @@ const AdminDeposit = () => {
 
     // 사용자 선택 핸들러
     const handleUserChange = async (e) => {
-        const selectedUserId = e.target.value;
-        setSelectedUser(selectedUserId); // 사용자를 선택하면 상태에 저장
+        const changeUserId = e.target.value;
+        setSelectedUserId(changeUserId); // 사용자를 선택하면 상태에 저장
 
         try {
             // 선택한 사용자의 ID로 카드 목록 필터링
-            const response = await axios.get(`${API_URLS.CARDS}/member/${selectedUserId}`);
+            const response = await axios.get(`${API_URLS.CARDS}/member/${changeUserId}`);
             const userCards = response.data;
-            setSelectUserPosition(userCards[0].member_id.position); // 추후 삭제
+            
+
+             // 사용자 직책 정보 가져오기
+            const userPosition = userCards[0]?.member_id?.position || "";
+            setSelectUserPosition(userPosition); // 사용자 직책 업데이트
 
             if (userCards.length > 0) {
                 setCards(userCards); // 카드 목록 업데이트
@@ -359,7 +458,7 @@ const AdminDeposit = () => {
                 setSelectedDeposit((prev) => ({
                     ...prev,
                     position: userCards[0].member_id.position,
-                    member_id: selectedUserId,
+                    member_id: changeUserId,
                     card_id: userCards[0]._id, // 첫 번째 카드 ID로 설정
                 }));
             } else {
@@ -370,7 +469,7 @@ const AdminDeposit = () => {
                 // 선택된 사용자 및 카드 정보 업데이트
                 setSelectedDeposit((prev) => ({
                     ...prev,
-                    member_id: selectedUserId,
+                    member_id: changeUserId,
                     card_id: '', // 카드 ID 초기화
                 }));
             }
@@ -398,7 +497,7 @@ const AdminDeposit = () => {
     const handleSave = async () => {
         try {
             setErrMsg("");
-            if (!selectedUser || !selectedCard || !depositType || !selectedDeposit.transaction_amount) {
+            if (!selectedUserId || !selectedCard || !depositType || !selectedDeposit.transaction_amount) {
                 setErrMsg("모든 필드를 채워주세요.");
                 return;
             }
@@ -487,33 +586,38 @@ const AdminDeposit = () => {
     const handleOpenDrawer = async (deposit) => {
         const memberId = deposit?.card_id?.member_id || null;
         const cardId = deposit?.card_id?._id || null;
-    
-        // 선택된 카드의 거래 내역 가져오기
-        const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${cardId}`);
-        const cardTransactions = transactionsResponse.data;
-        const depositType = deposit?.deposit_type || "RegularDeposit";
-    
+        
         // 카드 정보 가져오기
         try {
+
+            const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${cardId}`);
+            const cardTransactions = transactionsResponse.data;
+            const depositType = deposit?.deposit_type || "RegularDeposit";
+
             const response = await axios.get(`${API_URLS.CARDS}/member/${memberId}`);
             const userCards = response.data;
-            setCards(userCards); // 카드 정보를 상태에 업데이트
+            setCards(userCards);
     
+            let transactionAmount = deposit?.transaction_amount || 0;
+
             if (cardTransactions.length === 0) {
-                setSelectedDeposit((prev) => ({
-                    ...prev,
-                    transaction_amount: 100000, // 10만원 자동 설정
-                    deposit_type: depositType,  // 입금 유형 설정
-                    card_id: cardId, // 카드 ID 설정
-                    member_id: memberId, // 사용자 ID 설정
-                }));
-            } else {
-                setSelectedDeposit(deposit); // 기존 deposit 정보를 사용
+                transactionAmount = depositType === "TeamFund" ? 30000 : 100000;
+            } else if (deposit?.transaction_amount) {
+                // 전달된 deposit의 금액이 유효한 경우
+                transactionAmount = deposit.transaction_amount;
             }
-    
+
+            setSelectedDeposit({
+                ...deposit,
+                transaction_amount: transactionAmount, // 초기화된 금액 설정
+                deposit_type: depositType,  // 입금 유형 설정
+                card_id: cardId,
+                member_id: memberId,
+            });
+
             // 카드 선택 초기화
             setSelectedCard(cardId); // 선택된 카드 정보 설정
-            setSelectedUser(memberId); // 선택된 사용자 정보 설정
+            setSelectedUserId(memberId); // 선택된 사용자 정보 설정
     
             setIsEditing(true);
             setIsOpen(true);
@@ -527,6 +631,7 @@ const AdminDeposit = () => {
     const handleCloseDrawer = () => {
         setErrMsg('');
         setIsOpen(false);
+        setDepositType('');
         setIsDeductedOpen(false);
     };
 
@@ -618,7 +723,7 @@ const AdminDeposit = () => {
                         <SelectField
                             label="사용자"
                             id="member_id"
-                            value={isEditing ? selectedDeposit?.card_id?.member_id : selectedUser || ""}  // selectedUser 상태로 설정
+                            value={isEditing ? selectedDeposit?.card_id?.member_id : selectedUserId || ""}  // selectedUserId 상태로 설정
                             onChange={handleUserChange}
                             options={users.map(member => ({
                                 value: member._id,
@@ -637,7 +742,7 @@ const AdminDeposit = () => {
                             options={cards.map(card => ({ value: card._id, label: card.card_number}
                             ))}
                             placeholder="카드 선택"
-                            disabled={!selectedUser}
+                            disabled={!selectedUserId}
                             required
                         />
 
@@ -653,14 +758,14 @@ const AdminDeposit = () => {
                                         className="hidden peer"
                                         checked={depositType === 'RegularDeposit'}
                                         onChange={handleDepositTypeChange}
-                                        disabled={!selectedCard || selectedUser?.hasRegularDeposit} // 입금 여부로 비활성화
+                                        disabled={!selectedCard || selectedUser?.hasRegularDeposit}
                                         required
                                     />
                                     <label
                                         htmlFor="deposit_type_a"
                                         className={`${!selectedCard || selectedUser?.hasRegularDeposit ? 
                                             'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 
-                                            'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                                            'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 peer-disabled:bg-slate-50 peer-disabled:text-gray-300`}
                                     >
                                         <div className="block">
                                             <div className="w-full text-md font-semibold">정기 입금</div>
@@ -682,7 +787,7 @@ const AdminDeposit = () => {
                                     />
                                     <label
                                         htmlFor="deposit_type_b"
-                                        className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                                        className={`${!selectedCard ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 peer-disabled:bg-slate-50 peer-disabled:text-gray-300`}
                                     >
                                         <div className="block">
                                             <div className="w-full text-md font-semibold">여비교통비</div>
@@ -691,7 +796,7 @@ const AdminDeposit = () => {
                                         {depositType === 'TransportationExpense' && <IoCheckmark className="w-6 h-6" />}
                                     </label>
                                 </li>
-                                {(selectUserPosition === '팀장' || selectUserPosition === '파트장') && (
+                                {/* {(selectUserPosition === '팀장' || selectUserPosition === '파트장') && ( */}
                                     <li>
                                         <input
                                             type="radio"
@@ -701,10 +806,11 @@ const AdminDeposit = () => {
                                             className="hidden peer"
                                             checked={depositType === 'TeamFund'}
                                             onChange={handleDepositTypeChange}
+                                            disabled={!selectedCard || selectedUser?.hasTeamFund}
                                         />
                                         <label
                                             htmlFor="deposit_type_c"
-                                            className={`${!selectedCard || !selectedUser?.hasTeamFund ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100`}
+                                            className={`${!selectedCard || selectedUser?.hasTeamFund ? 'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 peer-disabled:bg-slate-50 peer-disabled:text-gray-300`}
                                         >
                                             <div className="block">
                                                 <div className="w-full text-md font-semibold">팀운영비</div>
@@ -713,7 +819,7 @@ const AdminDeposit = () => {
                                             {depositType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
                                         </label>
                                     </li>
-                                )}
+                                {/* )} */}
                             </ul>
                         </div>
 
@@ -791,7 +897,7 @@ const AdminDeposit = () => {
                         <SelectField
                             label="사용자"
                             id="member_id"
-                            value={isEditing ? selectedDeposit?.card_id?.member_id : selectedUser || ""}  // selectedUser 상태로 설정
+                            value={isEditing ? selectedDeposit?.card_id?.member_id : selectedUserId || ""}  // selectedUserId 상태로 설정
                             onChange={handleUserChange}
                             options={users.map(member => ({
                                 value: member._id,
@@ -810,7 +916,7 @@ const AdminDeposit = () => {
                             options={cards.map(card => ({ value: card._id, label: card.card_number}
                             ))}
                             placeholder="카드 선택"
-                            disabled={!selectedUser}
+                            disabled={!selectedUserId}
                             required
                         />
                         <div>

@@ -92,9 +92,9 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
         return <div>{error}</div>;
     }
 
-    const handleAddContact = () => handleAddItem('phones', { phone_type: null, phone_number: '', extension: null });
+    const handleAddContact = () => handleAddItem('phones', { phone_type: null, phone_name: '', phone_number: '', extension: null });
     const handleAddAddress = () => handleAddItem('addresses', { address_type: null, address_line1: '', address_line2: '', postal_code: '', address_name: '' });
-    const handleAddDate = () => handleAddItem('dates', { date_type: null, date: '', date_name: '' });
+    const handleAddDate = () => handleAddItem('dates', { date_type: null, date_name: '', date: ''});
 
     const handleRemoveContact = (index) => handleRemoveItem('phones', index, setDeletedItems);
     const handleRemoveAddress = (index) => handleRemoveItem('addresses', index, setDeletedItems);
@@ -485,7 +485,7 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                                                 <option>선택</option>
                                                 <option value="entry">입사</option>
                                                 <option value="leave">퇴사</option>
-                                                <option value="hiatus">휴직</option>
+                                                <option value="loa">휴직</option>
                                                 <option value="birthday">생일</option>
                                             </select>
                                             <input
