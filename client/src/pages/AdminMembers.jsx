@@ -255,17 +255,17 @@ const AdminMembers = () => {
                             type="button" 
                             className='flex items-center gap-x-1 text-black font-semibold rounded-lg dark:text-white'
                             onClick={handleAddMember}
-                        ><IoAddCircleOutline className='text-2xl'/><span className='text-xl'>추가</span></button>
+                        ><IoAddCircleOutline className='text-xl'/><span className='text-lg'>추가</span></button>
                         <button
                             type="button" 
                             className='flex items-center gap-x-1 text-black font-semibold rounded-lg dark:text-white'
                             onClick={handleAddUpload}
-                        ><MdOutlineFileUpload className='text-2xl'/><span className='text-xl'>업로드</span></button>
+                        ><MdOutlineFileUpload className='text-xl'/><span className='text-lg'>업로드</span></button>
                         <button
                             type="button" 
                             className='flex items-center gap-x-1 text-black font-semibold rounded-lg dark:text-white'
                             onClick={handleDataDownload}
-                        ><MdOutlineFileDownload className='text-2xl'/><span className='text-xl'>백업</span></button>
+                        ><MdOutlineFileDownload className='text-xl'/><span className='text-lg'>백업</span></button>
                     </div>
                 </div>
                 <div className='flow-root space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-gray-700'>

@@ -146,8 +146,6 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
         // 3. 신규 아이템 요청
         const newItemsPromises = newItems.map(item => {
             const requestData = { member_id: memberId, ...item };
-            console.log('Request Data:', requestData); // 요청 데이터 확인
-        
             return axios.post(apiUrl, requestData)
                 .then(response => {
                     console.log('Added item response:', response.data);
@@ -237,8 +235,6 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                 ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId, 'dates'),
             ]);
 
-            console.log('Server Response after Save:', userData);
-            
             setProfile(profile); // 여기서 profile이 올바르게 업데이트되었는지 확인
             await onSave();
         } catch (error) {

@@ -2,26 +2,21 @@ import React, { useState, useEffect } from 'react';
 import Drawer from 'react-modern-drawer';
 import 'react-modern-drawer/dist/index.css';
 import { MdClose } from 'react-icons/md';
+import { useTheme } from '../context/ThemeColorContext';
+import useMediaQuery from '../hooks/useMediaQuery';
 
-// useMediaQuery 훅 정의
-const useMediaQuery = (query) => {
-    const [matches, setMatches] = useState(false);
-
+const CommonDrawer = ({ isOpen, onClose, title, color, children, className}) => {
+    
+    const { setThemeColor } = useTheme();
+    
     useEffect(() => {
-        const media = window.matchMedia(query);
-        if (media.matches !== matches) {
-            setMatches(media.matches);
+        if (isOpen) {
+            setThemeColor(color);
+        } else {
+            setThemeColor("#dce8f5");
         }
+    }, [isOpen, color, setThemeColor]);
 
-        const listener = () => setMatches(media.matches);
-        media.addListener(listener);
-        return () => media.removeListener(listener);
-    }, [matches, query]);
-
-    return matches;
-};
-
-const CommonDrawer = ({ isOpen, onClose, title, children, className}) => {
     // 컴포넌트 내부에서 미디어 쿼리 사용
     const isMobile = useMediaQuery('(max-width: 640px)');
     const drawerSize = isMobile ? '100%' : '375px';

@@ -5,24 +5,6 @@ import { addData, getData } from './utils/db';
 precacheAndRoute(self.__WB_MANIFEST);
 
 const CACHE_NAME = "StarRich-v1-01";
-const ASSETS_TO_CACHE = [
-    "/",
-    "/index.html",
-    "/favicon.ico",
-    "/icon-wallet.png",
-    "/pending.png",
-    "/pig-piggy-bank.svg",
-    "/credit-card.svg",
-    "/taxi-transport.svg",
-    "/cloud-offline.svg",
-    "/manifest.webmanifest",
-    "/pwa-192x192.png",
-    "/pwa-256x256.png",
-    "/pwa-512x512.png",
-    "/src/main.jsx",
-    "/offline.html",
-];
-
 
 self.addEventListener("install", (event) => {
     event.waitUntil(
@@ -76,6 +58,63 @@ async function cacheApiResponse(request, response) {
 
 
 // API 요청을 처리하는 함수
+// async function handleApiRequest(request) {
+//     const url = new URL(request.url);
+//     const endpoint = url.pathname;
+
+//     try {
+//         const response = await fetch(request);
+//         if (response.ok) {
+//             await cacheApiResponse(request, response.clone());
+//             return response;
+//         }
+//         throw new Error('Network response was not ok');
+//     } catch (error) {
+//         console.error(`Fetching from cache for ${endpoint}:`, error);
+
+//         // 인증 API의 경우 캐시된 데이터 반환
+//         if (endpoint === '/api/auth/isAuthenticated') {
+//             const cachedData = await getData('auth-status');
+            
+//             if (!cachedData || typeof cachedData !== 'object') {
+//                 console.error("Invalid cached data format:", cachedData);
+//                 return new Response(JSON.stringify({ isAuthenticated: false }), {
+//                     headers: { 'Content-Type': 'application/json' },
+//                     status: 400
+//                 });
+//             }
+
+//             if (cachedData && cachedData.user) {
+//                 const { user } = cachedData;
+//                 const { status_id } = user;
+        
+//                 if (status_id) {
+//                     return new Response(JSON.stringify(cachedData), {
+//                         headers: { 'Content-Type': 'application/json' }
+//                     });
+//                 } else {
+//                     console.error("Missing status_id in cached data:", cachedData);
+//                     return new Response(JSON.stringify({ error: "Missing status_id" }), {
+//                         headers: { 'Content-Type': 'application/json' },
+//                         status: 400
+//                     });
+//                 }
+//             }
+        
+//             console.error("Invalid cached data structure:", cachedData);
+//             return new Response(JSON.stringify({ isAuthenticated: false }), {
+//                 headers: { 'Content-Type': 'application/json' },
+//                 status: 400
+//             });
+//         }
+
+//         // 기타 API의 경우 기본 응답 반환
+//         return new Response(JSON.stringify({ message: 'Failed to fetch data' }), {
+//             headers: { 'Content-Type': 'application/json' }
+//         });
+//     }
+// }
+
 async function handleApiRequest(request) {
     const url = new URL(request.url);
     const endpoint = url.pathname;
@@ -92,37 +131,26 @@ async function handleApiRequest(request) {
 
         // 인증 API의 경우 캐시된 데이터 반환
         if (endpoint === '/api/auth/isAuthenticated') {
-            const cachedData = await getData('auth-status');
+            const cachedData = await getData('auth-status') || {};
             
-            if (!cachedData || typeof cachedData !== 'object') {
-                console.error("Invalid cached data format:", cachedData);
-                return new Response(JSON.stringify({ isAuthenticated: false }), {
-                    headers: { 'Content-Type': 'application/json' },
-                    status: 400
-                });
-            }
-
             if (cachedData && cachedData.user) {
                 const { user } = cachedData;
                 const { status_id } = user;
-        
+
                 if (status_id) {
                     return new Response(JSON.stringify(cachedData), {
                         headers: { 'Content-Type': 'application/json' }
                     });
                 } else {
                     console.error("Missing status_id in cached data:", cachedData);
-                    return new Response(JSON.stringify({ error: "Missing status_id" }), {
-                        headers: { 'Content-Type': 'application/json' },
-                        status: 400
-                    });
                 }
             }
         
-            console.error("Invalid cached data structure:", cachedData);
+            // 캐시된 데이터가 유효하지 않은 경우 기본 응답 반환
+            console.warn("Returning default authentication status.");
             return new Response(JSON.stringify({ isAuthenticated: false }), {
                 headers: { 'Content-Type': 'application/json' },
-                status: 400
+                status: 200
             });
         }
 

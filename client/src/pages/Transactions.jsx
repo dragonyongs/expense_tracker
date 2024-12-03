@@ -426,6 +426,7 @@ const Transactions = () => {
                 )}
 
                 <CommonDrawer
+                    color="#FFFFFF"
                     isOpen={isOpen}
                     onClose={handleCloseDrawer}
                     title={isEditing ? "거래 내역 수정" : "거래 내역 추가"}
