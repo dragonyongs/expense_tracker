@@ -87,6 +87,7 @@ exports.getAccountsAndCards = async (req, res) => {
             return {
                 ...account,
                 cards: filteredCards.map(card => ({
+                    card_type: card.card_type,
                     card_number: card.card_number,
                     balance: card.balance,
                     member_name: card.member_id.member_name,
@@ -149,6 +150,7 @@ exports.getMemberAccountsAndCards = async (req, res) => {
             return {
                 ...account,
                 cards: filteredCards.map(card => ({
+                    card_type: card.card_type,
                     card_number: card.card_number,
                     limit: card.limit,
                     rollover_amount: card.rollover_amount,

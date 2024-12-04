@@ -43,7 +43,7 @@ function Teams() {
         const daysLeft = (lastDayOfMonth - today) / (1000 * 60 * 60 * 24);
         setRemainingDays(Math.ceil(daysLeft));
     };
-
+    
     if (loading) {
         return <Loading type="ThreeDots" />;
     }
@@ -55,7 +55,7 @@ function Teams() {
                     <span className="font-semibold">팀계좌</span>
                 </div>
             </header>
-            <div className="flex flex-col gap-y-2 px-4">
+            <div className="flex flex-col gap-y-2 px-4 pb-4">
                 {accounts.length === 0 ? (
                     <NoCardMessage />
                 ) : (
@@ -77,70 +77,119 @@ const NoCardMessage = () => (
     </div>
 );
 
-const AccountList = ({ accounts, userPosition, remainingDays }) => {
-    const filterCardsByPosition = (cards, userPosition) => {
-        const filterRules = {
-            "팀장": () => true,
-            "파트장": card => card.position !== "팀장",
-            "팀원": card => card.position === "팀원",
-        };
-    
-        return cards.filter(filterRules[userPosition] || (() => false));
-    };
-    
-    // 적용
-    const filteredAccounts = accounts.map(account => ({
-        ...account,
-        cards: filterCardsByPosition(account.cards, userPosition),
-    })).filter(account => account.cards.length > 0);
- 
-    return (
-        <>
-            {filteredAccounts.map(account => (
-                <AccountCard
-                    key={account._id}
-                    account={account}
-                    userPosition={userPosition}
-                    remainingDays={remainingDays}
-                />
-            ))}
-        </>
-    );
+const AccountList = ({ accounts, userPosition, remainingDays }) => (
+    <>
+        {accounts.map(account => (
+            <AccountCard
+                key={account._id}
+                account={account}
+                userPosition={userPosition}
+                remainingDays={remainingDays}
+            />
+        ))}
+    </>
+);
+
+const calculateTotalBalance = (cards) => {
+    return cards.reduce((sum, card) => sum + card.balance + card.rollover_amount + card.team_fund, 0);
 };
 
 const AccountCard = ({ account, userPosition, remainingDays }) => {
-    const totalBalance = calculateTotalBalance(account.cards);
-    const teamOperatingFundBalance = account.cards.find(card => card.position === "팀장")?.team_fund || 0;
-    const teamOperatingFundPercentage = handleTeamOperatingFundSpent(account, totalBalance);
+    const totalBalance = calculateTotalBalance(account.cards); // 전체 카드의 잔액 합계
 
+    // 팀장 카드, 팀원 카드, 야근식대 카드 구분
+    const leaderCards = account.cards.filter(card => card.position === "팀장" && card.card_type !== "OvertimeMealCard");
+    const teamMemberCards = account.cards.filter(card => card.position !== "팀장" && card.card_type !== "OvertimeMealCard");
+    const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
+    
     return (
         <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-600 dark:bg-slate-700">
             <h3 className="text-md text-gray-500">
                 {account.team_id.team_name} {account.account_number.split('-').slice(-1)} 계좌
             </h3>
             <h3 className="text-2xl text-gray-700 dark:text-slate-300 mt-2">
-                <span className="font-bold">{(totalBalance + teamOperatingFundBalance).toLocaleString()}원</span>
+                <span className="font-bold">{totalBalance.toLocaleString()}원</span>
                 {totalBalance > 0 && " 남음"}
             </h3>
 
             <div className="mt-8">
-                {filterCardsByPosition(account.cards, userPosition).map(card => (
-                    <CardDetail 
-                        key={card.card_number} 
-                        card={card} 
-                        teamMembersCount={account.cards.length - 1} 
-                        remainingDays={remainingDays} 
+                {/* 팀장의 카드 UI 유지 */}
+                {leaderCards.length > 0 && leaderCards.map(card => (
+                        <LeaderCardDetail 
+                            card={card}
+                            leaderCards={leaderCards} 
+                            remainingDays={remainingDays} 
+                            // teamMembersCount={account.cards.length} 
+                        />
+                    )
+                )}
+
+                {/* 야근식대 카드 UI 표시 (팀장과 관계 없이) */}
+                {overtimeMealCards.length > 0 && (
+                    <div>
+                        {overtimeMealCards.map(card => (
+                            <CardDetail 
+                                key={card.card_number}
+                                card={card} 
+                                // teamMembersCount={account.cards.length} 
+                                remainingDays={remainingDays} 
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* 팀원 카드 UI 출력 */}
+                {teamMemberCards.map(card => (
+                    <CardDetail
+                        key={card.card_number}
+                        card={card}
+                        teamMembersCount={account.cards.length} // 전체 카드 수
+                        remainingDays={remainingDays}
                     />
                 ))}
-
-                {/* 팀장의 운영비 표시 (팀장일 경우에만) */}
-                {userPosition === "팀장" && account.cards.some(card => card.position === "팀장") && (
-                    <TeamOperatingFundCard 
-                        balance={teamOperatingFundBalance} 
-                        percentage={teamOperatingFundPercentage} 
-                    />
-                )}
             </div>
+        </div>
+    );
+};
+
+const LeaderCardDetail = ({leaderCards}) => {
+    const totalBalance = leaderCards.reduce((sum, card) => sum + card.balance + card.rollover_amount, 0);
+    const teamFund = leaderCards.find(card => card.team_fund)?.team_fund || 0;
+    return (
+        <div className="mb-10">
+            <h3 className="flex gap-x-2 items-center dark:text-slate-500">
+                <span className="text-lg font-bold dark:text-slate-400">
+                    {leaderCards[0].member_name}
+                </span>
+                <span className="text-base">{leaderCards[0].position}</span>
+            </h3>
+            {leaderCards.map(card => (
+                <div key={card.card_number} className="flex justify-between mt-4 pt-4 border-t dark:border-slate-600">
+                    <h4 className="text-md dark:text-slate-500">개인 사용</h4>
+                    <span className="text-lg font-bold dark:text-slate-400">
+                        {card.balance.toLocaleString()}원
+                    </span>
+                </div>
+            ))}
+
+            {/* 팀 운영비 표시 */}
+            {teamFund > 0 && (
+                <div className="flex justify-between mt-2">
+                    <h4 className="text-md dark:text-slate-500">팀 운영비</h4>
+                    <span className="text-lg font-bold dark:text-slate-400">
+                        {teamFund.toLocaleString()}원
+                    </span>
+                </div>
+            )}
+
+            {/* 전체 잔액 (카드 + 팀 운영비) */}
+            <div className="flex justify-between mt-4 border-t pt-2 dark:border-slate-600">
+                <h4 className="text-md font-bold dark:text-slate-500">총 잔액</h4>
+                <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                    {(totalBalance + teamFund).toLocaleString()}원
+                </span>
+            </div>
+
         </div>
     );
 };
@@ -151,55 +200,31 @@ const CardDetail = ({ card, teamMembersCount, remainingDays }) => {
     const isWarning = individualLimit < totalAmount && remainingDays <= 7;
     const spentPercentage = ((card.limit - card.balance) / card.limit) * 100;
 
+    // 야근식대 카드인지 확인
+    const isOvertimeMealCard = card.card_type === "OvertimeMealCard";
+
     return (
         <div className="mb-10">
+            {/* 야근식대 카드일 경우, 이름을 '야근 식대'로 처리 */}
             <div className="flex justify-between mb-4">
                 <h3 className="flex gap-x-2 items-center dark:text-slate-500">
-                    <span className="text-lg font-bold dark:text-slate-400">{card.member_name}</span>
-                    <span className="text-base">{card.position}</span>
+                    <span className="text-lg font-bold dark:text-slate-400">
+                        {isOvertimeMealCard ? "야근 식대" : card.member_name}
+                    </span>
+                    {/* 야근식대 카드일 경우 '야근 식대'가 나오고, 팀원 카드일 경우 팀원의 포지션 표시 */}
+                    {!isOvertimeMealCard && <span className="text-base">{card.position}</span>}
                 </h3>
                 <span className={`text-lg ${isWarning ? 'text-red-600 dark:text-red-700' : ''}`}>
                     <span className="font-bold dark:text-slate-400">{totalAmount.toLocaleString()}원</span>
                     <span className='dark:text-slate-500'>{totalAmount > 0 && " 남음"}</span>
                 </span>
             </div>
+
+            {/* 야근식대 카드일 때 ProgressBar를 별도로 스타일링할 수도 있음 */}
             <ProgressBars spentPercentage={spentPercentage} isWarning={isWarning} />
         </div>
     );
 };
 
-const TeamOperatingFundCard = ({ balance, percentage }) => (
-    <div className="mb-10">
-        <div className="flex justify-between mb-4">
-            <h3 className="text-lg font-bold dark:text-slate-400">팀 운영비</h3>
-            <span className="text-lg">
-                <span className="font-bold dark:text-slate-400">{balance.toLocaleString()}원</span>
-                <span className='dark:text-slate-500'>{balance > 0 && " 남음"}</span>
-            </span>
-        </div>
-        <ProgressBars spentPercentage={percentage} isWarning={false} />
-    </div>
-);
-
-const calculateTotalBalance = (cards) => {
-    return cards.reduce((sum, card) => sum + card.balance + card.rollover_amount, 0);
-};
-
-const filterCardsByPosition = (cards, userPosition) => {
-    if (userPosition === "팀장") return cards;
-    if (userPosition === "파트장") return cards.filter(card => card.position !== "팀장");
-    return cards.filter(card => !["팀장", "파트장"].includes(card.position));
-};
-
-const handleTeamOperatingFundSpent = (account, totalBalance) => {
-    const teamLeaderCard = account.cards.find(card => card.position === "팀장");
-    if (!teamLeaderCard) return 0;
-
-    const totalTeamFundLimit = account.cards.length * 30000;
-    const remainingFund = teamLeaderCard.team_fund || 0;
-    const usedFund = totalTeamFundLimit - remainingFund;
-
-    return totalTeamFundLimit > 0 ? (usedFund / totalTeamFundLimit) * 100 : 0;
-};
 
 export default Teams;

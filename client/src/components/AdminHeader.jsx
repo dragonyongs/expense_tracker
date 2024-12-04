@@ -13,7 +13,7 @@ const AdminHeader = () => {
 
     return (
         <>
-            <header className={`flex justify-between items-center py-4 px-6 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+            <header className={`flex justify-between items-center p-4 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                 <div className='text-2xl' >
                     <span className='font-semibold'>관리자</span>
                 </div>

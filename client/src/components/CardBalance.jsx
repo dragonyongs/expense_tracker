@@ -59,8 +59,8 @@ function CardBalance({ onSave }) {
                 try {
                     const response = await axios.get(`${API_URLS.CARD_MEMBER}/${user.member_id}`);
                     if (response.data.length > 0) {
-                        setCard(response.data[0]); // 카드 정보 설정
-                        setUserCards(response.data); // 사용자 카드 목록
+                        setCard(response.data[0]); 
+                        setUserCards(response.data);
                     }
                 } catch (error) {
                     console.error(`Error fetching user cards:`, error);
@@ -83,11 +83,11 @@ function CardBalance({ onSave }) {
         }
     };
 
-    const handleOpenDrawer = () => setIsDrawerOpen(true); // Drawer 열기
-    const handleCloseDrawer = () => setIsDrawerOpen(false); // Drawer 닫기
+    const handleOpenDrawer = () => setIsDrawerOpen(true);
+    const handleCloseDrawer = () => setIsDrawerOpen(false); 
 
     return (
-        <div className='flex flex-col items-center gap-y-3 pt-6 pb-12 rounded-es-4xl rounded-ee-4xl bg-[#0433FF]'>
+        <div className='flex flex-col items-center gap-y-3 pt-6 pb-4 rounded-es-4xl rounded-ee-4xl bg-[#0433FF]'>
             <p className='text-xl text-blue-200'>
                 카드 잔액 {5000 > currentBalanceWithRollover ? "🥲" : 10000 >= currentBalanceWithRollover ? "😱" : "🤑"}
             </p>
@@ -97,7 +97,7 @@ function CardBalance({ onSave }) {
                     {isLoaded ? <AnimatedNumber value={currentBalanceWithRollover} /> : "0"}
                 </p>
             </div>
-            <div className='flex justify-center items-center gap-x-3 mt-6'>
+            <div className='flex justify-center items-center gap-x-3 mt-10'>
                 <button onClick={handleOpenDrawer} className='inline-flex items-center gap-x-2 py-3 px-10 border-2 border-blue-100 rounded-full text-white'><TiPlus /> 지출 기록</button>
             </div>
 
@@ -105,7 +105,7 @@ function CardBalance({ onSave }) {
                 isOpen={isDrawerOpen}
                 onClose={handleCloseDrawer}
                 onSave={handleSave}
-                userCards={userCards || []} // 사용자 카드 목록
+                userCards={userCards || []}
                 isEditing={false}
                 transactionData={{}}
                 errMsg={null}
@@ -113,7 +113,7 @@ function CardBalance({ onSave }) {
                 cardBalance={card.balance}
                 teamFund={card.team_fund || 0}
                 onDelete={(data) => {
-                    console.log("Transaction saved:", data); // 저장된 데이터 처리
+                    console.log("Transaction saved:", data);
                     handleCloseDrawer();
                 }} 
             />

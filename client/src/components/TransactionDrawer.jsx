@@ -125,7 +125,7 @@ const TransactionDrawer = ({
             color="#FFFFFF"
             isOpen={isOpen}
             onClose={onClose}
-            title={isEditing ? "거래 내역 수정" : "거래 내역 추가"}
+            title={isEditing ? "카드 지출 수정" : "카드 지출 추가"}
             errMsg={errMsg}
             onSave={handleSave}
         >
@@ -239,28 +239,31 @@ const TransactionDrawer = ({
                     }
                     placeholder="메뉴명 입력"
                 />
-                <SelectField
-                    label="사용 카드"
-                    id="card_id"
-                    value={selectedTransaction.card_id}
-                    onChange={handleCardChange}
-                    options={userCards.map(card => ({
-                        value: card._id,
-                        label: card.card_number,
-                    }))}
-                    required={true}
-                />
+                {userCards.length >= 2 && (
+                    <SelectField
+                        label="사용 카드"
+                        id="card_id"
+                        value={selectedTransaction.card_id}
+                        onChange={handleCardChange}
+                        options={userCards.map(card => ({
+                            value: card._id,
+                            label: card.card_number,
+                        }))}
+                        required={true}
+                    />
+                )}
+                
             </div>
 
-            <div className="flex flex-col gap-3 pt-4 p-6 dark:bg-slate-800">
+            <div className="flex flex-col gap-y-2 px-6 dark:bg-slate-800">
                 <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                    {isEditing ? '수정' : '등록'}
+                    {isEditing ? '수정' : '추가'}
                 </button>
                 {!isEditing ? (
                     <button
                         type="button"
                         onClick={onClose}
-                        className='text-gray-600 font-semibold dark:text-gray-400 dark:font-normal'
+                        className='py-3 rounded-lg text-gray-600 font-semibold dark:text-gray-400 dark:font-normal'
                     >
                         닫기
                     </button>
@@ -268,7 +271,7 @@ const TransactionDrawer = ({
                     <button
                         type="button"
                         onClick={onDelete}
-                        className='text-red-600 font-semibold dark:text-orange-400 dark:font-normal'
+                        className='py-3 rounded-lg text-red-600 font-semibold dark:text-orange-400 dark:font-normal'
                     >
                         삭제
                     </button>

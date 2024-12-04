@@ -29,7 +29,7 @@ const AdminCard = () => {
             setCards(cardsRes.data);
             setAccounts(accountsRes.data);
     
-            const assignedMembers = new Set(cardsRes.data.map(card => card.member_id._id));
+            const assignedMembers = new Set(cardsRes.data.map(card => card?.member_id?._id));
     
             if (!isEditing) {
                 const filteredMembers = membersRes.data.filter(member => !assignedMembers.has(member._id)
@@ -69,7 +69,7 @@ const AdminCard = () => {
     const handleOpenDrawer = (cards) => {
         setSelectedCard(cards);
         setIsEditing(true);
-        setSelectUserPosition(cards.member_id.position);
+        setSelectUserPosition(cards?.member_id?.position);
         setIsOpen(true);
     };
 
@@ -80,7 +80,15 @@ const AdminCard = () => {
 
     const handleSave = async () => {
         try {
-            const cardData = { ...selectedCard };
+            const cardData = {
+                ...selectedCard,
+                member_id: selectedCard.member_id || null,
+                balance: parseInt(selectedCard.balance) || 0,
+                rollover_amount: parseInt(selectedCard.rollover_amount) || 0,
+                team_fund: parseInt(selectedCard.team_fund) || 0,
+                limit: parseInt(selectedCard.limit) || 100000,
+            };
+            console.log("cardData:", cardData);
             if (isEditing) {
                 await axios.put(`${API_URLS.CARDS}/${selectedCard._id}`, cardData);
                 console.log("Card updated successfully:", cardData);
@@ -170,6 +178,8 @@ const AdminCard = () => {
                             <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {cards.map(card => {
                                     const totalBalance = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0);
+                                    const memberName = card.member_id ? card.member_id.member_name : "미지정";
+
                                     return (
                                         <li key={card._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(card)}>
                                             <div className="flex items-center">
@@ -177,7 +187,7 @@ const AdminCard = () => {
                                                     <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                                         {card.card_number}
                                                     </p>
-                                                    <p className='inline-block dark:text-white'>{card.member_id.member_name}</p>
+                                                    <p className='inline-block dark:text-white'>{memberName}</p>
                                                 </div>
                                                 <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
                                                     <span className='font-bold tracking-tight'>{totalBalance.toLocaleString()}</span>원
@@ -265,20 +275,19 @@ const AdminCard = () => {
                                         id="team_fund"
                                         type="number"
                                         value={selectedCard.team_fund || 0}
-                                        onChange={(e) => setSelectedCard({ ...selectedCard, ㅅㄷ: e.target.value })}
+                                        onChange={(e) => setSelectedCard({ ...selectedCard, team_fund: e.target.value })}
                                         placeholder=""
                                     />
                                 }
 
                                 <SelectField
                                     label="사용자"
-                                    id="card_id"
+                                    id="member_id"
                                     value={selectedCard?.member_id?._id || ""}
                                     onChange={handleMemberChange}
                                     options={members.map(member => ({ value: member._id, label: member.member_name}
                                     ))}
                                     placeholder="사용자 선택"
-                                    required
                                 />
 
                                 <SelectField
