@@ -94,28 +94,23 @@ const calculateTotalBalance = (cards) => {
     return cards.reduce((sum, card) => sum + card.balance + card.rollover_amount + card.team_fund, 0);
 };
 
-const AccountCard = ({ account, userPosition, remainingDays }) => {
+const AccountCard = ({ account, userPosition, remainingDays, userId }) => {
     const totalBalance = calculateTotalBalance(account.cards); // 전체 카드의 잔액 합계
 
     // 카드 분류
     const leaderCards = account.cards.filter(card => card.position === "팀장" && card.card_type !== "OvertimeMealCard");
-    const teamMemberCards = account.cards.filter(card => card.position === "팀원" && card.card_type !== "OvertimeMealCard");
     const partLeaderCards = account.cards.filter(card => card.position === "파트장");
+    const teamMemberCards = account.cards.filter(card => card.position === "팀원");
     const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
 
-    // 조건에 따른 계좌 숨김 처리
-    const isTeamLeaderAccount = leaderCards.length > 0; // 팀장 계좌 여부
-    const isPartLeaderAccount = partLeaderCards.length > 0; // 파트장 계좌 여부
+    // 자신의 카드만 확인하는 필터
+    const myCards = account.cards.filter(card => card.member_id === userId);
 
-    if (userPosition === "팀원") {
-        // 팀원은 팀장 계좌와 파트장 계좌를 볼 수 없음
-        if (isTeamLeaderAccount || isPartLeaderAccount) return null;
-    }
-
-    if (userPosition === "파트장") {
-        // 파트장은 팀장 계좌를 볼 수 없음
-        if (isTeamLeaderAccount) return null;
-    }
+    // 조건에 따른 렌더링 로직
+    const shouldShowLeaderCards = userPosition === "팀장";
+    const shouldShowPartLeaderCards = userPosition === "팀장" || userPosition === "파트장";
+    const shouldShowTeamMemberCards = userPosition === "팀장" || userPosition === "파트장";
+    const shouldShowMyCards = userPosition === "팀원";
 
     return (
         <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-600 dark:bg-slate-700">
@@ -129,29 +124,45 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
 
             <div className="mt-8">
                 {/* 팀장 카드 UI: 팀장만 렌더링 */}
-                {userPosition === "팀장" && leaderCards.length > 0 && (
-                    leaderCards.map(card => (
-                        <LeaderCardDetail 
-                            key={card.card_number}
-                            card={card}
-                            leaderCards={leaderCards} 
-                            remainingDays={remainingDays} 
-                        />
-                    ))
-                )}
+                {shouldShowLeaderCards && leaderCards.map(card => (
+                    <LeaderCardDetail 
+                        key={card.card_number}
+                        card={card}
+                        leaderCards={leaderCards} 
+                        remainingDays={remainingDays} 
+                    />
+                ))}
 
-                {/* 파트장 카드 UI: 파트장만 렌더링 */}
-                {userPosition === "파트장" && partLeaderCards.length > 0 && (
-                    partLeaderCards.map(card => (
-                        <CardDetail 
-                            key={card.card_number}
-                            card={card}
-                            remainingDays={remainingDays} 
-                        />
-                    ))
-                )}
+                {/* 파트장 카드 UI: 팀장과 파트장만 렌더링 */}
+                {shouldShowPartLeaderCards && partLeaderCards.map(card => (
+                    <CardDetail 
+                        key={card.card_number}
+                        card={card}
+                        remainingDays={remainingDays} 
+                    />
+                ))}
 
-                {/* 야근식대 카드 UI: 팀장/파트장/팀원 모두 렌더링 */}
+                {/* 팀원 카드 UI: 팀장과 파트장만 렌더링 */}
+                {shouldShowTeamMemberCards && teamMemberCards.map(card => (
+                    <CardDetail
+                        key={card.card_number}
+                        card={card}
+                        teamMembersCount={account.cards.length} 
+                        remainingDays={remainingDays}
+                    />
+                ))}
+
+                {/* 본인 카드 UI: 팀원만 렌더링 */}
+                {shouldShowMyCards && myCards.map(card => (
+                    <CardDetail
+                        key={card.card_number}
+                        card={card}
+                        teamMembersCount={account.cards.length}
+                        remainingDays={remainingDays}
+                    />
+                ))}
+
+                {/* 야근식대 카드 UI: 모두 렌더링 */}
                 {overtimeMealCards.length > 0 && (
                     <div>
                         {overtimeMealCards.map(card => (
@@ -162,18 +173,6 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
                             />
                         ))}
                     </div>
-                )}
-
-                {/* 팀원 카드 UI: 팀장/파트장 렌더링 */}
-                {(userPosition === "팀장" || userPosition === "파트장") && teamMemberCards.length > 0 && (
-                    teamMemberCards.map(card => (
-                        <CardDetail
-                            key={card.card_number}
-                            card={card}
-                            teamMembersCount={account.cards.length} 
-                            remainingDays={remainingDays}
-                        />
-                    ))
                 )}
             </div>
         </div>
