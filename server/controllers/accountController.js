@@ -146,7 +146,7 @@ exports.getMemberAccountsAndCards = async (req, res) => {
 
             return {
                 ...account,
-                cards: filteredCards.map(card => ({
+                cards: accountData.map(card => ({
                     card_type: card.card_type,
                     card_number: card.card_number,
                     limit: card.limit,
