@@ -102,6 +102,12 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
     const teamMemberCards = account.cards.filter(card => card.position !== "팀장" && card.card_type !== "OvertimeMealCard");
     const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
 
+    // 팀원이 로그인한 경우, 팀장 계좌 숨기기
+    const isTeamLeaderAccount = leaderCards.length > 0; // 팀장 카드를 포함한 계좌인지 여부
+    if (userPosition !== "팀장" && isTeamLeaderAccount) {
+        return null; // 팀장이 아니고 해당 계좌가 팀장의 계좌라면 숨김
+    }
+
     return (
         <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-600 dark:bg-slate-700">
             <h3 className="text-md text-gray-500">
