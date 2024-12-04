@@ -107,6 +107,71 @@ exports.getMemberAccountsAndCards = async (req, res) => {
     try {
         const memberId = req.params.memberId;
 
+        // 멤버의 정보를 가져오며 상태 확인
+        const member = await Member.findById(memberId)
+            .populate('status_id', 'status_name')
+            .lean();
+
+        if (!member || member.status_id?.status_name === 'resigned') {
+            return res.status(404).json({ error: 'Member not found or is resigned' });
+        }
+
+        // 팀 ID와 관련된 계좌 조회
+        const accounts = await Account.find({ team_id: member.team_id })
+            .populate({
+                path: 'team_id',
+                select: 'team_name',
+            })
+            .lean();
+
+        // 계좌와 카드 데이터 필터링
+        const accountData = await Promise.all(accounts.map(async (account) => {
+            const cards = await Card.find({ account_id: account._id })
+                .populate({
+                    path: 'member_id',
+                    populate: { path: 'status_id', select: 'status_name' },
+                    select: 'member_name rank position',
+                })
+                .lean();
+
+            // 팀원이 볼 수 있는 카드 필터링
+            const filteredCards = cards.filter(card => {
+                // 1. 카드가 본인 소유이거나
+                // 2. 카드 타입이 야근식대인 경우
+                return (
+                    card.member_id?._id.toString() === memberId ||
+                    card.card_type === "OvertimeMealCard"
+                );
+            });
+
+            return {
+                ...account,
+                cards: filteredCards.map(card => ({
+                    card_type: card.card_type,
+                    card_number: card.card_number,
+                    limit: card.limit,
+                    rollover_amount: card.rollover_amount,
+                    balance: card.balance,
+                    member_id: card.member_id._id,
+                    member_name: card.member_id.member_name,
+                    rank: card.member_id.rank,
+                    position: card.member_id.position,
+                    team_fund: card.team_fund,
+                })),
+            };
+        }));
+
+        res.json(accountData);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user-specific account and card data', error });
+    }
+};
+
+{/*
+exports.getMemberAccountsAndCards = async (req, res) => {
+    try {
+        const memberId = req.params.memberId;
+
         // 멤버의 정보를 가져오며 상태(status_id) 확인
         const member = await Member.findById(memberId)
             .populate('status_id', 'status_name')
@@ -169,3 +234,4 @@ exports.getMemberAccountsAndCards = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user-specific account and card data', error });
     }
 };
+*/}
