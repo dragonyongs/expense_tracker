@@ -146,7 +146,7 @@ exports.getMemberAccountsAndCards = async (req, res) => {
 console.log('filteredCards', filteredCards);
             return {
                 ...account,
-                cards: accountData.map(card => ({
+                cards: filteredCards.map(card => ({
                     card_type: card.card_type,
                     card_number: card.card_number,
                     limit: card.limit,
