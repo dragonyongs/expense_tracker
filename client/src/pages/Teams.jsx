@@ -12,7 +12,7 @@ function Teams() {
     const [loading, setLoading] = useState(true);
     const [userPosition, setUserPosition] = useState('');
     const [remainingDays, setRemainingDays] = useState(0);
-{/*
+
     const fetchData = async (url) => {
         try {
             const response = await axios.get(url, { withCredentials: true });
@@ -24,35 +24,6 @@ function Teams() {
                 .flatMap(account => account.cards)
                 .find(card => card.member_id === user.member_id);
     
-            setUserPosition(userCard ? userCard.position : '');
-        } catch (error) {
-            console.error(`Error fetching data from ${url}:`, error);
-        } finally {
-            setLoading(false);
-        }
-    };
-    */}
-    
-    const fetchData = async (url) => {
-        try {
-            const response = await axios.get(url, { withCredentials: true });
-            const fetchedAccounts = response.data;
-
-            // 팀원의 계좌와 야근식대 카드 필터링
-            const userAccounts = fetchedAccounts.filter(account => 
-                account.cards.some(card => 
-                    card.member_id === user.member_id || 
-                    card.card_type === "OvertimeMealCard"
-                )
-            );
-
-            setAccounts(userAccounts);
-
-            // 사용자 위치(팀장/팀원) 확인
-            const userCard = userAccounts
-                .flatMap(account => account.cards)
-                .find(card => card.member_id === user.member_id);
-
             setUserPosition(userCard ? userCard.position : '');
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
