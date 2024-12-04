@@ -143,7 +143,7 @@ exports.getMemberAccountsAndCards = async (req, res) => {
                     card.card_type === "OvertimeMealCard"
                 );
             });
-
+console.log('filteredCards', filteredCards);
             return {
                 ...account,
                 cards: accountData.map(card => ({
