@@ -101,7 +101,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
     const leaderCards = account.cards.filter(card => card.position === "팀장" && card.card_type !== "OvertimeMealCard");
     const teamMemberCards = account.cards.filter(card => card.position !== "팀장" && card.card_type !== "OvertimeMealCard");
     const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
-    
+
     return (
         <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-600 dark:bg-slate-700">
             <h3 className="text-md text-gray-500">
@@ -113,40 +113,42 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
             </h3>
 
             <div className="mt-8">
-                {/* 팀장의 카드 UI 유지 */}
-                {leaderCards.length > 0 && leaderCards.map(card => (
+                {/* 팀장 카드 UI: 팀장만 렌더링 */}
+                {userPosition === "팀장" && leaderCards.length > 0 && (
+                    leaderCards.map(card => (
                         <LeaderCardDetail 
+                            key={card.card_number}
                             card={card}
                             leaderCards={leaderCards} 
                             remainingDays={remainingDays} 
-                            // teamMembersCount={account.cards.length} 
                         />
-                    )
+                    ))
                 )}
 
-                {/* 야근식대 카드 UI 표시 (팀장과 관계 없이) */}
+                {/* 야근식대 카드 UI: 팀장/팀원 모두 렌더링 */}
                 {overtimeMealCards.length > 0 && (
                     <div>
                         {overtimeMealCards.map(card => (
                             <CardDetail 
                                 key={card.card_number}
                                 card={card} 
-                                // teamMembersCount={account.cards.length} 
                                 remainingDays={remainingDays} 
                             />
                         ))}
                     </div>
                 )}
 
-                {/* 팀원 카드 UI 출력 */}
-                {teamMemberCards.map(card => (
-                    <CardDetail
-                        key={card.card_number}
-                        card={card}
-                        teamMembersCount={account.cards.length} // 전체 카드 수
-                        remainingDays={remainingDays}
-                    />
-                ))}
+                {/* 팀원 카드 UI: 팀원/팀장 모두 렌더링 */}
+                {teamMemberCards.length > 0 && (
+                    teamMemberCards.map(card => (
+                        <CardDetail
+                            key={card.card_number}
+                            card={card}
+                            teamMembersCount={account.cards.length} 
+                            remainingDays={remainingDays}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );
