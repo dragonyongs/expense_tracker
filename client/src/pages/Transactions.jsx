@@ -10,9 +10,11 @@ import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 import { MutatingDots } from 'react-loader-spinner';
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const Transactions = () => {
-
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
     const [depositType, setDepositType] = useState('');
@@ -39,6 +41,9 @@ const Transactions = () => {
         is_deducted: false,        
     });
     const [prevTransaction, setPrevTransaction] = useState(0);
+
+    const [selectedCardId, setSelectedCardId] = useState(''); // 현재 선택된 카드 ID
+    const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
@@ -90,17 +95,53 @@ const Transactions = () => {
         fetchCards();
     }, []);
 
+    // useEffect(() => {
+    //     if (cards.length > 0 && user) {
+    //         const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
+    //         setUserCards(filteredCards);
+    //         if (filteredCards.length > 0) {
+    //             setSelectedTransaction(prev => ({ ...prev, card_id: filteredCards[0]._id }));
+    //             setCardBalance(filteredCards[0].balance);
+    //             setTeamFund(filteredCards[0].team_fund);
+    //         }
+    //     }
+    // }, [cards, user]);
+
     useEffect(() => {
         if (cards.length > 0 && user) {
+            // 현재 사용자의 카드만 필터링
             const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
             setUserCards(filteredCards);
+    
+            // 첫 번째 카드 기본 선택
             if (filteredCards.length > 0) {
-                setSelectedTransaction(prev => ({ ...prev, card_id: filteredCards[0]._id }));
+                setSelectedCardId(filteredCards[0]._id); // 첫 카드 ID로 설정
                 setCardBalance(filteredCards[0].balance);
                 setTeamFund(filteredCards[0].team_fund);
             }
         }
-    }, [cards, user]);
+    }, [cards, user]); // 카드 데이터나 사용자 정보가 변경될 때 실행
+
+    // 카드 선택 시 트랜잭션 필터링
+    useEffect(() => {
+        if (selectedCardId) {
+            const updatedTransactions = transactions.filter(
+                tx => tx.card_id._id === selectedCardId
+            );
+            console.log('Filtered Transactions:', updatedTransactions); // 디버깅
+            setFilteredTransactions(updatedTransactions);
+        } else {
+            setFilteredTransactions(transactions);
+        }
+    }, [selectedCardId, transactions]); // selectedCardId나 트랜잭션이 변경되면 실행
+
+    useEffect(() => {
+        // 슬라이더로 이동 시 선택된 카드 동기화
+        if (userCards.length > 0) {
+            const initialCardId = userCards[0]._id;
+            setSelectedCardId(initialCardId);
+        }
+    }, [userCards]); // userCards가 업데이트되면 첫 번째 카드로 초기화
 
     const resetTransaction = () => ({
         card_id: userCards[0]?._id || "",
@@ -242,7 +283,15 @@ const Transactions = () => {
         }
     };
 
-    const groupedTransactions = transactions.reduce((acc, transaction) => {
+    // const groupedTransactions = transactions.reduce((acc, transaction) => {
+    //     const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+    //     if (!acc[transactionDate]) {
+    //         acc[transactionDate] = [];
+    //     }
+    //     acc[transactionDate].push(transaction);
+    //     return acc;
+    // }, {});
+    const groupedTransactions = filteredTransactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
         if (!acc[transactionDate]) {
             acc[transactionDate] = [];
@@ -250,7 +299,16 @@ const Transactions = () => {
         acc[transactionDate].push(transaction);
         return acc;
     }, {});
-
+    
+    // const handleCardSelect = (cardId) => {
+    //     setSelectedCardId(cardId); // 선택된 카드 ID를 업데이트
+    //     const selectedCard = userCards.find(card => card._id === cardId);
+    //     if (selectedCard) {
+    //         setCardBalance(selectedCard.balance);
+    //         setTeamFund(selectedCard.team_fund);
+    //     }
+    // };
+    
     const userCardsWithTotals = userCards.map(card => {
         const totalSpent = transactions
             .filter(tx => tx.card_id._id === card._id && tx.transaction_type === 'expense' && !tx.is_deducted)
@@ -265,6 +323,25 @@ const Transactions = () => {
     const handleExpenseTypeChange = (type) => {
         setExpenseType(type);
     };
+
+    // 슬라이더 설정
+    const sliderSettings = {
+        dots: true,
+        infinite: false,
+        speed: 500,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: false,
+        beforeChange: (current, next) => {
+            const roundedNext = Math.round(next);
+            const nextCardId = userCardsWithTotals[roundedNext]?._id;
+    
+            if (nextCardId) {
+                setSelectedCardId(nextCardId);
+            }
+        },
+    };
+    
     
     return (
         <>
@@ -272,12 +349,9 @@ const Transactions = () => {
                 <div className='text-2xl' >
                     <span className='font-semibold'>내 카드</span>
                 </div>
-                {/* <button
-                    type="button" 
-                    className='flex items-center gap-x-2 text-black font-semibold rounded-lg text-3xl dark:text-white'
-                    onClick={handleAddTransaction}
-                ><IoAddCircleOutline /></button> */}
             </header>
+
+
             <div className='flex-1 w-full p-4'>
                 {/* 카드 한도와 남은 금액 표시 */}
                 <div className='mb-8'>
@@ -296,20 +370,30 @@ const Transactions = () => {
                         />
                     </div>
                     ) : (
-                        userCardsWithTotals.map(card => {
-                            const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
-                            return (
-                                    <FlipCard
-                                        key={card._id} 
-                                        userName={user.name}
-                                        cardNumber={card.card_number}
-                                        totalSpent={Number(card.totalSpent)}
-                                        currentBalance={currentBalanceWithRollover}
-                                        rolloverAmount={Number(card.rollover_amount)}
-                                    />
-                            );
-                        })
-
+                        <Slider {...sliderSettings}>
+                            {userCardsWithTotals.map(card => {
+                                const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
+                                return (
+                                    <>
+                                        <FlipCard
+                                            key={card._id} 
+                                            userName={user.name}
+                                            cardNumber={card.card_number}
+                                            totalSpent={Number(card.totalSpent)}
+                                            currentBalance={currentBalanceWithRollover}
+                                            rolloverAmount={Number(card.rollover_amount)}
+                                        />
+                                        {/* <button
+                                            key={card._id}
+                                            onClick={() => handleCardSelect(card._id)}
+                                            className={`card-button ${selectedCardId === card._id ? 'active' : ''}`}
+                                        >
+                                            {card.card_number}
+                                        </button> */}
+                                    </>
+                                );
+                            })}
+                        </Slider>
                     ) }
                 </div>
 

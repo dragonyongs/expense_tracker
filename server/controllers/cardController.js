@@ -16,7 +16,14 @@ exports.createCard = async (req, res) => {
 exports.getAllCards = async (req, res) => {
     try {
         const cards = await Card.find()
-            .populate('account_id', 'account_number bank_name')
+            .populate({
+                path: 'account_id',
+                populate: {
+                    path: 'team_id',
+                    select: 'team_name'
+                },
+                select: 'account_number bank_name team_id'
+            })
             .populate({
                 path: 'member_id',
                 populate: {
