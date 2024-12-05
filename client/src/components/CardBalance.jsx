@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { TiPlus } from "react-icons/ti";
-import TransactionDrawer from './TransactionDrawer';
-import AnimatedNumber from './AnimatedNumber';
 import { AuthContext } from '../context/AuthProvider';
 import { ConfettiEffect } from './ConfettiEffect';
+import TransactionDrawer from './TransactionDrawer';
+import AnimatedNumber from './AnimatedNumber';
+import { TiPlus } from "react-icons/ti";
 
 function CardBalance({ onSave, currentBalance, teamFund, userCards, cardBalance }) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);

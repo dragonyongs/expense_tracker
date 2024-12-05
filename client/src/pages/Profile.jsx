@@ -219,6 +219,7 @@ const Profile = () => {
                 </div>
             </div>
             <ProfileEditDrawer
+                color="#59626e"
                 isOpen={isOpen}
                 title={"프로필 수정"}
                 memberId={memberId}

@@ -12,8 +12,19 @@ import { ThreeDots } from 'react-loader-spinner';
 import { FaChevronDown } from "react-icons/fa";
 import { LuTrash } from "react-icons/lu";
 import { formatDateForInput } from '../utils/dateUtils';
+import { useTheme } from '../context/ThemeColorContext';
 
-const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSave, isOpen }) => {
+const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSave, isOpen, color }) => {
+
+    const { setThemeColor } = useTheme();
+    
+    useEffect(() => {
+        if (isOpen) {
+            setThemeColor(color);
+        } else {
+            setThemeColor("#dce8f5");
+        }
+    }, [isOpen, color, setThemeColor]);
 
     const [profile, setProfile] = useState({
         phones: [],
@@ -351,7 +362,7 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                                             <select
                                                 value={contact.phone_type || ''}
                                                 onChange={(e) => handleUpdateContact(index, 'phone_type', e.target.value)}
-                                                className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                                className="w-1/5 sm:w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
                                             >
                                                 <option>선택</option>
                                                 <option value="company_phone">회사</option>
@@ -408,7 +419,7 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                                                 <select
                                                     value={address.address_type || ''}
                                                     onChange={(e) => handleUpdateAddress(index, 'address_type', e.target.value)}
-                                                    className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                                    className="w-1/5 sm:w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
                                                 >
                                                     <option>선택</option>
                                                     <option value="home">집</option>
@@ -476,7 +487,7 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                                             <select
                                                 value={date.date_type || ''}
                                                 onChange={(e) => handleUpdateDates(index, 'date_type', e.target.value)}
-                                                className="w-1/6 py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                                className="w-1/5 sm:w-1/6  py-3 px-1 bg-slate-100 rounded-md border border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
                                             >
                                                 <option>선택</option>
                                                 <option value="entry">입사</option>

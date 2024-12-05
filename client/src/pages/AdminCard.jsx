@@ -54,10 +54,10 @@ const AdminCard = () => {
     const handleAddCard = () => {
         setSelectedCard({
             card_number: '',
-            limit: '',
-            rollover_amount: '',
-            balance: '',
-            team_fund: '',
+            limit: 100000,
+            rollover_amount: 0,
+            balance: 0,
+            team_fund: 0,
             account_id: '',
             member_id: ''
         });
@@ -244,29 +244,30 @@ const AdminCard = () => {
                                     label="최초 한도" 
                                     id="initial_limit"
                                     type="number"
-                                    value={selectedCard.limit || 0}
+                                    value={selectedCard.limit}
                                     onChange={(e) => setSelectedCard({ ...selectedCard, limit: e.target.value })}
                                     placeholder="한도 입력"
+                                    required
                                 />
 
                                 <InputField 
                                     label="현재 잔액" 
                                     id="balance"
                                     type="number"
-                                    value={selectedCard.balance || 0}
+                                    value={selectedCard.balance}
                                     onChange={(e) => setSelectedCard({ ...selectedCard, balance: e.target.value })}
                                     placeholder=""
-                                    required
+                                    disabled={!isEditing}
                                 />
 
                                 <InputField 
                                     label="이월 잔액" 
                                     id="rollover_amount"
                                     type="number"
-                                    value={selectedCard.rollover_amount || 0}
+                                    value={selectedCard.rollover_amount}
                                     onChange={(e) => setSelectedCard({ ...selectedCard, rollover_amount: e.target.value })}
                                     placeholder=""
-                                    required
+                                    disabled={!isEditing}
                                 />
 
                                 {selectUserPosition === '팀장' &&
@@ -274,7 +275,7 @@ const AdminCard = () => {
                                         label="팀 운영비 잔액" 
                                         id="team_fund"
                                         type="number"
-                                        value={selectedCard.team_fund || 0}
+                                        value={selectedCard.team_fund}
                                         onChange={(e) => setSelectedCard({ ...selectedCard, team_fund: e.target.value })}
                                         placeholder=""
                                     />

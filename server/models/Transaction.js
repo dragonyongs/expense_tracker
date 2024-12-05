@@ -16,7 +16,7 @@ const transactionSchema = new mongoose.Schema({
     },
     expense_card: { 
         type: String, 
-        enum: ['TeamCard'], // 현재는 팀카드만 사용
+        enum: ['TeamCard', 'OvertimeMealCard'], // 현재는 팀카드만 사용
         default: 'TeamCard',
         required: function() {
             return this.transaction_type === 'expense';
@@ -24,7 +24,7 @@ const transactionSchema = new mongoose.Schema({
     },
     expense_type: { 
         type: String, 
-        enum: ['RegularExpense', 'TeamFund', 'TransportationExpense'], // 목적만 구분
+        enum: ['RegularExpense', 'TeamFund', 'TransportationExpense', 'OvertimeMealExpense'], // 목적만 구분
         default: 'RegularExpense',
         required: function() {
             return this.transaction_type === 'expense';
