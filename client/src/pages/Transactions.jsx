@@ -95,18 +95,6 @@ const Transactions = () => {
         fetchCards();
     }, []);
 
-    // useEffect(() => {
-    //     if (cards.length > 0 && user) {
-    //         const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
-    //         setUserCards(filteredCards);
-    //         if (filteredCards.length > 0) {
-    //             setSelectedTransaction(prev => ({ ...prev, card_id: filteredCards[0]._id }));
-    //             setCardBalance(filteredCards[0].balance);
-    //             setTeamFund(filteredCards[0].team_fund);
-    //         }
-    //     }
-    // }, [cards, user]);
-
     useEffect(() => {
         if (cards.length > 0 && user) {
             // 현재 사용자의 카드만 필터링
@@ -283,14 +271,6 @@ const Transactions = () => {
         }
     };
 
-    // const groupedTransactions = transactions.reduce((acc, transaction) => {
-    //     const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
-    //     if (!acc[transactionDate]) {
-    //         acc[transactionDate] = [];
-    //     }
-    //     acc[transactionDate].push(transaction);
-    //     return acc;
-    // }, {});
     const groupedTransactions = filteredTransactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
         if (!acc[transactionDate]) {
@@ -299,15 +279,6 @@ const Transactions = () => {
         acc[transactionDate].push(transaction);
         return acc;
     }, {});
-    
-    // const handleCardSelect = (cardId) => {
-    //     setSelectedCardId(cardId); // 선택된 카드 ID를 업데이트
-    //     const selectedCard = userCards.find(card => card._id === cardId);
-    //     if (selectedCard) {
-    //         setCardBalance(selectedCard.balance);
-    //         setTeamFund(selectedCard.team_fund);
-    //     }
-    // };
     
     const userCardsWithTotals = userCards.map(card => {
         const totalSpent = transactions

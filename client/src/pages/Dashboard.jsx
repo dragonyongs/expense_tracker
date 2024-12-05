@@ -9,7 +9,10 @@ import { API_URLS } from '../services/apiUrls';
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
     const [transactions, setTransactions] = useState([]);
+    const [currentBalance, setCurrentBalance] = useState(0); // 초기 잔액 설정
     const [isLoading, setIsLoading] = useState(true);
+    const [userCards, setUserCards] = useState([]);
+    const [teamFund, setTeamFund] = useState(0);
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -28,9 +31,38 @@ const Dashboard = () => {
     }, []);
 
     const handleSaveTransaction = (newTransaction) => {
-        console.log('newTransaction', newTransaction);
-        setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
+        const transactionWithKey = { ...newTransaction, _id: newTransaction._id || Date.now() };
+
+        // 트랜잭션 추가
+        setTransactions((prevTransactions) => [transactionWithKey, ...prevTransactions]);
+
+        // 잔액 업데이트
+        const transactionAmount = transactionWithKey.transaction_amount || 0;
+
+        setCurrentBalance((prevBalance) => prevBalance - transactionAmount);
     };
+    
+    // 카드 잔액과 관련된 데이터 가져오기
+    useEffect(() => {
+        const fetchUserCard = async () => {
+            if (user?.member_id) {
+                try {
+                    const response = await axios.get(`${API_URLS.CARD_MEMBER}/${user.member_id}`);
+                    if (response.data.length > 0) {
+                        const userCard = response.data[0];
+                        const currentBalanceWithRollover = userCard.balance + (userCard.rollover_amount || 0) + (userCard.team_fund || 0);
+                        setCurrentBalance(currentBalanceWithRollover);
+                        setUserCards(response.data); // 카드 정보 저장
+                        setTeamFund(userCard.team_fund || 0); // 팀 펀드 저장
+                    }
+                } catch (error) {
+                    console.error('Error fetching user card data:', error);
+                }
+            }
+        };
+
+        fetchUserCard();
+    }, [user?.member_id]); // 사용자 member_id가 변경될 때마다 다시 실행
 
     return (
         <>
@@ -42,7 +74,13 @@ const Dashboard = () => {
                     </div>
                 ) : (
                     <div className='h-full bg-white dark:bg-slate-800'>
-                        <CardBalance role={user.role} onSave={handleSaveTransaction} />
+                        <CardBalance
+                            onSave={handleSaveTransaction}
+                            currentBalance={currentBalance} // 부모에서 계산된 카드 잔액
+                            teamFund={teamFund} // 팀 펀드
+                            userCards={userCards} // 카드 정보
+                        />
+
                         <PayHistory transactions={transactions} isLoading={isLoading} />
                     </div>
                 )}

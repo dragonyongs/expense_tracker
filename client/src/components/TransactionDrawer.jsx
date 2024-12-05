@@ -195,6 +195,20 @@ const TransactionDrawer = ({
                     placeholder="상호명 입력"
                     required={true}
                 />
+
+                <InputField
+                    label="메뉴명"
+                    id="menu_name"
+                    value={selectedTransaction.menu_name || ""}
+                    className="bg-white border border-slate-200"
+                    onChange={(e) =>
+                        setSelectedTransaction(prev => ({
+                            ...prev,
+                            menu_name: e.target.value,
+                        }))
+                    }
+                    placeholder="메뉴명 입력"
+                />
                 <InputField
                     label="지출금액"
                     id="transaction_amount"
@@ -226,19 +240,6 @@ const TransactionDrawer = ({
                     required={true}
                 />
 
-                <InputField
-                    label="메뉴명"
-                    id="menu_name"
-                    value={selectedTransaction.menu_name || ""}
-                    className="bg-white border border-slate-200"
-                    onChange={(e) =>
-                        setSelectedTransaction(prev => ({
-                            ...prev,
-                            menu_name: e.target.value,
-                        }))
-                    }
-                    placeholder="메뉴명 입력"
-                />
                 {userCards.length >= 2 && (
                     <SelectField
                         label="사용 카드"
