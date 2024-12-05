@@ -9,6 +9,7 @@ import { API_URLS } from '../services/apiUrls';
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
     const [transactions, setTransactions] = useState([]);
+    const [cardBalance, setCardBalance] = useState(0);
     const [currentBalance, setCurrentBalance] = useState(0); // 초기 잔액 설정
     const [isLoading, setIsLoading] = useState(true);
     const [userCards, setUserCards] = useState([]);
@@ -52,8 +53,9 @@ const Dashboard = () => {
                         const userCard = response.data[0];
                         const currentBalanceWithRollover = userCard.balance + (userCard.rollover_amount || 0) + (userCard.team_fund || 0);
                         setCurrentBalance(currentBalanceWithRollover);
-                        setUserCards(response.data); // 카드 정보 저장
-                        setTeamFund(userCard.team_fund || 0); // 팀 펀드 저장
+                        setUserCards(response.data);
+                        setCardBalance(userCard.balance || 0);
+                        setTeamFund(userCard.team_fund || 0);
                     }
                 } catch (error) {
                     console.error('Error fetching user card data:', error);
@@ -79,6 +81,7 @@ const Dashboard = () => {
                             currentBalance={currentBalance} // 부모에서 계산된 카드 잔액
                             teamFund={teamFund} // 팀 펀드
                             userCards={userCards} // 카드 정보
+                            cardBalance={cardBalance}
                         />
 
                         <PayHistory transactions={transactions} isLoading={isLoading} />

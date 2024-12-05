@@ -116,7 +116,6 @@ const Transactions = () => {
             const updatedTransactions = transactions.filter(
                 tx => tx.card_id._id === selectedCardId
             );
-            console.log('Filtered Transactions:', updatedTransactions); // 디버깅
             setFilteredTransactions(updatedTransactions);
         } else {
             setFilteredTransactions(transactions);
@@ -345,23 +344,14 @@ const Transactions = () => {
                             {userCardsWithTotals.map(card => {
                                 const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
                                 return (
-                                    <>
-                                        <FlipCard
-                                            key={card._id} 
-                                            userName={user.name}
-                                            cardNumber={card.card_number}
-                                            totalSpent={Number(card.totalSpent)}
-                                            currentBalance={currentBalanceWithRollover}
-                                            rolloverAmount={Number(card.rollover_amount)}
-                                        />
-                                        {/* <button
-                                            key={card._id}
-                                            onClick={() => handleCardSelect(card._id)}
-                                            className={`card-button ${selectedCardId === card._id ? 'active' : ''}`}
-                                        >
-                                            {card.card_number}
-                                        </button> */}
-                                    </>
+                                    <FlipCard
+                                        key={card._id} 
+                                        userName={user.name}
+                                        cardNumber={card.card_number}
+                                        totalSpent={Number(card.totalSpent)}
+                                        currentBalance={currentBalanceWithRollover}
+                                        rolloverAmount={Number(card.rollover_amount)}
+                                    />
                                 );
                             })}
                         </Slider>
