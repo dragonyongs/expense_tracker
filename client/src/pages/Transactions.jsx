@@ -141,20 +141,19 @@ const Transactions = () => {
         transaction_amount: 0,
         balance: 0,
     });
-    
-    // const handleAddTransaction = () => {
-    //     const activeCard = userCardsWithTotals.find(card => card._id === selectedCardId);
-    //     setSelectedTransaction({
-    //         ...selectedTransaction, 
-    //         card_id: selectedCardId, // 활성 카드 ID
-    //         card_number: activeCard?.card_number || "",
-    //         balance: activeCard?.balance || 0,
-    //     });
 
-    //     // setSelectedTransaction(resetTransaction());
-    //     setIsEditing(false);
-    //     setIsOpen(true);
-    // };
+    const getCardExpenseType = (card) => {
+        const isOvertimeMealCard = card.card_type === 'OvertimeMealCard';
+        return {
+            expense_card: isOvertimeMealCard ? 'OvertimeMealCard' : 'TeamCard',
+            expense_type: isOvertimeMealCard ? 'OvertimeMealExpense' : 'RegularExpense',
+        };
+    };
+
+    const getCardBalances = (card) => ({
+        balance: card.balance || 0, // 카드 잔액
+        team_fund: card.team_fund || 0, // 팀 운영비 잔액
+    });
 
     const handleAddTransaction = () => {
         const activeCard = userCardsWithTotals.find(card => card._id === selectedCardId);
@@ -164,23 +163,19 @@ const Transactions = () => {
             return;
         }
     
-        const isOvertimeMealCard = activeCard.card_type === 'OvertimeMealCard';
-        const expenseCard = isOvertimeMealCard ? 'OvertimeMealCard' : 'TeamCard';
-        const expenseType = isOvertimeMealCard ? 'OvertimeMealExpense' : 'RegularExpense';
+        const { expense_card, expense_type } = getCardExpenseType(activeCard);
+        const { balance, team_fund } = getCardBalances(activeCard);
     
-        // 필요한 속성 가져오기 (존재하지 않을 경우 기본값 설정)
-        const cardBalance = activeCard.balance || 0;
-        const teamFundBalance = activeCard.team_fund_balance || 0; // team_fund_balance가 있는 경우
         console.log('activeCard',activeCard);
     
         setSelectedTransaction({
             ...selectedTransaction,
-            card_id: selectedCardId, // 활성 카드 ID
+            card_id: selectedCardId,
             card_number: activeCard.card_number || "",
-            balance: cardBalance, // 카드 잔액
-            team_fund_balance: teamFundBalance, // 팀 운영비 잔액
-            expense_card: expenseCard,
-            expense_type: expenseType,
+            balance,
+            team_fund,
+            expense_card,
+            expense_type,
         });
         setIsEditing(false);
         setIsOpen(true);
@@ -216,19 +211,20 @@ const Transactions = () => {
 
     const handleCardChange = (e) => {
         const cardId = e.target.value;
+        const activeCard = userCards.find(card => card._id === cardId);
+    
+        const { expense_card, expense_type } = getCardExpenseType(activeCard);
+        const { balance, team_fund } = getCardBalances(activeCard);
+    
         setSelectedTransaction({
             ...selectedTransaction,
             card_id: cardId,
+            expense_card,
+            expense_type,
+            balance,
+            team_fund
         });
     };
-
-    // 트랜잭션 수정 시 카드 ID 확인 및 처리
-    // const getCardId = () => {
-    //     if (typeof selectedTransaction.card_id === 'object') {
-    //         return selectedTransaction.card_id._id;
-    //     }
-    //     return selectedTransaction.card_id;
-    // };
 
     const handleError = (error) => {
         if (error.response) {
@@ -245,7 +241,7 @@ const Transactions = () => {
     const handleSave = async () => {
         try {
             setErrMsg('');
-            console.log('selectedTransaction-handleSave', selectedTransaction);
+
             const transactionData = {
                 card_id: selectedTransaction.card_id,
                 transaction_date: selectedTransaction.transaction_date,
@@ -256,13 +252,10 @@ const Transactions = () => {
                 expense_type: selectedTransaction.expense_type,
                 is_deducted: false,
             };
-            console.log('transactionData-handleSave', transactionData);
     
-            // 기존 금액과 새로운 금액 비교
             const originalAmount = Number(prevTransaction.transaction_amount);
             const currentAmount = Number(selectedTransaction.transaction_amount);
     
-            // 금액이 변경된 경우에만 transaction_amount 추가
             if (originalAmount !== currentAmount) {
                 transactionData.transaction_amount = currentAmount;
             }
@@ -334,7 +327,6 @@ const Transactions = () => {
         setExpenseType(type);
     };
 
-    // 슬라이더 설정
     const sliderSettings = {
         dots: true,
         infinite: false,
@@ -691,8 +683,7 @@ const Transactions = () => {
                         <SelectField
                             label="사용 카드"
                             id="card_id"
-                            value={selectedCardId || ""}
-                            // value={getCardId() || ""}
+                            value={selectedTransaction.card_id || ""}
                             onChange={handleCardChange}
                             options={userCards.map(card => ({ value: card._id, label: card.card_number }))}
                             placeholder="카드 선택"
