@@ -365,7 +365,7 @@ const Transactions = () => {
                 {/* 트랜잭션 목록 */}
 
                 <div className='flow-root'>                  
-                    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700 min-h-card-screen">
+                    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
 
                         <div className="flex items-center justify-between mb-4">
                             <h5 className="text-lg font-semibold leading-none text-gray-500 dark:text-white">지출 내역</h5>
@@ -393,7 +393,7 @@ const Transactions = () => {
                                 {/* 로딩 스켈레톤 컴포넌트 추가 가능 */}
                             </div>
                         ) : Object.keys(groupedTransactions).length === 0 ? (
-                            <div className="flex justify-center items-center text-gray-500 dark:text-gray-400">
+                            <div className="flex justify-center items-center min-h-card-screen text-gray-500 dark:text-gray-400">
                                 데이터가 없습니다.
                             </div>
                         ) : (
