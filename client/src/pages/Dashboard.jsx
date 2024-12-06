@@ -14,6 +14,7 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [userCards, setUserCards] = useState([]);
     const [teamFund, setTeamFund] = useState(0);
+    const [errMsg, setErrMsg] = useState('');
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -31,16 +32,40 @@ const Dashboard = () => {
         fetchTransactions();
     }, []);
 
-    const handleSaveTransaction = (newTransaction) => {
-        const transactionWithKey = { ...newTransaction, _id: newTransaction._id || Date.now() };
+    const handleSaveTransaction = async (newTransaction) => {
+        try {
 
-        // 트랜잭션 추가
-        setTransactions((prevTransactions) => [transactionWithKey, ...prevTransactions]);
+            console.log('newTransaction', newTransaction);
 
-        // 잔액 업데이트
-        const transactionAmount = transactionWithKey.transaction_amount || 0;
+            const response = newTransaction._id
+                ? await axios.put(`${API_URLS.TRANSACTIONS}/${newTransaction._id}`, newTransaction)
+                : await axios.post(API_URLS.TRANSACTIONS, newTransaction);
+            
+            const savedTransaction = response.data.transaction;
+            console.log('savedTransaction', savedTransaction);
+            // setTransactions((prev) => [savedTransaction, ...prev]);
+    
+            // const transactionAmount = savedTransaction.transaction_amount || 0;
+            // setCurrentBalance((prevBalance) => prevBalance - transactionAmount);
+        } catch (error) {
+            console.error("Error saving transaction:", error);
+            const errorMsg = handleError(error);
+            setErrMsg(errorMsg);
+        }
+    };
 
-        setCurrentBalance((prevBalance) => prevBalance - transactionAmount);
+    const handleDeleteTransaction = async (transactionId) => {
+        try {
+            await axios.delete(`${API_URLS.TRANSACTIONS}/${transactionId}`); // API 호출
+    
+            setTransactions((prev) =>
+                prev.filter((transaction) => transaction._id !== transactionId) // 삭제된 항목 제거
+            );
+        } catch (error) {
+            console.error("Error deleting transaction:", error);
+            const errorMsg = handleError(error);
+            setErrMsg(errorMsg);
+        }
     };
     
     // 카드 잔액과 관련된 데이터 가져오기
@@ -66,6 +91,18 @@ const Dashboard = () => {
         fetchUserCard();
     }, [user?.member_id]); // 사용자 member_id가 변경될 때마다 다시 실행
 
+    const handleError = (error) => {
+        if (error.response) {
+            return error.response.data.message || "오류가 발생했습니다.";
+        } else if (error.message) {
+            return error.message || "오류가 발생했습니다.";
+        } else if (error.request) {
+            return "서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.";
+        } else {
+            return "알 수 없는 오류가 발생했습니다.";
+        }
+    };
+
     return (
         <>
             <Header />
@@ -78,13 +115,21 @@ const Dashboard = () => {
                     <div className='h-full bg-white dark:bg-slate-800'>
                         <CardBalance
                             onSave={handleSaveTransaction}
-                            currentBalance={currentBalance} // 부모에서 계산된 카드 잔액
-                            teamFund={teamFund} // 팀 펀드
-                            userCards={userCards} // 카드 정보
+                            onDelete={handleDeleteTransaction}
+                            currentBalance={currentBalance}
+                            teamFund={teamFund}
+                            userCards={userCards}
                             cardBalance={cardBalance}
+                            errMsg={errMsg}
                         />
-
-                        <PayHistory transactions={transactions} userCards={userCards} isLoading={isLoading} />
+                        <PayHistory
+                            transactions={transactions}
+                            onDelete={handleDeleteTransaction}
+                            userCards={userCards}
+                            isLoading={isLoading}
+                            errMsg={errMsg}
+                            setErrMsg={setErrMsg}
+                        />
                     </div>
                 )}
             </div>

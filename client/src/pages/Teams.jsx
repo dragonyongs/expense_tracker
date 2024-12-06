@@ -185,7 +185,7 @@ const LeaderCardDetail = ({leaderCards}) => {
             </h3>
             {leaderCards.map(card => (
                 <div key={card.card_number} className="flex justify-between mt-4 pt-4 border-t dark:border-slate-600">
-                    <h4 className="text-md dark:text-slate-500">개인 사용</h4>
+                    <h4 className="text-md dark:text-slate-500">팀 카드비</h4>
                     <span className="text-lg font-bold dark:text-slate-400">
                         {card.balance.toLocaleString()}원
                     </span>

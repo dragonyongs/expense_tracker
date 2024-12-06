@@ -14,6 +14,8 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+import TransactionDrawer from '../components/TransactionDrawer';
+
 const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
@@ -111,7 +113,7 @@ const Transactions = () => {
                 setTeamFund(filteredCards[0].team_fund);
             }
         }
-    }, [cards, user]); // 카드 데이터나 사용자 정보가 변경될 때 실행
+    }, [cards, user]);
 
     // 카드 선택 시 트랜잭션 필터링
     useEffect(() => {
@@ -123,15 +125,14 @@ const Transactions = () => {
         } else {
             setFilteredTransactions(transactions);
         }
-    }, [selectedCardId, transactions]); // selectedCardId나 트랜잭션이 변경되면 실행
+    }, [selectedCardId, transactions]);
 
     useEffect(() => {
-        // 슬라이더로 이동 시 선택된 카드 동기화
         if (userCards.length > 0) {
             const initialCardId = userCards[0]._id;
             setSelectedCardId(initialCardId);
         }
-    }, [userCards]); // userCards가 업데이트되면 첫 번째 카드로 초기화
+    }, [userCards]);
 
     const resetTransaction = () => ({
         card_id: userCards[0]?._id || "",
@@ -207,23 +208,6 @@ const Transactions = () => {
         setIsOpen(true);
     };
 
-    const handleCardChange = (e) => {
-        const cardId = e.target.value;
-        const activeCard = userCards.find(card => card._id === cardId);
-    
-        const { expense_card, expense_type } = getCardExpenseType(activeCard);
-        const { balance, team_fund } = getCardBalances(activeCard);
-    
-        setSelectedTransaction({
-            ...selectedTransaction,
-            card_id: cardId,
-            expense_card,
-            expense_type,
-            balance,
-            team_fund
-        });
-    };
-
     const handleError = (error) => {
         if (error.response) {
             return error.response.data.message || "오류가 발생했습니다.";
@@ -275,14 +259,6 @@ const Transactions = () => {
             setErrMsg(errorMsg);
         }
     };
-    
-    const handleDeleteConfirm = () => {
-        setIsDeleteConfirmOpen(true);
-    };
-    
-    const handleDeleteCancel = () => {
-        setIsDeleteConfirmOpen(false);
-    };
 
     const handleDelete = async () => {
         try {
@@ -290,15 +266,16 @@ const Transactions = () => {
             await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
     
             // 거래 내역 갱신
-            fetchTransactionsForCurrentMonth();
-            fetchCards();
+            await fetchTransactionsForCurrentMonth();
+            await fetchCards();
     
             // 삭제 확인 모달 닫기
             setIsDeleteConfirmOpen(false);
             handleCloseDrawer();
         } catch (error) {
-            setErrMsg("삭제 중 오류가 발생했습니다.");
-            console.error('삭제 중 오류:', error);
+            const errorMsg = handleError(error);
+            console.log('errorMsg', errorMsg);
+            setErrMsg(errorMsg);
         }
     };
 
@@ -321,14 +298,6 @@ const Transactions = () => {
             totalSpent
         };
     });
-
-    const handleExpenseTypeChange = (type) => {
-        setExpenseType(type);
-        setSelectedTransaction(prev => ({
-            ...prev,
-            expense_type: type,
-        }));
-    };
 
     const sliderSettings = {
         dots: true,
@@ -469,198 +438,21 @@ const Transactions = () => {
                         )}
                     </div>
                 </div>
-
-                {/* 삭제 모달 : 추후 컴포넌트로 변경 */}
-                {isDeleteConfirmOpen && (
-                    <div className="fixed inset-0 z-110 flex items-center justify-center bg-gray-900 bg-opacity-50">
-                        <div className="bg-white rounded-lg p-6 w-11/12 md:w-96">
-                            <h3 className="text-lg font-semibold mb-4">정말로 삭제하시겠습니까?</h3>
-                            <div className="flex justify-end space-x-4">
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md"
-                                    onClick={handleDeleteCancel}
-                                >
-                                    취소
-                                </button>
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 bg-red-600 text-white rounded-md"
-                                    onClick={handleDelete}
-                                >
-                                    삭제
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <CommonDrawer
-                    color="#FFFFFF"
+                
+                {/* 트랜잭션 드로어 컴포넌트 */}
+                <TransactionDrawer
                     isOpen={isOpen}
                     onClose={handleCloseDrawer}
-                    title={isEditing ? "거래 내역 수정" : "거래 내역 추가"}
-                    errMsg={errMsg}
                     onSave={handleSave}
-                    >
-
-                    <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
-                        {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>} {/* 에러 메시지 표시 */}
-
-                    
-                        { selectedTransaction.expense_card === 'OvertimeMealCard' ? (
-                            <div>
-                                <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 구분</h3>
-                                <ul className="grid w-full gap-2 grid-cols-1">
-                                    <li>
-                                        <input
-                                            type="radio"
-                                            id="expense_type_d"
-                                            name="expenseType"
-                                            value="OvertimeMealExpense"
-                                            className="hidden peer"
-                                            checked={expenseType === 'OvertimeMealExpense'}
-                                            onChange={() => handleExpenseTypeChange('OvertimeMealExpense')}
-                                            required
-                                        />
-                                        <label
-                                            htmlFor="expense_type_d"
-                                            className="inline-flex items-center justify-between w-1/2 p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                        >
-                                            <div className="block">
-                                                <div className="w-full text-md font-semibold">야근 식대</div>
-                                                <div className="w-full text-sm">잔액: {selectedTransaction.balance.toLocaleString()}원</div>
-                                            </div>
-                                            {expenseType === 'OvertimeMealExpense' && <IoCheckmark className="w-6 h-6" />}
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-                            ) : (
-                            <div>
-                                <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 구분</h3>
-                                <ul className="grid w-full gap-2 grid-cols-2">
-                                    <li>
-                                        <input
-                                            type="radio"
-                                            id="expense_type_a"
-                                            name="expenseType"
-                                            value="RegularExpense"
-                                            className="hidden peer"
-                                            checked={expenseType === 'RegularExpense'}
-                                            onChange={() => handleExpenseTypeChange('RegularExpense')}
-                                            required
-                                        />
-                                        <label
-                                            htmlFor="expense_type_a"
-                                            className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                        >
-                                            <div className="block">
-                                                <div className="w-full text-md font-semibold">일반 지출</div>
-                                                <div className="w-full text-sm">잔액: {selectedTransaction.balance.toLocaleString()}원</div>
-                                            </div>
-                                            {expenseType === 'RegularExpense' && <IoCheckmark className="w-6 h-6" />}
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <input
-                                            type="radio"
-                                            id="expense_type_b"
-                                            name="expenseType"
-                                            value="TeamFund"
-                                            className="hidden peer"
-                                            checked={expenseType === 'TeamFund'}
-                                            onChange={() => handleExpenseTypeChange('TeamFund')}
-                                        />
-                                        <label
-                                            htmlFor="expense_type_b"
-                                            className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                                        >
-                                            <div className="block">
-                                                <div className="w-full text-md font-semibold">팀 운영비</div>
-                                                <div className="w-full text-sm">잔액: {selectedTransaction.balance.toLocaleString()}원</div>
-                                            </div>
-                                            {expenseType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-                            )
-                        }
-
-                        <InputField 
-                            label="상호명" 
-                            id="merchant_name" 
-                            value={selectedTransaction?.merchant_name || ""}
-                            className={"bg-white border border-slate-200"}
-                            onChange={(e) => setSelectedTransaction({ ...selectedTransaction, merchant_name: e.target.value })}
-                            placeholder="상호명 입력"
-                            ref={expenceMerchantRef}
-                            disabled={!expenseType}
-                            required={true}
-                        />
-                        <InputField 
-                            label="지출금액" 
-                            id="transaction_amount"
-                            type="number"
-                            value={selectedTransaction?.transaction_amount || ""}
-                            className={"bg-white border border-slate-200"}
-                            onChange={(e) => setSelectedTransaction({ ...selectedTransaction, transaction_amount: e.target.value })}
-                            placeholder="지출금액 입력"
-                            disabled={!expenseType}
-                            required={true}
-                        />
-                        <InputField 
-                            label="거래일" 
-                            id="transaction_date" 
-                            type='date'
-                            value={selectedTransaction?.transaction_date.split("T")[0] || ""}
-                            className={"bg-white border border-slate-200"}
-                            onChange={(e) => setSelectedTransaction({ ...selectedTransaction, transaction_date: e.target.value })}
-                            placeholder=""
-                            disabled={!expenseType}
-                            required={true}
-                        />
-                        <InputField 
-                            label="메뉴명" 
-                            id="menu_name" 
-                            value={selectedTransaction?.menu_name || ""}
-                            className={"bg-white border border-slate-200"}
-                            onChange={(e) => setSelectedTransaction({ ...selectedTransaction, menu_name: e.target.value })}
-                            placeholder="메뉴명(옵션) 입력"
-                            disabled={!expenseType}
-                        />
-                        <SelectField
-                            label="사용 카드"
-                            id="card_id"
-                            value={selectedTransaction.card_id || ""}
-                            onChange={handleCardChange}
-                            options={userCards.map(card => ({ value: card._id, label: card.card_number }))}
-                            placeholder="카드 선택"
-                            disabled={!expenseType}
-                            required={true}
-                        />
-
-
-                    </div>
-
-                    {/* 저장 버튼 */}
-                    <div className="flex flex-col gap-3 pt-4 p-6 dark:bg-slate-800">
-                        <button type="button" onClick={handleSave} className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
-                            {isEditing ? '수정' : '등록'}
-                        </button>
-                        {!isEditing ? (<button
-                                type="button" 
-                                className='text-gray-600 font-semibold dark:text-gray-400 dark:font-normal'
-                                onClick={handleCloseDrawer}
-                            >닫기</button> ) : ( <button
-                                type="button" 
-                                className='text-red-600 font-semibold dark:text-orange-400 dark:font-normal'
-                                onClick={handleDeleteConfirm}
-                            >삭제 할래요</button> )
-                        }
-                    </div>
-                </CommonDrawer>
+                    userCards={userCards} // 카드 정보
+                    isEditing={isEditing} // 트랜잭션 수정 모드가 아님
+                    transactionData={selectedTransaction} // 새로운 트랜잭션 데이터
+                    errMsg={errMsg} // 에러 메시지
+                    setErrMsg={setErrMsg}
+                    cardBalance={cardBalance} // 카드 잔액 (롤오버 금액과 팀 펀드를 포함한 잔액)
+                    teamFund={teamFund || 0} // 팀 펀드 (부모에서 전달)
+                    onDelete={handleDelete} 
+                />
             </div>
         </>
     );
