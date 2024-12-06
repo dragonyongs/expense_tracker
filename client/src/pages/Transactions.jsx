@@ -393,77 +393,77 @@ const Transactions = () => {
                 {/* 트랜잭션 목록 */}
 
                 <div className='flow-root'>                  
-                    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
+                    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700 min-h-card-screen">
 
-                    <div className="flex items-center justify-between mb-4">
-                        <h5 className="text-lg font-semibold leading-none text-gray-500 dark:text-white">지출 내역</h5>
-                        <button
-                            type="button" 
-                            className='flex items-center gap-x-2 text-gray-500 font-semibold rounded-lg text-3xl dark:text-white'
-                            onClick={handleAddTransaction}
-                        ><IoAddCircleOutline /></button>
-                    </div>
-                    
-                    {isLoading ? (
-                        <div className="flex flex-col items-center justify-center h-dashboard-screen">
-                            <MutatingDots
-                                visible={true}
-                                height="100"
-                                width="100"
-                                color="#b8a57f"
-                                secondaryColor="#0433FF"
-                                radius="12.5"
-                                ariaLabel="mutating-dots-loading"
-                                wrapperStyle={{}}
-                                wrapperClass=""
-                            />
-                            <p className='text-lg font-semibold text-blue-900 dark:text-gray-500'>데이터를 불러오는 중입니다.</p>
-                            {/* 로딩 스켈레톤 컴포넌트 추가 가능 */}
+                        <div className="flex items-center justify-between mb-4">
+                            <h5 className="text-lg font-semibold leading-none text-gray-500 dark:text-white">지출 내역</h5>
+                            <button
+                                type="button" 
+                                className='flex items-center gap-x-2 text-gray-500 font-semibold rounded-lg text-3xl dark:text-white'
+                                onClick={handleAddTransaction}
+                            ><IoAddCircleOutline /></button>
                         </div>
-                    ) : Object.keys(groupedTransactions).length === 0 ? (
-                        <div className="flex justify-center items-center text-gray-500 dark:text-gray-400">
-                            데이터가 없습니다.
-                        </div>
-                    ) : (
-                        <ul role="list">
-                            {Object.entries(groupedTransactions).map(([date, transactions]) => (
-                                <li key={date} className="py-3 cursor-pointer">
-                                    <div>
-                                        <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                            {date}
-                                        </p>
-                                    </div>
-                                    {transactions.map((transaction) => (
-                                        <div key={transaction._id} onClick={ transaction.transaction_type !== "income" ? () => handleOpenDrawer(transaction) : null} className="rounded-lg active:scale-99 active:px-2 active:bg-slate-50 dark:active:bg-slate-600">
-                                            <div className="flex items-center py-2">
-                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== 'income' ? 'border-red-600' : 'border-green-600'}`}>
-                                                    <span className="text-slate-500 text-lg font-normal">
-                                                        {transaction.transaction_type !== "income" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1 min-w-0 ms-4">
-                                                    <p className="text-md font-medium text-gray-900 truncate dark:text-white">
-                                                        {transaction.merchant_name}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                        {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
-                                                    </p>
-                                                </div>
-                                                <div className="inline-flex flex-col gap-x-3 items-center">
-                                                    <span className='font-semibold text-base text-gray-900 dark:text-white'>
-                                                        {transaction.transaction_amount.toLocaleString()}원
-                                                    </span>
-                                                    <span className='inline-block w-full text-sm text-right text-gray-400'>
-                                                        {transaction.transaction_type === 'expense' ? '지출' : '입금'}
-                                                    </span>
+                        
+                        {isLoading ? (
+                            <div className="flex flex-col items-center justify-center h-dashboard-screen">
+                                <MutatingDots
+                                    visible={true}
+                                    height="100"
+                                    width="100"
+                                    color="#b8a57f"
+                                    secondaryColor="#0433FF"
+                                    radius="12.5"
+                                    ariaLabel="mutating-dots-loading"
+                                    wrapperStyle={{}}
+                                    wrapperClass=""
+                                />
+                                <p className='text-lg font-semibold text-blue-900 dark:text-gray-500'>데이터를 불러오는 중입니다.</p>
+                                {/* 로딩 스켈레톤 컴포넌트 추가 가능 */}
+                            </div>
+                        ) : Object.keys(groupedTransactions).length === 0 ? (
+                            <div className="flex justify-center items-center text-gray-500 dark:text-gray-400">
+                                데이터가 없습니다.
+                            </div>
+                        ) : (
+                            <ul role="list">
+                                {Object.entries(groupedTransactions).map(([date, transactions]) => (
+                                    <li key={date} className="py-3 cursor-pointer">
+                                        <div>
+                                            <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                                                {date}
+                                            </p>
+                                        </div>
+                                        {transactions.map((transaction) => (
+                                            <div key={transaction._id} onClick={ transaction.transaction_type !== "income" ? () => handleOpenDrawer(transaction) : null} className="rounded-lg active:scale-99 active:px-2 active:bg-slate-50 dark:active:bg-slate-600">
+                                                <div className="flex items-center py-2">
+                                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full border bg-white overflow-hidden flex items-center justify-center ${transaction.transaction_type !== 'income' ? 'border-red-600' : 'border-green-600'}`}>
+                                                        <span className="text-slate-500 text-lg font-normal">
+                                                            {transaction.transaction_type !== "income" ? ( <MdOutlinePayment className='text-2xl text-red-600' /> ) : (<TbPigMoney className='text-2xl text-green-500' />)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 ms-4">
+                                                        <p className="text-md font-medium text-gray-900 truncate dark:text-white">
+                                                            {transaction.merchant_name}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                                            {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
+                                                        </p>
+                                                    </div>
+                                                    <div className="inline-flex flex-col gap-x-3 items-center">
+                                                        <span className='font-semibold text-base text-gray-900 dark:text-white'>
+                                                            {transaction.transaction_amount.toLocaleString()}원
+                                                        </span>
+                                                        <span className='inline-block w-full text-sm text-right text-gray-400'>
+                                                            {transaction.transaction_type === 'expense' ? '지출' : '입금'}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                                        ))}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 </div>
 
