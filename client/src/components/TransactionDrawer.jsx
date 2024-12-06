@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import CommonDrawer from '../components/CommonDrawer'; // 공통 드로우 컴포넌트
-import InputField from '../components/InputField'; // 커스텀 입력 필드
-import SelectField from '../components/SelectField'; // 커스텀 셀렉트 필드
+import CommonDrawer from '../components/CommonDrawer'; 
+import InputField from '../components/InputField'; 
+import SelectField from '../components/SelectField';
 import axios from "../services/axiosInstance"; 
 import PropTypes from 'prop-types';
 import { API_URLS } from '../services/apiUrls';
+import { IoCheckmark } from "react-icons/io5";
 
 const TransactionDrawer = ({
     isOpen,
@@ -14,29 +15,38 @@ const TransactionDrawer = ({
     userCards,
     isEditing,
     onDelete,
-    user,
+    // user,
     cardBalance,
     teamFund,
 }) => {
 
     const [errMsg, setErrMsg] = useState('');
-    const [expenseType, setExpenseType] = useState("RegularExpense"); // 기본 값
+    const [expenseType, setExpenseType] = useState("RegularExpense");
+    
     const [selectedTransaction, setSelectedTransaction] = useState({
         card_id: userCards.length > 0 ? userCards[0]._id : "",
         transaction_date: new Date().toISOString().split('T')[0],
         merchant_name: "",
-        transaction_amount: "",
         menu_name: "",
+        transaction_amount: 0,
+        transaction_type: "expense",
+        expense_card: "TeamCard",
+        expense_type: "RegularExpense",
+        balance: 0,
+        rolloverAmounted: 0,
+        teamFundDeducted: 0,
+        is_deducted: false,      
     });
 
     useEffect(() => {
         if (isOpen) {
             setSelectedTransaction({
                 card_id: userCards.length > 0 ? userCards[0]._id : "",
-                transaction_date: new Date().toISOString().split('T')[0], // 기본값 설정
+                transaction_date: new Date().toISOString().split('T')[0],
                 merchant_name: "",
-                transaction_amount: "",
                 menu_name: "",
+                transaction_amount: 0,
+                balance: 0,
             });
         }
     }, [isOpen, userCards]);
@@ -65,11 +75,34 @@ const TransactionDrawer = ({
         }));
     };
 
+    const getCardExpenseType = (card) => {
+        const isOvertimeMealCard = card.card_type === 'OvertimeMealCard';
+        return {
+            expense_card: isOvertimeMealCard ? 'OvertimeMealCard' : 'TeamCard',
+            expense_type: isOvertimeMealCard ? 'OvertimeMealExpense' : 'RegularExpense',
+        };
+    };
+
+    const getCardBalances = (card) => ({
+        balance: card.balance || 0,
+        team_fund: card.team_fund || 0,
+    });
+
     const handleCardChange = (e) => {
-        setSelectedTransaction(prev => ({
-            ...prev,
-            card_id: e.target.value,
-        }));
+        const cardId = e.target.value;
+        const activeCard = userCards.find(card => card._id === cardId);
+    
+        const { expense_card, expense_type } = getCardExpenseType(activeCard);
+        const { balance, team_fund } = getCardBalances(activeCard);
+    
+        setSelectedTransaction({
+            ...selectedTransaction,
+            card_id: cardId,
+            expense_card,
+            expense_type,
+            balance,
+            team_fund
+        });
     };
 
     const handleSave = async () => {
@@ -83,7 +116,9 @@ const TransactionDrawer = ({
                 merchant_name: selectedTransaction.merchant_name,
                 menu_name: selectedTransaction.menu_name,
                 transaction_type: "expense",
+                expense_card: selectedTransaction.expense_card,
                 expense_type: expenseType,
+                transaction_amount: selectedTransaction.transaction_amount,
             };
 
             // 금액이 변경된 경우에만 transaction_amount 추가
@@ -105,6 +140,17 @@ const TransactionDrawer = ({
             const errorMsg = handleError(error);
             console.log('errorMsg', errorMsg);
             setErrMsg(errorMsg);
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+            onDelete();
+            onClose();
+        } catch (error) {
+            setErrMsg("삭제 중 오류가 발생했습니다.");
+            console.error('삭제 중 오류:', error);
         }
     };
 
@@ -132,9 +178,34 @@ const TransactionDrawer = ({
             <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
                 {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>}
 
-                {user.position === '팀장' && (
-                    <div>
-                        <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 타입</h3>
+                <div>
+                    <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 타입</h3>
+                    { selectedTransaction.expense_card === 'OvertimeMealCard' ? ( 
+                        <ul className="grid w-full gap-2 grid-cols-1">
+                                <li>
+                                    <input
+                                        type="radio"
+                                        id="expense_type_d"
+                                        name="expenseType"
+                                        value="OvertimeMealExpense"
+                                        className="hidden peer"
+                                        checked={expenseType === 'OvertimeMealExpense'}
+                                        onChange={() => handleExpenseTypeChange('OvertimeMealExpense')}
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="expense_type_d"
+                                        className="inline-flex items-center justify-between w-1/2 p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                    >
+                                        <div className="block">
+                                            <div className="w-full text-md font-semibold">야근 식대</div>
+                                            <div className="w-full text-sm">잔액: {selectedTransaction.balance.toLocaleString()}원</div>
+                                        </div>
+                                        {expenseType === 'OvertimeMealExpense' && <IoCheckmark className="w-6 h-6" />}
+                                    </label>
+                                </li>
+                            </ul>
+                    ) : ( 
                         <ul className="grid w-full gap-2 grid-cols-2">
                             <li>
                                 <input
@@ -155,6 +226,7 @@ const TransactionDrawer = ({
                                         <div className="w-full text-md font-semibold">일반 지출</div>
                                         <div className="w-full text-sm">잔액: {cardBalance.toLocaleString()}원</div>
                                     </div>
+                                    {expenseType === 'RegularExpense' && <IoCheckmark className="w-6 h-6" />}
                                 </label>
                             </li>
                             <li>
@@ -175,11 +247,12 @@ const TransactionDrawer = ({
                                         <div className="w-full text-md font-semibold">팀 운영비</div>
                                         <div className="w-full text-sm">잔액: {teamFund.toLocaleString()}원</div>
                                     </div>
+                                    {expenseType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
                                 </label>
                             </li>
                         </ul>
-                    </div>
-                )}
+                        ) }
+                </div>
 
                 <InputField
                     label="상호명"
@@ -271,7 +344,7 @@ const TransactionDrawer = ({
                 ) : (
                     <button
                         type="button"
-                        onClick={onDelete}
+                        onClick={handleDelete}
                         className='py-3 rounded-lg text-red-600 font-semibold dark:text-orange-400 dark:font-normal'
                     >
                         삭제
@@ -290,7 +363,7 @@ TransactionDrawer.propTypes = {
     userCards: PropTypes.array.isRequired,
     isEditing: PropTypes.bool.isRequired,
     onDelete: PropTypes.func.isRequired,
-    user: PropTypes.object.isRequired,
+    // user: PropTypes.object.isRequired,
     cardBalance: PropTypes.number.isRequired,
     teamFund: PropTypes.number.isRequired,
 };

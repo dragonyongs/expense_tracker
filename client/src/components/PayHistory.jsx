@@ -47,7 +47,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
                             </style>
                         </head>
                         <body>
-                            <div class="flex justify-center items-center w-full h-full bg-gray-100">
+                            <div class="flex justify-center items-center w-full h-full bg-gray-50">
                                 <div class="flex-grow max-w-sm py-6 border border-gray-300 rounded-md bg-white">
                                     ${transactionRef.current.outerHTML}
                                 </div>

@@ -59,7 +59,7 @@ function CardBalance({ onSave, currentBalance, teamFund, userCards, cardBalance 
                 isEditing={false} // 트랜잭션 수정 모드가 아님
                 transactionData={{}} // 새로운 트랜잭션 데이터
                 errMsg={null} // 에러 메시지
-                user={user} // 사용자 정보
+                // user={user} // 사용자 정보
                 cardBalance={cardBalance} // 카드 잔액 (롤오버 금액과 팀 펀드를 포함한 잔액)
                 teamFund={teamFund || 0} // 팀 펀드 (부모에서 전달)
                 onDelete={(data) => {
