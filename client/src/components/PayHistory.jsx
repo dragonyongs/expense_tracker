@@ -60,7 +60,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
                 printWindow.onload = () => {
                     printWindow.focus();
                     printWindow.print();
-                    // printWindow.close();
+                    printWindow.close();
                 }
             }
         }

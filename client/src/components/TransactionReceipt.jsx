@@ -28,7 +28,7 @@ const TransactionReceipt = forwardRef(({ transaction, cardNumber, cardUser }, re
                     </div>
                 </div>
 
-                <div className="max-w-xs mx-auto pt-6 border-t-2 border-dashed border-t-gray-200 p-6">
+                <div className="max-w-sm mx-auto pt-6 border-t-2 border-dashed border-t-gray-200 py-6 px-8">
                     <div className="grid grid-cols-4 gap-3 print:text-lg">
                         <div className="font-medium">카드번호</div>
                         <div className='col-span-3'>{cardNumber}</div>
