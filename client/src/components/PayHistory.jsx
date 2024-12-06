@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { RiArrowRightSLine } from "react-icons/ri";
+import { BsPrinter } from "react-icons/bs";
 import { MutatingDots } from 'react-loader-spinner';
 import PropTypes from 'prop-types';
 import CommonDrawer from '../components/CommonDrawer'; // CommonDrawer 호출
 import TransactionReceipt from '../components/TransactionReceipt';
 
-const PayHistory = ({ transactions, isLoading }) => {
+const PayHistory = ({ transactions, userCards, isLoading }) => {
     const [isTransactionReceiptOpen, setTransactionReceiptOpen] = useState(false);
-    const [selectedTransaction, setSelectedTransaction] = useState(null); // 선택된 거래 내역
+    const [selectedTransaction, setSelectedTransaction] = useState(''); // 선택된 거래 내역
+    const [selectedCardNumber, setSelectedCardNumber] = useState('');
+    const [selectedCardUser, setSelectedCardUser] = useState({});
+
+    const transactionRef = useRef(null);
+
+    useEffect(() => {
+        if (selectedTransaction) {
+            const foundCard = userCards.find(card => card._id === selectedTransaction.card_id);
+            setSelectedCardNumber(foundCard.card_number);
+            setSelectedCardUser(foundCard.member_id);
+        }
+    }, [selectedTransaction]);
+    
 
     const handleOpenTransactionReceipt = (transaction) => {
         setSelectedTransaction(transaction); // 선택된 거래 내역 설정
@@ -17,6 +31,39 @@ const PayHistory = ({ transactions, isLoading }) => {
 
     const handleCloseDrawer = () => {
         setTransactionReceiptOpen(false); // Drawer 닫기
+    };
+
+    const handlePrint = () => {
+        console.log('transactionRef', transactionRef);
+        if (transactionRef.current) {
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>프린트</title>
+                            <style>
+                                @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+                            </style>
+                        </head>
+                        <body>
+                            <div class="flex justify-center items-center w-screen h-screen bg-gray-100">
+                                <div class="flex-grow max-w-sm py-6 border border-gray-300 rounded-md bg-white">
+                                    ${transactionRef.current.outerHTML}
+                                </div>
+                            </div>
+                        </body>
+                    </html>
+                `);
+                printWindow.document.close();
+
+                printWindow.onload = () => {
+                    printWindow.focus();
+                    printWindow.print();
+                    // printWindow.close();
+                }
+            }
+        }
     };
 
     const filteredTransactions = transactions.filter(type => type.transaction_type !== 'income');
@@ -78,10 +125,29 @@ const PayHistory = ({ transactions, isLoading }) => {
         <CommonDrawer
             color="#FFFFFF"
             isOpen={isTransactionReceiptOpen}
+            userCards={userCards}
             onClose={handleCloseDrawer}
             title="거래 내역"
         >
-            <TransactionReceipt transaction={selectedTransaction} />
+            <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen dark:bg-slate-800">
+                <TransactionReceipt ref={transactionRef} transaction={selectedTransaction} cardNumber={selectedCardNumber} cardUser={selectedCardUser} />
+            </div>
+            <div className="flex flex-col gap-y-2 px-6 dark:bg-slate-800">
+                <button
+                    type="button"
+                    onClick={handlePrint}
+                    className='flex justify-center items-center gap-x-3 py-3 border border-gray-300 rounded-lg text-black font-semibold dark:text-gray-400 dark:font-normal'
+                >
+                    <BsPrinter className='w-5 h-5' /> 프린트
+                </button>
+                <button
+                    type="button"
+                    onClick={handleCloseDrawer}
+                    className='py-3 border border-gray-300 rounded-lg text-gray-500 font-semibold dark:text-gray-400 dark:font-normal'
+                >
+                    닫기
+                </button>
+            </div>
         </CommonDrawer>
         </div>
     );
@@ -89,6 +155,7 @@ const PayHistory = ({ transactions, isLoading }) => {
 
 PayHistory.propTypes = {
     transactions: PropTypes.array.isRequired,
+    userCards: PropTypes.array.isRequired,
     isLoading: PropTypes.bool.isRequired,
 };
 

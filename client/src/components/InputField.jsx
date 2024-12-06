@@ -40,7 +40,6 @@ const InputField = forwardRef((props, ref) => {
     );
 });
 
-// displayName을 추가합니다.
 InputField.displayName = "InputField";
 
 export default InputField;

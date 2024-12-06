@@ -84,7 +84,7 @@ const Dashboard = () => {
                             cardBalance={cardBalance}
                         />
 
-                        <PayHistory transactions={transactions} isLoading={isLoading} />
+                        <PayHistory transactions={transactions} userCards={userCards} isLoading={isLoading} />
                     </div>
                 )}
             </div>
