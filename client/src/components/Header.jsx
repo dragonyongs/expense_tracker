@@ -27,7 +27,7 @@ const Header = () => {
     }, []);
 
     return (
-        <header className={`flex justify-between items-center py-4 px-6 shadow-md ${isDashBoard && user.role !== 'super_admin' ? 'bg-[#0433FF] text-white' : 'dark:bg-slate-800 dark:text-slate-200'}`}>
+        <header className={`flex justify-between items-center py-4 px-4 md:px-6 shadow-md ${isDashBoard && user.role !== 'super_admin' ? 'bg-[#0433FF] text-white' : 'dark:bg-slate-800 dark:text-slate-200'}`}>
             <div className='text-xl' >
                 <span className="pl-2 font-semibold">{user.name.slice(1)}님</span>
                 <span className='font-normal'>, {greeting}</span>

@@ -16,9 +16,8 @@ const TransactionDrawer = ({
     cardBalance,
     teamFund,
     errMsg,
-    setErrMsg,
 }) => {
-    
+    const [errorMessage, setErrorMessage] = useState('');
     const [selectedTransaction, setSelectedTransaction] = useState({
         card_id: userCards.length > 0 ? userCards[0]._id : "",
         transaction_date: new Date().toISOString().split('T')[0],
@@ -169,7 +168,7 @@ const TransactionDrawer = ({
 
     const handleSaveClick = () => {
         if (!selectedTransaction.card_id || !selectedTransaction.transaction_amount || !selectedTransaction.transaction_date) {
-            setErrMsg("필수 필드를 모두 입력해주세요.");
+            setErrorMessage("필수 필드를 모두 입력해주세요.");
             return;
         }
         onSave(selectedTransaction); // 부모 컴포넌트로 저장 요청
@@ -192,7 +191,7 @@ const TransactionDrawer = ({
                 title={isEditing ? "카드 지출 수정" : "카드 지출 추가"}
             >
                 <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
-                    {errMsg && <div className="text-red-600 dark:text-red-300">{errMsg}</div>}
+                    {errMsg || errorMessage && <div className="text-red-600 dark:text-red-300">{errMsg || errorMessage }</div>}
 
                     <div>
                         <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 타입</h3>

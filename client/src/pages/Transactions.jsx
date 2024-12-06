@@ -448,7 +448,6 @@ const Transactions = () => {
                     isEditing={isEditing} // 트랜잭션 수정 모드가 아님
                     transactionData={selectedTransaction} // 새로운 트랜잭션 데이터
                     errMsg={errMsg} // 에러 메시지
-                    setErrMsg={setErrMsg}
                     cardBalance={cardBalance} // 카드 잔액 (롤오버 금액과 팀 펀드를 포함한 잔액)
                     teamFund={teamFund || 0} // 팀 펀드 (부모에서 전달)
                     onDelete={handleDelete} 
