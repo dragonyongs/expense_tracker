@@ -6,100 +6,91 @@ import Header from '../components/Header';
 import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
 
+const useFetchData = (fetchFunction) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            await fetchFunction();
+        } catch (err) {
+            setError(handleError(err));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { fetchData, isLoading, error };
+};
+
+const handleError = (error) => {
+    if (error.response) {
+        return error.response.data.message || "오류가 발생했습니다.";
+    } else if (error.message) {
+        return error.message || "오류가 발생했습니다.";
+    } else if (error.request) {
+        return "서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.";
+    } else {
+        return "알 수 없는 오류가 발생했습니다.";
+    }
+};
+
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
     const [transactions, setTransactions] = useState([]);
     const [cardBalance, setCardBalance] = useState(0);
-    const [currentBalance, setCurrentBalance] = useState(0); // 초기 잔액 설정
-    const [isLoading, setIsLoading] = useState(true);
+    const [currentBalance, setCurrentBalance] = useState(0);
     const [userCards, setUserCards] = useState([]);
     const [teamFund, setTeamFund] = useState(0);
     const [errMsg, setErrMsg] = useState('');
 
-    useEffect(() => {
-        const fetchTransactions = async () => {
-            setIsLoading(true);
-            try {
-                const response = await axios.get(API_URLS.TRANSACTIONS);
-                setTransactions(response.data);
-            } catch (error) {
-                console.error('Error fetching transactions:', error);
-            } finally {
-                setIsLoading(false);
+    const { fetchData: fetchTransactions, isLoading: isLoadingTransactions, error: transactionError } = useFetchData(async () => {
+        const response = await axios.get(API_URLS.TRANSACTIONS);
+        setTransactions(response.data);
+    });
+
+    const { fetchData: fetchUserCard, isLoading: isLoadingUserCard } = useFetchData(async () => {
+        if (user?.member_id) {
+            const response = await axios.get(`${API_URLS.CARD_MEMBER}/${user.member_id}`);
+            if (response.data.length > 0) {
+                const userCard = response.data[0];
+                const currentBalanceWithRollover = userCard.balance + (userCard.rollover_amount || 0) + (userCard.team_fund || 0);
+                setCurrentBalance(currentBalanceWithRollover);
+                setUserCards(response.data);
+                setCardBalance(userCard.balance || 0);
+                setTeamFund(userCard.team_fund || 0);
             }
-        };
-        
+        }
+    });
+
+    useEffect(() => {
         fetchTransactions();
     }, []);
 
+    useEffect(() => {
+        fetchUserCard();
+    }, [user?.member_id]);
+
     const handleSaveTransaction = async (newTransaction) => {
         try {
-
-            console.log('newTransaction', newTransaction);
-
             const response = newTransaction._id
                 ? await axios.put(`${API_URLS.TRANSACTIONS}/${newTransaction._id}`, newTransaction)
                 : await axios.post(API_URLS.TRANSACTIONS, newTransaction);
-            
-            const savedTransaction = response.data.transaction;
-            console.log('savedTransaction', savedTransaction);
-            // setTransactions((prev) => [savedTransaction, ...prev]);
-    
-            // const transactionAmount = savedTransaction.transaction_amount || 0;
-            // setCurrentBalance((prevBalance) => prevBalance - transactionAmount);
+            await fetchTransactions();
         } catch (error) {
             console.error("Error saving transaction:", error);
-            const errorMsg = handleError(error);
-            setErrMsg(errorMsg);
+            setErrMsg(handleError(error));
         }
     };
 
     const handleDeleteTransaction = async (transactionId) => {
         try {
-            await axios.delete(`${API_URLS.TRANSACTIONS}/${transactionId}`); // API 호출
-    
-            setTransactions((prev) =>
-                prev.filter((transaction) => transaction._id !== transactionId) // 삭제된 항목 제거
-            );
+            await axios.delete(`${API_URLS.TRANSACTIONS}/${transactionId}`);
+            setTransactions((prev) => prev.filter((transaction) => transaction._id !== transactionId));
         } catch (error) {
             console.error("Error deleting transaction:", error);
-            const errorMsg = handleError(error);
-            setErrMsg(errorMsg);
-        }
-    };
-    
-    // 카드 잔액과 관련된 데이터 가져오기
-    useEffect(() => {
-        const fetchUserCard = async () => {
-            if (user?.member_id) {
-                try {
-                    const response = await axios.get(`${API_URLS.CARD_MEMBER}/${user.member_id}`);
-                    if (response.data.length > 0) {
-                        const userCard = response.data[0];
-                        const currentBalanceWithRollover = userCard.balance + (userCard.rollover_amount || 0) + (userCard.team_fund || 0);
-                        setCurrentBalance(currentBalanceWithRollover);
-                        setUserCards(response.data);
-                        setCardBalance(userCard.balance || 0);
-                        setTeamFund(userCard.team_fund || 0);
-                    }
-                } catch (error) {
-                    console.error('Error fetching user card data:', error);
-                }
-            }
-        };
-
-        fetchUserCard();
-    }, [user?.member_id]); // 사용자 member_id가 변경될 때마다 다시 실행
-
-    const handleError = (error) => {
-        if (error.response) {
-            return error.response.data.message || "오류가 발생했습니다.";
-        } else if (error.message) {
-            return error.message || "오류가 발생했습니다.";
-        } else if (error.request) {
-            return "서버로부터 응답을 받지 못했습니다. 네트워크 문제일 수 있습니다.";
-        } else {
-            return "알 수 없는 오류가 발생했습니다.";
+            setErrMsg(handleError(error));
         }
     };
 
@@ -126,7 +117,7 @@ const Dashboard = () => {
                             transactions={transactions}
                             onDelete={handleDeleteTransaction}
                             userCards={userCards}
-                            isLoading={isLoading}
+                            isLoading={isLoadingTransactions || isLoadingUserCard}
                             errMsg={errMsg}
                             setErrMsg={setErrMsg}
                         />
