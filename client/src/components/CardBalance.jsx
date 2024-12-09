@@ -43,10 +43,10 @@ function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, ca
                     <AnimatedNumber value={currentBalance} />
                 </p>
             </div>
-            <div className='flex justify-center items-center gap-x-3 mt-10'>
+            <div className='flex justify-center items-center gap-x-3 mt-8'>
                 <button
                     onClick={handleOpenDrawer}
-                    className='inline-flex items-center gap-x-2 py-3 px-10 border-2 border-blue-100 rounded-full text-white'
+                    className='inline-flex items-center gap-x-2 py-2 px-6 border-2 border-blue-100 rounded-full text-white'
                 >
                     <TiPlus /> 카드 지출
                 </button>

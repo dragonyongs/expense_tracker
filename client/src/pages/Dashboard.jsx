@@ -74,9 +74,13 @@ const Dashboard = () => {
 
     const handleSaveTransaction = async (newTransaction) => {
         try {
-            const response = newTransaction._id
-                ? await axios.put(`${API_URLS.TRANSACTIONS}/${newTransaction._id}`, newTransaction)
-                : await axios.post(API_URLS.TRANSACTIONS, newTransaction);
+            if (newTransaction._id) {
+                await axios.put(`${API_URLS.TRANSACTIONS}/${newTransaction._id}`, newTransaction);
+            } else {
+                await axios.post(API_URLS.TRANSACTIONS, newTransaction);
+            }
+            
+            // 추가적인 처리 (예: 트랜잭션 목록 새로 고침)
             await fetchTransactions();
         } catch (error) {
             console.error("Error saving transaction:", error);
