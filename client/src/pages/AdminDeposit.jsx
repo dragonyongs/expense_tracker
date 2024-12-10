@@ -52,26 +52,29 @@ const AdminDeposit = () => {
     
     const fetchData = async (url, setState) => {
         setLoading(true);
-        
+    
         try {
             const response = await axios.get(url, { withCredentials: true });
     
-            if (url === API_URLS.DEPOSITS) {
+            if (url.includes(API_URLS.DEPOSITS)) {
                 const sortedDeposits = response.data.sort((a, b) => {
                     const dateA = new Date(a.createdAt);
                     const dateB = new Date(b.createdAt);
-                    if (dateA < dateB) return 1;
                     if (dateA > dateB) return -1;
-                    
+                    if (dateA < dateB) return 1;
+    
                     const transDateA = new Date(a.transaction_date);
                     const transDateB = new Date(b.transaction_date);
-                    return transDateB - transDateA;
+                    if (transDateA > transDateB) return -1;
+                    if (transDateA < transDateB) return 1;
+    
+                    return 0;
                 });
+    
                 setState(sortedDeposits);
             } else {
                 setState(response.data);
             }
-            
         } catch (error) {
             setErrMsg(`데이터 로드 중 오류: ${error.message}`);
         } finally {
@@ -84,7 +87,7 @@ const AdminDeposit = () => {
         if (isOpen || isDeleteConfirmOpen) {
             fetchFilteredMembers();
         }
-    }, [isOpen, isDeleteConfirmOpen]); // Drawer가 열리거나 삭제 모달이 열릴 때만 호출
+    }, [isOpen, isDeleteConfirmOpen]);
     
     useEffect(() => {
         if (selectedUserId) {
@@ -92,39 +95,6 @@ const AdminDeposit = () => {
             fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${selectedUserId}`, setAccounts);
         }
     }, [selectedUserId]);
-    
-    // useEffect(() => {
-    //     if (depositType === "TeamFund" && accounts.length > 0) {
-    //         const teamMembersCount = calculateTeamMembersCount();
-    //         const isTeamLeader = selectUserPosition === "팀장";
-    //         const isPartLeader = selectUserPosition === "파트장";
-    //         const teamFundAmount = isTeamLeader ? teamMembersCount * 30000 : isPartLeader ? 30000 : 0;
-
-    //         setSelectedDeposit((prev) => ({
-    //             ...prev,
-    //             transaction_amount: teamFundAmount,
-    //         }));
-    //     }
-    // }, [depositType, accounts, selectUserPosition]);
-    
-    // useEffect(() => {
-    //     if (depositType === "TeamFund" && accounts.length > 0) {
-    //         const teamMembersCount = calculateTeamMembersCount();
-    //         const isTeamLeader = selectUserPosition === "팀장";
-    //         const isPartLeader = selectUserPosition === "파트장";
-    //         const teamFundAmount = isTeamLeader 
-    //             ? teamMembersCount * 30000 
-    //             : isPartLeader 
-    //                 ? 30000 
-    //                 : 0;
-    
-    //         setSelectedDeposit(prev => ({
-    //             ...prev,
-    //             transaction_amount: teamFundAmount,
-    //         }));
-    //     }
-    // }, [depositType, accounts, selectUserPosition]);
-
     
     // 팀원 수 계산 함수
     const calculateTeamMembersCount = () => accounts.reduce((count, account) => count + account.cards.length, 0);
@@ -397,9 +367,6 @@ const AdminDeposit = () => {
             
             const filteredMembers = allMembers
                 .filter(member => validMemberIds.includes(member._id))
-                // && 
-                //     member.role_name !== 'super_admin' && 
-                //     member.status_id.status_name !== 'resigned'
                 .map(member => ({
                     ...member,
                     ...depositStatusMap[member._id], // 입금 상태 추가
@@ -487,8 +454,6 @@ const AdminDeposit = () => {
         if (card) {
             setSelectedCard(cardId);
             setBalance(card.balance);
-            // setBalance(card ? card.balance : 0);
-            // setSelectedDeposit(prev => ({ ...prev, card_id: cardId }));
             setDepositType(card.deposit_type || 'RegularDeposit');
         }
 
@@ -547,7 +512,7 @@ const AdminDeposit = () => {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
 
-            fetchData(API_URLS.DEPOSITS, setDeposits);
+            // fetchData(API_URLS.DEPOSITS, setDeposits);
             handleCloseDrawer();
         } catch (error) {
             console.error("입금 처리 중 오류:", error);

@@ -14,6 +14,7 @@ const useFetchData = (fetchFunction) => {
         setIsLoading(true);
         try {
             await fetchFunction();
+            setError(null);
         } catch (err) {
             setError(handleError(err));
         } finally {
@@ -79,9 +80,9 @@ const Dashboard = () => {
             } else {
                 await axios.post(API_URLS.TRANSACTIONS, newTransaction);
             }
-            
-            // 추가적인 처리 (예: 트랜잭션 목록 새로 고침)
+
             await fetchTransactions();
+            await fetchUserCard(); 
         } catch (error) {
             console.error("Error saving transaction:", error);
             setErrMsg(handleError(error));
@@ -91,7 +92,9 @@ const Dashboard = () => {
     const handleDeleteTransaction = async (transactionId) => {
         try {
             await axios.delete(`${API_URLS.TRANSACTIONS}/${transactionId}`);
-            setTransactions((prev) => prev.filter((transaction) => transaction._id !== transactionId));
+    
+            await fetchTransactions();
+            await fetchUserCard();
         } catch (error) {
             console.error("Error deleting transaction:", error);
             setErrMsg(handleError(error));
