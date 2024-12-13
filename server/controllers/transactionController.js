@@ -20,15 +20,12 @@ exports.getCardTransactions = async (req, res) => {
         const { cardId } = req.params;
         const transactions = await Transaction.find({ card_id: cardId });
 
-        if (!transactions || transactions.length === 0) {
-            return res.status(404).json({ message: "해당 카드의 트랜잭션을 찾을 수 없습니다." });
-        }
-
-        return res.status(200).json(transactions);
+        return res.status(200).json(transactions || []);
     } catch (error) {
-        return res.status(500).json({ message: "트랜잭션 조회 중 오류가 발생했습니다.", error });
+        return res.status(500).json({ error: "트랜잭션 조회 중 오류가 발생했습니다." });
     }
 };
+
 
 exports.createTransaction = async (req, res) => {
     const { 
@@ -44,12 +41,31 @@ exports.createTransaction = async (req, res) => {
         is_deducted,
     } = req.body;
 
+    if (!card_id || !transaction_date || !transaction_amount || !transaction_type) {
+        return res.status(400).json({ error: '필수 값이 누락되었습니다.' });
+    }
+    
+    if (transaction_type === "expense" && (!expense_type || !is_deducted)) {
+        return res.status(400).json({ error: '지출 거래 시 expense_type과 is_deducted 값이 필요합니다.' });
+    }
+    
+    if (transaction_type === "income" && !deposit_type) {
+        return res.status(400).json({ error: '수입 거래 시 deposit_type 값이 필요합니다.' });
+    }
+    
+    if (Number.isNaN(Number(transaction_amount)) || transaction_amount <= 0) {
+        return res.status(400).json({ error: '유효한 금액(transaction_amount)을 입력해야 합니다.' });
+    }
+
     // 금액 차감 공통 함수
     function subtractFromSource(card, source, amount) {
         const usedAmount = Math.min(card[source], amount);
         card[source] -= usedAmount;
         return { remainingAmount: amount - usedAmount, usedAmount };
     }
+
+    const handleTeamFundExpense = (card, amount) => subtractFromSource(card, 'team_fund', amount);
+    const handleRolloverExpense = (card, amount) => subtractFromSource(card, 'rollover_amount', amount);
 
     const handleExpense = (card, expenseType, amount) => {
         let remainingAmount = amount;
@@ -58,9 +74,9 @@ exports.createTransaction = async (req, res) => {
     
         switch (expenseType) {
             case 'TeamFund': {
-                const teamFundResult = subtractFromSource(card, 'team_fund', remainingAmount);
-                remainingAmount = teamFundResult.remainingAmount;
-                teamFundDeducted = teamFundResult.usedAmount;
+                const result = handleTeamFundExpense(card, remainingAmount);
+                remainingAmount = result.remainingAmount;
+                teamFundDeducted = result.usedAmount;
                 break;
             }
             case 'RegularExpense':
@@ -69,12 +85,12 @@ exports.createTransaction = async (req, res) => {
                 remainingAmount = balanceResult.remainingAmount;
     
                 if (remainingAmount > 0) {
-                    const rolloverResult = subtractFromSource(card, 'rollover_amount', remainingAmount);
+                    const rolloverResult = handleRolloverExpense(card, remainingAmount);
                     remainingAmount = rolloverResult.remainingAmount;
                     rolloverAmounted = rolloverResult.usedAmount;
     
                     if (remainingAmount > 0) {
-                        const teamFundResult = subtractFromSource(card, 'team_fund', remainingAmount);
+                        const teamFundResult = handleTeamFundExpense(card, remainingAmount);
                         remainingAmount = teamFundResult.remainingAmount;
                         teamFundDeducted = teamFundResult.usedAmount;
                     }
@@ -84,14 +100,18 @@ exports.createTransaction = async (req, res) => {
             }
         }
     
-        return {
-            remainingAmount, 
-            teamFundDeducted, 
-            rolloverAmounted,
-        };
+        return { remainingAmount, teamFundDeducted, rolloverAmounted };
     };
 
-    const sanitizeInput = (input) => input?.replace(/[\u0000-\u001F\u007F]/g, '').trim();
+    // const sanitizeInput = (input) => input?.replace(/[\u0000-\u001F\u007F]/g, '').trim();
+    const sanitizeInput = (input) => {
+        if (typeof input !== 'string') return '';
+        return input
+            .replace(/[\u0000-\u001F\u007F]/g, '') // 제어 문자 제거
+            .replace(/[<>]/g, '') // 태그 제거
+            .trim();
+    };
+    
 
     try {
         const sanitizedMerchantName = sanitizeInput(merchant_name);
@@ -102,8 +122,19 @@ exports.createTransaction = async (req, res) => {
             return res.status(404).json({ error: '카드를 찾을 수 없습니다.' });
         }
 
+        card.team_fund = card.team_fund || 0;
+        card.balance = card.balance || 0;
+        card.rollover_amount = card.rollover_amount || 0;
+
         let remainingAmount = Number(transaction_amount);
 
+        const saveTransactionAndCard = async (transactionData, card) => {
+            const transaction = new Transaction(transactionData);
+            await transaction.save();
+            await card.save();
+            return transaction;
+        };
+        
         if (transaction_type === "expense" || is_deducted) {
             const {
                 remainingAmount: finalRemaining,
@@ -115,7 +146,7 @@ exports.createTransaction = async (req, res) => {
                 throw new Error('잔액, 이월 금액 및 팀 운영비가 부족합니다.');
             }
         
-            const transaction = new Transaction({
+            const transactionData = new Transaction({
                 card_id,
                 transaction_date,
                 merchant_name: sanitizedMerchantName,
@@ -128,9 +159,8 @@ exports.createTransaction = async (req, res) => {
                 rolloverAmounted,
                 is_deducted,
             });
-        
-            await transaction.save();
-            await card.save();
+
+            const transaction = await saveTransactionAndCard(transactionData, card);
         
             res.status(201).json({
                 message: '트랜잭션 처리 성공',
@@ -145,7 +175,7 @@ exports.createTransaction = async (req, res) => {
                 depositAmount = Math.min(maxLimit - card.balance, depositAmount);
             }
 
-            if (deposit_type === 'TeamFund') {
+            if (`deposit_type` === 'TeamFund') {
                 card.team_fund += depositAmount;
             } else {
                 card.balance += depositAmount;
