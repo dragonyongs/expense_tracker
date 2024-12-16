@@ -1,9 +1,24 @@
-const calculateTeamMembersCount = (accounts) => {
-    if (!Array.isArray(accounts)) return 0;
-    return accounts.reduce((count, account) => {
-        const validCards = account.cards?.filter(card => card.card_type !== "OvertimeMealCard") || [];
-        return count + validCards.length;
-    }, 0);
+const calculateUniqueTeamMembersCount = (accounts) => {
+    if (!Array.isArray(accounts) || accounts.length === 0) {
+        return 0;
+    }
+
+    let memberArray = [];
+
+    accounts.forEach(account => {
+        (account.cards || []).forEach(card => {
+            if (card.card_type !== "OvertimeMealCard" && card.member_id) {
+                memberArray.push(card.member_id);
+            }
+        });
+    });
+
+    memberArray.reduce((unique, item) =>
+        unique.includes(item) ? unique : [...unique, item], []);
+
+    // console.log('memberArray.length', memberArray.length);
+
+    return memberArray.length;
 };
 
-export default calculateTeamMembersCount;
+export default calculateUniqueTeamMembersCount;

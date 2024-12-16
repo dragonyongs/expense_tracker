@@ -4,7 +4,7 @@ import { API_URLS } from '../services/apiUrls';
 import CommonDrawer from '../components/CommonDrawer';
 import InputField from '../components/InputField';
 import { MdKeyboardArrowRight } from "react-icons/md";
-import { IoAddCircleOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
 import SelectField from '../components/SelectField';
 import AdminHeader from '../components/AdminHeader';
 
@@ -32,12 +32,12 @@ const AdminCard = () => {
             const assignedMembers = new Set(cardsRes.data.map(card => card?.member_id?._id));
     
             if (!isEditing) {
-                const filteredMembers = membersRes.data.filter(member => !assignedMembers.has(member._id)
+                const filteredMembers = membersRes.data.filter(member => assignedMembers.has(member._id)
                 );
-
                 setMembers(filteredMembers);
             } else {
                 const allMembers = membersRes.data.filter(member => member.status_id?.status_name !== 'resigned');
+                console.log('allMembers', allMembers);
                 setMembers(allMembers);
             }
         } catch (error) {
@@ -53,13 +53,14 @@ const AdminCard = () => {
 
     const handleAddCard = () => {
         setSelectedCard({
+            card_type: 'TeamCard',
             card_number: '',
             limit: 100000,
             rollover_amount: 0,
             balance: 0,
             team_fund: 0,
             account_id: '',
-            member_id: ''
+            member_id: '',
         });
         setIsEditing(false);
         setIsOpen(true);
@@ -82,13 +83,13 @@ const AdminCard = () => {
         try {
             const cardData = {
                 ...selectedCard,
+                card_type: selectedCard.card_type,
                 member_id: selectedCard.member_id || null,
                 balance: parseInt(selectedCard.balance) || 0,
                 rollover_amount: parseInt(selectedCard.rollover_amount) || 0,
                 team_fund: parseInt(selectedCard.team_fund) || 0,
                 limit: parseInt(selectedCard.limit) || 100000,
             };
-            console.log("cardData:", cardData);
             if (isEditing) {
                 await axios.put(`${API_URLS.CARDS}/${selectedCard._id}`, cardData);
                 console.log("Card updated successfully:", cardData);
@@ -154,6 +155,14 @@ const AdminCard = () => {
             }
         }));
     };
+
+    const handleCardTypeChange = (e) => {
+        const newCardType = e.target.value;
+        setSelectedCard(prev => ({
+            ...prev,
+            card_type: newCardType,
+        }));
+    }
 
     return (
         <>
@@ -231,6 +240,57 @@ const AdminCard = () => {
                     {selectedCard && (
                         <form>
                             <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6">
+
+                            <ul className="grid w-full gap-2 grid-cols-2">
+                                    <li>
+                                        <input
+                                            type="radio"
+                                            id="card_type_a"
+                                            name="card_type"
+                                            value="TeamCard"
+                                            className="hidden peer"
+                                            checked={selectedCard.card_type === 'TeamCard'}
+                                            onChange={handleCardTypeChange}
+                                            disabled={!selectedCard.card_type || !selectedCard.card_type === 'TeamCard'}
+                                            required
+                                        />
+                                        <label
+                                            htmlFor="card_type_a"
+                                            className={`${!selectedCard.card_type || !selectedCard.card_type === 'TeamCard' ? 
+                                                'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 
+                                                'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 peer-disabled:bg-slate-50 peer-disabled:text-gray-300`}
+                                        >
+                                            <div className="block">
+                                                <div className="w-full text-md font-semibold">팀카드</div>
+                                            </div>
+                                            {selectedCard.card_type === 'TeamCard' && <IoCheckmark className="w-6 h-6" />}
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <input
+                                            type="radio"
+                                            id="card_type_b"
+                                            name="card_type"
+                                            value="OvertimeMealCard" 
+                                            className="hidden peer"
+                                            checked={selectedCard.card_type === 'OvertimeMealCard'}
+                                            onChange={handleCardTypeChange}
+                                            disabled={!selectedCard.card_type || !selectedCard.card_type === 'OvertimeMealCard'}
+                                        />
+                                        <label
+                                            htmlFor="card_type_b"
+                                            className={`${!selectedCard.card_type || !selectedCard.card_type === 'TeamCard' ? 
+                                                'dark:border-slate-900 dark:text-slate-600 dark:bg-slate-900' : 
+                                                'dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 peer-disabled:bg-slate-50 peer-disabled:text-gray-300`}
+                                        >
+                                            <div className="block">
+                                                <div className="w-full text-md font-semibold">야근식대카드</div>
+                                            </div>
+                                            {selectedCard.card_type === 'OvertimeMealCard' && <IoCheckmark className="w-6 h-6" />}
+                                        </label>
+                                    </li>
+                                </ul>
+                                
                                 <InputField 
                                     label="카드 번호" 
                                     id="card_number" 
@@ -270,7 +330,7 @@ const AdminCard = () => {
                                     disabled={!isEditing}
                                 />
 
-                                {selectUserPosition === '팀장' &&
+                                {selectUserPosition === '팀장' || selectedCard.card_type === 'TeamCard' &&
                                     <InputField 
                                         label="팀 운영비 잔액" 
                                         id="team_fund"
@@ -301,8 +361,8 @@ const AdminCard = () => {
                                     placeholder="연결 계좌"
                                     required
                                 />
-
                             </div>
+                            
                             {/* 저장 버튼 */}
                             <div className="flex flex-col gap-3 pt-4 p-6">
                                 <div className='flex justify-between gap-y-4 gap-x-2'>

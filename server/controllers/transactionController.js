@@ -41,11 +41,12 @@ exports.createTransaction = async (req, res) => {
         is_deducted,
     } = req.body;
 
-    if (!card_id || !transaction_date || !transaction_amount || !transaction_type) {
+
+    if (!card_id || !transaction_date || !transaction_amount || !transaction_type || !merchant_name || !menu_name) {
         return res.status(400).json({ error: '필수 값이 누락되었습니다.' });
     }
     
-    if (transaction_type === "expense" && (!expense_type || !is_deducted)) {
+    if (transaction_type === "expense" && !expense_type) {
         return res.status(400).json({ error: '지출 거래 시 expense_type과 is_deducted 값이 필요합니다.' });
     }
     
@@ -79,11 +80,10 @@ exports.createTransaction = async (req, res) => {
                 teamFundDeducted = result.usedAmount;
                 break;
             }
-            case 'RegularExpense':
-            default: {
+            case 'RegularExpense': {
                 const balanceResult = subtractFromSource(card, 'balance', remainingAmount);
                 remainingAmount = balanceResult.remainingAmount;
-    
+                
                 if (remainingAmount > 0) {
                     const rolloverResult = handleRolloverExpense(card, remainingAmount);
                     remainingAmount = rolloverResult.remainingAmount;
@@ -95,8 +95,10 @@ exports.createTransaction = async (req, res) => {
                         teamFundDeducted = teamFundResult.usedAmount;
                     }
                 }
-    
                 break;
+            }
+            default: {
+                throw new Error(`알 수 없는 지출 유형: ${expenseType}`);
             }
         }
     
@@ -112,7 +114,6 @@ exports.createTransaction = async (req, res) => {
             .trim();
     };
     
-
     try {
         const sanitizedMerchantName = sanitizeInput(merchant_name);
         const sanitizedMenuName = sanitizeInput(menu_name);
@@ -127,6 +128,8 @@ exports.createTransaction = async (req, res) => {
         card.rollover_amount = card.rollover_amount || 0;
 
         let remainingAmount = Number(transaction_amount);
+
+        console.log('sanitizedMerchantName', sanitizedMerchantName);
 
         const saveTransactionAndCard = async (transactionData, card) => {
             const transaction = new Transaction(transactionData);
@@ -210,7 +213,6 @@ exports.createTransaction = async (req, res) => {
         res.status(500).json({ message: error.message || '서버 오류가 발생했습니다.', error });
     }
 };
-
 
 exports.getTransactionById = async (req, res) => {
     try {

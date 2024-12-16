@@ -12,11 +12,12 @@ function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, ca
     const handleSave = async (transactionData) => {
         try {
             await onSave(transactionData); // 부모로 저장 요청 전달
+        } catch (error) {
+            console.error("Error saving transaction:", error);
+        } finally {
             setConfettiTrigger(true);
             setTimeout(() => setConfettiTrigger(false), 3000);
             setIsDrawerOpen(false);
-        } catch (error) {
-            console.error("Error saving transaction:", error);
         }
     };
     

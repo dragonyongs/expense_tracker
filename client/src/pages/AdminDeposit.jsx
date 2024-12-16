@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
-import calculateTeamMembersCount from '../utils/teamUtils';
+import calculateUniqueTeamMembersCount from '../utils/teamUtils';
 import { calculateTeamDepositAmount } from '../utils/depositUtils';
 
 import CommonDrawer from '../components/CommonDrawer';
@@ -125,47 +125,6 @@ const AdminDeposit = () => {
         }
     }, [state.selectedUserId]);
 
-    // useEffect(() => {
-    //     const { selectedUserId, selectedDeposit, selectedCardId, cards, balance, accounts } = state;
-
-    //     console.log('state',)
-    
-    //     if (!selectedUserId || !selectedDeposit.deposit_type || !selectedCardId) {
-    //         return;
-    //     }
-    
-    //     // accounts가 비어 있으면 실행하지 않음
-    //     if (!Array.isArray(accounts) || accounts.length === 0) {
-    //         console.error("accounts가 비어 있습니다. 유효한 상태에서 다시 실행하세요.");
-    //         return;
-    //     }
-        
-    //         const cardLimit = cards.find(card => card._id === selectedCardId)?.limit || 0;
-    //         const teamMembersCount = calculateTeamMembersCount(accounts);
-    //         const usageQuota = 10000 / teamMembersCount;
-    
-    //         if (state.selectedDeposit.transaction_amount !== (balance > usageQuota
-    //             ? Math.max(0, cardLimit - balance)
-    //             : cardLimit)) {
-    //             setState(prev => ({
-    //                 ...prev,
-    //                 selectedDeposit: {
-    //                     ...prev.selectedDeposit,
-    //                     transaction_amount: balance > usageQuota
-    //                         ? Math.max(0, cardLimit - balance)
-    //                         : cardLimit,
-    //                 },
-    //             }));
-    //         }
-    // }, [
-    //     state.selectedUserId,
-    //     state.selectedDeposit.deposit_type,
-    //     state.selectedCardId,
-    //     state.cards,
-    //     state.balance,
-    //     state.accounts, // accounts를 의존성 배열에 추가
-    // ]);
-
     const handleDeleteConfirm = () => {
         setState(prev => ({ ...prev, isDeleteConfirmOpen: true }));
     };
@@ -179,10 +138,12 @@ const AdminDeposit = () => {
             const memberId = deposit?.card_id?.member_id || null;
             const cardId = deposit?.card_id?._id || null;           
             const response = await axios.get(`${API_URLS.CARDS}/member/${memberId}`);
-
             const userCards = response.data;
+            const userPosition = userCards.find(card => card.member_id._id === memberId);
+
             setState(prev => ({
                 ...prev,
+                selectUserPosition: userPosition.member_id.position,
                 cards: userCards,
                 selectedDeposit: deposit,
                 selectedCardId: cardId,
@@ -270,10 +231,11 @@ const AdminDeposit = () => {
             let depositAmount = parseFloat(transactionAmount);
 
             if (!isDeductedOpen) {
-                if (selectedDeposit.deposit_type === "RegularDeposit") {
-                    const teamMembersCount = calculateTeamMembersCount(accounts);
+                if (!isEditing && selectedDeposit.deposit_type === "RegularDeposit") {
+                    const teamMembersCount = calculateUniqueTeamMembersCount(state.accounts);
                     const updatedCards = calculateTeamDepositAmount([cardData], teamMembersCount);
                     depositAmount = updatedCards[0]?.depositAmount || 0;
+                    console.log('!isDeductedOpen', depositAmount);
                 } else if (selectedDeposit.deposit_type === "TransportationDeposit") {
                     depositAmount = parseFloat(selectedDeposit.transaction_amount);
                 }
@@ -334,8 +296,6 @@ const AdminDeposit = () => {
             account.cards.some(card => card.member_id === selectedUserId)
         );
 
-        const teamMembersCount = calculateTeamMembersCount(userAccount);
-
         if (!userAccount) {
             console.error("사용자 계좌를 찾을 수 없습니다.");
             return;
@@ -349,7 +309,8 @@ const AdminDeposit = () => {
 
         const cardLimit = userCard.limit || 0;
         const cardBalance = userCard.balance || 0;
-        
+        const teamMembersCount = calculateUniqueTeamMembersCount(state.accounts);
+
         let depositAmount = 0;
 
         try {
@@ -365,25 +326,35 @@ const AdminDeposit = () => {
                 );
             });
 
-            if (filteredMonthTransactions.length > 0) {
-                depositAmount = 0;
-            } else if (newDepositType && !state.isEditing) {
+            const hasTeamFund = filteredMonthTransactions.some(tx => tx.deposit_type === "TeamFund");
+            const hasRegularDeposit = filteredMonthTransactions.some(tx => tx.deposit_type === "RegularDeposit");
+
+            if (newDepositType && !state.isEditing) {
                 if (newDepositType === "RegularDeposit") {
-                    
-                    const usageQuota = 10000 / teamMembersCount; // 팀원 기준 사용 가능 금액
-                    depositAmount = cardBalance > usageQuota
-                        ? Math.max(0, cardLimit - cardBalance)
-                        : cardLimit;
-    
+                    // RegularDeposit 조건
+                    if (hasRegularDeposit) {
+                        depositAmount = 0;
+                    } else {
+                        const usageQuota = 10000 / teamMembersCount; // 팀원 기준 사용 가능 금액
+                        depositAmount = cardBalance > usageQuota
+                            ? Math.max(0, cardLimit - cardBalance) // 잔액이 quota보다 큰 경우 limit - 잔액
+                            : cardLimit; // 잔액이 quota 이하라면 card.limit
+                    }
                 } else if (newDepositType === "TeamFund") {
-                    const isTeamLeader = state.selectUserPosition === "팀장";
-                    const isPartLeader = state.selectUserPosition === "파트장";
-                    depositAmount = isTeamLeader
-                        ? teamMembersCount * 30000
-                        : isPartLeader
-                            ? 30000
-                            : '';
+                    // TeamFund 조건
+                    if (hasTeamFund) {
+                        depositAmount = 0;
+                    } else {
+                        const isTeamLeader = state.selectUserPosition === "팀장";
+                        const isPartLeader = state.selectUserPosition === "파트장";
+                        depositAmount = isTeamLeader
+                            ? teamMembersCount * 30000 // 팀장일 경우 팀원 수 * 30000
+                            : isPartLeader
+                                ? 30000 // 파트장일 경우 30000
+                                : ''; // 기타
+                    }
                 } else if (newDepositType === "TransportationDeposit") {
+                    // 교통비는 로직 추가 가능
                     depositAmount = '';
                 }
             }
@@ -484,7 +455,6 @@ const AdminDeposit = () => {
     };
 
     const handleMinusDeposit = () => {
-        console.log('handleMinusDeposit');
         setState(prev => ({
             ...prev,
             selectedDeposit: { transaction_amount: "" },
@@ -536,7 +506,7 @@ const AdminDeposit = () => {
                                                     {new Date(deposit.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} {deposit.merchant_name} {deposit.transaction_type}
                                                     </p>
                                                     <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                        {deposit.member_name}님 {deposit.menu_name}
+                                                        {deposit.menu_name}
                                                     </p>
                                                 </div>
                                                 <div className="text-base text-gray-900 dark:text-white">
@@ -709,7 +679,7 @@ const AdminDeposit = () => {
                             />
                             {state.selectUserPosition === '팀장' && state.selectedDeposit.deposit_type === "TeamFund" && (
                                 <div className="mt-2 text-gray-500">
-                                    <span>팀 인원: {calculateTeamMembersCount(state.accounts)}명</span> {/* 팀원 수만 표시 */}
+                                    <span>팀 인원: {calculateUniqueTeamMembersCount(state.accounts)}명</span> {/* 팀원 수만 표시 */}
                                 </div>
                             )}
                         </div>
