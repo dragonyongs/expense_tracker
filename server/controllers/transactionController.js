@@ -502,3 +502,132 @@ exports.getFilteredDeposits = async (req, res) => {
         res.status(500).json({ message: 'Error Deposits', error });
     }
 };
+
+// exports.getSearchKeyword = async (req, res) => {
+//     const { keyword } = req.params;
+
+//     let query = { 
+//         merchant_name: { $regex: keyword, $options: 'i' } 
+//     };
+
+//     try {
+//         const transactions = await Transaction.find(query).limit(10);
+//         res.status(200).json(transactions);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: '서버 에러' });
+//     }
+// }
+
+// exports.getMenuForMerchant = async (req, res) => {
+//     const { merchant_name } = req.params;
+//     let query = { 
+//         merchant_name: merchant_name
+//     };
+
+//     try {
+//         const menus = await Transaction.find(query).distinct('menu_name');
+//         console.log(menus);
+//         res.status(200).json(menus);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: '서버 에러' });
+//     }
+// }
+
+
+exports.getSearchKeyword = async (req, res) => {
+    const { keyword } = req.params;
+
+    // 키워드가 포함된 상호명을 찾기 위한 쿼리
+    let query = { 
+        merchant_name: { $regex: keyword, $options: 'i' } 
+    };
+
+    try {
+        const transactions = await Transaction.find(query);
+
+        // 결과가 없을 경우 처리
+        if (transactions.length === 0) {
+            return res.status(200).json([]); // 빈 배열 반환
+        }
+
+        // 상호명과 그 빈도를 카운트
+        const merchantCount = transactions.reduce((acc, transaction) => {
+            acc[transaction.merchant_name] = (acc[transaction.merchant_name] || 0) + 1;
+            return acc;
+        }, {});
+
+
+        // 빈도가 높은 순서로 정렬하여 결과 배열 생성
+        const uniqueMerchants = Object.keys(merchantCount)
+            .sort((a, b) => merchantCount[b] - merchantCount[a])
+            .slice(0, 10); // 상위 10개 결과만
+
+        res.status(200).json(uniqueMerchants);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: '서버 에러' });
+    }
+}
+
+
+// exports.getMenuForMerchant = async (req, res) => {
+//     const { merchant_name } = req.params;
+
+//     // 선택한 상호명에 대해 메뉴를 찾기 위한 쿼리
+//     let query = { 
+//         merchant_name: merchant_name
+//     };
+
+//     try {
+//         const menus = await Transaction.find(query);
+
+//         // 메뉴와 그 빈도를 카운트
+//         const menuCount = menus.reduce((acc, menu) => {
+//             acc[menu.menu_name] = (acc[menu.menu_name] || 0) + 1;
+//             return acc;
+//         }, {});
+
+//         // 빈도가 높은 순서로 정렬하여 결과 배열 생성
+//         const uniqueMenus = Object.keys(menuCount)
+//             .sort((a, b) => menuCount[b] - menuCount[a]);
+
+//         res.status(200).json(uniqueMenus);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: '서버 에러' });
+//     }
+// }
+
+exports.getMenuForMerchant = async (req, res) => {
+    const { merchant_name } = req.params;
+
+    let query = { 
+        merchant_name: merchant_name
+    };
+
+    try {
+        const menus = await Transaction.find(query);
+
+        const menuCount = menus.reduce((acc, menu) => {
+            if (!acc[menu.menu_name]) {
+                acc[menu.menu_name] = {
+                    menu_name: menu.menu_name,
+                    transaction_amount: menu.transaction_amount,
+                    count: 0
+                };
+            }
+            acc[menu.menu_name].count += 1;
+            return acc;
+        }, {});
+
+        const uniqueMenus = Object.values(menuCount)
+            .sort((a, b) => b.count - a.count);
+
+        res.status(200).json(uniqueMenus);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: '서버 에러' });
+    }
+}

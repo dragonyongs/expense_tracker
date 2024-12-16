@@ -9,6 +9,10 @@ router.post('/', authMiddleware, transactionController.createTransaction);
 // 모든 트랜잭션 조회
 router.get('/', authMiddleware, transactionController.getAllTransactions);
 
+// 키워드 조회
+router.get('/search/:keyword', authMiddleware, transactionController.getSearchKeyword);
+router.get('/search/menu/:merchant_name', authMiddleware, transactionController.getMenuForMerchant);
+
 // 입금 트랜잭션 조회
 router.get('/deposits', authMiddleware, transactionController.getAllDeposits);
 

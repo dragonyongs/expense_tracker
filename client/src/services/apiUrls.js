@@ -20,4 +20,6 @@ export const API_URLS = {
     DATES: '/api/dates',
     ADDRESSES: '/api/addresses',
     PROFILES: '/api/profiles',
+    SEARCH_KEYWORD: '/api/transactions/search',
+    SEARCH_MENU_FOR_MERCHANT: '/api/transactions/search/menu',
 };

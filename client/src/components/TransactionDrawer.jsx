@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import axios from "../services/axiosInstance";
 import CommonDrawer from '../components/CommonDrawer'; 
 import InputField from '../components/InputField'; 
 import SelectField from '../components/SelectField';
 import PropTypes from 'prop-types';
 import { IoCheckmark } from "react-icons/io5";
+import { API_URLS } from '../services/apiUrls';
+
 
 const TransactionDrawer = ({
     isOpen,
@@ -34,7 +37,11 @@ const TransactionDrawer = ({
 
     const [expenseType, setExpenseType] = useState("RegularExpense");
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-
+    // const [keyword, setKeyword] = useState('');
+    // const [suggestions, setSuggestions] = useState([]);
+    const [merchantSuggestions, setMerchantSuggestions] = useState([]);
+    const [menuSuggestions, setMenuSuggestions] = useState([]);
+    
     useEffect(() => {
         if (isOpen) {
             setSelectedTransaction({
@@ -45,6 +52,8 @@ const TransactionDrawer = ({
                 menu_name: "",
                 transaction_amount: 0,
             });
+            setMerchantSuggestions([]);
+            setMenuSuggestions([]);
         }
     }, [isOpen, userCards]);
 
@@ -182,6 +191,79 @@ const TransactionDrawer = ({
         setIsDeleteConfirmOpen(false);
     };
 
+    const handleMerchantInputChange = async (e) => {
+        const value = e.target.value;
+        setSelectedTransaction(prev => ({
+            ...prev,
+            merchant_name: value,
+        }));
+
+        if (value.length > 1) { // 최소 3자 이상 입력 시 검색
+            try {
+                const response = await axios.get(`${API_URLS.SEARCH_KEYWORD}/${value}`);
+                setMerchantSuggestions(response.data);
+            } catch (error) {
+                console.error("검색 오류:", error);
+                setMerchantSuggestions([]); // 에러 발생 시 제안 목록 초기화
+            }
+        } else {
+            setMerchantSuggestions([]);
+        }
+    };
+
+    const fetchMenuForMerchant = async (merchantName) => {
+        try {
+            const response = await axios.get(`${API_URLS.SEARCH_MENU_FOR_MERCHANT}/${merchantName}`);
+            setMenuSuggestions(response.data);
+        } catch (error) {
+            console.error("메뉴 조회 오류:", error);
+            setMenuSuggestions([]);
+        }
+    };
+    
+    
+    const handleMerchantSuggestionClick = (merchant_name) => {
+        setSelectedTransaction(prev => ({
+            ...prev,
+            merchant_name,
+        }));
+        setMerchantSuggestions([]);
+        fetchMenuForMerchant(merchant_name); // 선택한 상호명에 대한 메뉴 조회
+    };
+    
+    const handleMenuInputChange = async (e) => {
+        const value = e.target.value;
+        setSelectedTransaction(prev => ({
+            ...prev,
+            menu_name: value,
+        }));
+    
+        // 메뉴명 검색 로직
+        if (value.length > 2 && selectedTransaction.merchant_name) {
+            try {
+                // 선택된 상호명에 대한 메뉴 목록을 필터링
+                const filteredMenus = menuSuggestions.filter(menu => 
+                    menu.menu_name.toLowerCase().includes(value.toLowerCase())
+                );
+                setMenuSuggestions(filteredMenus);
+            } catch (error) {
+                console.error("검색 오류:", error);
+                setMenuSuggestions([]);
+            }
+        } else {
+            setMenuSuggestions([]);
+        }
+    };
+    
+    const handleMenuSuggestionClick = (menu) => {
+        setSelectedTransaction(prev => ({
+            ...prev,
+            menu_name: menu.menu_name,
+            transaction_amount: menu.transaction_amount,
+        }));
+        setMenuSuggestions([]);
+    };
+    
     return (
         <>
             <CommonDrawer
@@ -269,34 +351,81 @@ const TransactionDrawer = ({
                             ) }
                     </div>
 
-                    <InputField
-                        label="상호명"
-                        id="merchant_name"
-                        value={selectedTransaction.merchant_name || ""}
-                        className="bg-white border border-slate-200"
-                        onChange={(e) =>
-                            setSelectedTransaction(prev => ({
-                                ...prev,
-                                merchant_name: e.target.value,
-                            }))
-                        }
-                        placeholder="상호명 입력"
-                        required={true}
-                    />
+                    <div className='relative'>
+                        <InputField
+                            label="상호명"
+                            id="merchant_name"
+                            value={selectedTransaction.merchant_name || ""}
+                            className="bg-white border border-slate-200"
+                            onChange={handleMerchantInputChange}
+                            placeholder="상호명 입력"
+                            required={true}
+                        />
+                        {merchantSuggestions.length > 0 && (
+                            <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                                {merchantSuggestions.map((merchantName, index) => (
+                                    <li
+                                        key={index}
+                                        onClick={() => handleMerchantSuggestionClick(merchantName)}
+                                        className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
+                                    >
+                                        {merchantName}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {/* {merchantSuggestions.length > 0 && (
+                            <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                                {merchantSuggestions.map((suggestion) => (
+                                    <li
+                                        key={suggestion._id}
+                                        onClick={() => handleMerchantSuggestionClick(suggestion)}
+                                        className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
+                                    >
+                                        {suggestion.merchant_name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )} */}
 
-                    <InputField
-                        label="메뉴명"
-                        id="menu_name"
-                        value={selectedTransaction.menu_name || ""}
-                        className="bg-white border border-slate-200"
-                        onChange={(e) =>
-                            setSelectedTransaction(prev => ({
-                                ...prev,
-                                menu_name: e.target.value,
-                            }))
-                        }
-                        placeholder="메뉴명 입력"
-                    />
+                    </div>
+                    <div className='relative'>
+                        <InputField
+                            label="메뉴명"
+                            id="menu_name"
+                            value={selectedTransaction.menu_name || ""}
+                            className="bg-white border border-slate-200"
+                            onChange={handleMenuInputChange}
+                            placeholder="메뉴명 입력"
+                        />
+                        {menuSuggestions.length > 0 && (
+                            <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                                {menuSuggestions.map((suggestion) => (
+                                    <li
+                                        key={suggestion.menu_name}
+                                        onClick={() => handleMenuSuggestionClick(suggestion)}
+                                        className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
+                                    >
+                                        {suggestion.menu_name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {/* {menuSuggestions.length > 0 && (
+                            <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                                {menuSuggestions.map((menuName, index) => (
+                                    <li
+                                        key={index}
+                                        onClick={() => handleMenuSuggestionClick(menuName)}
+                                        className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
+                                    >
+                                        {menuName}
+                                    </li>
+                                ))}
+                            </ul>
+                        )} */}
+
+                    </div>
                     <InputField
                         label="지출금액"
                         id="transaction_amount"
