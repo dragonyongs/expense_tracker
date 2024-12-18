@@ -72,6 +72,7 @@ export const AvatarProvider = ({ children }) => {
                 setAvatarConfig(avatarData || genConfig()); // ID에 해당하는 아바타 정보 가져오기
             } catch (error) {
                 console.error('아바타 데이터 가져오기 실패:', error);
+                setAvatarConfig(genConfig()); 
             }
         };
 

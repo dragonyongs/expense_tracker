@@ -11,7 +11,6 @@ import AdminHeader from '../components/AdminHeader';
 import AdminDrawer from '../components/AdminDrawer';
 
 const AdminMembers = () => {
-    // 상태값 정의
     const [members, setMembers] = useState([]);
     const [selectedMember, setSelectedMember] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('전체');
@@ -107,7 +106,6 @@ const AdminMembers = () => {
         }
     };
 
-    // Drawer 관련 함수들
     const toggleDrawer = () => {
         setIsOpen(prevState => !prevState);
         setPassword('');
@@ -152,7 +150,6 @@ const AdminMembers = () => {
         setSelectedMember(null);
     };
 
-    // 상태, 역할, 팀 변경 함수들
     const handleStatusChange = (e) => {
         const selectedStatusId = e.target.value;
         const selectedStatus = statuses.find(status => status._id === selectedStatusId);
@@ -198,7 +195,6 @@ const AdminMembers = () => {
         });
     };
 
-    // 저장 함수
     const handleSave = async () => {
         try {
             const memberData = {

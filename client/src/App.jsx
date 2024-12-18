@@ -22,7 +22,7 @@ const Contacts = React.lazy(() => import('./pages/Contacts'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
-const AdminMembers = React.lazy(() => import('./pages/AdminMembers'));
+const AdminMembers = React.lazy(() => import('./pages/admin/AdminMembers'));
 const AdminProfiles = React.lazy(() => import('./pages/AdminProfiles'));
 const AdminDepartments = React.lazy(() => import('./pages/AdminDepartments'));
 const AdminTeams = React.lazy(() => import('./pages/AdminTeams'));
