@@ -32,12 +32,10 @@ const AdminCard = () => {
             const assignedMembers = new Set(cardsRes.data.map(card => card?.member_id?._id));
     
             if (!isEditing) {
-                const filteredMembers = membersRes.data.filter(member => assignedMembers.has(member._id)
-                );
+                const filteredMembers = membersRes.data.filter(member => !assignedMembers.has(member._id));
                 setMembers(filteredMembers);
             } else {
                 const allMembers = membersRes.data.filter(member => member.status_id?.status_name !== 'resigned');
-                console.log('allMembers', allMembers);
                 setMembers(allMembers);
             }
         } catch (error) {

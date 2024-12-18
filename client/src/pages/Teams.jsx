@@ -24,7 +24,7 @@ function Teams() {
                 .flatMap(account => account.cards)
                 .find(card => card.member_id === user.member_id);
     
-            setUserPosition(userCard ? userCard.position : '');
+            setUserPosition(userCard ? userCard.position : '팀원');
         } catch (error) {
             console.error(`Error fetching data from ${url}:`, error);
         } finally {
@@ -61,6 +61,7 @@ function Teams() {
                 ) : (
                     <AccountList 
                         accounts={accounts} 
+                        userName={user.name}
                         userPosition={userPosition} 
                         remainingDays={remainingDays} 
                     />
@@ -84,7 +85,7 @@ const AccountList = ({ accounts, userPosition, userName, remainingDays }) => {
                 const hasOvertimeMealCard = account.cards.some(card => card.card_type === "OvertimeMealCard");
                 const isLeaderAccount = account.cards.some(card => card.position === "팀장");
                 const isPartLeaderAccount = account.cards.some(card => card.position === "파트장" );
-                const isUserAccount = account.cards.some(card => card.member_name === userName);
+                const isUserAccount = account.cards.some(card => {card.member_name === userName});
 
                 if (userPosition === "파트장" && isLeaderAccount && !hasOvertimeMealCard) {
                     return null;
@@ -124,7 +125,6 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
     const leaderCards = account.cards.filter(card => card.position === "팀장" && card.card_type !== "OvertimeMealCard");
     const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
     const otherCards = account.cards.filter(card => card.position !== "팀장" && card.card_type !== "OvertimeMealCard");
-
     return (
         <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-600 dark:bg-slate-700">
             {/* 계좌 정보 */}
@@ -152,7 +152,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
                 )}
 
                 {/* 팀장의 카드 정보는 팀장만 볼 수 있음 */}
-                {userPosition === "팀장" && leaderCards.length > 0 && (
+                {(userPosition === "팀장" || userPosition === "파트장" )&& leaderCards.length > 0 && (
                     <LeaderCardDetail leaderCards={leaderCards} />
                 )}
 
