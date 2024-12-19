@@ -4,41 +4,34 @@ const Profile = require('../models/Profile');
 const Status = require('../models/Status');
 const Role = require('../models/Role');
 const xlsx = require('xlsx');
+const { generateRandomPassword } = require('../utils/generateRandomPassword'); // 랜덤 비밀번호 생성 유틸리티
 
 exports.createMember = async (req, res) => {
     try {
-        const { member_name, password, email, status_id, role_id, team_id, position, rank } = req.body;  
-
+        const { member_name, password, email, status_id, role_id, team_id, position, rank } = req.body;
+        
         // 필수 입력값 검증
-        if (!member_name || !password || !email) {
+        if (!member_name || !email) {
             return res.status(400).json({ error: '이름, 비밀번호, 이메일은 필수 입력 사항입니다.' });
         }
 
         // 이메일 중복 확인
         const existingUser = await Member.findOne({ email });
+
         if (existingUser) {
             return res.status(409).json({ error: '이미 사용 중인 이메일입니다.' });
         }
 
+        // 랜덤 비밀번호 생성
+        const randomPassword = generateRandomPassword(); // 랜덤 비밀번호 생성
+
         // 비밀번호 해싱
         const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const hashedPassword = await bcrypt.hash( !password ? randomPassword : password, saltRounds);
 
-        let statusId = status_id;
-        if (!statusId) {
-            const pendingStatus = await Status.findOne({ status_name: 'pending' });
-            if (pendingStatus) {
-                statusId = pendingStatus._id;
-            }
-        }
 
-        let roleId = role_id;
-        if (!roleId) {
-            const userRole = await Role.findOne({ role_name: '사용자' });
-            if (userRole) {
-                roleId = userRole._id;
-            }
-        }
+        let statusId = status_id || (await Status.findOne({ status_name: 'pending' }))._id;
+        let roleId = role_id || (await Role.findOne({ role_name: '사용자' }))._id;
 
         // 새로운 멤버 생성
         const newMember = await Member.create({
@@ -89,6 +82,28 @@ exports.getAllMembers = async (req, res) => {
         res.json(members); // 퇴사자나 관리자 제외 없이 전체 멤버 반환
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+};
+
+exports.getMemberByEmail = async (req, res) => {
+    const { email } = req.query;
+    console.log('email', email);
+
+    if (!email) {
+        return res.status(400).json({ error: '이메일을 제공해야 합니다.' });
+    }
+
+    try {
+        // 이메일로 멤버 검색
+        const member = await Member.findOne({ email }).lean();
+
+        if (!member) {
+            return res.status(404).json({ message: '멤버를 찾을 수 없습니다.' });
+        }
+
+        res.json({ member });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };
 
@@ -286,7 +301,7 @@ exports.backupMembers = async (req, res) => {
                         `${phone.phone_name}: ${phone.phone_number}${phone.extension ? ` (${phone.extension})` : ''}`).join(', ') 
                     : '없음',
                 주소: profile?.addresses && profile.addresses.length > 0 
-                    ? profile.addresses.map(address => `${address.address_name}: ${address.address_line1} ${address.address_line2} (${address.postal_code})`).join(', ') 
+                    ? profile.addresses.map(address => `${address.address_name}: ${address.address_line1} / ${address.address_line2} (${address.postal_code})`).join(', ') 
                     : '없음',
                 기념일: profile?.dates && profile.dates.length > 0 
                     ? profile.dates.map(date => `${date.date_name}: ${new Date(date.date).toLocaleDateString()}`).join(', ') 
@@ -306,8 +321,14 @@ exports.backupMembers = async (req, res) => {
         // 엑셀 파일을 메모리 버퍼로 생성
         const buffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
 
+        // 현재 날짜와 시간을 포맷팅
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD 형식
+        const formattedTime = now.toTimeString().slice(0, 8).replace(/:/g, ''); // HHMMSS 형식
+        const filename = `members_export_${formattedDate}_${formattedTime}.xlsx`;
+
         // 파일 다운로드
-        res.setHeader('Content-Disposition', 'attachment; filename=members_export.xlsx');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(buffer);
         

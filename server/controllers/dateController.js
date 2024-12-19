@@ -4,7 +4,7 @@ const Profile = require('../models/Profile');
 
 exports.createDate = async (req, res) => {
     try {
-        const { member_id, date_type, date } = req.body;
+        const { member_id, date_type, date_name, date } = req.body;
 
         const newDate = new DateModel({
             member_id, 
@@ -13,10 +13,7 @@ exports.createDate = async (req, res) => {
             date
         });
 
-        console.log('newDate (before save):', newDate);
-
         const savedDate = await newDate.save();
-        console.log('savedDate (after save):', savedDate); // 저장된 후의 상태 확인
 
         let profile = await Profile.findOne({ member_id });
 
@@ -25,6 +22,8 @@ exports.createDate = async (req, res) => {
         }
 
         await profile.save();
+
+        console.log('createDate', savedDate);
 
         res.status(201).json(savedDate);
     } catch (error) {

@@ -4,7 +4,7 @@ const Profile = require('../models/Profile');
 // 연락처 생성 및 프로필에 추가
 exports.createPhone = async (req, res) => {
     try {
-        const { member_id, phone_type, phone_number, phone_name, extension } = req.body;
+        const { phone_type, phone_name, phone_number, extension, member_id } = req.body;
 
         const newPhone = new Phone({
             member_id,
@@ -15,13 +15,14 @@ exports.createPhone = async (req, res) => {
         });
 
         const savedPhone = await newPhone.save();
-        console.log('savedPhone:', savedPhone); // 저장된 연락처 확인
 
         let profile = await Profile.findOne({ member_id });
 
         if (!profile.phones.some(phoneId => phoneId.toString() === savedPhone._id.toString())) {
             profile.phones.push(savedPhone._id);
         }
+
+        console.log('createPhone', savedPhone);
 
         await profile.save();
 

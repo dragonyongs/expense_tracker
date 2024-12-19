@@ -7,6 +7,8 @@ router.post('/', memberController.createMember);
 
 router.get('/backup', authMiddleware, memberController.backupMembers);
 
+router.get('/email', authMiddleware, memberController.getMemberByEmail);
+
 router.get('/', authMiddleware, memberController.getAllMembers);
 
 router.get('/filteredMembers', authMiddleware, memberController.getFilteredMembers);

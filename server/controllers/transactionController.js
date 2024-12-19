@@ -129,8 +129,6 @@ exports.createTransaction = async (req, res) => {
 
         let remainingAmount = Number(transaction_amount);
 
-        console.log('sanitizedMerchantName', sanitizedMerchantName);
-
         const saveTransactionAndCard = async (transactionData, card) => {
             const transaction = new Transaction(transactionData);
             await transaction.save();

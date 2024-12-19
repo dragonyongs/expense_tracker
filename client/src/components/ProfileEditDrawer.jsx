@@ -256,59 +256,6 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
             onClose();
         }
     };
-    
-    
-    // const handleSave = async () => {
-
-    //     try {
-    //         let hasError = false;
-    //         setIsLoading(true);
-    //         setErrMsg('');
-
-    //         profile.phones.forEach((contact, index) => {
-    //             if (!contact.phone_type) {
-    //                 setErrMsg(`연락처 ${index + 1}의 전화 유형을 선택해주세요.`);
-    //                 hasError = true;
-    //             }
-    //         });
-
-    //         if (hasError) {
-    //             return;
-    //         }
-
-    //         let avatarId = profile.avatarId._id; 
-    //         if (Object.keys(avatarConfig).length > 0) {
-    //             const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${targetMemberId}`, avatarConfig);
-    //             if (!avatarResponse || !avatarResponse.data) {
-    //                 throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
-    //             }
-    //             avatarId = avatarResponse.data._id;
-    //         }
-    //         await Promise.all([
-    //             axios.put(`${API_URLS.PROFILES}/${profile.profileId}`, { 
-    //                 avatar_id: avatarId, 
-    //                 profile_id: profile.profileId, 
-    //                 introduction: profile.introduction,
-    //             }),
-    //             // ...processItems(profile.phones, userData.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId),
-    //             // ...processItems(profile.addresses, userData.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId),
-    //             // ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId),
-    //             ...processItems(profile.phones, userData.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId, 'phones'),
-    //             ...processItems(profile.addresses, userData.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId, 'addresses'),
-    //             ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId, 'dates'),
-            
-    //         ]);
-            
-    //         setProfile(profile);
-    //         await onSave();
-    //     } catch (error) {
-    //         console.error('저장 오류:', error);
-    //         setErrMsg('프로필 저장에 실패했습니다.'); // 사용자에게 오류 메시지 표시
-    //     } finally {
-    //         setIsLoading(false);
-    //         onClose();
-    //     }
-    // };
 
     return (
         <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' className="rounded-tr-lg rounded-tl-lg" style={isMobile ? mobileStyle : desktopStyle}>

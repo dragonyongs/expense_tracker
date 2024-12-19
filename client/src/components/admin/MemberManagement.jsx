@@ -27,6 +27,9 @@ const MemberManagement = ({
     password,
     isUploadOpen,
     isDataDownloadOpen,
+    handleFileChange,
+    handleUpload,
+    usersData,
 }) => {
     
     const handleInputChange = (field, value) => {
@@ -160,7 +163,11 @@ const MemberManagement = ({
                 onClose={onCloseDrawer}
                 title='파일 업로드'>
 
-                <h1>파일 업로드 Drawer!</h1>
+                <div className='px-6'>
+                    <input type="file" onChange={handleFileChange} />
+                    <button onClick={handleUpload}>업로드</button>
+                    {/* <pre>{JSON.stringify(usersData, null, 2)}</pre> */}
+                </div>
 
             </CommonDrawer>
 

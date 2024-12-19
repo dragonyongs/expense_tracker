@@ -22,4 +22,5 @@ export const API_URLS = {
     PROFILES: '/api/profiles',
     SEARCH_KEYWORD: '/api/transactions/search',
     SEARCH_MENU_FOR_MERCHANT: '/api/transactions/search/menu',
+    MEMBERS_BACKUP: '/api/members/backup',
 };

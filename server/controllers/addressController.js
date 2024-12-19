@@ -20,6 +20,8 @@ exports.createAddress = async (req, res) => {
 
         profileRes.addresses.push(saveAddress._id);
         await profileRes.save();
+        
+        console.log('createAddress', saveAddress);
 
         res.status(201).json(saveAddress);
     } catch (error) {
