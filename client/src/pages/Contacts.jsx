@@ -8,12 +8,18 @@ import { genConfig } from 'react-nice-avatar';
 import { MutatingDots } from 'react-loader-spinner';
 import { formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
 import { renderContactIcon, renderContactLabel, renderDateIcon, renderDateLabel, renderAddressIcon, renderAddressLabel } from '../utils/profileRenderUtils';
+import { filterDataBySearchTerm } from '../utils/search';
+import SearchInput from '../components/SearchInput';
 
 function Contacts() {
     const [contacts, setContacts ] = useState([]);
     const [selectedYears, setSelectedYears] = useState('');
     const [selectedDays, setSelectedDays] = useState('');
     const [selectedContact, setSelectedContact] = useState("");
+
+    const [filteredContacts, setFilteredContacts] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -24,8 +30,8 @@ function Contacts() {
             try {
                 const { data } = await axios.get(API_URLS.PROFILES);
                 const filtered = data.filter(contact => contact?.member_id?.role_id?.role_name !== 'former_employee');
-                console.log(filtered)
                 setContacts(filtered);
+                setFilteredContacts(filtered);
             } catch (error) {
                 console.error("Error fetching contacts:", error);
             } finally {
@@ -56,34 +62,6 @@ function Contacts() {
         const companyPhone = phones.find(phone => phone.phone_type === 'company_phone');
         return companyPhone ? { phone: companyPhone.phone_number, extension: companyPhone.extension } : {};
     };
-
-    // const groupByTeam = (contacts) => {
-    //     const positionOrder = ['임원', '팀장', '파트장', '팀원'];
-    //     const rankOrder = ['대표', '전무', '상무', '이사', '부장', '차장', '과장', '대리', '사원'];
-        
-    //     return contacts.reduce((groups, contact) => {
-    //         const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
-            
-    //         if (teamName !== '미지정팀') {
-    //             groups[teamName] = groups[teamName] || [];
-    //             groups[teamName].push(contact);
-    //             groups[teamName].sort((a, b) => {
-    //                 const positionAIndex = positionOrder.indexOf(a.member_id.position);
-    //                 const positionBIndex = positionOrder.indexOf(b.member_id.position);
-    //                 const rankAIndex = rankOrder.indexOf(a.member_id.rank);
-    //                 const rankBIndex = rankOrder.indexOf(b.member_id.rank);
-    
-    //                 if (positionAIndex < positionBIndex) return -1;
-    //                 if (positionAIndex > positionBIndex) return 1;
-    //                 if (rankAIndex < rankBIndex) return -1;
-    //                 if (rankAIndex > rankBIndex) return 1;
-    //                 return 0;
-    //             });
-    //         }
-    
-    //         return groups;
-    //     }, {});
-    // };
     
     const sortContacts = (contacts) => {
         const positionOrder = ['임원', '팀장', '파트장', '팀원'];
@@ -107,21 +85,44 @@ function Contacts() {
         });
     };
     
-    const groupByTeam = (contacts) => {
-        const sortedContacts = sortContacts(contacts);
-        return sortedContacts.reduce((groups, contact) => {
-            const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
+    // const groupByTeam = (contacts) => {
+    //     const sortedContacts = sortContacts(contacts);
+    //     return sortedContacts.reduce((groups, contact) => {
+    //         const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
             
-            if (teamName !== '미지정팀') {
+    //         if (teamName !== '미지정팀') {
+    //             groups[teamName] = groups[teamName] || [];
+    //             groups[teamName].push(contact);
+    //         }
+    
+    //         return groups;
+    //     }, {});
+    // };
+
+    const groupByTeam = (contacts) => {
+        return contacts.reduce((groups, contact) => {
+            const teamName = contact?.member_id?.team_id?.team_name || "미지정팀";
+            if (teamName !== "미지정팀") {
                 groups[teamName] = groups[teamName] || [];
                 groups[teamName].push(contact);
             }
-    
             return groups;
         }, {});
     };
     
-    const groupedContacts = useMemo(() => groupByTeam(contacts), [contacts]);
+    // const groupedContacts = useMemo(() => groupByTeam(contacts), [contacts]);
+    const groupedContacts = useMemo(() => groupByTeam(filteredContacts), [filteredContacts]);
+
+    const handleSearch = (field, term) => {
+        setSearchTerm(term);
+
+        if (!term) {
+            setFilteredContacts(contacts);
+        } else {
+            const filtered = filterDataBySearchTerm(contacts, field, term);
+            setFilteredContacts(filtered);
+        }
+    };
 
     return (
         <>
@@ -152,42 +153,47 @@ function Contacts() {
                         <p className="font-semibold text-center">연락망의 데이터가 없습니다.</p>
                     </div>
                 ) : (
-                    Object.keys(groupedContacts).map((teamName) => (
-                        <div key={teamName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700">
-                            <h3 className="dark:text-slate-400">{teamName}</h3> {/* 팀명 출력 */}
-                            <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
-                                {groupedContacts[teamName].map((contact) => {
-                                    const { extension } = getCompanyPhoneInfo(contact.phones);
-                                    const formerEmployee = contact?.member_id?.role_id?.role_name === 'former_employee';
+                    <>
+                        <SearchInput onSearch={handleSearch} />
 
-                                    return (
-                                        <li
-                                            key={contact._id}
-                                            className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : ''}`}
-                                            onClick={() => handleOpenDrawer(contact)}
-                                        >
-                                            <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
-                                                {contact?.avatar_id ? (
-                                                    <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className={`w-10 h-10 ${formerEmployee ? 'opacity-40' : ''}`} />
-                                                ) : (
-                                                    <AvatarPreview avatarConfig={ genConfig() } shape="circle" className="w-10 h-10"/>
-                                                )}
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-lg">
-                                                    {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
-                                                    {extension && <span className="dark:text-blue-300">({extension})</span>}
-                                                </p>
-                                            </div>
-                                            <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                <MdKeyboardArrowRight className={`text-2xl ${formerEmployee ? 'text-slate-300' : ''}`} />
-                                            </div>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </div>
-                    ))
+                        {Object.keys(groupedContacts).map((teamName) => (
+                            <div key={teamName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700">
+                                <h3 className="dark:text-slate-400">{teamName}</h3> {/* 팀명 출력 */}
+                                <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
+                                    {groupedContacts[teamName].map((contact) => {
+                                        const { extension } = getCompanyPhoneInfo(contact.phones);
+                                        const formerEmployee = contact?.member_id?.role_id?.role_name === 'former_employee';
+
+                                        return (
+                                            <li
+                                                key={contact._id}
+                                                className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : ''}`}
+                                                onClick={() => handleOpenDrawer(contact)}
+                                            >
+                                                <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
+                                                    {contact?.avatar_id ? (
+                                                        <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className={`w-10 h-10 ${formerEmployee ? 'opacity-40' : ''}`} />
+                                                    ) : (
+                                                        <AvatarPreview avatarConfig={ genConfig() } shape="circle" className="w-10 h-10"/>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-lg">
+                                                        {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
+                                                        {extension && <span className="dark:text-blue-300">({extension})</span>}
+                                                    </p>
+                                                </div>
+                                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                    <MdKeyboardArrowRight className={`text-2xl ${formerEmployee ? 'text-slate-300' : ''}`} />
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        ))}
+                    </>
+                    
                 )
             )}
 
@@ -300,3 +306,31 @@ function Contacts() {
 }
 
 export default Contacts;
+
+    // const groupByTeam = (contacts) => {
+    //     const positionOrder = ['임원', '팀장', '파트장', '팀원'];
+    //     const rankOrder = ['대표', '전무', '상무', '이사', '부장', '차장', '과장', '대리', '사원'];
+        
+    //     return contacts.reduce((groups, contact) => {
+    //         const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
+            
+    //         if (teamName !== '미지정팀') {
+    //             groups[teamName] = groups[teamName] || [];
+    //             groups[teamName].push(contact);
+    //             groups[teamName].sort((a, b) => {
+    //                 const positionAIndex = positionOrder.indexOf(a.member_id.position);
+    //                 const positionBIndex = positionOrder.indexOf(b.member_id.position);
+    //                 const rankAIndex = rankOrder.indexOf(a.member_id.rank);
+    //                 const rankBIndex = rankOrder.indexOf(b.member_id.rank);
+    
+    //                 if (positionAIndex < positionBIndex) return -1;
+    //                 if (positionAIndex > positionBIndex) return 1;
+    //                 if (rankAIndex < rankBIndex) return -1;
+    //                 if (rankAIndex > rankBIndex) return 1;
+    //                 return 0;
+    //             });
+    //         }
+    
+    //         return groups;
+    //     }, {});
+    // };

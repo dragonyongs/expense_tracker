@@ -6,6 +6,7 @@ import SearchInput from '../components/SearchInput';
 import AdminProfileDrawer from '../components/AdminProfileDrawer';
 import ProfileEditDrawer from '../components/ProfileEditDrawer';
 import { TbAddressBookOff, TbCalendarOff, TbPhoneOff } from "react-icons/tb";
+import { filterDataBySearchTerm } from '../utils/search';
 
 function AdminProfiles() {
     const [profiles, setProfiles] = useState([]);
@@ -41,24 +42,8 @@ function AdminProfiles() {
     }, [isEditDrawerOpen]);
 
     const handleSearch = (field, term) => {
-        const lowerTerm = term.toLowerCase();
-    
-        const filtered = profiles.filter((profile) => {
-            const value = getNestedValue(profile, field);
-            return value?.toString().toLowerCase().includes(lowerTerm);
-        });
-    
+        const filtered = filterDataBySearchTerm(profiles, field, term);
         setFilteredProfiles(filtered);
-    };
-    
-    const getNestedValue = (obj, path) => {
-        return path.split('.').reduce((acc, part) => {
-            if (!acc) return null; 
-            if (Array.isArray(acc)) {
-                return acc.map(item => item[part]).filter(Boolean).join(', ');
-            }
-            return acc[part];
-        }, obj);
     };
 
     const handleOpenDrawer = (profile) => {
