@@ -8,7 +8,7 @@ const { generateRandomPassword } = require('../utils/generateRandomPassword'); /
 
 exports.createMember = async (req, res) => {
     try {
-        const { member_name, password, email, status_id, role_id, team_id, position, rank } = req.body;
+        const { member_name, password, email, status_id, role_id, team_id, position, rank, is_admin_created, is_password_reset } = req.body;
         
         // 필수 입력값 검증
         if (!member_name || !email) {
@@ -23,7 +23,7 @@ exports.createMember = async (req, res) => {
         }
 
         // 랜덤 비밀번호 생성
-        const randomPassword = generateRandomPassword(); // 랜덤 비밀번호 생성
+        const randomPassword = generateRandomPassword();
 
         // 비밀번호 해싱
         const saltRounds = 10;
@@ -42,7 +42,9 @@ exports.createMember = async (req, res) => {
             role_id: roleId,
             team_id,
             position,
-            rank
+            rank,
+            is_admin_created,
+            is_password_reset
         });
 
         // 빈 프로필 생성
@@ -145,6 +147,27 @@ exports.getMemberById = async (req, res) => {
     }
 };
 
+exports.resetPassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { password, is_password_reset } = req.body;
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const member = await Member.findByIdAndUpdate(
+            id,
+            { password: hashedPassword, is_password_reset },
+            { new: true }
+        );
+
+        if (!member) return res.status(404).json({ error: 'Member not found' });
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 exports.updateMember = async (req, res) => {
     try {
         const { password, status_id, ...otherData } = req.body;  // 상태값도 포함
@@ -155,7 +178,12 @@ exports.updateMember = async (req, res) => {
         if (password) {
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-            updateMemberData.password = hashedPassword;  // 해시된 비밀번호로 덮어쓰기
+            updateMemberData.password = hashedPassword;
+
+            // 비밀번호 변경 시 초기화 플래그 설정
+            if (req.body.is_password_reset !== undefined) {
+                updateMemberData.is_password_reset = req.body.is_password_reset;
+            }
         } else {
             // 비밀번호가 없으면 기존 비밀번호를 유지
             const existingMember = await Member.findById(req.params.id);

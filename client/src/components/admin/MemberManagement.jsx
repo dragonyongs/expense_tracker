@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState }from 'react';
 import MemberList from './MemberList';
 import CommonDrawer from '../CommonDrawer';
 import AdminDrawer from '../AdminDrawer';
 import InputField from '../InputField';
 import SelectField from '../SelectField';
+import axios from "../../services/axiosInstance"; 
+import { API_URLS } from '../../services/apiUrls';
 
 const MemberManagement = ({
     isOpen,
@@ -32,10 +34,57 @@ const MemberManagement = ({
     usersData,
 }) => {
     
+    const [resetPassword, setResetPassword] = useState('');
     const handleInputChange = (field, value) => {
         setSelectedMember({ ...selectedMember, [field]: value });
     };
 
+    const generateRandomPassword = () => {
+        const length = 8;
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+        let password = "";
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * charset.length);
+            password += charset[randomIndex];
+        }
+        return password;
+    };
+
+    const handlePasswordReset = async () => {
+        const newPassword = generateRandomPassword(); // 랜덤 비밀번호 생성 함수
+    
+        try {
+            const response = await axios.post(
+                `${API_URLS.MEMBERS}/${selectedMember._id}/reset-password`,
+                {
+                    password: newPassword,
+                    is_password_reset: true,
+                }
+            );
+    
+            // 서버에서 반환된 데이터 확인
+            if (response.data.success) { // 서버에서 success: true 반환한다고 가정
+                setResetPassword(newPassword); // 화면에 비밀번호 표시
+                alert("비밀번호가 초기화되었습니다. 사용자에게 전달하세요.");
+            } else {
+                alert(`비밀번호 초기화 실패: ${response.data.message}`);
+            }
+        } catch (err) {
+            console.error(err);
+            // 에러 응답 처리
+            alert(
+                err.response?.data?.error || 
+                "비밀번호 초기화 중 알 수 없는 오류가 발생했습니다."
+            );
+        }
+    };
+    
+    const handleCopyPassword = () => {
+        navigator.clipboard.writeText(resetPassword).then(() => {
+            alert("비밀번호가 클립보드에 복사되었습니다.");
+        });
+    };
+    
     return (
         <div>
             {/* Member List */}
@@ -63,16 +112,31 @@ const MemberManagement = ({
                                 onChange={(e) => handleInputChange('email', e.target.value)}
                                 placeholder="이메일 입력"
                             />
-
-                            <InputField 
-                                label="비밀번호" 
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => handleInputChange('password', e.target.value)}
-                                placeholder="비밀번호 변경 없음" 
-                                required={false} 
-                            />
+                            <div>
+                                <InputField 
+                                    label="비밀번호" 
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => handleInputChange('password', e.target.value)}
+                                    showReset={isEditing} // 수정 시에만 초기화 버튼 노출
+                                    onReset={handlePasswordReset} // 초기화 버튼 핸들러
+                                    placeholder="비밀번호 변경 없음" 
+                                    required={false} 
+                                />
+                                {resetPassword && (
+                                    <div className="mt-2 text-sm">
+                                        <span className="font-semibold">초기화된 비밀번호: </span>
+                                        <span>{resetPassword}</span>
+                                        <button
+                                            className="ml-2 text-blue-600 hover:underline"
+                                            onClick={handleCopyPassword}
+                                        >
+                                            복사
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                             <SelectField
                                 label="소속"
                                 id="team_id"

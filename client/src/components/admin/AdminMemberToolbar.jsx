@@ -15,13 +15,13 @@ const AdminMemberToolbar = ({
             {['전체', '요청', '퇴사'].map((category) => (
                 <li
                     key={category}
-                    className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${
-                        selectedCategory === category ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'
-                    }`}
+                    className={`cursor-pointer px-4 py-1 border rounded-full text-sm ${ selectedCategory === category ? 'border-blue-600 text-blue-600 bg-white' : 'border-slate-400 bg-white'}`}
                     onClick={() => onCategorySelect(category)}
                 >
-                    {category} {category === '요청' && `(${categoryCounts.pending})`}
-                    {category === '퇴사' && `(${categoryCounts.resigned})`}
+                    {category} 
+                    {category === '전체' && ` ${categoryCounts.filtered}`}
+                    {category === '요청' && ` ${categoryCounts.pending}`}
+                    {category === '퇴사' && ` ${categoryCounts.resigned}`}
                 </li>
             ))}
         </ul>

@@ -6,7 +6,9 @@ const InputField = forwardRef((props, ref) => {
         id, 
         value = '', 
         onChange, 
-        onClick,
+        // onClick,
+        onReset, // 초기화 버튼 핸들러
+        showReset = false, // 초기화 버튼 노출 여부
         placeholder, 
         className = "bg-slate-100 border-0", 
         type = "text", 
@@ -19,6 +21,15 @@ const InputField = forwardRef((props, ref) => {
             <div className="flex justify-between">
                 <label htmlFor={id} className="dark:text-slate-300 dark:font-normal">{label}</label>
                 {!required ? <span className="text-sm text-slate-400 dark:text-slate-500">(선택)</span> : ''}
+                {showReset && (
+                    <button
+                        type="button"
+                        onClick={onReset}
+                        className="text-blue-600 hover:underline text-sm"
+                    >
+                        초기화
+                    </button>
+                )}
             </div>
             <input
                 id={id}
@@ -28,7 +39,7 @@ const InputField = forwardRef((props, ref) => {
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
-                onClick={onClick} 
+                // onClick={onClick} 
                 required={required}
                 disabled={disabled}
                 autoComplete="off"

@@ -325,45 +325,54 @@ const Transactions = () => {
                 </div>
             </header>
 
-
             <div className='flex-1 w-full p-4'>
-                {/* 카드 한도와 남은 금액 표시 */}
                 <div className='mb-8'>
-                    {isLoading ? ( 
-                        <div className="flex flex-col items-center justify-center">
-                        <MutatingDots
-                            visible={true}
-                            height="100"
-                            width="100"
-                            color="#b8a57f"
-                            secondaryColor="#0433FF"
-                            radius="12.5"
-                            ariaLabel="mutating-dots-loading"
-                            wrapperStyle={{}}
-                            wrapperClass=""
-                        />
-                    </div>
+                { userCardsWithTotals.length === 0 ? (
+                    <FlipCard
+                    key='no'
+                    userName={user.name}
+                    cardNumber='미발급 상태'
+                    totalSpent={0}
+                    currentBalance={0}
+                    rolloverAmount={0}
+                    />
                     ) : (
-                        <Slider {...sliderSettings}>
-                            {userCardsWithTotals.map(card => {
-                                const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
-                                return (
-                                    <FlipCard
-                                        key={card._id} 
-                                        userName={user.name}
-                                        cardNumber={card.card_number}
-                                        totalSpent={Number(card.totalSpent)}
-                                        currentBalance={currentBalanceWithRollover}
-                                        rolloverAmount={Number(card.rollover_amount)}
-                                    />
-                                );
-                            })}
-                        </Slider>
-                    ) }
+                        isLoading ? ( 
+                            <div className="flex flex-col items-center justify-center">
+                            <MutatingDots
+                                visible={true}
+                                height="100"
+                                width="100"
+                                color="#b8a57f"
+                                secondaryColor="#0433FF"
+                                radius="12.5"
+                                ariaLabel="mutating-dots-loading"
+                                wrapperStyle={{}}
+                                wrapperClass=""
+                            />
+                        </div>
+                        ) : (
+                            <Slider {...sliderSettings}>
+                                {userCardsWithTotals.map(card => {
+                                    const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
+                                    return (
+                                        <FlipCard
+                                            key={card._id} 
+                                            userName={user.name}
+                                            cardNumber={card.card_number}
+                                            totalSpent={Number(card.totalSpent)}
+                                            currentBalance={currentBalanceWithRollover}
+                                            rolloverAmount={Number(card.rollover_amount)}
+                                        />
+                                    );
+                                })}
+                            </Slider>
+                        )
+                    )
+                }
                 </div>
 
                 {/* 트랜잭션 목록 */}
-
                 <div className='flow-root'>                  
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
 

@@ -50,7 +50,7 @@ const AdminMembers = () => {
     const filterMembers = () => {
         const allPendingMembers = members.filter(member => member.status_id.status_name === 'pending');
         const allResignedMembers = members.filter(member => member.status_id.status_name === 'resigned');
-        
+
         let filtered = [...members];
         
         if (selectedCategory === '요청') {

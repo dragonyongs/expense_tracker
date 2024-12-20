@@ -12,6 +12,7 @@ const useAdminMembers = () => {
     const [filteredMembers, setFilteredMembers] = useState([]);
     const [pendingMembersCount, setPendingMembersCount] = useState(0);
     const [resignedMembersCount, setResignedMembersCount] = useState(0);
+    const [filteredMembersCount, setFilteredMembersCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [errMsg, setErrMsg] = useState('');
 
@@ -94,7 +95,7 @@ const useAdminMembers = () => {
         const allPending = members.filter((member) => member.status_id.status_name === 'pending');
         const allResigned = members.filter((member) => member.status_id.status_name === 'resigned');
 
-        let filtered = members.filter((member) => member.role_id.role_name !== 'super_admin');
+        let filtered = members.filter((member) => member.role_id.role_name !== 'super_admin' && member.status_id.status_name !== 'resigned');
         if (category === '요청') filtered = allPending;
         if (category === '퇴사') filtered = allResigned;
 
@@ -102,6 +103,7 @@ const useAdminMembers = () => {
         setResignedMembers(allResigned);
         setPendingMembersCount(allPending.length);
         setResignedMembersCount(allResigned.length);
+        setFilteredMembersCount(filtered.length);
         setFilteredMembers(filtered);
     };
 
@@ -113,6 +115,7 @@ const useAdminMembers = () => {
         teams,
         pendingMembersCount,
         resignedMembersCount,
+        filteredMembersCount,
         filteredMembers,
         fetchAllData,
         filterMembers,

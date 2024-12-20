@@ -12,6 +12,7 @@ const AdminMembers = () => {
         filteredMembers,
         pendingMembersCount,
         resignedMembersCount,
+        filteredMembersCount,
         filterMembers,
         fetchAllData,
         statuses,
@@ -63,19 +64,19 @@ const AdminMembers = () => {
     };
 
     const handleAddMember = () => {
-        setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '' });
+        setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '', is_admin_created: true, is_password_reset: true });
         setIsEditing(false);
         setIsOpen(true);
     };
 
     const handleDownload = () => {
-        window.location.href = API_URLS.MEMBERS_BACKUP; // API URL로 이동하여 파일 다운로드
+        window.location.href = API_URLS.MEMBERS_BACKUP;
     };
     
     const handleSave = async () => {
         try {
             const updatedMember = { ...selectedMember };
-            if (password) { // 비밀번호가 입력된 경우만 업데이트
+            if (password) { 
                 updatedMember.password = password;
             }
             if (isEditing) {
@@ -163,89 +164,6 @@ const AdminMembers = () => {
         }
     };
     
-    // const handleUpload = async () => {
-    //     if (!file) return;
-    
-    //     const reader = new FileReader();
-    //     reader.onload = async (e) => {
-    //         const data = new Uint8Array(e.target.result);
-    //         const workbook = XLSX.read(data, { type: 'array' });
-    
-    //         const firstSheetName = workbook.SheetNames[0];
-    //         const worksheet = workbook.Sheets[firstSheetName];
-    //         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); // header: 1은 배열 형식으로 변환
-            
-    //         const usersArray = [];
-    
-    //         // 첫 번째 줄은 제목행이므로 인덱스 1부터 시작
-    //         for (let index = 1; index < rows.length; index++) {
-    //             const row = rows[index];
-
-    //             // 각 행의 길이를 체크하여 유효성을 검증
-    //             if (row.length < 14) continue; // 필요한 열의 수보다 적으면 무시
-
-    //             const teamId = await getTeamIdByName(row[8]); // 팀 ID 매핑
-    //             const statusId = await getStatusIdByName(row[6]); // 상태 ID 매핑
-    //             const roleId = await getRoleIdByName(row[7]); // 역할 ID 매핑
-
-    //             // 전화번호 처리
-    //             const phones = row[11] ? row[11].split(',').map(phone => {
-    //                 const [type, number] = phone.split(':');
-    //                 const extensionMatch = number.match(/\(([^)]+)\)/); // 내선 번호 찾기
-    //                 const phoneNumber = number.replace(/\s*\([^)]+\)\s*/, '').trim(); // 내선 번호 제거
-    //                 return {
-    //                     phone_type: phoneTypeMap[type.trim()] || type.trim(),
-    //                     phone_name: type.trim(),
-    //                     phone_number: phoneNumber,
-    //                     extension: extensionMatch ? extensionMatch[1] : '' // 내선 번호 추가
-    //                 };
-    //             }) : [];
-
-    //             // 주소 처리
-    //             const addresses = row[12] ? row[12].split(',').map(address => {
-    //                 const [name, fullAddress] = address.split(':');
-    //                 const [line1, line2WithPostal] = fullAddress.split(' / '); // 주소 처리
-    //                 const postalCodeMatch = line2WithPostal.match(/\(([^)]+)\)/);
-
-    //                 return {
-    //                     address_type: addressTypeMap[name.trim()] || name.trim(),
-    //                     address_name: name.trim(),
-    //                     address_line1: line1.trim(),
-    //                     address_line2: postalCodeMatch ? line2WithPostal.replace(postalCodeMatch[0], '').trim() : '',
-    //                     postal_code: postalCodeMatch ? postalCodeMatch[1] : '',
-    //                 };
-    //             }) : [];
-
-    //             const user = {
-    //                 member_name: row[1] ? row[1].trim() : '', // 이름
-    //                 email: row[2] ? row[2].trim() : '', // 이메일
-    //                 rank: row[4] ? row[4].trim() : '', // 직급
-    //                 position: row[5] ? row[5].trim() : '', // 직책
-    //                 team_id: teamId, // 소속 팀 ID
-    //                 status_id: statusId, // 상태 ID
-    //                 role_id: roleId, // 역할 ID
-    //                 phones: phones,
-    //                 addresses: addresses,
-    //                 dates: row[13] ? row[13].split(',').map(dateEntry => {
-    //                     const [name, date] = dateEntry.split(':');
-    //                     return {
-    //                         date_type: dateTypeMap[name.trim()] || name.trim(),
-    //                         date_name: name.trim(),
-    //                         date: new Date(date.trim()),
-    //                     };
-    //                 }) : [],
-    //                 introduction: row[14] ? row[14].trim() : '' // 소개
-    //             };
-    //             usersArray.push(user);
-    //         }
-    
-    //         setUsersData(usersArray);
-    //         await saveData(usersArray);
-    //     };
-    
-    //     reader.readAsArrayBuffer(file);
-    // };
-
     const handleUpload = async () => {
         if (!file) return;
     
@@ -283,6 +201,8 @@ const AdminMembers = () => {
                         addresses,
                         dates: parseDates(row[13]),
                         introduction: row[14]?.trim() || '',
+                        is_admin_created: true,
+                        is_password_reset: true,
                     };
     
                     usersArray.push(user);
@@ -443,10 +363,10 @@ const AdminMembers = () => {
             <div className="p-4 sm:p-6">
                 <AdminMemberToolbar
                     selectedCategory={selectedCategory}
-                    categoryCounts={{ pending: pendingMembersCount, resigned: resignedMembersCount }}
+                    categoryCounts={{ pending: pendingMembersCount, resigned: resignedMembersCount, filtered: filteredMembersCount }}
                     onCategorySelect={handleCategoryChange}
                     onAddMember={handleAddMember}
-                    onUpload={() => setIsUploadOpen(true)} // 업로드 드로워 열기
+                    onUpload={() => setIsUploadOpen(true)}
                     onDownload={handleDownload}
                 />
                 <MemberManagement

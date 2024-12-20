@@ -11,6 +11,8 @@ const memberSchema = new mongoose.Schema({
     team_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Team', default: null },
     role_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null },
     status_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Status', default: null },
+    is_admin_created: { type: Boolean, default: false }, // 관리자 생성 여부
+    is_password_reset: { type: Boolean, default: false }, // 비밀번호 초기화 여부
 }, { timestamps: true });
 
 // // Pre-save hook to dynamically set status_id and role_id if not provided
