@@ -84,23 +84,10 @@ function Contacts() {
             return rankOrder.indexOf(rankA) - rankOrder.indexOf(rankB);
         });
     };
-    
-    // const groupByTeam = (contacts) => {
-    //     const sortedContacts = sortContacts(contacts);
-    //     return sortedContacts.reduce((groups, contact) => {
-    //         const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
-            
-    //         if (teamName !== '미지정팀') {
-    //             groups[teamName] = groups[teamName] || [];
-    //             groups[teamName].push(contact);
-    //         }
-    
-    //         return groups;
-    //     }, {});
-    // };
 
     const groupByTeam = (contacts) => {
-        return contacts.reduce((groups, contact) => {
+        const sortedContacts = sortContacts(contacts);
+        return sortedContacts.reduce((groups, contact) => {
             const teamName = contact?.member_id?.team_id?.team_name || "미지정팀";
             if (teamName !== "미지정팀") {
                 groups[teamName] = groups[teamName] || [];
