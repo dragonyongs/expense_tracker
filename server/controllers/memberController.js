@@ -89,7 +89,6 @@ exports.getAllMembers = async (req, res) => {
 
 exports.getMemberByEmail = async (req, res) => {
     const { email } = req.query;
-    console.log('email', email);
 
     if (!email) {
         return res.status(400).json({ error: '이메일을 제공해야 합니다.' });
@@ -100,10 +99,12 @@ exports.getMemberByEmail = async (req, res) => {
         const member = await Member.findOne({ email }).lean();
 
         if (!member) {
-            return res.status(404).json({ message: '멤버를 찾을 수 없습니다.' });
+            // 멤버가 없는 경우 명확한 응답 반환
+            return res.json({ found: false });
         }
 
-        res.json({ member });
+        // 멤버가 있는 경우
+        res.json({ found: true, member });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

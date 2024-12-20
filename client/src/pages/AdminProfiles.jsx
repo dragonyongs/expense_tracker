@@ -53,11 +53,11 @@ function AdminProfiles() {
     
     const getNestedValue = (obj, path) => {
         return path.split('.').reduce((acc, part) => {
-            if (!acc) return null; // 값이 없으면 중단
+            if (!acc) return null; 
             if (Array.isArray(acc)) {
                 return acc.map(item => item[part]).filter(Boolean).join(', ');
             }
-            return acc[part]; // 객체의 키 값 반환
+            return acc[part];
         }, obj);
     };
 
@@ -81,7 +81,7 @@ function AdminProfiles() {
 
     const handleSave = () => {
         try {
-            handleCloseEditDrawer(); // 저장 후 드로어 닫기
+            handleCloseEditDrawer();
         } catch (error) {
             console.error("Error saving profile:", error);
         }
@@ -91,7 +91,9 @@ function AdminProfiles() {
         <>
             <AdminHeader />
             <div className='flex flex-col p-4 justify-center mt-8'>
-                <SearchInput onSearch={handleSearch} />
+                <div className='flex justify-center mb-4'>
+                    <SearchInput onSearch={handleSearch} className="w-full max-w-md" />
+                </div>
                 <div className="overflow-hidden bg-white rounded-lg shadow-sm dark:bg-slate-700">
                     <ul className='flex flex-col divide-y divide-gray-200 dark:divide-gray-600'>
                         {filteredProfiles.map(profile => {
@@ -105,13 +107,13 @@ function AdminProfiles() {
                                 <li
                                     key={profile._id}
                                     onClick={() => handleOpenDrawer(profile)}
-                                    className={`flex items-center gap-x-4 py-3 px-6 sm:py-4 cursor-pointer active:bg-gray-50 dark:active:bg-slate-500 dark:text-slate-300 ${formerEmployee && 'bg-gray-100'}`}
+                                    className={`flex items-center gap-x-4 py-3 px-4 sm:py-4 sm:px-6 cursor-pointer active:bg-gray-50 dark:active:bg-slate-500 dark:text-slate-300 ${formerEmployee && 'bg-gray-100'}`}
                                 >
-                                    <span className={`flex-1 ${formerEmployee && 'text-gray-400'}`}>{profile?.member_id?.member_name}</span>
-                                    <div className={`flex justify-between gap-x-4 ${formerEmployee && 'text-gray-400'}`}>
-                                        {!hasPhones && <span className='flex gap-x-1 items-center'><TbPhoneOff /></span>}
-                                        {!hasAddresses && <span className='flex gap-x-1 items-center'><TbAddressBookOff /></span>}
-                                        {!hasDates && <span className='flex gap-x-1 items-center'><TbCalendarOff /></span>}
+                                    <span className={`flex-1 text-sm sm:text-base ${formerEmployee && 'text-gray-400'}`}>{profile?.member_id?.member_name}</span>
+                                    <div className={`flex justify-between items-center gap-x-2 ${formerEmployee && 'text-gray-400'}`}>
+                                        {!hasPhones && <span className='flex gap-x-1 items-center text-lg'><TbPhoneOff /></span>}
+                                        {!hasAddresses && <span className='flex gap-x-1 items-center text-lg'><TbAddressBookOff /></span>}
+                                        {!hasDates && <span className='flex gap-x-1 items-center text-lg'><TbCalendarOff /></span>}
                                     </div>
                                 </li>
                             );
@@ -119,6 +121,7 @@ function AdminProfiles() {
                     </ul>
                 </div>
             </div>
+
             <AdminProfileDrawer
                 isOpen={isProfileOpen}
                 title={"프로필 관리"}

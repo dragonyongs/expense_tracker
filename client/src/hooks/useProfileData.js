@@ -59,12 +59,26 @@ const useProfileData = (userId, setProfile) => {
                 axios.get(`${API_URLS.PROFILES}/${userId}`)
             ]);
 
+            const sortedDates = datesRes.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+
+            const phoneTypeOrder = {
+                company_phone: 1,
+                work_mobile: 2,
+                fax: 3,
+                personal_mobile: 4
+            };
+
+            const sortedPhones = phonesRes.data.sort((a, b) => {
+                return (phoneTypeOrder[a.phone_type] || 5) - (phoneTypeOrder[b.phone_type] || 5);
+            });
+
             const profileData = {
                 member: memberRes.data || {},
                 introduction: profileRes.data?.introduction || '',
-                phones: phonesRes.data || [],
+                phones: sortedPhones || [],
                 addresses: addressesRes.data || [],
-                dates: datesRes.data || [],
+                dates: sortedDates || [],
                 avatarId: profileRes.data.avatar_id,
                 profileId: profileRes.data._id,
             };

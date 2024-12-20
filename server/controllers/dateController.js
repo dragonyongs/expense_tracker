@@ -23,8 +23,6 @@ exports.createDate = async (req, res) => {
 
         await profile.save();
 
-        console.log('createDate', savedDate);
-
         res.status(201).json(savedDate);
     } catch (error) {
         console.error('Error creating date:', error);
@@ -47,8 +45,6 @@ exports.updateDate = async (req, res) => {
     try {
         // 날짜 업데이트
         const updatedDate = await DateModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        console.log("updatedDate:", updatedDate);
-        
         if (!updatedDate) return res.status(404).json({ message: 'Date not found' });
 
         // 프로필에서 날짜 ID를 찾아서 업데이트
@@ -60,9 +56,7 @@ exports.updateDate = async (req, res) => {
                 dateId.toString() === req.params.id ? updatedDate._id : dateId
             );
             
-            console.log('Profile before saving:', profile);
             await profile.save(); // 프로필 저장
-            console.log('Profile after saving:', profile);
         } else {
             console.log('Profile not found for the date ID.');
         }
@@ -88,9 +82,9 @@ exports.deleteDate = async (req, res) => {
             // dates 배열에서 삭제할 날짜 ID 제거
             profile.dates = profile.dates.filter(dateId => dateId.toString() !== req.params.id);
             
-            console.log('Profile before saving (after delete):', profile);
+            // console.log('Profile before saving (after delete):', profile);
             await profile.save(); // 프로필 저장
-            console.log('Profile after saving (after delete):', profile);
+            // console.log('Profile after saving (after delete):', profile);
         } else {
             console.log('Profile not found for the date ID.');
         }

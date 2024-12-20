@@ -65,8 +65,8 @@ export const calculateYearsSinceEntry = (dates) => {
         const totalYears = Math.floor(totalDays / 365);
 
         return {
-            years: totalYears,
-            days: totalDays
+            years: totalYears + 1,
+            days: totalDays + 1
         };
     }
 };

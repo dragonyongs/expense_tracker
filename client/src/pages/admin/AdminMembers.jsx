@@ -36,6 +36,7 @@ const AdminMembers = () => {
     const [password, setPassword] = useState('');
     const [file, setFile] = useState(null);
     const [usersData, setUsersData] = useState([]);
+    const [uploadStatus, setUploadStatus] = useState({ successCount: 0, errorCount: 0 });
 
     useEffect(() => {
         setErrMsg(hookErrMsg);
@@ -212,6 +213,7 @@ const AdminMembers = () => {
                 await saveData(usersArray);
             } catch (error) {
                 console.error('파일 처리 오류:', error.message);
+                setErrMsg(error.message);
             }
         };
     
@@ -240,7 +242,9 @@ const AdminMembers = () => {
         return addressString.split(',').map(address => {
             const [name, fullAddress] = address.split(':');
             const [line1, line2WithPostal] = fullAddress.split(' / ');
-            const postalCodeMatch = line2WithPostal.match(/\(([^)]+)\)/);
+            // const postalCodeMatch = line2WithPostal.match(/\(([^)]+)\)/);
+            const postalCodeMatch = line2WithPostal.match(/\[([^\]]+)\]/);
+
             return {
                 address_type: addressTypeMap[name.trim()] || name.trim(),
                 address_name: name.trim(),
@@ -265,30 +269,58 @@ const AdminMembers = () => {
     };
     
     const saveData = async (usersArray) => {
+        // 초기 카운트 설정
+        let successCount = 0;
+        let errorCount = 0;
+
         for (const user of usersArray) {
-            
             if (!user.member_name || !user.email) {
                 console.warn('빈 칸이 있는 사용자 정보가 있어 저장하지 않습니다:', user);
+                errorCount++; // 실패 카운트 증가
                 continue;
             }
-    
+
             try {
                 console.log('user.email', user.email);
+                console.log('user: ', user);
+
+                // 이메일로 기존 멤버 검색
                 const existingMemberResponse = await axios.get(`/api/members/email?email=${user.email}`);
-                if (existingMemberResponse.data && existingMemberResponse.data.member) {
-                    console.log('기존 멤버가 이미 존재합니다. 저장하지 않습니다:', user.email);
+                const { found, member } = existingMemberResponse.data;
+
+                if (found) {
+                    console.log('기존 멤버가 이미 존재합니다. 저장하지 않습니다:', member.email);
+                    errorCount++; // 실패 카운트 증가
                     continue;
                 }
-                const response = await axios.post('/api/members', user);
-                const memberId = response.data.member._id;
-                const profileId = response.data.profile._id;
 
-                console.log('새 멤버 생성 완료:', response.data, memberId, profileId, user);
-                await addRelatedData(memberId, profileId, user);
+                // 새로운 멤버 생성 요청
+                const response = await axios.post('/api/members', user);
+
+                // 응답 상태 코드가 201인 경우에만 성공으로 처리
+                if (response.status === 201) {
+                    successCount++; // 성공 카운트 증가
+                    const memberId = response.data.member._id;
+                    const profileId = response.data.profile._id;
+
+                    console.log('새 멤버 생성 완료:', response.data, memberId, profileId, user);
+
+                    // 추가 데이터 저장
+                    await addRelatedData(memberId, profileId, user);
+                } else {
+                    console.warn('멤버 생성 실패:', user.email);
+                    errorCount++; // 실패 카운트 증가
+                }
+
             } catch (error) {
                 console.error('사용자 생성 오류:', error.response?.data || error.message);
+                setErrMsg(error.message);
+                errorCount++; // 실패 카운트 증가
             }
         }
+
+        // 최종 카운트 상태 업데이트
+        setUploadStatus({ successCount, errorCount });
     };
     
     
@@ -394,6 +426,7 @@ const AdminMembers = () => {
                     handleFileChange={handleFileChange}
                     handleUpload={handleUpload}
                     usersData={usersData}
+                    uploadStatus={uploadStatus}
                 />
             </div>
         </>

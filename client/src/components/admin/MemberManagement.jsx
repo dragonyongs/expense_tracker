@@ -32,9 +32,11 @@ const MemberManagement = ({
     handleFileChange,
     handleUpload,
     usersData,
+    uploadStatus,
 }) => {
     
     const [resetPassword, setResetPassword] = useState('');
+    
     const handleInputChange = (field, value) => {
         setSelectedMember({ ...selectedMember, [field]: value });
     };
@@ -232,6 +234,22 @@ const MemberManagement = ({
                     <button onClick={handleUpload}>업로드</button>
                     {/* <pre>{JSON.stringify(usersData, null, 2)}</pre> */}
                 </div>
+
+                {/* 업로드 상태 메시지 */}
+                {uploadStatus.successCount > 0 || uploadStatus.errorCount > 0 ? (
+                    <div className="mt-6 px-6 py-4 border-t border-slate-200">
+                        <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow">
+                            <div className="text-sm text-gray-700">
+                                <strong>{uploadStatus.successCount}</strong>명의 사용자가 성공적으로 업로드되었습니다.
+                                {uploadStatus.errorCount > 0 && (
+                                    <span className="ml-2 text-red-600">
+                                        {uploadStatus.errorCount}명의 사용자 업로드 실패.
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
 
             </CommonDrawer>
 

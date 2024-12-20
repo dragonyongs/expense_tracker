@@ -1,29 +1,78 @@
 import React, { useState } from 'react';
+import { IoChevronDown, IoSearch } from "react-icons/io5";
 
 function SearchInput({ onSearch }) {
-    const [searchField, setSearchField] = useState('member_id.member_name'); // 기본 검색 필드
+    const [searchField, setSearchField] = useState('member_id.member_name');
     const [searchTerm, setSearchTerm] = useState('');
+    const [isSelectOpen, setIsSelectOpen] = useState(false);
 
     const handleSearch = () => {
         onSearch(searchField, searchTerm);
     };
 
-    return (
-        <div className="flex items-center gap-x-4 mb-4">
-            <select value={searchField} onChange={(e) => setSearchField(e.target.value)} className="p-2 border rounded">
-                <option value="member_id.member_name">이름</option>
-                <option value="phones.phone_number">전화번호</option>
-                <option value="member_id.team_id.team_name">팀명</option>
-            </select>
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
 
-            <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="검색어 입력"
-                className="p-2 border rounded"
-            />
-            <button onClick={handleSearch} className="p-2 bg-blue-500 text-white rounded">검색</button>
+    return (
+        <div className="w-full max-w-2xl mx-auto">
+            <div className="relative flex items-center gap-3 p-2 bg-white rounded-xl shadow-lg">
+                {/* Custom Select */}
+                <div className="relative min-w-[120px]">
+                    <button
+                        onClick={() => setIsSelectOpen(!isSelectOpen)}
+                        className="w-full px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between gap-2"
+                    >
+                        {searchField === 'member_id.member_name' && '이름'}
+                        {searchField === 'phones.phone_number' && '전화번호'}
+                        {searchField === 'member_id.team_id.team_name' && '팀명'}
+                        <IoChevronDown className="w-4 h-4 text-gray-500" />
+                    </button>
+                    
+                    {isSelectOpen && (
+                        <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100">
+                            <div className="py-1">
+                                {[
+                                    { value: 'member_id.member_name', label: '이름' },
+                                    { value: 'phones.phone_number', label: '전화번호' },
+                                    { value: 'member_id.team_id.team_name', label: '팀명' }
+                                ].map((option) => (
+                                    <button
+                                        key={option.value}
+                                        onClick={() => {
+                                            setSearchField(option.value);
+                                            setIsSelectOpen(false);
+                                        }}
+                                        className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Search Input */}
+                <div className="flex-1 relative">
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="검색어를 입력하세요"
+                        className="w-full pl-4 pr-10 py-2 text-sm text-gray-900 bg-transparent border-0 focus:ring-0 focus:outline-none"
+                    />
+                    <button 
+                        onClick={handleSearch}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-500 transition-colors duration-200"
+                    >
+                        <IoSearch className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

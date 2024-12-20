@@ -154,9 +154,11 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
             return false; // 예상치 못한 itemType 처리
         });
 
-        // 3. 신규 아이템 요청
+        // 3. 신규 아이템 요청 - 주소 타입이 없는 경우 기본 값 지정 또는 미정? 표시 기타..?
         const newItemsPromises = newItems.map(item => {
             const requestData = { member_id: memberId, ...item };
+            console.log('requestData', requestData);
+
             return axios.post(apiUrl, requestData)
                 .then(response => {
                     console.log('Added item response:', response.data);

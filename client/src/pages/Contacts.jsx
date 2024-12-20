@@ -23,7 +23,9 @@ function Contacts() {
 
             try {
                 const { data } = await axios.get(API_URLS.PROFILES);
-                setContacts(data);
+                const filtered = data.filter(contact => contact?.member_id?.role_id?.role_name !== 'former_employee');
+                console.log(filtered)
+                setContacts(filtered);
             } catch (error) {
                 console.error("Error fetching contacts:", error);
             } finally {
@@ -33,28 +35,6 @@ function Contacts() {
         fetchContacts();
     }, []);
 
-    // const handleOpenDrawer = (contact) => {
-    //     // 년차와 일수 계산
-    //     const { years, days } = calculateYearsSinceEntry(contact.dates);
-    
-    //     // 날짜 데이터를 정렬
-    //     const sortedDates = contact.dates.sort((a, b) => {
-    //         const priority = { birthday: 1, entry: 2, leave: 3 }; // 우선순위 정의
-    //         if (priority[a.date_type] !== priority[b.date_type]) {
-    //             return priority[a.date_type] - priority[b.date_type];
-    //         }
-    //         return new Date(a.date) - new Date(b.date); // 같은 유형이면 날짜순 정렬
-    //     });
-    
-    //     // 상태 업데이트
-    //     setSelectedYears(years);
-    //     setSelectedDays(days);
-    //     setSelectedContact({
-    //         ...contact,
-    //         dates: sortedDates
-    //     });
-    //     setIsOpen(true);
-    // };
     const handleOpenDrawer = (contact) => {
         const { years, days } = calculateYearsSinceEntry(contact.dates);
     
@@ -77,20 +57,70 @@ function Contacts() {
         return companyPhone ? { phone: companyPhone.phone_number, extension: companyPhone.extension } : {};
     };
 
-    // 팀별로 연락처 필터링 함수
+    // const groupByTeam = (contacts) => {
+    //     const positionOrder = ['임원', '팀장', '파트장', '팀원'];
+    //     const rankOrder = ['대표', '전무', '상무', '이사', '부장', '차장', '과장', '대리', '사원'];
+        
+    //     return contacts.reduce((groups, contact) => {
+    //         const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
+            
+    //         if (teamName !== '미지정팀') {
+    //             groups[teamName] = groups[teamName] || [];
+    //             groups[teamName].push(contact);
+    //             groups[teamName].sort((a, b) => {
+    //                 const positionAIndex = positionOrder.indexOf(a.member_id.position);
+    //                 const positionBIndex = positionOrder.indexOf(b.member_id.position);
+    //                 const rankAIndex = rankOrder.indexOf(a.member_id.rank);
+    //                 const rankBIndex = rankOrder.indexOf(b.member_id.rank);
+    
+    //                 if (positionAIndex < positionBIndex) return -1;
+    //                 if (positionAIndex > positionBIndex) return 1;
+    //                 if (rankAIndex < rankBIndex) return -1;
+    //                 if (rankAIndex > rankBIndex) return 1;
+    //                 return 0;
+    //             });
+    //         }
+    
+    //         return groups;
+    //     }, {});
+    // };
+    
+    const sortContacts = (contacts) => {
+        const positionOrder = ['임원', '팀장', '파트장', '팀원'];
+        const rankOrder = ['대표', '전무', '상무', '이사', '부장', '차장', '과장', '대리', '사원'];
+    
+        return contacts.sort((a, b) => {
+            const positionA = a?.member_id?.position;
+            const positionB = b?.member_id?.position;
+    
+            if (positionOrder.indexOf(positionA) < positionOrder.indexOf(positionB)) {
+                return -1;
+            }
+            if (positionOrder.indexOf(positionA) > positionOrder.indexOf(positionB)) {
+                return 1;
+            }
+    
+            const rankA = a?.member_id?.rank;
+            const rankB = b?.member_id?.rank;
+    
+            return rankOrder.indexOf(rankA) - rankOrder.indexOf(rankB);
+        });
+    };
+    
     const groupByTeam = (contacts) => {
-        return contacts.reduce((groups, contact) => {
+        const sortedContacts = sortContacts(contacts);
+        return sortedContacts.reduce((groups, contact) => {
             const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
             
             if (teamName !== '미지정팀') {
                 groups[teamName] = groups[teamName] || [];
                 groups[teamName].push(contact);
             }
-
+    
             return groups;
         }, {});
     };
-
+    
     const groupedContacts = useMemo(() => groupByTeam(contacts), [contacts]);
 
     return (
