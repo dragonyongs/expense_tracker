@@ -39,8 +39,8 @@ const NewSignin = () => {
     };
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-gray-900 px-4">
-            <div className="w-full max-w-md p-5 space-y-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+        <div className="min-h-screen w-full flex items-center justify-center bg-white dark:bg-gray-900 px-4">
+            <div className="w-full max-w-md p-5 space-y-8 border border-slate-100 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
                 <div className="flex flex-col items-center space-y-6">
                     <div className="w-20 h-20 rounded-full bg-newBlue flex items-center justify-center p-4">
                         <CiMoneyCheck1 className="w-12 h-12 text-white" />

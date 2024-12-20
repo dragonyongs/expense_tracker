@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../context/AuthProvider';
-import ProfileEditDrawer from '../components/ProfileEditDrawer';
 import { AvatarContext } from '../context/AvatarContext';
 import AvatarPreview from '../components/AvatarPreview';
 import { MutatingDots } from 'react-loader-spinner';
@@ -9,7 +8,8 @@ import { AiOutlineMail } from "react-icons/ai";
 import { TbUserEdit } from "react-icons/tb";
 import { renderContactIcon, renderContactLabel, renderDateIcon, renderDateLabel, renderAddressIcon, renderAddressLabel } from '../utils/profileRenderUtils';
 import { formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
-
+import ProfileEditDrawer from '../components/ProfileEditDrawer';
+import PasswordChangeDrawer from '../components/profile/PasswordChangeDrawer';
 import useProfileData from '../hooks/useProfileData';
 
 const Profile = () => {
@@ -19,6 +19,7 @@ const Profile = () => {
 
     // 초기 상태 정의
     const [isOpen, setIsOpen] = useState(false);
+    const [isPasswordOpen, setIsPasswordOpen] = useState(false);
     const memberId = user.member_id;
 
     const { 
@@ -48,7 +49,15 @@ const Profile = () => {
     const handleCloseDrawer = () => {
         setIsOpen(false);
     };
+
+    const handleOpenPasswordDrawer = () => {
+        setIsPasswordOpen(true);
+    }
     
+    const handleClosePasswordChangeDrawer = () => {
+        setIsPasswordOpen(false);
+    };
+
     const birthdayDates = data.dates.filter(date => date.date_type === 'birthday');
 
     const { years, days } = calculateYearsSinceEntry(data.dates);
@@ -70,10 +79,7 @@ const Profile = () => {
                     </div>
                 </header>
                 <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
-
-
                     <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
-
                         {isLoading ? ( 
                                 <div className="flex flex-col items-center justify-center">
                                     <MutatingDots
@@ -89,63 +95,62 @@ const Profile = () => {
                                     />
                                 </div>
                             ) : (
-                                
-                            <>
-                                <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
-                                {days > 0 && <LuActivity /> }
-                                {years >= 2 
-                                        ? `입사 ${years}년차` 
-                                        : (days > 0 && `입사 ${days}일차`)}
-                                </div>
-                                <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
-                                    <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
-                                </div>
-                                <div className='font-bold text-3xl'>
-                                    {user.name}
-                                </div>
-
-                                <div>
-                                    <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
-                                        <span className='pl-2 pr-1'>{data.member?.team_id?.team_name}</span>
-                                        {data.member?.position === '팀장' ||  data.member?.position === '파트장' ? (
-                                            data.member.position
-                                        ) : data.member.rank}
-                                    </p>
-                                    <p className='text-slate-500'>{data.introduction || ''}</p>
-                                </div>
-                                <div className='flex flex-col space-y-1 font-normal text-md'>
-                                    {birthdayDates.length > 0 && (
-                                        <div className='flex items-center gap-x-2'>
-                                            <LuCake /> {birthdayDates.map((date, index) => (
-                                                <span key={index}>
-                                                    {formatDateToKorean(date.date, 'monthDay')}
-                                                    {isTodayBirthday(date.date) && ' 🎂'}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )} 
-
-                                    {personalContact && personalContact.phone_number && (
-                                        <div className='flex items-center gap-x-2'>
-                                            <LuSmartphone /> {personalContact.phone_number}
-                                        </div>
-                                    )}
-
-                                    {companyContact && companyContact.phone_number && (
-                                        <div className='flex items-center gap-x-2'>
-                                            <LuBuilding /> {companyContact.phone_number} {companyContact.extension ? `(${companyContact.extension})` : ''}
-                                        </div>
-                                    )}
-
-                                    <div className='flex items-center gap-x-2'>
-                                        <AiOutlineMail /> {user.email}
+                                <>
+                                    <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
+                                    {days > 0 && <LuActivity /> }
+                                    {years >= 2 
+                                            ? `입사 ${years}년차` 
+                                            : (days > 0 && `입사 ${days}일차`)}
                                     </div>
-                                </div>
-                                <div className='flex gap-x-3 mt-4'>
-                                    <button className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100' disabled>QR 연락처</button>
-                                    <button className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:border-blue-800 dark:text-blue-800 dark:active:bg-slate-600 dark:active:text-slate-400' onClick={handleOpenDrawer}><TbUserEdit />프로필 수정</button>
-                                </div>
-                            </>
+                                    <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
+                                        <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
+                                    </div>
+                                    <div className='font-bold text-3xl'>
+                                        {user.name}
+                                    </div>
+
+                                    <div>
+                                        <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
+                                            <span className='pl-2 pr-1'>{data.member?.team_id?.team_name}</span>
+                                            {data.member?.position === '팀장' ||  data.member?.position === '파트장' ? (
+                                                data.member.position
+                                            ) : data.member.rank}
+                                        </p>
+                                        <p className='text-slate-500'>{data.introduction || ''}</p>
+                                    </div>
+                                    <div className='flex flex-col space-y-1 font-normal text-md'>
+                                        {birthdayDates.length > 0 && (
+                                            <div className='flex items-center gap-x-2'>
+                                                <LuCake /> {birthdayDates.map((date, index) => (
+                                                    <span key={index}>
+                                                        {formatDateToKorean(date.date, 'monthDay')}
+                                                        {isTodayBirthday(date.date) && ' 🎂'}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )} 
+
+                                        {personalContact && personalContact.phone_number && (
+                                            <div className='flex items-center gap-x-2'>
+                                                <LuSmartphone /> {personalContact.phone_number}
+                                            </div>
+                                        )}
+
+                                        {companyContact && companyContact.phone_number && (
+                                            <div className='flex items-center gap-x-2'>
+                                                <LuBuilding /> {companyContact.phone_number} {companyContact.extension ? `(${companyContact.extension})` : ''}
+                                            </div>
+                                        )}
+
+                                        <div className='flex items-center gap-x-2'>
+                                            <AiOutlineMail /> {user.email}
+                                        </div>
+                                    </div>
+                                    <div className='flex gap-x-3 mt-4'>
+                                        <button onClick={handleOpenPasswordDrawer} className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100'>비밀번호 변경</button>
+                                        <button onClick={handleOpenDrawer} className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:border-blue-800 dark:text-blue-800 dark:active:bg-slate-600 dark:active:text-slate-400'><TbUserEdit />프로필 수정</button>
+                                    </div>
+                                </>
                             )
                         }
 
@@ -227,6 +232,12 @@ const Profile = () => {
                 userData={profileData}
                 onSave={handleSave}
                 onClose={handleCloseDrawer}
+            />
+
+            <PasswordChangeDrawer 
+                isOpen={isPasswordOpen}
+                title={"패스워드 변경"}
+                onClose={handleClosePasswordChangeDrawer}
             />
         </>
     )
