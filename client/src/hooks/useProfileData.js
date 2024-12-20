@@ -126,62 +126,6 @@ const useProfileData = (userId, setProfile) => {
         return nameMapping[itemType]?.[value] || '없음';
     };
     
-    // const handleAddItem = (field, newItem) => {
-    //     const validatedItem = {
-    //         address_type: newItem.address_type || 'default',
-    //         address_line1: newItem.address_line1 || '',
-    //         address_line2: newItem.address_line2 || '',
-    //         postal_code: newItem.postal_code || '',
-    //     };
-
-    //     setProfile((prevProfile) => ({
-    //         ...prevProfile,
-    //         [field]: [...(prevProfile[field] || []), validatedItem], // 빈 배열 초기화
-    //     }));
-    // };
-    // const handleAddItem = (field, newItem) => {
-    //     const validatedItem = {
-    //         address_type: newItem.address_type || 'default',
-    //         address_line1: newItem.address_line1 || '',
-    //         address_line2: newItem.address_line2 || '',
-    //         postal_code: newItem.postal_code || '',
-    //         address_name: '', // 기본값 설정
-    //     };
-    
-    //     // address_type에 따라 address_name 설정
-    //     validatedItem.address_name = {
-    //         home: '집',
-    //         work: '회사',
-    //         delivery: '배송'
-    //     }[newItem.address_type] || ''; // address_type에 따라 이름 설정
-    
-    //     setProfile((prevProfile) => ({
-    //         ...prevProfile,
-    //         [field]: [...(prevProfile[field] || []), validatedItem], // 빈 배열 초기화
-    //     }));
-    // };
-    
-    // const handleUpdateItem = (key, index, field, value) => {
-    //     setProfile((prevProfile) => {
-    //         const updatedItems = [...(prevProfile[key] || [])];
-    //         if (index >= 0 && index < updatedItems.length) {
-    //             updatedItems[index] = {
-    //                 ...updatedItems[index],
-    //                 [field]: value,
-    //             };
-    
-    //             if (field === 'address_type') {
-    //                 updatedItems[index].address_name = {
-    //                     home: '집',
-    //                     work: '회사',
-    //                     delivery: '배송'
-    //                 }[value] || '';
-    //             }
-    //         }
-    //         return { ...prevProfile, [key]: updatedItems };
-    //     });
-    // };
-
     const handleAddItem = (field, newItem) => {
         const validatedItem = {};
     
@@ -230,19 +174,6 @@ const useProfileData = (userId, setProfile) => {
         });
     };
 
-    // const handleUpdateItem = (key, index, field, value) => {
-    //     setProfile((prevProfile) => {
-    //         const updatedItems = [...(prevProfile[key] || [])];
-    //         if (index >= 0 && index < updatedItems.length) {
-    //             updatedItems[index] = {
-    //                 ...updatedItems[index],
-    //                 [field]: value,
-    //             };
-    //         }
-    //         return { ...prevProfile, [key]: updatedItems };
-    //     });
-    // };
-    
     const handleRemoveItem = (type, index, setDeletedItems) => {
         setProfile((prevProfile) => {
             const items = prevProfile[type] || [];

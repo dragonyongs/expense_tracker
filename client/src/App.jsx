@@ -13,7 +13,8 @@ import useThemeColor from './hooks/useThemeColor';
 
 import './App.css';
 
-const Signin = React.lazy(() => import('./pages/Signin'));
+// const Signin = React.lazy(() => import('./pages/Signin'));
+const NewSignin = React.lazy(() => import('./pages/NewSignin'));
 const Signup = React.lazy(() => import('./pages/Signup'));
 const Pending = React.lazy(() => import('./pages/Pending'));
 const Transactions = React.lazy(() => import('./pages/Transactions'));
@@ -68,7 +69,7 @@ const App = () => {
                                 <Routes>
                                     <Route path="/" element={<Layout />}>
                                         {/* public routes */}
-                                        <Route path="signin" element={<Signin />} />
+                                        <Route path="signin" element={<NewSignin />} />
                                         <Route path="signup" element={<Signup />} />
                                         <Route path="pending" element={<Pending />} />
 
