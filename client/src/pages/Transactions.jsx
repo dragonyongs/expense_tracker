@@ -31,16 +31,15 @@ const Transactions = () => {
     const [transactions, setTransactions] = useState([]);
     const [selectedTransaction, setSelectedTransaction] = useState({
         card_id: "",
-        transaction_date: new Date().toISOString().split('T')[0], // 기본값: 오늘 날짜
+        transaction_date: new Date().toISOString().split('T')[0],
         merchant_name: "",
         menu_name: "",
-        transaction_amount: 0, // 금액 초기값 0
+        transaction_amount: 0,
         transaction_type: "expense",
-        expense_card: "TeamCard", // 기본값: 팀카드
-        expense_type: "RegularExpense", // 기본값: 일반 지출
-        balance: 0, // 잔액 초기값 0
-        rolloverAmounted: 0, // 기본값: 0
-        teamFundDeducted: 0, // 기본값: 0
+        expense_card: "TeamCard",
+        expense_type: "RegularExpense",
+        rolloverAmounted: 0,
+        teamFundDeducted: 0,
         is_deducted: false,        
     });
     
@@ -147,7 +146,7 @@ const Transactions = () => {
         const isOvertimeMealCard = card.card_type === 'OvertimeMealCard';
         return {
             expense_card: isOvertimeMealCard ? 'OvertimeMealCard' : 'TeamCard',
-            expense_type: isOvertimeMealCard ? 'OvertimeMealExpense' : 'RegularExpense',
+            expense_type: isOvertimeMealCard ? 'OvertimeMealExpense' : cardBalance > 0 ? 'RegularExpense' : 'TeamFund',
         };
     };
 
@@ -182,7 +181,6 @@ const Transactions = () => {
     };
     
     const handleCloseDrawer = () => {
-        console.log('Closing drawer');
         setIsOpen(false);
         setSelectedTransaction(resetTransaction());
     };
@@ -193,6 +191,7 @@ const Transactions = () => {
         setPrevTransaction(transaction);
         setSelectedTransaction({
             ...transaction,
+            transaction_date: transaction.transaction_date.split('T')[0],
             card_id: selectedCard._id,
             balance: selectedCard.balance,
         });
@@ -220,24 +219,24 @@ const Transactions = () => {
         }
     };
 
-    const handleSave = async () => {
+    const handleSave = async (updatedTransaction) => {
         try {
             setErrMsg('');
 
             const transactionData = {
-                card_id: selectedTransaction.card_id,
-                transaction_date: selectedTransaction.transaction_date,
-                merchant_name: selectedTransaction.merchant_name,
-                menu_name: selectedTransaction.menu_name,
+                card_id: updatedTransaction.card_id,
+                transaction_date: updatedTransaction.transaction_date,
+                merchant_name: updatedTransaction.merchant_name,
+                menu_name: updatedTransaction.menu_name,
                 transaction_type: "expense",
-                expense_card: selectedTransaction.expense_card,
-                expense_type: expenseType,
-                transaction_amount: selectedTransaction.transaction_amount,
+                expense_card: updatedTransaction.expense_card,
+                expense_type: updatedTransaction.expense_type,
+                transaction_amount: updatedTransaction.transaction_amount,
                 is_deducted: false,
             };
     
             const originalAmount = Number(prevTransaction.transaction_amount);
-            const currentAmount = Number(selectedTransaction.transaction_amount);
+            const currentAmount = Number(updatedTransaction.transaction_amount);
     
             if (originalAmount !== currentAmount) {
                 transactionData.transaction_amount = currentAmount;

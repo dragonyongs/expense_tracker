@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import { IoCheckmark } from "react-icons/io5";
 import { API_URLS } from '../services/apiUrls';
 
-
 const TransactionDrawer = ({
     isOpen,
     onClose,
@@ -35,49 +34,38 @@ const TransactionDrawer = ({
         is_deducted: false,      
     });
 
-    const [expenseType, setExpenseType] = useState("RegularExpense");
+    const [expenseType, setExpenseType] = useState('RegularExpense');
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-    // const [keyword, setKeyword] = useState('');
-    // const [suggestions, setSuggestions] = useState([]);
     const [merchantSuggestions, setMerchantSuggestions] = useState([]);
     const [menuSuggestions, setMenuSuggestions] = useState([]);
     
     useEffect(() => {
         if (isOpen) {
-            setSelectedTransaction({
-                ...selectedTransaction,
-                card_id: userCards.length > 0 ? userCards[0]._id : "",
-                transaction_date: new Date().toISOString().split('T')[0],
-                merchant_name: "",
-                menu_name: "",
-                transaction_amount: 0,
-            });
+            const isExistingTransaction = Boolean(transactionData && transactionData.expense_type);
+    
+            if (isExistingTransaction) {
+                setSelectedTransaction({
+                    ...transactionData,
+                    card_id: transactionData.card_id || (userCards.length > 0 ? userCards[0]._id : ""),
+                });
+                setExpenseType(transactionData.expense_type);
+            } else {
+                setSelectedTransaction({
+                    ...transactionData,
+                    card_id: userCards.length > 0 ? userCards[0]._id : "",
+                    expense_type: "RegularExpense",
+                });
+                if (cardBalance <= 0) {
+                    setExpenseType("TeamFund");
+                } else {
+                    setExpenseType("RegularExpense");
+                }
+            }
+    
             setMerchantSuggestions([]);
             setMenuSuggestions([]);
         }
-    }, [isOpen, userCards]);
-
-    useEffect(() => {
-        if (transactionData) {
-            setSelectedTransaction(prev => ({
-                ...prev,
-                ...transactionData,
-                card_id: transactionData.card_id || (userCards.length > 0 ? userCards[0]._id : ""),
-                transaction_date: transactionData.transaction_date || new Date().toISOString().split('T')[0], // 기본값 설정
-            }));
-            setExpenseType(transactionData.expense_type || "RegularExpense");
-        } else {
-            setSelectedTransaction({
-                ...selectedTransaction,
-                card_id: userCards.length > 0 ? userCards[0]._id : "",
-                transaction_date: new Date().toISOString().split('T')[0],
-                merchant_name: "",
-                menu_name: "",
-                transaction_amount: 0,
-                expense_type: "RegularExpense",
-            });
-        }
-    }, [transactionData, userCards]);
+    }, [isOpen, transactionData, userCards, cardBalance]);
 
     const handleExpenseTypeChange = (type) => {
         setExpenseType(type);
@@ -125,70 +113,30 @@ const TransactionDrawer = ({
         setIsDeleteConfirmOpen(false);
     };
 
-    // const handleSave = async () => {
-    //     try {
-    //         setErrMsg('');
-
-    //         const cardId = selectedTransaction.card_id || userCards[0]._id;
-    //         const transactionData = {
-    //             card_id: cardId,
-    //             transaction_date: selectedTransaction.transaction_date,
-    //             merchant_name: selectedTransaction.merchant_name,
-    //             menu_name: selectedTransaction.menu_name,
-    //             transaction_type: "expense",
-    //             expense_card: selectedTransaction.expense_card,
-    //             expense_type: expenseType,
-    //             transaction_amount: selectedTransaction.transaction_amount,
-    //         };
-
-    //         // 금액이 변경된 경우에만 transaction_amount 추가
-    //         const originalAmount = Number(transactionData.transaction_amount); // 예시로
-    //         const currentAmount = Number(selectedTransaction.transaction_amount);
-
-    //         if (originalAmount !== currentAmount) {
-    //             transactionData.transaction_amount = currentAmount;
-    //         }
-
-    //         if (isEditing) {
-    //             await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
-    //         } else {
-    //             const response = await axios.post(API_URLS.TRANSACTIONS, transactionData);
-    //             onSave(response.data.transaction); 
-    //             onClose();
-    //         }
-    //     } catch (error) {
-    //         const errorMsg = handleError(error);
-    //         console.log('errorMsg', errorMsg);
-    //         c
-    //     }
-    // };
-
-    // const handleDelete = async () => {
-    //     try {
-    //         await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
-    //         onDelete();
-    //         onClose();
-    //     } catch (error) {
-    //         setErrMsg("삭제 중 오류가 발생했습니다.");
-    //         console.error('삭제 중 오류:', error);
-    //     }
-    // };
-
-
-    const handleSaveClick = () => {
-        if (!selectedTransaction.card_id || !selectedTransaction.transaction_amount || !selectedTransaction.transaction_date) {
-            setErrorMessage("필수 필드를 모두 입력해주세요.");
-            return;
-        }
-        onSave(selectedTransaction); // 부모 컴포넌트로 저장 요청
-    };
-
     const handleDeleteClick = () => {
         const transactionId = transactionData?._id;
         if (transactionId) {
             onDelete(transactionId); // 부모 컴포넌트로 삭제 요청
         }
         setIsDeleteConfirmOpen(false);
+    };
+
+    const fetchMenuForMerchant = async (merchantName) => {
+        try {
+            const response = await axios.get(`${API_URLS.SEARCH_MENU_FOR_MERCHANT}/${merchantName}`);
+            setMenuSuggestions(response.data);
+        } catch (error) {
+            console.error("메뉴 조회 오류:", error);
+            setMenuSuggestions([]);
+        }
+    };
+
+    const handleSaveClick = () => {
+        if (!selectedTransaction.card_id || !selectedTransaction.transaction_amount || !selectedTransaction.transaction_date || !selectedTransaction.merchant_name || !selectedTransaction.merchant_name) {
+            setErrorMessage("필수 필드를 모두 입력해주세요.");
+            return;
+        }
+        onSave(selectedTransaction); // 부모 컴포넌트로 저장 요청
     };
 
     const handleMerchantInputChange = async (e) => {
@@ -210,17 +158,6 @@ const TransactionDrawer = ({
             setMerchantSuggestions([]);
         }
     };
-
-    const fetchMenuForMerchant = async (merchantName) => {
-        try {
-            const response = await axios.get(`${API_URLS.SEARCH_MENU_FOR_MERCHANT}/${merchantName}`);
-            setMenuSuggestions(response.data);
-        } catch (error) {
-            console.error("메뉴 조회 오류:", error);
-            setMenuSuggestions([]);
-        }
-    };
-    
     
     const handleMerchantSuggestionClick = (merchant_name) => {
         setSelectedTransaction(prev => ({
@@ -312,6 +249,7 @@ const TransactionDrawer = ({
                                         value="RegularExpense"
                                         className="hidden peer"
                                         checked={expenseType === 'RegularExpense'}
+                                        disabled={!transactionData.expense_type && cardBalance === 0} // 신규 & 잔액 0일 때 비활성화
                                         onChange={() => handleExpenseTypeChange('RegularExpense')}
                                         required
                                     />
@@ -334,6 +272,7 @@ const TransactionDrawer = ({
                                         value="TeamFund"
                                         className="hidden peer"
                                         checked={expenseType === 'TeamFund'}
+                                        disabled={!transactionData.expense_type && teamFund === 0}
                                         onChange={() => handleExpenseTypeChange('TeamFund')}
                                     />
                                     <label
@@ -540,3 +479,66 @@ TransactionDrawer.propTypes = {
 };
 
 export default TransactionDrawer;
+
+// const handleSave = async () => {
+    //     try {
+    //         setErrMsg('');
+
+    //         const cardId = selectedTransaction.card_id || userCards[0]._id;
+    //         const transactionData = {
+    //             card_id: cardId,
+    //             transaction_date: selectedTransaction.transaction_date,
+    //             merchant_name: selectedTransaction.merchant_name,
+    //             menu_name: selectedTransaction.menu_name,
+    //             transaction_type: "expense",
+    //             expense_card: selectedTransaction.expense_card,
+    //             expense_type: expenseType,
+    //             transaction_amount: selectedTransaction.transaction_amount,
+    //         };
+
+    //         // 금액이 변경된 경우에만 transaction_amount 추가
+    //         const originalAmount = Number(transactionData.transaction_amount); // 예시로
+    //         const currentAmount = Number(selectedTransaction.transaction_amount);
+
+    //         if (originalAmount !== currentAmount) {
+    //             transactionData.transaction_amount = currentAmount;
+    //         }
+
+    //         if (isEditing) {
+    //             await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
+    //         } else {
+    //             const response = await axios.post(API_URLS.TRANSACTIONS, transactionData);
+    //             onSave(response.data.transaction); 
+    //             onClose();
+    //         }
+    //     } catch (error) {
+    //         const errorMsg = handleError(error);
+    //         console.log('errorMsg', errorMsg);
+    //         c
+    //     }
+    // };
+
+    // const handleDelete = async () => {
+    //     try {
+    //         await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+    //         onDelete();
+    //         onClose();
+    //     } catch (error) {
+    //         setErrMsg("삭제 중 오류가 발생했습니다.");
+    //         console.error('삭제 중 오류:', error);
+    //     }
+    // };
+
+        // useEffect(() => {
+    //     if (transactionData.length > 0) {
+    //         console.log("transactionData", transactionData);
+    //         setSelectedTransaction(prev => ({
+    //             ...prev,
+    //             ...transactionData,
+    //             card_id: transactionData.card_id || (userCards.length > 0 ? userCards[0]._id : ""),
+    //             transaction_date: transactionData.transaction_date || new Date().toISOString().split('T')[0], // 기본값 설정
+    //         }));
+    //         setExpenseType(transactionData.expense_type);
+    //         console.log("transactionData.expense_type", transactionData.expense_type);
+    //     }
+    // }, [transactionData, userCards]);

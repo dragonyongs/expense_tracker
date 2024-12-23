@@ -30,19 +30,18 @@ exports.getCardTransactions = async (req, res) => {
 exports.createTransaction = async (req, res) => {
     const { 
         card_id, 
-        transaction_date, 
-        merchant_name, 
-        menu_name, 
-        transaction_amount, 
-        transaction_type, 
-        deposit_type,
         expense_card,
         expense_type,
         is_deducted,
+        menu_name, 
+        merchant_name, 
+        transaction_date, 
+        transaction_amount, 
+        transaction_type, 
+        deposit_type,
     } = req.body;
 
-
-    if (!card_id || !transaction_date || !transaction_amount || !transaction_type || !merchant_name || !menu_name) {
+    if (!card_id || !transaction_date || transaction_amount <= 0 || !transaction_type || !merchant_name.trim() || !menu_name.trim()) {
         return res.status(400).json({ error: '필수 값이 누락되었습니다.' });
     }
     
@@ -58,7 +57,6 @@ exports.createTransaction = async (req, res) => {
         return res.status(400).json({ error: '유효한 금액(transaction_amount)을 입력해야 합니다.' });
     }
 
-    // 금액 차감 공통 함수
     function subtractFromSource(card, source, amount) {
         const usedAmount = Math.min(card[source], amount);
         card[source] -= usedAmount;
@@ -105,7 +103,6 @@ exports.createTransaction = async (req, res) => {
         return { remainingAmount, teamFundDeducted, rolloverAmounted };
     };
 
-    // const sanitizeInput = (input) => input?.replace(/[\u0000-\u001F\u007F]/g, '').trim();
     const sanitizeInput = (input) => {
         if (typeof input !== 'string') return '';
         return input

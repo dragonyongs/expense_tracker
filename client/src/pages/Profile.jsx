@@ -3,11 +3,13 @@ import { AuthContext } from '../context/AuthProvider';
 import { AvatarContext } from '../context/AvatarContext';
 import AvatarPreview from '../components/AvatarPreview';
 import { MutatingDots } from 'react-loader-spinner';
-import { LuBuilding, LuSmartphone, LuCake, LuActivity } from "react-icons/lu";
+import { LuBuilding, LuSmartphone, LuCake } from "react-icons/lu";
 import { AiOutlineMail } from "react-icons/ai";
 import { TbUserEdit } from "react-icons/tb";
 import { renderContactIcon, renderContactLabel, renderDateIcon, renderDateLabel, renderAddressIcon, renderAddressLabel } from '../utils/profileRenderUtils';
 import { formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
+import { AiOutlineHistory } from "react-icons/ai";
+
 import ProfileEditDrawer from '../components/ProfileEditDrawer';
 import PasswordChangeDrawer from '../components/profile/PasswordChangeDrawer';
 import useProfileData from '../hooks/useProfileData';
@@ -97,7 +99,7 @@ const Profile = () => {
                             ) : (
                                 <>
                                     <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
-                                    {days > 0 && <LuActivity /> }
+                                    {days > 0 && <AiOutlineHistory className='w-5 h-5'/> }
                                     {years >= 2 
                                             ? `입사 ${years}년차` 
                                             : (days > 0 && `입사 ${days}일차`)}

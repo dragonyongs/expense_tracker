@@ -270,10 +270,10 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                 <div className='dark:bg-slate-800'>
                     <div className={`overflow-y-auto ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6`}>
                         <div className="flex flex-col items-center mb-4">
-                        <AvatarComponent
-                            avatarConfig={profile.avatar} // 초기값 전달
-                            onAvatarChange={handleAvatarChange} // 변경 핸들러 전달
-                        />
+                            <AvatarComponent
+                                avatarConfig={profile.avatar} // 초기값 전달
+                                onAvatarChange={handleAvatarChange} // 변경 핸들러 전달
+                            />
                         </div>
 
                         <div className='flex flex-col gap-y-10'>
