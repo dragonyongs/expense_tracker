@@ -14,12 +14,25 @@ const randomColor = () => {
     return color;
 };
 
+const randomSkinTone = () => {
+    const skinTones = [
+        '#f9d5b4', '#f7c8a6', '#eac09d', '#e3a984',
+        '#f5e0d3', '#eac7b1', '#d8a08c', '#c68672',
+        '#7d4b3b', '#603d30', '#4a2c22', '#3a231b',
+    ];
+
+    // 랜덤으로 피부톤 선택
+    return skinTones[Math.floor(Math.random() * skinTones.length)];
+};
+
 export const AvatarProvider = ({ children }) => {
     const { user } = useContext(AuthContext); // 로그인한 사용자 정보
     const isAdmin = ['admin', 'hr_admin', 'super_admin'].includes(user?.role);
 
     const [selectedMemberId, setSelectedMemberId] = useState(null); // 관리자가 선택한 사용자 ID
     const currentMemberId = isAdmin ? selectedMemberId || user?.member_id : user?.member_id; // 관리자인 경우 선택된 ID 사용
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSelectUser = (memberId) => {
         if (!isAdmin) return; // 관리자가 아닌 경우 아무것도 하지 않음
@@ -34,7 +47,7 @@ export const AvatarProvider = ({ children }) => {
     const [avatarConfig, setAvatarConfig] = useState({
         sex: 'man',
         shape: 'circle',
-        faceColor: randomColor(),
+        faceColor: randomSkinTone(),
         earSize: 'small',
         hairColor: randomColor(),
         hairStyle: 'normal',
@@ -67,12 +80,16 @@ export const AvatarProvider = ({ children }) => {
     useEffect(() => {
         const fetchAvatarData = async () => {
             if (!currentMemberId) return; // ID가 없으면 중단
+                setIsLoading(true); // 로딩 시작
             try {
                 const avatarData = await getAvatar(currentMemberId);
-                setAvatarConfig(avatarData || genConfig()); // ID에 해당하는 아바타 정보 가져오기
+                const mergedConfig = { ...genConfig(), ...avatarData };
+                setAvatarConfig(mergedConfig); // ID에 해당하는 아바타 정보 가져오기
             } catch (error) {
                 console.error('아바타 데이터 가져오기 실패:', error);
                 setAvatarConfig(genConfig()); 
+            } finally {
+                setIsLoading(false); // 로딩 종료
             }
         };
 
@@ -94,7 +111,15 @@ export const AvatarProvider = ({ children }) => {
     const generateRandomColor = useCallback(() => randomColor(), []);
 
     const randomizeColor = (key) => {
-        setAvatarConfig((prevConfig) => ({ ...prevConfig, [key]: generateRandomColor() }));
+        setAvatarConfig((prevConfig) => {
+            if (key === 'faceColor') {
+                // 스킨톤 랜덤 함수 사용
+                return { ...prevConfig, [key]: randomSkinTone() };
+            } else {
+                // 기존 랜덤 컬러 생성기 사용
+                return { ...prevConfig, [key]: generateRandomColor() };
+            }
+        });
     };
 
     const handleStyleChange = (styleKey) => {
