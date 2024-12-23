@@ -16,13 +16,15 @@ const Header = () => {
     useEffect(() => {
         const currentHour = new Date().getHours();
         if (currentHour >= 8 && currentHour < 10) {
-            setGreeting('좋은아침 :)');
+            setGreeting('좋은아침이예요 :)');
         } else if (currentHour <= 12 && currentHour > 13) {
             setGreeting('맛점하세요!');
+        } else if (currentHour < 13 && currentHour > 14) {
+            setGreeting('맛있게 드셨나요?');
         } else if (currentHour >= 22) {
             setGreeting('잘자요!');
         } else {
-            setGreeting('좋은하루 보내요!');
+            setGreeting('남은 시간까지 화이팅!');
         }
     }, []);
 

@@ -40,7 +40,7 @@ const NewSignin = () => {
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center  bg-white dark:bg-gray-900 px-4">
-            <div className="w-full max-w-md space-y-8">
+            <div className="w-full max-w-md space-y-8 mb-12">
                 <div className="flex flex-col items-center space-y-6">
                     <div className="w-20 h-20 rounded-full flex items-center justify-center p-4 bg-newBlue">
                         <CiMoneyCheck1 className="w-12 h-12 text-white" />
@@ -95,7 +95,7 @@ const NewSignin = () => {
                     </div>
 
                     {/* Remember Email */}
-                    <div className="flex items-center justify-between text-black">
+                    <div className="flex items-center justify-between text-black px-3">
                         <label className="flex items-center space-x-2 cursor-pointer">
                             <input
                                 type="checkbox"
