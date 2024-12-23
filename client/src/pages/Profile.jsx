@@ -10,6 +10,8 @@ import { renderContactIcon, renderContactLabel, renderDateIcon, renderDateLabel,
 import { formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
 import { AiOutlineHistory } from "react-icons/ai";
 
+import axios from "../services/axiosInstance"; 
+import { API_URLS } from '../services/apiUrls';
 import ProfileEditDrawer from '../components/ProfileEditDrawer';
 import PasswordChangeDrawer from '../components/profile/PasswordChangeDrawer';
 import useProfileData from '../hooks/useProfileData';
@@ -18,6 +20,8 @@ const Profile = () => {
     const { avatarConfig } = useContext(AvatarContext);
     const [ profileData, setProfileData ] = useState({});
     const { user } = useContext(AuthContext);
+    const [successMsg, setSuccessMsg] = useState('');
+    const [errMsg, setErrMsg] = useState('');
 
     // 초기 상태 정의
     const [isOpen, setIsOpen] = useState(false);
@@ -57,6 +61,8 @@ const Profile = () => {
     }
     
     const handleClosePasswordChangeDrawer = () => {
+        setErrMsg('');
+        setSuccessMsg('');
         setIsPasswordOpen(false);
     };
 
@@ -69,6 +75,23 @@ const Profile = () => {
             await fetchProfileData();
         } catch (error) {
             console.error("저장 중 오류 발생:", error);
+        }
+    };
+
+    const handlePasswordChange = async (newPassword, currentPassword) => {
+        try {
+            const response = await axios.put(`${API_URLS.MEMBERS}/${memberId}/change-password`, {
+                currentPassword,
+                newPassword,
+            });
+            
+            if (response.data.success) {
+                setSuccessMsg('비밀번호가 성공적으로 변경되었습니다.');
+            } else {
+                throw new Error('비밀번호 변경 실패');
+            }
+        } catch (error) {
+            setErrMsg(error.response?.data?.error || '비밀번호 변경에 실패했습니다.');
         }
     };
 
@@ -239,7 +262,11 @@ const Profile = () => {
             <PasswordChangeDrawer 
                 isOpen={isPasswordOpen}
                 title={"패스워드 변경"}
+                memberId={memberId}
+                onSave={handlePasswordChange}
                 onClose={handleClosePasswordChangeDrawer}
+                successMsg={successMsg}
+                errMsg={errMsg}
             />
         </>
     )

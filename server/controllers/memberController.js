@@ -169,6 +169,36 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
+// 비밀번호 변경
+exports.changePassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { currentPassword, newPassword } = req.body;
+
+        // 현재 비밀번호 확인
+        const member = await Member.findById(id);
+        if (!member) return res.status(404).json({ error: 'Member not found' });
+
+        // 현재 비밀번호가 맞는지 확인
+        const isPasswordMatch = await bcrypt.compare(currentPassword, member.password);
+
+        if (!isPasswordMatch) {
+            return res.status(400).json({ error: '현재 비밀번호가 일치하지 않습니다.' });
+        }
+
+        // 새 비밀번호 해싱
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // 비밀번호 변경
+        member.password = hashedPassword;
+        await member.save();
+
+        res.json({ success: true, message: '비밀번호가 변경되었습니다.' });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
 exports.updateMember = async (req, res) => {
     try {
         const { password, status_id, ...otherData } = req.body;  // 상태값도 포함

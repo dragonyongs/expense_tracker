@@ -15,6 +15,8 @@ router.get('/filteredMembers', authMiddleware, memberController.getFilteredMembe
 
 router.post('/:id/reset-password', authMiddleware, memberController.resetPassword);
 
+router.put('/:id/change-password', authMiddleware, memberController.changePassword);  // 비밀번호 변경 API 추가
+
 router.get('/:id', authMiddleware, memberController.getMemberById); // 특정 멤버 조회
 
 router.put('/:id', authMiddleware, memberController.updateMember); // 멤버 수정
