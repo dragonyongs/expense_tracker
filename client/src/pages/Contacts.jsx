@@ -62,10 +62,13 @@ function Contacts() {
         const companyPhone = phones.find(phone => phone.phone_type === 'company_phone');
         return companyPhone ? { phone: companyPhone.phone_number, extension: companyPhone.extension } : {};
     };
+
+    const priorityTeams = ["경영지원본부(임원)", "영엽지원본부(임원)", "경영지원팀", "마케팅팀"];
+
     
     const sortContacts = (contacts) => {
         const positionOrder = ['임원', '팀장', '파트장', '팀원'];
-        const rankOrder = ['대표', '전무', '상무', '이사', '부장', '차장', '과장', '대리', '사원'];
+        const rankOrder = ['대표', '전무', '상무', '이사', '실장', '부장', '차장', '과장', '대리', '사원'];
     
         return contacts.sort((a, b) => {
             const positionA = a?.member_id?.position;
@@ -87,15 +90,50 @@ function Contacts() {
 
     const groupByTeam = (contacts) => {
         const sortedContacts = sortContacts(contacts);
-        return sortedContacts.reduce((groups, contact) => {
+    
+        // 그룹화 작업
+        const grouped = sortedContacts.reduce((groups, contact) => {
             const teamName = contact?.member_id?.team_id?.team_name || "미지정팀";
-            if (teamName !== "미지정팀") {
-                groups[teamName] = groups[teamName] || [];
-                groups[teamName].push(contact);
-            }
+            groups[teamName] = groups[teamName] || [];
+            groups[teamName].push(contact);
             return groups;
         }, {});
+    
+        // 우선순위 팀 정렬
+        const sortedGroupKeys = Object.keys(grouped).sort((a, b) => {
+            const priorityA = priorityTeams.indexOf(a);
+            const priorityB = priorityTeams.indexOf(b);
+    
+            // 우선순위 배열에 있는 팀은 배열 순서대로 정렬
+            if (priorityA !== -1 && priorityB !== -1) {
+                return priorityA - priorityB;
+            }
+            // 배열에 없는 팀은 우선순위 팀 다음에 알파벳순 정렬
+            if (priorityA !== -1) return -1;
+            if (priorityB !== -1) return 1;
+            return a.localeCompare(b);
+        });
+    
+        // 우선순위에 맞게 그룹 재구성
+        const sortedGroupedContacts = {};
+        sortedGroupKeys.forEach((key) => {
+            sortedGroupedContacts[key] = grouped[key];
+        });
+    
+        return sortedGroupedContacts;
     };
+
+    // const groupByTeam = (contacts) => {
+    //     const sortedContacts = sortContacts(contacts);
+    //     return sortedContacts.reduce((groups, contact) => {
+    //         const teamName = contact?.member_id?.team_id?.team_name || "미지정팀";
+    //         if (teamName !== "미지정팀") {
+    //             groups[teamName] = groups[teamName] || [];
+    //             groups[teamName].push(contact);
+    //         }
+    //         return groups;
+    //     }, {});
+    // };
     
     // const groupedContacts = useMemo(() => groupByTeam(contacts), [contacts]);
     const groupedContacts = useMemo(() => groupByTeam(filteredContacts), [filteredContacts]);

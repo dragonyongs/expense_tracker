@@ -64,7 +64,6 @@ const TransactionDrawer = ({
     // }, [isOpen, isDarkMode]);
 
     useEffect(() => {
-        console.log('dfsfsd')
         const metaTag = document.querySelector("meta[name='theme-color']");
         if (location.pathname === '/' && metaTag && isOpen) {
             metaTag.setAttribute("content", isDarkMode ? darkColor : color);

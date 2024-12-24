@@ -181,27 +181,27 @@ const AdminMembers = () => {
                 const usersArray = [];
                 for (let index = 1; index < rows.length; index++) {
                     const row = rows[index];
-                    if (row.length < 16) continue;
+                    if (row.length < 14) continue;
     
-                    const teamId = await getTeamIdByName(row[0]);
-                    const statusId = await getStatusIdByName(row[15]);
-                    const roleId = await getRoleIdByName(row[16]);
+                    const teamId = await getTeamIdByName(row[8]);
+                    const statusId = await getStatusIdByName(row[6]);
+                    const roleId = await getRoleIdByName(row[7]);
     
-                    const phones = parsePhones({'개인':row[4], '회사':row[5], 'extension':row[6], "업무":row[7] });
-                    const addresses = parseAddresses({'집':row[9],'회사':row[10], '배송':row[11]});
-                    const dates = parseDates({'입사': row[12], '퇴사':row[13], '생일':row[14]});
+                    const phones = parsePhones(row[11]);
+                    const addresses = parseAddresses(row[12]);
+    
                     const user = {
                         member_name: row[1]?.trim() || '',
-                        email: row[8]?.trim() || '',
-                        rank: row[3]?.trim() || '',
-                        position: row[2]?.trim() || '',
+                        email: row[2]?.trim() || '',
+                        rank: row[4]?.trim() || '',
+                        position: row[5]?.trim() || '',
                         team_id: teamId,
                         status_id: statusId,
                         role_id: roleId,
                         phones,
                         addresses,
-                        dates,
-                        introduction: row[17]?.trim() || '',
+                        dates: parseDates(row[13]),
+                        introduction: row[14]?.trim() || '',
                         is_admin_created: true,
                         is_password_reset: true,
                     };
@@ -221,121 +221,54 @@ const AdminMembers = () => {
     };
     
     // 전화번호 파싱
-    const parsePhones = (phonesData) => {
-        const phones = [];
-    
-        Object.entries(phonesData).forEach(([key, value]) => {
-            if (value) {
-                const phoneType = phoneTypeMap[key];
-                if (phoneType) {
-                    phones.push({
-                        phone_type: phoneType,
-                        phone_name: key,
-                        phone_number: value?.trim(),
-                        extension: key === '회사' && phonesData.extension !== undefined ? phonesData.extension : null,
-                    });
-                }
-            }
+    const parsePhones = (phoneString) => {
+        if (!phoneString) return [];
+        return phoneString.split(',').map(phone => {
+            const [type, number] = phone.split(':');
+            const extensionMatch = number.match(/\(([^)]+)\)/);
+            const phoneNumber = number.replace(/\s*\([^)]+\)\s*/, '').trim();
+            return {
+                phone_type: phoneTypeMap[type.trim()] || type.trim(),
+                phone_name: type.trim(),
+                phone_number: phoneNumber,
+                extension: extensionMatch ? extensionMatch[1] : '',
+            };
         });
-    
-        return phones;
     };
-    
-    // const parsePhones = (phoneString) => {
-    //     if (!phoneString) return [];
-    //     return phoneString.split(',').map(phone => {
-    //         const [type, number] = phone.split(':');
-    //         const extensionMatch = number.match(/\(([^)]+)\)/);
-    //         const phoneNumber = number.replace(/\s*\([^)]+\)\s*/, '').trim();
-    //         return {
-    //             phone_type: phoneTypeMap[type.trim()] || type.trim(),
-    //             phone_name: type.trim(),
-    //             phone_number: phoneNumber,
-    //             extension: extensionMatch ? extensionMatch[1] : '',
-    //         };
-    //     });
-    // };
     
     // 주소 파싱
-    const parseAddresses = (addressesData) => {
-        const addresses = [];
-    
-        Object.entries(addressesData).forEach(([key, value]) => {
-            if (value) {
-                const fullAddress = value?.trim();
-                const [line1, line2WithPostal] = fullAddress.split(',');
-                const postalCodeMatch = line2WithPostal ? line2WithPostal.match(/\[([^\]]+)\]/) : null;
-    
-                addresses.push({
-                    address_type: addressTypeMap[key?.trim()] || key.trim(),
-                    address_name: key?.trim(),
-                    address_line1: line1?.trim(),
-                    address_line2: postalCodeMatch 
-                        ? line2WithPostal.replace(postalCodeMatch[0], '')?.trim() 
-                        : (line2WithPostal || '')?.trim(),
-                    postal_code: postalCodeMatch ? postalCodeMatch[1] : '',
-                });
-            }
-        });
-    
-        return addresses;
-    };
-    // const parseAddresses = (addressString) => {
-    //     if (!addressString) return [];
-    //     return addressString.split(',').map(address => {
-    //         const [name, fullAddress] = address.split(':');
-    //         const [line1, line2WithPostal] = fullAddress.split(' / ');
-    //         // const postalCodeMatch = line2WithPostal.match(/\(([^)]+)\)/);
-    //         const postalCodeMatch = line2WithPostal.match(/\[([^\]]+)\]/);
+    const parseAddresses = (addressString) => {
+        if (!addressString) return [];
+        return addressString.split(',').map(address => {
+            const [name, fullAddress] = address.split(':');
+            const [line1, line2WithPostal] = fullAddress.split(' / ');
+            // const postalCodeMatch = line2WithPostal.match(/\(([^)]+)\)/);
+            const postalCodeMatch = line2WithPostal.match(/\[([^\]]+)\]/);
 
-    //         return {
-    //             address_type: addressTypeMap[name.trim()] || name.trim(),
-    //             address_name: name.trim(),
-    //             address_line1: line1.trim(),
-    //             address_line2: postalCodeMatch ? line2WithPostal.replace(postalCodeMatch[0], '').trim() : '',
-    //             postal_code: postalCodeMatch ? postalCodeMatch[1] : '',
-    //         };
-    //     });
-    // };
+            return {
+                address_type: addressTypeMap[name.trim()] || name.trim(),
+                address_name: name.trim(),
+                address_line1: line1.trim(),
+                address_line2: postalCodeMatch ? line2WithPostal.replace(postalCodeMatch[0], '').trim() : '',
+                postal_code: postalCodeMatch ? postalCodeMatch[1] : '',
+            };
+        });
+    };
     
     // 날짜 파싱
-    const excelDateToJSDate = (excelDate) => {
-        const baseDate = new Date(1900, 0, 1);
-        const jsDate = new Date(baseDate.getTime() + (excelDate - 2) * 24 * 60 * 60 * 1000); 
-        return jsDate;
-    };
-    
-    const parseDates = (datesData) => {
-        const dates = [];
-        Object.entries(datesData).forEach(([key, value]) => {
-            if (value) {
-                const dateType = dateTypeMap[key];
-                if (dateType) {
-                    dates.push({
-                        date_type: dateType,
-                        date_name: key,
-                        date: excelDateToJSDate(value),
-                    });
-                }
-            }
+    const parseDates = (dateString) => {
+        if (!dateString) return [];
+        return dateString.split(',').map(dateEntry => {
+            const [name, date] = dateEntry.split(':');
+            return {
+                date_type: dateTypeMap[name.trim()] || name.trim(),
+                date_name: name.trim(),
+                date: new Date(date.trim()),
+            };
         });
-    
-        return dates;
     };
-    // const parseDates = (dateString) => {
-    //     if (!dateString) return [];
-    //     return dateString.split(',').map(dateEntry => {
-    //         const [name, date] = dateEntry.split(':');
-    //         return {
-    //             date_type: dateTypeMap[name.trim()] || name.trim(),
-    //             date_name: name.trim(),
-    //             date: new Date(date.trim()),
-    //         };
-    //     });
-    // };
     
     const saveData = async (usersArray) => {
-
         // 초기 카운트 설정
         let successCount = 0;
         let errorCount = 0;
@@ -348,6 +281,9 @@ const AdminMembers = () => {
             }
 
             try {
+                console.log('user.email', user.email);
+                console.log('user: ', user);
+
                 // 이메일로 기존 멤버 검색
                 const existingMemberResponse = await axios.get(`/api/members/email?email=${user.email}`);
                 const { found, member } = existingMemberResponse.data;
@@ -452,6 +388,7 @@ const AdminMembers = () => {
             }
         }
     };
+
     return (
         <>
             <AdminHeader />
