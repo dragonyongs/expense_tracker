@@ -2,8 +2,16 @@ const dbName = "StarRich";
 const storeName = "StarRichStore";
 
 // IndexedDB 열기
+let dbInstance = null; // 데이터베이스 인스턴스를 전역 변수로 저장
+
 const openDatabase = () => {
     return new Promise((resolve, reject) => {
+        // 이미 데이터베이스가 열려있으면 그 인스턴스를 사용
+        if (dbInstance) {
+            resolve(dbInstance);
+            return;
+        }
+
         const request = indexedDB.open(dbName, 1);
 
         request.onupgradeneeded = (event) => {
@@ -16,8 +24,9 @@ const openDatabase = () => {
         };
 
         request.onsuccess = (event) => {
+            dbInstance = event.target.result; // 연결된 데이터베이스 객체 저장
             console.log("Database opened successfully.");
-            resolve(event.target.result);
+            resolve(dbInstance);
         };
 
         request.onerror = (event) => {
@@ -26,6 +35,7 @@ const openDatabase = () => {
         };
     });
 };
+
 
 // 데이터 추가 함수
 const addData = async (key, data) => {

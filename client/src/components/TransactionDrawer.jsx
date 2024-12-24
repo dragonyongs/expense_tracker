@@ -21,7 +21,7 @@ const TransactionDrawer = ({
 }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [selectedTransaction, setSelectedTransaction] = useState({
-        card_id: userCards.length > 0 ? userCards[0]._id : "",
+        card_id: "",
         transaction_date: new Date().toISOString().split('T')[0],
         merchant_name: "",
         menu_name: "",
@@ -50,13 +50,13 @@ const TransactionDrawer = ({
                 });
                 setExpenseType(transactionData.expense_type);
             } else {
-                setSelectedTransaction({
-                    ...transactionData,
-                    card_id: userCards.length > 0 ? userCards[0]._id : "",
-                    expense_type: "RegularExpense",
-                });
                 if (cardBalance <= 0) {
                     setExpenseType("TeamFund");
+                    setSelectedTransaction({
+                        ...selectedTransaction, 
+                        card_id: userCards.length > 0 ? userCards[0]._id : "",
+                        expense_type: 'TeamFund'
+                    });
                 } else {
                     setExpenseType("RegularExpense");
                 }
@@ -66,14 +66,6 @@ const TransactionDrawer = ({
             setMenuSuggestions([]);
         }
     }, [isOpen, transactionData, userCards, cardBalance]);
-
-    const handleExpenseTypeChange = (type) => {
-        setExpenseType(type);
-        setSelectedTransaction(prev => ({
-            ...prev,
-            expense_type: type,
-        }));
-    };
 
     const getCardExpenseType = (card) => {
         const isOvertimeMealCard = card.card_type === 'OvertimeMealCard';
@@ -87,6 +79,23 @@ const TransactionDrawer = ({
         balance: card.balance || 0,
         team_fund: card.team_fund || 0,
     });
+
+    const handleExpenseTypeChange = (type) => {
+        const expenseCardMapping = {
+            'TeamFund': 'TeamFund',
+            'OvertimeMealExpense': 'OvertimeMealCard',
+        };
+    
+        const selectedCard = expenseCardMapping[type] || 'TeamCard';
+    
+        setExpenseType(type);
+        setSelectedTransaction(prev => ({
+            ...prev,
+            expense_card: selectedCard,
+            expense_type: type,
+        }));
+    };
+    
 
     const handleCardChange = (e) => {
         const cardId = e.target.value;
@@ -116,7 +125,7 @@ const TransactionDrawer = ({
     const handleDeleteClick = () => {
         const transactionId = transactionData?._id;
         if (transactionId) {
-            onDelete(transactionId); // 부모 컴포넌트로 삭제 요청
+            onDelete(transactionId);
         }
         setIsDeleteConfirmOpen(false);
     };
@@ -132,6 +141,7 @@ const TransactionDrawer = ({
     };
 
     const handleSaveClick = () => {
+        console.log(selectedTransaction);
         if (!selectedTransaction.card_id || !selectedTransaction.transaction_amount || !selectedTransaction.transaction_date || !selectedTransaction.merchant_name || !selectedTransaction.merchant_name) {
             setErrorMessage("필수 필드를 모두 입력해주세요.");
             return;
