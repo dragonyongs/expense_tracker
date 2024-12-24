@@ -63,13 +63,12 @@ function Contacts() {
         return companyPhone ? { phone: companyPhone.phone_number, extension: companyPhone.extension } : {};
     };
 
-    const priorityTeams = ["경영지원본부(임원)", "영엽지원본부(임원)", "경영지원팀", "마케팅팀"];
+    const priorityTeams = ["경영지원본부(임원)", "영엽지원본부(임원)", "경영지원팀", "마케팅팀", "총무팀", "섭외팀"];
 
     
     const sortContacts = (contacts) => {
         const positionOrder = ['임원', '팀장', '파트장', '팀원'];
         const rankOrder = ['대표', '전무', '상무', '이사', '실장', '부장', '차장', '과장', '대리', '사원'];
-    
         return contacts.sort((a, b) => {
             const positionA = a?.member_id?.position;
             const positionB = b?.member_id?.position;
@@ -149,6 +148,8 @@ function Contacts() {
         }
     };
 
+    const isNoResults = groupedContacts && Object.keys(groupedContacts).length === 0;
+    
     return (
         <>
             <header className="flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800">
@@ -180,43 +181,48 @@ function Contacts() {
                 ) : (
                     <>
                         <SearchInput onSearch={handleSearch} />
-
-                        {Object.keys(groupedContacts).map((teamName) => (
-                            <div key={teamName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700">
-                                <h3 className="dark:text-slate-400">{teamName}</h3> {/* 팀명 출력 */}
-                                <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
-                                    {groupedContacts[teamName].map((contact) => {
-                                        const { extension } = getCompanyPhoneInfo(contact.phones);
-                                        const formerEmployee = contact?.member_id?.role_id?.role_name === 'former_employee';
-
-                                        return (
-                                            <li
-                                                key={contact._id}
-                                                className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : ''}`}
-                                                onClick={() => handleOpenDrawer(contact)}
-                                            >
-                                                <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
-                                                    {contact?.avatar_id ? (
-                                                        <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className={`w-10 h-10 ${formerEmployee ? 'opacity-40' : ''}`} />
-                                                    ) : (
-                                                        <AvatarPreview avatarConfig={ genConfig() } shape="circle" className="w-10 h-10"/>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-lg">
-                                                        {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
-                                                        {extension && <span className="dark:text-blue-300">({extension})</span>}
-                                                    </p>
-                                                </div>
-                                                <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                                    <MdKeyboardArrowRight className={`text-2xl ${formerEmployee ? 'text-slate-300' : ''}`} />
-                                                </div>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
+                        {isNoResults ? (
+                            <div className="flex justify-center items-center p-4 min-h-96 bg-slate-100 dark:bg-slate-700 rounded-md">
+                                <p className="text-lg text-slate-700"><span className='font-bold text-slate-900'>{searchTerm}</span>의 검색 결과가 없습니다.</p>
                             </div>
-                        ))}
+                        ) : (
+                            Object.keys(groupedContacts).map((teamName) => (
+                                <div key={teamName} className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700">
+                                    <h3 className="dark:text-slate-400">{teamName} <span className='font-normal text-gray-600'>{groupedContacts[teamName].length}명</span></h3> {/* 팀명 출력 */}
+                                    <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
+                                        {groupedContacts[teamName].map((contact) => {
+                                            const { extension } = getCompanyPhoneInfo(contact.phones);
+                                            const formerEmployee = contact?.member_id?.role_id?.role_name === 'former_employee';
+
+                                            return (
+                                                <li
+                                                    key={contact._id}
+                                                    className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : ''}`}
+                                                    onClick={() => handleOpenDrawer(contact)}
+                                                >
+                                                    <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
+                                                        {contact?.avatar_id ? (
+                                                            <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className={`w-10 h-10 ${formerEmployee ? 'opacity-40' : ''}`} />
+                                                        ) : (
+                                                            <AvatarPreview avatarConfig={ genConfig() } shape="circle" className="w-10 h-10"/>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-lg">
+                                                            {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
+                                                            {extension && <span className="dark:text-blue-300">({extension})</span>}
+                                                        </p>
+                                                    </div>
+                                                    <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                                        <MdKeyboardArrowRight className={`text-2xl ${formerEmployee ? 'text-slate-300' : ''}`} />
+                                                    </div>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
+                            ))
+                        )}
                     </>
                     
                 )

@@ -27,7 +27,7 @@ const Side = () => {
                     </div>
                     <div className="dark:text-slate-500 w-72">
                         <h5 className="font-semibold text-lg">앱 설치</h5>
-                        <h4>iOS 홈추가, 안드로이드/데스크탑 더보기[∙∙∙] 또는 주소 표시줄 앱설치 클릭</h4>
+                        <h4>iOS <span className="text-indigo-500 dark:text-indigo-600">홈추가</span>, 안드로이드/데스크탑 더보기[∙∙∙] 또는 주소 표시줄 <span className="text-indigo-500 dark:text-indigo-600">앱설치</span> 클릭</h4>
                     </div>
                 </li>
             </ul>
