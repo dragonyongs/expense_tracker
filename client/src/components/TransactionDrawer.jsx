@@ -6,6 +6,11 @@ import SelectField from '../components/SelectField';
 import PropTypes from 'prop-types';
 import { IoCheckmark } from "react-icons/io5";
 import { API_URLS } from '../services/apiUrls';
+import { useDarkMode } from '../context/DarkModeContext';
+import { useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeColorContext';
+
+const specialPaths = ['/transactions', '/contacts', '/profile', '/teams'];
 
 const TransactionDrawer = ({
     isOpen,
@@ -18,7 +23,14 @@ const TransactionDrawer = ({
     cardBalance,
     teamFund,
     errMsg,
+    color,
+    darkColor,
 }) => {
+
+    // const { setThemeColor } = useTheme();
+    const { isDarkMode } = useDarkMode();
+    const location = useLocation();
+    
     const [errorMessage, setErrorMessage] = useState('');
     const [selectedTransaction, setSelectedTransaction] = useState({
         card_id: "",
@@ -39,6 +51,45 @@ const TransactionDrawer = ({
     const [merchantSuggestions, setMerchantSuggestions] = useState([]);
     const [menuSuggestions, setMenuSuggestions] = useState([]);
     
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         if (location.pathname === '/') {
+    //             setThemeColor(isDarkMode ? darkColor : color); // 색상 업데이트
+    //         } else if (specialPaths.includes(location.pathname)) {
+    //             setThemeColor(isDarkMode ? "#1e293b" : "#FFFFFF");
+    //         } else {
+    //             setThemeColor("#dce8f5");
+    //         }
+    //     }
+    // }, [isOpen, isDarkMode]);
+
+    useEffect(() => {
+        console.log('dfsfsd')
+        const metaTag = document.querySelector("meta[name='theme-color']");
+        if (location.pathname === '/' && metaTag && isOpen) {
+            metaTag.setAttribute("content", isDarkMode ? darkColor : color);
+        } else if (location.pathname === '/') {
+            metaTag.setAttribute("content", "#0433FF");
+        } else if (specialPaths.includes(location.pathname) && isOpen) {
+            metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#FFFFFF");
+        } else {
+            metaTag.setAttribute("content", "#dce8f5");
+        }
+    }, [isOpen, isDarkMode]);
+
+    // useEffect(() => {, location.pathname, color, darkColor
+    //     const metaTag = document.querySelector("meta[name='theme-color']");
+    //     if (location.pathname === '/' && metaTag && isOpen) {
+    //         metaTag.setAttribute("content", isDarkMode ? darkColor : color);
+    //     } else if (location.pathname === '/') {
+    //         metaTag.setAttribute("content", "#0433FF");
+    //     } else if (specialPaths.includes(location.pathname) && isOpen) {
+    //         metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#FFFFFF");
+    //     } else {
+    //         metaTag.setAttribute("content", "#dce8f5");
+    //     }
+    // }, [isOpen]);
+
     useEffect(() => {
         if (isOpen) {
             const isExistingTransaction = Boolean(transactionData && transactionData.expense_type);

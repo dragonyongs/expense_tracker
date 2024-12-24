@@ -49,8 +49,6 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
         }
     }, [isOpen, memberId, setAdminMode, resetAdminMode]);
 
-
-
     useEffect(() => {
         if (isOpen && userData) {
             setProfile({
@@ -64,7 +62,6 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
             setIsLoading(false);
         }
     }, [isOpen, userData]);
-
 
     const isMobile = useMediaQuery('(max-width: 1024px)');
     const viewportHeight = useViewportHeight();

@@ -10,10 +10,17 @@ export const ThemeProvider = ({ children }) => {
     const location = useLocation();
     const [themeColor, setThemeColor] = useState('#ffffff');
 
+    const updateMetaTag = (color) => {
+        const metaTag = document.querySelector("meta[name='theme-color']");
+        if (metaTag) {
+            metaTag.setAttribute("content", color);
+        }
+    };
+
     useEffect(() => {
         const determineThemeColor = () => {
-            if (isDarkMode) {
-                return location.pathname === '/' ? '#0433FF' : '#1d293b';
+            if (isDarkMode && specialPaths.includes(location.pathname)) {
+                return '#1e293b';
             } else {
                 if (location.pathname === '/') return '#0433FF';
                 if (specialPaths.includes(location.pathname)) return '#dce8f5';
@@ -24,14 +31,14 @@ export const ThemeProvider = ({ children }) => {
         const newColor = determineThemeColor();
         if (themeColor !== newColor) {
             setThemeColor(newColor);
+            updateMetaTag(newColor); 
 
-            // meta 태그 업데이트
             const metaTag = document.querySelector("meta[name='theme-color']");
             if (metaTag) {
                 metaTag.setAttribute("content", newColor);
             }
         }
-    }, [isDarkMode, location.pathname]); 
+    }, [isDarkMode, location.pathname], themeColor); 
 
     return (
         <ThemeColorContext.Provider value={{ themeColor, setThemeColor }}>

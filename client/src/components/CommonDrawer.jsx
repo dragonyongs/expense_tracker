@@ -22,7 +22,7 @@ const CommonDrawer = ({ isOpen, onClose, title, color, darkColor, children, clas
     const isMobile = useMediaQuery('(max-width: 640px)');
     const drawerSize = isMobile ? '100%' : '375px';
 
-    const backgroundColor = isDarkMode && darkColor ? darkColor : isDarkMode ? 'bg-slate-700' : '';
+    const backgroundColor = isDarkMode && darkColor ? darkColor : isDarkMode ? 'bg-slate-800' : '';
 
     return (
         <Drawer open={isOpen} onClose={onClose} className="h-real-screen" duration="300" direction="right" size={drawerSize}>

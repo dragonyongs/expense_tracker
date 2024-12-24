@@ -449,6 +449,8 @@ const Transactions = () => {
                 
                 {/* 트랜잭션 드로어 컴포넌트 */}
                 <TransactionDrawer
+                    color="#dce8f5"
+                    darkColor="#1e293b"
                     isOpen={isOpen}
                     onClose={handleCloseDrawer}
                     onSave={handleSave}

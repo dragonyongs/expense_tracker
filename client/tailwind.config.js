@@ -52,7 +52,7 @@ export default {
       },
       height: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
-        'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 180px)',
+        'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 148px)',
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px)',
         'pending-screen': 'calc((var(--vh, 1vh) * 100) - 63px)',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px)',
