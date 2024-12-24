@@ -87,9 +87,6 @@ exports.getProfileById = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
     const { id } = req.params; // 프로필 ID
-    // console.log('id', id);
-    // console.log(mongoose.Types.ObjectId.isValid(id)); // true면 유효한 ObjectId
-    // console.log('req.body', req.body);
 
     // ID 유효성 검증
     if (!mongoose.Types.ObjectId.isValid(id)) {

@@ -111,8 +111,7 @@ const useProfileData = (userId, setProfile) => {
             },
             phone: {
                 company_phone: '회사',
-                work_phone: '업무',
-                work_mobile: '업무용 모바일',
+                work_mobile: '업무',
                 personal_mobile: '개인',
             },
             date: {

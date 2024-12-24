@@ -21,8 +21,6 @@ exports.createAddress = async (req, res) => {
         profileRes.addresses.push(saveAddress._id);
         await profileRes.save();
         
-        console.log('createAddress', saveAddress);
-
         res.status(201).json(saveAddress);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -43,7 +41,6 @@ exports.updateAddress = async (req, res) => {
     try {
         // 주소 업데이트
         const updatedAddress = await Address.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        console.log("updatedAddress:", updatedAddress);
 
         if (!updatedAddress) return res.status(404).json({ message: 'Address not found' });
 
@@ -55,9 +52,7 @@ exports.updateAddress = async (req, res) => {
                 addressId.toString() === req.params.id ? updatedAddress._id : addressId
             );
 
-            console.log('Profile before saving:', profile);
             await profile.save(); // 프로필 저장
-            console.log('Profile after saving:', profile);
         } else {
             console.log('Profile not found for the address ID.');
         }

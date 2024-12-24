@@ -82,8 +82,6 @@ exports.getAccountsAndCards = async (req, res) => {
                 return !resignedMemberIds.includes(memberId);
             });
             
-            console.log('filteredCards', filteredCards);
-
             return {
                 ...account,
                 cards: filteredCards.map(card => ({

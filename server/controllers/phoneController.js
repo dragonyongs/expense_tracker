@@ -22,8 +22,6 @@ exports.createPhone = async (req, res) => {
             profile.phones.push(savedPhone._id);
         }
 
-        console.log('createPhone', savedPhone);
-
         await profile.save();
 
         res.status(201).json(savedPhone);
@@ -45,14 +43,8 @@ exports.getPhones = async (req, res) => {
 
 // Update a phone contact by ID
 exports.updatePhone = async (req, res) => {
-    console.log('Update Phone Request received:', {
-        params: req.params,
-        body: req.body
-    });
-
     try {
         const updatedPhone = await Phone.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        console.log('Phone update result:', updatedPhone);
 
         if (!updatedPhone) {
             console.log('Phone not found with id:', req.params.id);
@@ -60,15 +52,12 @@ exports.updatePhone = async (req, res) => {
         }
 
         const profile = await Profile.findOne({ phones: req.params.id });
-        console.log('Found profile:', profile ? profile._id : 'none');
 
         if (profile) {
-            console.log('Profile before update:', profile);
             profile.phones = profile.phones.map(phoneId =>
                 phoneId.toString() === req.params.id ? updatedPhone._id : phoneId
             );
             await profile.save();
-            console.log('Profile after update:', profile);
         }
 
         res.status(200).json(updatedPhone);
