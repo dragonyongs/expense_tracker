@@ -126,7 +126,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
     const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
     const otherCards = account.cards.filter(card => card.position !== "팀장" && card.card_type !== "OvertimeMealCard");
     return (
-        <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-600 dark:bg-slate-700">
+        <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-700 dark:bg-slate-800">
             {/* 계좌 정보 */}
             <h3 className="text-md text-gray-500">
                 {account.team_id.team_name} {account.account_number.split('-').slice(-1)} 계좌

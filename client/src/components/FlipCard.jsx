@@ -24,7 +24,7 @@ const FlipCard = ( { userName, cardNumber, totalSpent, currentBalance } ) => {
     return (
         <>
             <div className={`w-full xs:w-96 h-56 mx-auto perspective`} onClick={toggleCard}>
-                <div className={`bg-slate-800 w-full h-full p-4 rounded-2xl shadow-xl border border-slate-700 flex items-end justify-between relative overflow-hidden transition-transform duration-300 cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}>
+                <div className={`bg-slate-800 dark:bg-slate-950 w-full h-full p-4 rounded-2xl shadow-xl border border-slate-700 flex items-end justify-between relative overflow-hidden transition-transform duration-300 cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}>
 
                     {/* 카드 앞면 */}
                     {!isFlipped && (

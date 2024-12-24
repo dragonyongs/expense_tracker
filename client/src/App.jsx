@@ -9,7 +9,6 @@ import { AvatarProvider } from './context/AvatarContext';
 import { MobileProvider } from './context/MobileContext';
 import { DarkModeProvider, useDarkMode } from './context/DarkModeContext';
 import { ThemeProvider } from './context/ThemeColorContext';
-import useThemeColor from './hooks/useThemeColor';
 
 import './App.css';
 
@@ -32,11 +31,7 @@ const AdminCard = React.lazy(() => import('./pages/AdminCard'));
 const AdminDeposit = React.lazy(() => import('./pages/AdminDeposit'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
-const App = () => {
-
-    const location = useLocation();
-    useThemeColor(location);
-    
+const App = () => {   
     useEffect(() => {
         const registerServiceWorker = async () => {
             if ('serviceWorker' in navigator) {
@@ -64,7 +59,6 @@ const App = () => {
                 <MobileProvider>
                     <DarkModeProvider>
                         <ThemeProvider>
-
                             <AvatarProvider>
                                 <Routes>
                                     <Route path="/" element={<Layout />}>
@@ -160,7 +154,6 @@ const App = () => {
                                     </Route>
                                 </Routes>
                             </AvatarProvider>
-
                         </ThemeProvider>
                     </DarkModeProvider>
                 </MobileProvider>
