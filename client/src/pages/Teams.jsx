@@ -125,6 +125,8 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
     const leaderCards = account.cards.filter(card => card.position === "팀장" && card.card_type !== "OvertimeMealCard");
     const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
     const otherCards = account.cards.filter(card => card.position !== "팀장" && card.card_type !== "OvertimeMealCard");
+    const isWarning = remainingDays <= 7;
+
     return (
         <div className="pt-8 px-8 bg-white shadow-sm rounded-xl border-t dark:border dark:border-slate-700 dark:bg-slate-800">
             {/* 계좌 정보 */}
@@ -134,6 +136,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
             <h3 className="text-2xl text-gray-700 dark:text-slate-300 mt-2">
                 <span className="font-bold">{totalBalance.toLocaleString()}원</span>
                 {totalBalance > 0 && " 남음"}
+                {isWarning ? <span className="pl-4 font-light">({remainingDays}일 남음)</span> : ''}
             </h3>
 
             <div className="mt-8">
@@ -153,7 +156,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
 
                 {/* 팀장의 카드 정보는 팀장만 볼 수 있음 */}
                 {(userPosition === "팀장" || userPosition === "파트장" )&& leaderCards.length > 0 && (
-                    <LeaderCardDetail leaderCards={leaderCards} />
+                    <LeaderCardDetail leaderCards={leaderCards} remainingDays={remainingDays} />
                 )}
 
                 {/* 팀원의 카드 정보 */}
@@ -172,9 +175,10 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
 };
 
 
-const LeaderCardDetail = ({leaderCards}) => {
+const LeaderCardDetail = ({leaderCards, remainingDays}) => {
     const totalBalance = leaderCards.reduce((sum, card) => sum + card.balance + card.rollover_amount, 0);
     const teamFund = leaderCards.find(card => card.team_fund)?.team_fund || 0;
+    const isWarning = remainingDays <= 7;
     return (
         <div className="mb-10">
             <h3 className="flex gap-x-2 items-center dark:text-slate-500">
@@ -205,7 +209,7 @@ const LeaderCardDetail = ({leaderCards}) => {
             {/* 전체 잔액 (카드 + 팀 운영비) */}
             <div className="flex justify-between mt-4 border-t pt-2 dark:border-slate-600">
                 <h4 className="text-md font-bold dark:text-slate-500">총 잔액</h4>
-                <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                <span className={`text-lg font-bold ${isWarning ? 'text-red-500 dark:text-red-700' : 'text-green-600 dark:text-green-400 '}`}>
                     {(totalBalance + teamFund).toLocaleString()}원
                 </span>
             </div>
@@ -232,7 +236,7 @@ const CardDetail = ({ card, teamMembersCount, remainingDays, isOvertimeMealCard 
                     {totalAmount > 0 && <span className="dark:text-slate-500"> 남음</span>}
                 </span>
             </div>
-            <ProgressBars spentPercentage={spentPercentage} isWarning={remainingDays <= 7} />
+            <ProgressBars spentPercentage={spentPercentage} isWarning={!isOvertimeMealCard && remainingDays <= 7} />
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, memo } from 'react';
 import Drawer from 'react-modern-drawer';
 import 'react-modern-drawer/dist/index.css';
 import axios from "../services/axiosInstance"; 
@@ -12,19 +12,8 @@ import { ThreeDots } from 'react-loader-spinner';
 import { FaChevronDown } from "react-icons/fa";
 import { LuTrash } from "react-icons/lu";
 import { formatDateForInput } from '../utils/dateUtils';
-import { useTheme } from '../context/ThemeColorContext';
 
-const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSave, isOpen, color }) => {
-
-    const { setThemeColor } = useTheme();
-    
-    useEffect(() => {
-        if (isOpen) {
-            setThemeColor(color);
-        } else {
-            setThemeColor("#dce8f5");
-        }
-    }, [isOpen, color, setThemeColor]);
+const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose, onSave, isOpen }) => {
 
     const [profile, setProfile] = useState({
         phones: [],
@@ -478,6 +467,8 @@ const ProfileEditDrawer = ({ userData, memberId, profileId, title, onClose, onSa
                 </div>
         </Drawer>
     )
-}
+}));
+
+ProfileEditDrawer.displayName = 'ProfileEditDrawer';
 
 export default ProfileEditDrawer;
