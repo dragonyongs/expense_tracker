@@ -156,7 +156,7 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
 
                 {/* 팀장의 카드 정보는 팀장만 볼 수 있음 */}
                 {(userPosition === "팀장" || userPosition === "파트장" )&& leaderCards.length > 0 && (
-                    <LeaderCardDetail leaderCards={leaderCards} remainingDays={remainingDays} />
+                    <LeaderCardDetail leaderCards={leaderCards} teamMembersCount={account.cards.length} remainingDays={remainingDays} />
                 )}
 
                 {/* 팀원의 카드 정보 */}
@@ -175,10 +175,12 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
 };
 
 
-const LeaderCardDetail = ({leaderCards, remainingDays}) => {
-    const totalBalance = leaderCards.reduce((sum, card) => sum + card.balance + card.rollover_amount, 0);
+const LeaderCardDetail = ({leaderCards, teamMembersCount, remainingDays}) => {
+    const totalBalance = leaderCards.reduce((sum, card) => sum + card.balance + card.rollover_amount + card.team_fund, 0);
     const teamFund = leaderCards.find(card => card.team_fund)?.team_fund || 0;
-    const isWarning = remainingDays <= 7;
+    const remainingBalanceCriteria = totalBalance / teamMembersCount > 10000;
+    const isWarning = remainingBalanceCriteria && remainingDays <= 7;
+
     return (
         <div className="mb-10">
             <h3 className="flex gap-x-2 items-center dark:text-slate-500">
@@ -210,7 +212,7 @@ const LeaderCardDetail = ({leaderCards, remainingDays}) => {
             <div className="flex justify-between mt-4 border-t pt-2 dark:border-slate-600">
                 <h4 className="text-md font-bold dark:text-slate-500">총 잔액</h4>
                 <span className={`text-lg font-bold ${isWarning ? 'text-red-500 dark:text-red-700' : 'text-green-600 dark:text-green-400 '}`}>
-                    {(totalBalance + teamFund).toLocaleString()}원
+                    {(totalBalance).toLocaleString()}원
                 </span>
             </div>
 
@@ -219,7 +221,9 @@ const LeaderCardDetail = ({leaderCards, remainingDays}) => {
 };
 
 const CardDetail = ({ card, teamMembersCount, remainingDays, isOvertimeMealCard }) => {
-    const totalAmount = card.balance + card.rollover_amount;
+    const totalBalance = card.balance + card.rollover_amount;
+    const remainingBalanceCriteria = totalBalance / teamMembersCount > 10000;
+    const isWarning = !isOvertimeMealCard && remainingBalanceCriteria && remainingDays <= 7;
     const spentPercentage = ((card.limit - card.balance) / card.limit) * 100;
 
     return (
@@ -232,11 +236,11 @@ const CardDetail = ({ card, teamMembersCount, remainingDays, isOvertimeMealCard 
                     {!isOvertimeMealCard && <span className="text-base">{card.position}</span>}
                 </h3>
                 <span className="text-lg">
-                    <span className="font-bold dark:text-slate-400">{totalAmount.toLocaleString()}원</span>
-                    {totalAmount > 0 && <span className="dark:text-slate-500"> 남음</span>}
+                    <span className={`font-bold dark:text-slate-400 ${isWarning ? 'text-red-500 dark:text-red-700' : 'text-green-600 dark:text-green-400 '}"`}>{totalBalance.toLocaleString()}원</span>
+                    {totalBalance > 0 && <span className="dark:text-slate-500"> 남음</span>}
                 </span>
             </div>
-            <ProgressBars spentPercentage={spentPercentage} isWarning={!isOvertimeMealCard && remainingDays <= 7} />
+            <ProgressBars spentPercentage={spentPercentage} isWarning={isWarning} />
         </div>
     );
 };

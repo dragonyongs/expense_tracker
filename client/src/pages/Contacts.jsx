@@ -12,7 +12,7 @@ import { filterDataBySearchTerm } from '../utils/search';
 import SearchInput from '../components/SearchInput';
 
 function Contacts() {
-    const [contacts, setContacts ] = useState([]);
+    // const [contacts, setContacts ] = useState([]);
     const [selectedYears, setSelectedYears] = useState('');
     const [selectedDays, setSelectedDays] = useState('');
     const [selectedContact, setSelectedContact] = useState("");
@@ -30,7 +30,7 @@ function Contacts() {
             try {
                 const { data } = await axios.get(API_URLS.PROFILES);
                 const filtered = data.filter(contact => contact?.member_id?.role_id?.role_name !== 'former_employee');
-                setContacts(filtered);
+                // setContacts(filtered);
                 setFilteredContacts(filtered);
             } catch (error) {
                 console.error("Error fetching contacts:", error);
@@ -62,34 +62,54 @@ function Contacts() {
         const companyPhone = phones.find(phone => phone.phone_type === 'company_phone');
         return companyPhone ? { phone: companyPhone.phone_number, extension: companyPhone.extension } : {};
     };
+    
+    const getWorkCity = (addresses) => {
+        if (addresses && Array.isArray(addresses)) {
+            const workAddress = addresses.find(address => address.address_type === 'work');
+            
+            if (workAddress) {
+                const parts = workAddress.address_line1.split(' ');
+                const cityCode = parts[0].slice(0, 2);
+                return { city: cityCode};
+            } else {
+                return { city: '' };
+            }
+        } else {
+            console.error('Addresses is undefined or not an array');
+            return { city: '' };
+        }
+    };
 
     const priorityTeams = ["경영지원본부(임원)", "영엽지원본부(임원)", "경영지원팀", "마케팅팀", "총무팀", "섭외팀"];
 
-    
     const sortContacts = (contacts) => {
-        const positionOrder = ['임원', '팀장', '파트장', '팀원'];
-        const rankOrder = ['대표', '전무', '상무', '이사', '실장', '부장', '차장', '과장', '대리', '사원'];
+        const rankOrder = ['대표이사', '전무', '상무', '이사', '실장', '부장', '편집장', '차장', '과장', '대리', '사원'];
+
         return contacts.sort((a, b) => {
-            const positionA = a?.member_id?.position;
-            const positionB = b?.member_id?.position;
-    
-            if (positionOrder.indexOf(positionA) < positionOrder.indexOf(positionB)) {
-                return -1;
-            }
-            if (positionOrder.indexOf(positionA) > positionOrder.indexOf(positionB)) {
-                return 1;
-            }
-    
             const rankA = a?.member_id?.rank;
             const rankB = b?.member_id?.rank;
     
+            // 대표는 항상 최우선
+            if (rankA === '대표이사' && rankB !== '대표이사') return -1;
+            if (rankB === '대표이사' && rankA !== '대표이사') return 1;
+    
+            // 내선번호 여부 확인 (대표 제외)
+            const hasExtensionA = !!getCompanyPhoneInfo(a?.phones).extension;
+            const hasExtensionB = !!getCompanyPhoneInfo(b?.phones).extension;
+    
+            if (rankA !== '대표이사' && rankB !== '대표이사') {
+                if (hasExtensionA && !hasExtensionB) return -1;
+                if (!hasExtensionA && hasExtensionB) return 1;
+            }
+    
+            // 직급 순서 정렬
             return rankOrder.indexOf(rankA) - rankOrder.indexOf(rankB);
         });
     };
-
+    
     const groupByTeam = (contacts) => {
         const sortedContacts = sortContacts(contacts);
-    
+
         // 그룹화 작업
         const grouped = sortedContacts.reduce((groups, contact) => {
             const teamName = contact?.member_id?.team_id?.team_name || "미지정팀";
@@ -141,9 +161,9 @@ function Contacts() {
         setSearchTerm(term);
 
         if (!term) {
-            setFilteredContacts(contacts);
+            setFilteredContacts(filteredContacts);
         } else {
-            const filtered = filterDataBySearchTerm(contacts, field, term);
+            const filtered = filterDataBySearchTerm(filteredContacts, field, term);
             setFilteredContacts(filtered);
         }
     };
@@ -192,6 +212,8 @@ function Contacts() {
                                     <ul className="flex flex-col gap-y-1 divide-y divide-gray-200 dark:divide-gray-600">
                                         {groupedContacts[teamName].map((contact) => {
                                             const { extension } = getCompanyPhoneInfo(contact.phones);
+                                            const { city } = getWorkCity(contact.addresses);
+
                                             const formerEmployee = contact?.member_id?.role_id?.role_name === 'former_employee';
 
                                             return (
@@ -211,6 +233,7 @@ function Contacts() {
                                                         <p className="text-lg">
                                                             {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
                                                             {extension && <span className="dark:text-blue-300">({extension})</span>}
+                                                            {city && city !== '서울' && <span className="text-blue-700 dark:text-blue-300">({city})</span>}
                                                         </p>
                                                     </div>
                                                     <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
