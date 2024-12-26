@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState, useContext } from 'react';
+// import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthProvider';
 import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance"; 
-import CommonDrawer from '../components/CommonDrawer';
-import InputField from '../components/InputField';
-import SelectField from '../components/SelectField';
 import FlipCard from '../components/FlipCard';
-import { IoAddCircleOutline, IoCheckmark } from "react-icons/io5";
+import { IoAddCircleOutline } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 import { MutatingDots } from 'react-loader-spinner';
@@ -15,6 +13,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 import TransactionDrawer from '../components/TransactionDrawer';
+import HeaderWithTabs from '../components/HeaderWithTabs';
 
 const Transactions = () => {
     const { user } = useContext(AuthContext);
@@ -42,11 +41,8 @@ const Transactions = () => {
         teamFundDeducted: 0,
         is_deducted: false,        
     });
-    
     const [prevTransaction, setPrevTransaction] = useState(0);
-
     const [selectedCardId, setSelectedCardId] = useState(''); // 현재 선택된 카드 ID
-
     const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -54,6 +50,21 @@ const Transactions = () => {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
+    // const navigate = useNavigate();
+    // const location = useLocation();
+    // const isTeamAccount = location.pathname === '/teams';
+    // const isMyCard = location.pathname === '/transactions';
+
+    const tabs = [
+        { path: '/transactions', label: '내 카드' },
+        { path: '/teams', label: '팀계좌' },
+    ];
+
+      // 탭 클릭 핸들러
+    // const handleTabs = (path) => {
+    //     navigate(path);
+    // };
+    
     useEffect(() => {
         if (expenceCardRef.current) {
             expenceMerchantRef.current.focus(); 
@@ -318,11 +329,34 @@ const Transactions = () => {
     
     return (
         <>
-            <header className={`flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+            {/* <header className={`flex flex-col pt-4 px-6 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                 <div className='text-2xl' >
-                    <span className='font-semibold'>내 카드</span>
+                    <span className='font-semibold'>{isMyCard ? '내 카드' : '팀계좌'}</span>
                 </div>
-            </header>
+                <div className="flex w-full border-b border-gray-200">
+                    <button
+                        onClick={() => handleTabs('/transactions')}
+                        className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200
+                            ${isMyCard 
+                                ? 'text-blue-600 border-b-2 border-blue-600' 
+                                : 'text-gray-500'
+                            }`}
+                    >
+                        내 카드
+                    </button>
+                    <button
+                        onClick={() => handleTabs('/teams')}
+                        className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200
+                            ${isTeamAccount 
+                                ? 'text-blue-600 border-b-2 border-blue-600' 
+                                : 'text-gray-500'
+                            }`}
+                    >
+                        팀계좌
+                    </button>
+                </div>
+            </header> */}
+            <HeaderWithTabs tabs={tabs} />
 
             <div className='flex-1 w-full p-4'>
                 <div className='mb-8'>
@@ -330,7 +364,7 @@ const Transactions = () => {
                     <FlipCard
                     key='no'
                     userName={user.name}
-                    cardNumber='미발급 상태'
+                    cardNumber='카드 정보 없음'
                     totalSpent={0}
                     currentBalance={0}
                     rolloverAmount={0}

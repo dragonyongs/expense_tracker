@@ -5,6 +5,7 @@ import { API_URLS } from '../services/apiUrls';
 import Loading from '../components/Loading';
 import { PiCreditCardLight } from "react-icons/pi";
 import ProgressBars from '../components/ProgressBars';
+import HeaderWithTabs from '../components/HeaderWithTabs';
 
 function Teams() {
     const { user } = useContext(AuthContext);
@@ -12,6 +13,11 @@ function Teams() {
     const [loading, setLoading] = useState(true);
     const [userPosition, setUserPosition] = useState('');
     const [remainingDays, setRemainingDays] = useState(0);
+
+    const tabs = [
+        { path: '/transactions', label: '내 카드' },
+        { path: '/teams', label: '팀계좌' },
+    ];
 
     const fetchData = async (url) => {
         try {
@@ -50,11 +56,12 @@ function Teams() {
 
     return (
         <>
-            <header className="flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800">
+            {/* <header className="flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800">
                 <div className="text-2xl">
                     <span className="font-semibold">팀계좌</span>
                 </div>
-            </header>
+            </header> */}
+            <HeaderWithTabs tabs={tabs} />
             <div className="flex flex-col gap-y-2 px-4 pb-4">
                 {accounts.length === 0 ? (
                     <NoCardMessage />

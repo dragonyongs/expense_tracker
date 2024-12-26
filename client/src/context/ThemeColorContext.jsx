@@ -3,7 +3,7 @@ import { useDarkMode } from './DarkModeContext';
 import { useLocation } from 'react-router-dom';
 
 const ThemeColorContext = createContext();
-const specialPaths = ['/transactions', '/contacts', '/profile', '/teams'];
+const specialPaths = ['/contacts', '/profile'];
 
 export const ThemeProvider = ({ children }) => {
     const { isDarkMode } = useDarkMode();
