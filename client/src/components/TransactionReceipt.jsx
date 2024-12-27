@@ -29,9 +29,11 @@ const TransactionReceipt = forwardRef(({ transaction, cardNumber, cardUser }, re
                 </div>
 
                 <div className="max-w-sm mx-auto pt-6 border-t-2 border-dashed border-t-gray-200 py-6 px-8">
-                    <div className="grid grid-cols-4 gap-3 print:text-lg">
+                    <div className="grid grid-cols-4 gap-4 print:text-lg">
                         <div className="font-medium">카드번호</div>
                         <div className='col-span-3'>{cardNumber}</div>
+                        <div className="font-medium">카드소유</div>
+                        <div className='col-span-3'>{`${cardUser.member_name} ${cardUser.position}`}</div>
                         <div className="font-medium">거래일자</div>
                         <div className='col-span-3'>{formatDateToKorean(transaction.transaction_date)}</div>
                         <div className="font-medium">거래상점</div>
@@ -42,8 +44,6 @@ const TransactionReceipt = forwardRef(({ transaction, cardNumber, cardUser }, re
                                 <div className='col-span-3'>{transaction.menu_name}</div>
                             </>
                         )}
-                        <div className="font-medium">사용직원</div>
-                        <div className='col-span-3'>{`${cardUser.member_name} ${cardUser.position}`}</div>
                         <div className="font-medium">거래금액</div>
                         <div className='col-span-3'>{transaction.transaction_amount.toLocaleString()}원</div>
                     </div>
