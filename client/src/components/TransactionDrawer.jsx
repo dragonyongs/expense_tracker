@@ -65,16 +65,8 @@ const TransactionDrawer = ({
 
     useEffect(() => {
         const metaTag = document.querySelector("meta[name='theme-color']");
-        if (location.pathname === '/' && metaTag && isOpen) {
-            metaTag.setAttribute("content", isDarkMode ? darkColor : color);
-        } else if (location.pathname === '/') {
-            metaTag.setAttribute("content", "#0433FF");
-        } else if (specialPaths.includes(location.pathname) && isOpen) {
-            metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#FFFFFF");
-        } else {
-            metaTag.setAttribute("content", "#dce8f5");
-        }
-    }, [isOpen, isDarkMode]);
+        metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#FFFFFF");
+    }, [isDarkMode]);
 
     // useEffect(() => {, location.pathname, color, darkColor
     //     const metaTag = document.querySelector("meta[name='theme-color']");
