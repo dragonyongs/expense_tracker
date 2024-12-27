@@ -15,8 +15,8 @@ function Teams() {
     const [remainingDays, setRemainingDays] = useState(0);
 
     const tabs = [
-        { path: '/transactions', label: '내 카드' },
-        { path: '/teams', label: '팀계좌' },
+        { path: '/transactions', label: '지출 내역', title: '내카드' },
+        { path: '/teams', label: '계좌 잔액', title: '팀계좌' },
     ];
 
     const fetchData = async (url) => {
@@ -130,7 +130,8 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
 
     // 팀장 및 야근식대 카드 분리
     const leaderCards = account.cards.filter(card => card.position === "팀장" && card.card_type !== "OvertimeMealCard");
-    const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
+    // const overtimeMealCards = account.cards.filter(card => card.card_type === "OvertimeMealCard");
+    const overtimeMealCard = account.cards.find(card => card.card_type === "OvertimeMealCard");
     const otherCards = account.cards.filter(card => card.position !== "팀장" && card.card_type !== "OvertimeMealCard");
     const isWarning = remainingDays <= 7;
 
@@ -143,30 +144,25 @@ const AccountCard = ({ account, userPosition, remainingDays }) => {
             <h3 className="text-2xl text-gray-700 dark:text-slate-300 mt-2">
                 <span className="font-bold">{totalBalance.toLocaleString()}원</span>
                 {totalBalance > 0 && " 남음"}
-                {isWarning ? <span className="pl-4 font-light">({remainingDays}일 남음)</span> : ''}
+                {!overtimeMealCard & isWarning ? <span className="pl-2 font-light text-lg">({remainingDays}일 남음)</span> : ''}
             </h3>
 
             <div className="mt-8">
-                {/* 야근식대 카드는 모두에게 표시 */}
-                {overtimeMealCards.length > 0 && (
-                    <div>
-                        {overtimeMealCards.map(card => (
-                            <CardDetail
-                                key={card.card_number}
-                                card={card}
-                                remainingDays={remainingDays}
-                                isOvertimeMealCard={true} // 명시적으로 전달
-                            />
-                        ))}
-                    </div>
-                )}
+                <div>
+                    {overtimeMealCard && (
+                        <CardDetail
+                            key={overtimeMealCard.card_number}
+                            card={overtimeMealCard}
+                            remainingDays={remainingDays}
+                            isOvertimeMealCard={true}
+                        />
+                    )}
+                </div>
 
-                {/* 팀장의 카드 정보는 팀장만 볼 수 있음 */}
                 {(userPosition === "팀장" || userPosition === "파트장" )&& leaderCards.length > 0 && (
                     <LeaderCardDetail leaderCards={leaderCards} teamMembersCount={account.cards.length} remainingDays={remainingDays} />
                 )}
 
-                {/* 팀원의 카드 정보 */}
                 {otherCards.length > 0 && otherCards.map(card => (
                     <CardDetail
                         key={card.card_number}

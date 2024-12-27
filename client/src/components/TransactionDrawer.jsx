@@ -8,7 +8,7 @@ import { IoCheckmark } from "react-icons/io5";
 import { API_URLS } from '../services/apiUrls';
 import { useDarkMode } from '../context/DarkModeContext';
 import { useLocation } from 'react-router-dom';
-import { useTheme } from '../context/ThemeColorContext';
+// import { useTheme } from '../context/ThemeColorContext';
 
 const specialPaths = ['/transactions', '/contacts', '/profile', '/teams'];
 

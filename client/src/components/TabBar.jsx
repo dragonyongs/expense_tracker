@@ -2,9 +2,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { memo } from 'react';
 import { GoHome } from "react-icons/go";
 import { RxAvatar } from "react-icons/rx";
-import { PiCardsThree, PiAddressBookTabsLight } from "react-icons/pi";
+import { PiStamp, PiAddressBookTabsLight } from "react-icons/pi";
 import { GoCreditCard } from "react-icons/go";
-
 
 const TabBarComponent = () => {
     const location = useLocation();
@@ -26,9 +25,10 @@ const TabBarComponent = () => {
     const handleProfile = () => {
         navigate('/profile');
     };
-    const handleTeams = () => {
-        navigate('/teams');
+    const handleApproval= () => {
+        navigate('/approval');
     };
+    
     const handleTransactions = () => {
         navigate('/transactions');
     };
@@ -54,11 +54,11 @@ const TabBarComponent = () => {
             </button>
 
             {/* {memberRoles.includes(user?.role) && ( */}
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/teams') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleTeams}>
+                <button type="button" className={`flex flex-col items-center ${isActiveTab('/approval') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleApproval}>
                     <div className='flex items-center justify-center w-8 h-8'>
-                        <PiCardsThree className="text-2xl" />
+                        <PiStamp className="text-2xl" />
                     </div>
-                    <span className="text-sm">팀계좌</span>
+                    <span className="text-sm">결재</span>
                 </button>
             {/* )} */}
 

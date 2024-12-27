@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useContext } from 'react';
+import React, { useEffect, useRef, useState, useContext, useCallback } from 'react';
 // import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthProvider';
 import { API_URLS } from '../services/apiUrls';
@@ -14,6 +14,8 @@ import "slick-carousel/slick/slick-theme.css";
 
 import TransactionDrawer from '../components/TransactionDrawer';
 import HeaderWithTabs from '../components/HeaderWithTabs';
+import DateFilter from '../components/DateFilter';
+import SearchFilter from '../components/SearchFilter';
 
 const Transactions = () => {
     const { user } = useContext(AuthContext);
@@ -45,32 +47,173 @@ const Transactions = () => {
     const [selectedCardId, setSelectedCardId] = useState(''); // 현재 선택된 카드 ID
     const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [isDateOpen, setIsDateOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-
+    const [isSearchActive, setIsSearchActive] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedYear, setSelectedYear] = useState('');
+    const [selectedMonth, setSelectedMonth] = useState('');
+    
     // const navigate = useNavigate();
     // const location = useLocation();
     // const isTeamAccount = location.pathname === '/teams';
     // const isMyCard = location.pathname === '/transactions';
 
     const tabs = [
-        { path: '/transactions', label: '내 카드' },
-        { path: '/teams', label: '팀계좌' },
+        { path: '/transactions', label: '지출 내역', title: '내카드' },
+        { path: '/teams', label: '계좌 잔액', title: '팀계좌 현황' },
     ];
 
-      // 탭 클릭 핸들러
+    // 탭 클릭 핸들러
     // const handleTabs = (path) => {
     //     navigate(path);
     // };
     
-    useEffect(() => {
-        if (expenceCardRef.current) {
-            expenceMerchantRef.current.focus(); 
-        }
-    }, [expenseCard]);
+    // useEffect(() => {
+    //     if (expenceCardRef.current) {
+    //         expenceMerchantRef.current.focus(); 
+    //     }
+    // }, [expenseCard]);
     
+    // useEffect(() => {
+    //     fetchTransactionsForCurrentMonth();
+    //     fetchCards();
+    // }, []);
+
+    // useEffect(() => {
+    //     if (cards.length > 0 && user) {
+    //         const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
+    //         setUserCards(filteredCards);
+    
+    //         if (filteredCards.length > 0) {
+    //             setSelectedCardId(filteredCards[0]._id); // 첫 카드 ID로 설정
+    //             setCardBalance(filteredCards[0].balance);
+    //             setTeamFund(filteredCards[0].team_fund);
+    //         }
+    //     }
+    // }, [cards, user]);
+
+    // useEffect(() => {
+    //     if (selectedCardId) {
+    //         const updatedTransactions = transactions.filter(
+    //             tx => tx.card_id._id === selectedCardId
+    //         );
+    //         setFilteredTransactions(updatedTransactions);
+    //     } else {
+    //         setFilteredTransactions(transactions);
+    //     }
+    // }, [selectedCardId]);
+
+    // useEffect(() => {
+    //     if (userCards.length > 0) {
+    //         const initialCardId = userCards[0]._id;
+    //         setSelectedCardId(initialCardId);
+    //     }
+    // }, [userCards]);
+
+    // 초기 데이터 로딩
+    // useEffect(() => {
+    //     const fetchInitialData = async () => {
+    //         setIsLoading(true);
+    //         try {
+    //             const [cardsResponse, transactionsResponse] = await Promise.all([
+    //                 axios.get(API_URLS.CARDS),
+    //                 fetchTransactionsForCurrentMonth()
+    //             ]);
+
+    //             const fetchedCards = cardsResponse.data;
+    //             setCards(fetchedCards);
+
+    //             if (fetchedCards.length > 0) {
+    //                 const filteredCards = fetchedCards.filter(card => card.member_id._id === user.member_id);
+    //                 setUserCards(filteredCards);
+
+    //                 // 첫 번째 카드 설정
+    //                 if (filteredCards.length > 0) {
+    //                     const initialCard = filteredCards[0];
+    //                     setSelectedCardId(initialCard._id);
+    //                     setCardBalance(initialCard.balance);
+    //                     setTeamFund(initialCard.team_fund);
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching data:', error);
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
+
+    //     fetchInitialData();
+    // }, []);
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            setIsLoading(true);
+            try {
+                const currentDate = new Date();
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더함
+    
+                const [cardsResponse] = await Promise.all([
+                    axios.get(API_URLS.CARDS),
+                    fetchTransactionsForMonth(year, month) // 현재 월의 거래 내역 가져오기
+                ]);
+    
+                const fetchedCards = cardsResponse.data;
+                setCards(fetchedCards);
+    
+                if (fetchedCards.length > 0) {
+                    const filteredCards = fetchedCards.filter(card => card.member_id._id === user.member_id);
+                    setUserCards(filteredCards);
+    
+                    // 첫 번째 카드 설정
+                    if (filteredCards.length > 0) {
+                        const initialCard = filteredCards[0];
+                        setSelectedCardId(initialCard._id);
+                        setCardBalance(initialCard.balance);
+                        setTeamFund(initialCard.team_fund);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        fetchInitialData();
+    }, []); // 빈 의존성 배열로 초기 로딩만 수행
+    
+    const fetchTransactionsForMonth = async (year, month) => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
+            const sortedTransactions = response.data
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
+    
+            setTransactions(sortedTransactions);
+        } catch (error) {
+            console.error('Error fetching transactions for the selected month:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // 카드 선택 시 필터링된 트랜잭션 업데이트
+    useEffect(() => {
+        if (selectedCardId) {
+            const updatedTransactions = transactions.filter(
+                tx => tx.card_id._id === selectedCardId
+            );
+            setFilteredTransactions(updatedTransactions);
+        } else {
+            setFilteredTransactions(transactions);
+        }
+    }, [selectedCardId, transactions]);
+
     // 카드와 트랜잭션 데이터 가져오기
     const fetchCards = async () => {
         setIsLoading(true);
@@ -84,65 +227,25 @@ const Transactions = () => {
         }
     }
 
-    const fetchTransactionsForCurrentMonth = async () => {
-        setIsLoading(true);
+    // const fetchTransactionsForCurrentMonth = async () => {
+    //     setIsLoading(true);
+    //     try {
+    //         const currentDate = new Date();
+    //         const year = currentDate.getFullYear();
+    //         const month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더함
 
-        try {
-            const currentDate = new Date();
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더함
+    //         const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
+    //         const sortedTransactions = response.data
+    //         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    //         .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
 
-            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
-            const sortedTransactions = response.data
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
-
-            setTransactions(sortedTransactions);
-        } catch (error) {
-            console.error('Error fetching transactions for the current month:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchTransactionsForCurrentMonth();
-        fetchCards();
-    }, []);
-
-    useEffect(() => {
-        if (cards.length > 0 && user) {
-            // 현재 사용자의 카드만 필터링
-            const filteredCards = cards.filter(card => card.member_id._id === user.member_id);
-            setUserCards(filteredCards);
-    
-            // 첫 번째 카드 기본 선택
-            if (filteredCards.length > 0) {
-                setSelectedCardId(filteredCards[0]._id); // 첫 카드 ID로 설정
-                setCardBalance(filteredCards[0].balance);
-                setTeamFund(filteredCards[0].team_fund);
-            }
-        }
-    }, [cards, user]);
-
-    // 카드 선택 시 트랜잭션 필터링
-    useEffect(() => {
-        if (selectedCardId) {
-            const updatedTransactions = transactions.filter(
-                tx => tx.card_id._id === selectedCardId
-            );
-            setFilteredTransactions(updatedTransactions);
-        } else {
-            setFilteredTransactions(transactions);
-        }
-    }, [selectedCardId, transactions]);
-
-    useEffect(() => {
-        if (userCards.length > 0) {
-            const initialCardId = userCards[0]._id;
-            setSelectedCardId(initialCardId);
-        }
-    }, [userCards]);
+    //         setTransactions(sortedTransactions);
+    //     } catch (error) {
+    //         console.error('Error fetching transactions for the current month:', error);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     const resetTransaction = () => ({
         card_id: userCards[0]?._id || "",
@@ -165,6 +268,57 @@ const Transactions = () => {
         balance: card.balance || 0, // 카드 잔액
         team_fund: card.team_fund || 0, // 팀 운영비 잔액
     });
+
+    // const handleSearchTermChange = (term) => {
+    //     setSearchTerm(term);
+    //     console.log('검색어 디버깅:', term);
+        
+    //     // API 호출
+    //     fetch(`/api/search/all/${term}`)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             // 검색 결과 처리
+    //             console.log('검색 결과:', data);
+    //             // setSearchResults(data); // 검색 결과 상태 업데이트
+    //         })
+    //         .catch(error => {
+    //             console.error('검색 오류:', error);
+    //         });
+    // };
+    
+    const handleSearchTermChange = async (term) => {
+        try {
+            if (term) {
+                const year = selectedYear; // 선택된 년도
+                const month = selectedMonth; // 선택된 월
+
+                console.log(year, month);
+
+                const response = await axios.get(`${API_URLS.TRANSACTIONS}/search/all/${term}`, {
+                    params: {
+                        year: year,
+                        month: month
+                    }
+                });
+                const searchResults = response.data;
+    
+                setFilteredTransactions(searchResults);
+            }
+        } catch (error) {
+            console.error('검색 오류:', error);
+        }
+    };
+
+    // const onSearchInputChange = (event) => {
+    //     const searchTerm = event.target.value;
+    //     handleSearchTermChange(searchTerm);
+    // };
+
+    const handleSelectedDate = (date) => {
+        fetchTransactionsForMonth(date.year, date.month);
+        setSelectedYear(date.year);
+        setSelectedMonth(date.month);
+    }
 
     const handleAddTransaction = () => {
         const activeCard = userCardsWithTotals.find(card => card._id === selectedCardId);
@@ -191,10 +345,10 @@ const Transactions = () => {
 
     };
     
-    const handleCloseDrawer = () => {
+    const handleCloseDrawer = useCallback(() => {
         setIsOpen(false);
         setSelectedTransaction(resetTransaction());
-    };
+    }, []);
     
 
     const handleOpenDrawer = (transaction) => {
@@ -259,7 +413,7 @@ const Transactions = () => {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
     
-            await fetchTransactionsForCurrentMonth();
+            await fetchTransactionsForMonth(selectedYear, selectedMonth);
             await fetchCards();
             handleCloseDrawer();
     
@@ -276,7 +430,7 @@ const Transactions = () => {
             await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
     
             // 거래 내역 갱신
-            await fetchTransactionsForCurrentMonth();
+            await fetchTransactionsForMonth(selectedYear, selectedMonth);
             await fetchCards();
     
             // 삭제 확인 모달 닫기
@@ -410,12 +564,14 @@ const Transactions = () => {
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
 
                         <div className="flex items-center justify-between mb-4">
-                            <h5 className="text-lg font-semibold leading-none text-gray-500 dark:text-white">지출 내역</h5>
+                            <DateFilter onDateSelect={handleSelectedDate} title="지출기간 선택" className={isSearchActive ? 'w-16' : ''} />
+                            <SearchFilter onSearchStateChange={setIsSearchActive} onSearchTermChange={handleSearchTermChange} />
+                            {/* <h5 className="text-lg font-semibold leading-none text-gray-500 dark:text-white">지출 내역</h5>
                             <button
                                 type="button" 
                                 className='flex items-center gap-x-2 text-gray-500 font-semibold rounded-lg text-3xl dark:text-white'
                                 onClick={handleAddTransaction}
-                            ><IoAddCircleOutline /></button>
+                            ><IoAddCircleOutline /></button> */}
                         </div>
                         
                         {isLoading ? (

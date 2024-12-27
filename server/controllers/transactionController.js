@@ -26,7 +26,6 @@ exports.getCardTransactions = async (req, res) => {
     }
 };
 
-
 exports.createTransaction = async (req, res) => {
     const { 
         card_id, 
@@ -429,7 +428,6 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
     }
 };
 
-
 exports.getAllDeposits = async (req, res) => {
     try {
         const deposits = await Transaction.find({ $or: [
@@ -532,11 +530,11 @@ exports.getFilteredDeposits = async (req, res) => {
 
 
 exports.getSearchKeyword = async (req, res) => {
-    const { keyword } = req.params;
+    const { merchant_name } = req.params;
 
     // 키워드가 포함된 상호명을 찾기 위한 쿼리
     let query = { 
-        merchant_name: { $regex: keyword, $options: 'i' } 
+        merchant_name: { $regex: merchant_name, $options: 'i' } 
     };
 
     try {
@@ -626,3 +624,39 @@ exports.getMenuForMerchant = async (req, res) => {
         res.status(500).json({ message: '서버 에러' });
     }
 }
+
+exports.getAllTransactionsByKeyword = async (req, res) => {
+    const { keyword } = req.params;
+    const { year, month } = req.query; // 쿼리 파라미터에서 년도와 월을 가져옵니다.
+
+    try {
+        const userId = req.user.member_id;
+        const userCards = await Card.find({ member_id: userId });
+
+        const cardIds = userCards.map(card => card._id); 
+
+        // 기본 쿼리: 전체 트랜잭션을 검색
+        const query = {
+            card_id: { $in: cardIds },
+            $or: [
+                { merchant_name: { $regex: keyword, $options: 'i' } },
+                { menu_name: { $regex: keyword, $options: 'i' } },
+            ]
+        };
+
+        // 년도와 월이 제공된 경우에만 필터링
+        if (year && month) {
+            const startDate = new Date(year, month - 1, 1); // 시작일 (1일)
+            const endDate = new Date(year, month, 1); // 다음 달 1일 (끝일)
+
+            query.transaction_date = { $gte: startDate, $lt: endDate }; // 해당 월의 트랜잭션만 포함
+        }
+
+        // 키워드에 맞는 트랜잭션 검색
+        const transactions = await Transaction.find(query).sort({ transaction_date: -1 });
+
+        res.status(200).json(transactions);
+    } catch (error) {
+        res.status(500).json({ message: '트랜잭션 조회 중 오류가 발생했습니다.', error });
+    }
+};

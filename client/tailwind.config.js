@@ -47,6 +47,8 @@ export default {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
         'profile-screen': 'calc((var(--vh, 1vh) * 100) - 44px)',
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 77px )',
+        'content-screen': 'calc((var(--vh, 1vh) * 100) - 160px )',
+        'contentWithTab-screen': 'calc((var(--vh, 1vh) * 100) - 240px )',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px )',
         'card-screen': 'calc((var(--vh, 1vh) * 100) - 520px )'
       },

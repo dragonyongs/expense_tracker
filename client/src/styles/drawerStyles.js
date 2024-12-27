@@ -3,7 +3,7 @@ export const DRAWER_SIZE = {
     desktop: '576px',
 };
 
-export const DRAWER_STYLES = (isMobile, viewportHeight) => ({
+export const DRAWER_STYLES = (viewportHeight) => ({
     mobile: {
         width: DRAWER_SIZE.mobile,
         height: `${viewportHeight - 50}px`,

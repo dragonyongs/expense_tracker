@@ -178,73 +178,92 @@ const Profile = () => {
                                 </>
                             )
                         }
-
-                        <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
-                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
-                                {data.phones.length === 0 ? (
-                                    <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                        <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
-                                    </div>
-                                ) : (
-                                    data.phones.map((contact, index) => (
-                                        <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
-                                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                                {renderContactIcon(contact.phone_type)}
-                                                <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
-                                            </div>
-                                            <span>
-                                                {contact.phone_number} {contact.extension && `(${contact.extension})`}
-                                            </span>
-                                        </li>
-                                    )))
-                                }
-                            </ul>
-                        </div>
-
-                        <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
-                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
-                                {data.addresses.length === 0 ? (
-                                    <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                        <p className="font-semibold text-center">주소 정보가 없습니다.</p>
-                                    </div>
-                                ) : (
-                                    data.addresses.map((address, index) => (
-                                        <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
-                                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                                {renderAddressIcon(address.address_type)}
-                                                <span className='w-10 text-nowrap'>{renderAddressLabel(address.address_type)}</span>
-                                            </div>
-                                            <span>
-                                                {`${address.address_line1} ${address.address_line2} `}
-                                            </span>
-                                        </li>
-                                    )))
-                                }
-                            </ul>
-                        </div>
-
-                        <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
-                            <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
-                                {data.dates.length === 0 ? (
-                                    <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
-                                        <p className="font-semibold text-center">생일 및 입사 정보가 없습니다.</p>
-                                    </div>
-                                ) : (
-                                    data.dates.map((date, index) => (
-                                        <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
-                                            <div className='flex items-center space-x-2 px-2 font-semibold'>
-                                                {renderDateIcon(date.date_type)}
-                                                <span className='w-10 text-nowrap'>{renderDateLabel(date.date_type)}</span>
-                                            </div>
-                                            <span>
-                                                {formatDateToKorean(date.date)}
-                                            </span>
-                                        </li>
-                                    )))
-                                }
-                            </ul>
-                        </div>
                     </div>
+                    {isLoading ? ( 
+                        <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
+                            <div className="flex flex-col items-center justify-center">
+                                    <MutatingDots
+                                        visible={true}
+                                        height="100"
+                                        width="100"
+                                        color="#b8a57f"
+                                        secondaryColor="#0433FF"
+                                        radius="12.5"
+                                        ariaLabel="mutating-dots-loading"
+                                        wrapperStyle={{}}
+                                        wrapperClass=""
+                                    />
+                            </div>
+                        </div>
+                    ): (
+                        <>
+                            <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                                    {data.phones.length === 0 ? (
+                                        <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                            <p className="font-semibold text-center">연락처 정보가 없습니다.</p>
+                                        </div>
+                                    ) : (
+                                        data.phones.map((contact, index) => (
+                                            <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                                <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                                    {renderContactIcon(contact.phone_type)}
+                                                    <span className='w-10 text-nowrap'>{renderContactLabel(contact.phone_type)}</span>
+                                                </div>
+                                                <span>
+                                                    {contact.phone_number} {contact.extension && `(${contact.extension})`}
+                                                </span>
+                                            </li>
+                                        )))
+                                    }
+                                </ul>
+                            </div>
+
+                            <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                                    {data.addresses.length === 0 ? (
+                                        <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                            <p className="font-semibold text-center">주소 정보가 없습니다.</p>
+                                        </div>
+                                    ) : (
+                                        data.addresses.map((address, index) => (
+                                            <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                                <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                                    {renderAddressIcon(address.address_type)}
+                                                    <span className='w-10 text-nowrap'>{renderAddressLabel(address.address_type)}</span>
+                                                </div>
+                                                <span>
+                                                    {`${address.address_line1} ${address.address_line2} `}
+                                                </span>
+                                            </li>
+                                        )))
+                                    }
+                                </ul>
+                            </div>
+
+                            <div className='space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-700'>
+                                <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-600">
+                                    {data.dates.length === 0 ? (
+                                        <div className="p-4 bg-slate-100 rounded-md dark:bg-slate-700 dark:text-slate-300">
+                                            <p className="font-semibold text-center">생일 및 입사 정보가 없습니다.</p>
+                                        </div>
+                                    ) : (
+                                        data.dates.map((date, index) => (
+                                            <li key={index} className='flex items-center gap-x-4 py-3 sm:py-4 dark:text-slate-300'>
+                                                <div className='flex items-center space-x-2 px-2 font-semibold'>
+                                                    {renderDateIcon(date.date_type)}
+                                                    <span className='w-10 text-nowrap'>{renderDateLabel(date.date_type)}</span>
+                                                </div>
+                                                <span>
+                                                    {formatDateToKorean(date.date)}
+                                                </span>
+                                            </li>
+                                        )))
+                                    }
+                                </ul>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
             <ProfileEditDrawer
