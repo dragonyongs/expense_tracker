@@ -10,7 +10,7 @@ import { IoIosArrowDown } from 'react-icons/io';
 
 function DateFilter({ title, onDateSelect, className}) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedDate, setSelectedDate] = useState("");
+    const [selectedDate, setSelectedDate] = useState(``);
     const [dates, setDates] = useState([]);
     const isMobile = useMediaQuery('(max-width: 768px)');
     const viewportHeight = useViewportHeight();
@@ -46,10 +46,16 @@ function DateFilter({ title, onDateSelect, className}) {
     };
 
     const handleDateSelect = (date) => {
-        const formattedDate = `${date.year}년 ${date.month}월`;
-        setSelectedDate(formattedDate);
+        if(date) {
+            const formattedDate = `${date.year}년 ${date.month}월`;
+            setSelectedDate(formattedDate);
+            onDateSelect && onDateSelect(date);
+        } else {
+            const currentYear = new Date().getFullYear();
+            setSelectedDate("전체");
+            onDateSelect && onDateSelect({ year: currentYear, month: -1 });
+        }
         setIsOpen(false);
-        onDateSelect && onDateSelect(date);
     };
 
     return (
@@ -59,7 +65,7 @@ function DateFilter({ title, onDateSelect, className}) {
                 onClick={handleOpenDrawer}
             >
                 <LuCalendar className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                <span className={`${className} inline-block text-ellipsis overflow-hidden text-nowrap font-medium text-gray-700 dark:text-white`}>
+                <span className={`${className} min-w-10 inline-block text-ellipsis overflow-hidden text-nowrap font-medium text-gray-700 dark:text-white`}>
                     {selectedDate || "기간 선택"}
                 </span>
                 <IoIosArrowDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -89,8 +95,32 @@ function DateFilter({ title, onDateSelect, className}) {
                             <MdClose className="text-2xl dark:text-slate-300" />
                         </button>
                     </div>
-                    <div className="min-h-default-screen py-4">
+                    <div className="overflow-y-auto h-dateFilter-screen py-4">
                         <ul className="grid gap-2">
+                            <li
+                                key="all"
+                                className={`
+                                    flex justify-between items-center py-3 px-4 rounded-xl cursor-pointer
+                                    transition-all duration-200 relative overflow-hidden
+                                    ${selectedDate === '전체' 
+                                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' 
+                                        : 'hover:bg-gray-50 dark:hover:bg-slate-700'
+                                    }
+                                `}
+                                onClick={() => handleDateSelect(false)} // "전체" 선택 시 selectedDate 초기화 ${new Date().getFullYear()}년 ${new Date().getMonth() + 1}월
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-sm ${selectedDate === '전체' ? 'text-blue-100' : 'text-gray-400'}`}>
+                                        전체
+                                    </span>
+                                </div>
+                                {selectedDate === '전체' && (
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium">선택됨</span>
+                                        <LuCheck className="w-5 h-5" />
+                                    </div>
+                                )}
+                            </li>
                             {dates.map((date) => {
                                 const formattedDate = `${date.year}년 ${date.month}월`;
                                 const isSelected = selectedDate === formattedDate;

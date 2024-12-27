@@ -189,7 +189,10 @@ const Transactions = () => {
     const fetchTransactionsForMonth = async (year, month) => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${month}`);
+            // month가 -1일 경우 null로 설정
+            const monthParam = month === -1 ? 'all' : month;
+            const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${monthParam}`);
+            
             const sortedTransactions = response.data
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
@@ -201,7 +204,7 @@ const Transactions = () => {
             setIsLoading(false);
         }
     };
-
+    
     // 카드 선택 시 필터링된 트랜잭션 업데이트
     useEffect(() => {
         if (selectedCardId) {
@@ -313,6 +316,7 @@ const Transactions = () => {
     // };
 
     const handleSelectedDate = (date) => {
+        console.log(date);
         fetchTransactionsForMonth(date.year, date.month);
         setSelectedYear(date.year);
         setSelectedMonth(date.month);
@@ -566,7 +570,7 @@ const Transactions = () => {
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
 
                         <div className="flex items-center justify-between mb-4">
-                            <DateFilter onDateSelect={handleSelectedDate} title="지출기간 선택" className={isSearchActive ? 'w-16' : ''} />
+                            <DateFilter onDateSelect={handleSelectedDate} title="지출기간 선택" className={isSearchActive ? 'w-10' : ''} />
                             <SearchFilter onSearchStateChange={setIsSearchActive} onSearchTermChange={handleSearchTermChange} />
                             {/* <h5 className="text-lg font-semibold leading-none text-gray-500 dark:text-white">지출 내역</h5>
                             <button

@@ -350,7 +350,6 @@ exports.deleteTransaction = async (req, res) => {
 
         const previousAmount = transaction.transaction_amount;
         const previousExpenseType = transaction.expense_type;
-        console.log('transaction', transaction);
 
         if (transaction.transaction_type === 'expense') {
             // **이월 금액 복구**
@@ -407,19 +406,34 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
         const userId = req.user.member_id;
 
         const userCards = await Card.find({ member_id: userId });
-
         const cardIds = userCards.map(card => card._id);
 
-        const startDate = new Date(`${year}-${month}-01`);
-        const endDate = new Date(startDate);
-        endDate.setMonth(endDate.getMonth() + 1);
+        let transactions;
 
-        const transactions = await Transaction.find({
-            card_id: { $in: cardIds },
-            transaction_date: { $gte: startDate, $lt: endDate }
-        })
-        .populate('card_id', 'card_number')
-        .sort({ transaction_date: -1 }); 
+        if (month === 'all') {
+            // month가 'all'일 경우 해당 연도의 모든 트랜잭션 가져오기
+            const startDate = new Date(`${year}-01-01`); // 해당 연도의 시작 날짜
+            const endDate = new Date(`${year + 1}-01-01`); // 다음 연도의 시작 날짜
+
+            transactions = await Transaction.find({
+                card_id: { $in: cardIds },
+                transaction_date: { $gte: startDate, $lt: endDate }
+            })
+            .populate('card_id', 'card_number')
+            .sort({ transaction_date: -1 });
+        } else {
+            // month가 특정 월일 경우 해당 월의 트랜잭션 가져오기
+            const startDate = new Date(`${year}-${month}-01`); // 시작 날짜
+            const endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + 1); // 다음 달의 시작 날짜
+
+            transactions = await Transaction.find({
+                card_id: { $in: cardIds },
+                transaction_date: { $gte: startDate, $lt: endDate }
+            })
+            .populate('card_id', 'card_number')
+            .sort({ transaction_date: -1 });
+        }
 
         res.status(200).json(transactions);
     } catch (error) {
@@ -653,7 +667,6 @@ exports.getAllTransactionsByKeyword = async (req, res) => {
     
         // 키워드에 맞는 트랜잭션 검색
         const transactions = await Transaction.find(query).sort({ transaction_date: -1 }).populate('card_id', 'card_number');
-        console.log('transactions', transactions)
         
         res.status(200).json(transactions);
     } catch (error) {

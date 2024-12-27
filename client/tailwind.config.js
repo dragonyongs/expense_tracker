@@ -54,13 +54,14 @@ export default {
       },
       height: {
         'real-screen': 'calc(var(--vh, 1vh) * 100)',
-        'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 148px)',
-        'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px)',
-        'pending-screen': 'calc((var(--vh, 1vh) * 100) - 63px)',
-        'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px)',
         'profile-screen': 'calc((var(--vh, 1vh) * 100) - 44px)',
+        'pending-screen': 'calc((var(--vh, 1vh) * 100) - 63px)',
+        'dateFilter-screen': 'calc((var(--vh, 1vh) * 100) - 122px)',
+        'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px)',
+        'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 148px)',
         'profileDrawerMobile-screen': 'calc((var(--vh, 1vh) * 100) - 246px)',
         'profileDrawer-screen': 'calc((var(--vh, 1vh) * 100) - 341px)',
+        'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px)',
       },
       zIndex: {
         '110' : '110',
