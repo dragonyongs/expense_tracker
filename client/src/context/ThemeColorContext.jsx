@@ -9,6 +9,7 @@ export const ThemeProvider = ({ children }) => {
     const { isDarkMode } = useDarkMode();
     const location = useLocation();
     const [themeColor, setThemeColor] = useState('#ffffff');
+    const [isCustomTheme, setIsCustomTheme] = useState(false); // 사용자 정의 여부
 
     const updateMetaTag = (color) => {
         const metaTag = document.querySelector("meta[name='theme-color']");
@@ -18,6 +19,8 @@ export const ThemeProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        if (isCustomTheme) return; // 사용자 정의 상태일 경우 기본 로직 실행 안 함
+
         const determineThemeColor = () => {
             if (isDarkMode && specialPaths.includes(location.pathname)) {
                 return '#1e293b';
@@ -32,16 +35,17 @@ export const ThemeProvider = ({ children }) => {
         if (themeColor !== newColor) {
             setThemeColor(newColor);
             updateMetaTag(newColor); 
-
-            const metaTag = document.querySelector("meta[name='theme-color']");
-            if (metaTag) {
-                metaTag.setAttribute("content", newColor);
-            }
         }
-    }, [isDarkMode, location.pathname], themeColor); 
+    }, [isDarkMode, location.pathname, isCustomTheme]); // isCustomTheme 추가
+
+    const handleSetThemeColor = (color) => {
+        setThemeColor(color);
+        setIsCustomTheme(true); // 사용자 정의로 플래그 설정
+        updateMetaTag(color);
+    };
 
     return (
-        <ThemeColorContext.Provider value={{ themeColor, setThemeColor }}>
+        <ThemeColorContext.Provider value={{ themeColor, setThemeColor: handleSetThemeColor }}>
             {children}
         </ThemeColorContext.Provider>
     );
