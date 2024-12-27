@@ -24,14 +24,20 @@ export const ThemeProvider = ({ children }) => {
     const determineThemeColor = () => {
         if (location.pathname === '/') {
             return '#0433FF'; // 메인 페이지 색상
-        } else if (isDarkMode && specialPaths.includes(location.pathname)) {
-            return '#1e293b'; // 다크모드와 specialPaths
         } else if (specialPaths.includes(location.pathname)) {
-            return '#dce8f5'; // specialPaths 일반 모드
+            // /contacts와 /profile 경로
+            return isDarkMode ? '#1e293b' : '#dce8f5';
         } else {
-            return '#ffffff'; // 기본 색상
+            return '#FFFFFF'; // 나머지 페이지 기본 색상
         }
     };
+
+    const newColor = determineThemeColor();
+    if (themeColor !== newColor) {
+        setThemeColor(newColor);
+        updateMetaTag(newColor);
+    }
+}, [isDarkMode, location.pathname, isCustomTheme]);
 
     const newColor = determineThemeColor();
     if (themeColor !== newColor) {
