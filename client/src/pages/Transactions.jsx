@@ -53,7 +53,7 @@ const Transactions = () => {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSearchActive, setIsSearchActive] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    // const [searchTerm, setSearchTerm] = useState('');
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedMonth, setSelectedMonth] = useState('');
     
@@ -292,8 +292,6 @@ const Transactions = () => {
                 const year = selectedYear; // 선택된 년도
                 const month = selectedMonth; // 선택된 월
 
-                console.log(year, month);
-
                 const response = await axios.get(`${API_URLS.TRANSACTIONS}/search/all/${term}`, {
                     params: {
                         year: year,
@@ -301,7 +299,7 @@ const Transactions = () => {
                     }
                 });
                 const searchResults = response.data;
-    
+
                 setFilteredTransactions(searchResults);
             }
         } catch (error) {
@@ -320,30 +318,30 @@ const Transactions = () => {
         setSelectedMonth(date.month);
     }
 
-    const handleAddTransaction = () => {
-        const activeCard = userCardsWithTotals.find(card => card._id === selectedCardId);
+    // const handleAddTransaction = () => {
+    //     const activeCard = userCardsWithTotals.find(card => card._id === selectedCardId);
     
-        if (!activeCard) {
-            console.error("활성 카드를 찾을 수 없습니다.");
-            return;
-        }
+    //     if (!activeCard) {
+    //         console.error("활성 카드를 찾을 수 없습니다.");
+    //         return;
+    //     }
     
-        const { expense_card, expense_type } = getCardExpenseType(activeCard);
-        const { balance, team_fund } = getCardBalances(activeCard);
+    //     const { expense_card, expense_type } = getCardExpenseType(activeCard);
+    //     const { balance, team_fund } = getCardBalances(activeCard);
     
-        setSelectedTransaction({
-            ...selectedTransaction,
-            card_id: selectedCardId,
-            card_number: activeCard.card_number || "",
-            balance,
-            team_fund,
-            expense_card,
-            expense_type,
-        });
-        setIsEditing(false);
-        setIsOpen(true);
+    //     setSelectedTransaction({
+    //         ...selectedTransaction,
+    //         card_id: selectedCardId,
+    //         card_number: activeCard.card_number || "",
+    //         balance,
+    //         team_fund,
+    //         expense_card,
+    //         expense_type,
+    //     });
+    //     setIsEditing(false);
+    //     setIsOpen(true);
 
-    };
+    // };
     
     const handleCloseDrawer = useCallback(() => {
         setIsOpen(false);
@@ -352,7 +350,11 @@ const Transactions = () => {
     
 
     const handleOpenDrawer = (transaction) => {
-        const selectedCard = cards.find(card => card._id === transaction.card_id._id);
+
+        console.log('transaction', transaction);
+
+        const selectedCard = cards.find(card => card._id === transaction.card_id?._id);
+
         setPrevTransaction(transaction);
         setSelectedTransaction({
             ...transaction,

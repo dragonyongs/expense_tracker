@@ -285,11 +285,12 @@ const TransactionDrawer = ({
                                             className="hidden peer"
                                             checked={expenseType === 'OvertimeMealExpense'}
                                             onChange={() => handleExpenseTypeChange('OvertimeMealExpense')}
+                                            disabled={isEditing && transactionData.expense_type !== 'OvertimeMealExpense'}
                                             required
                                         />
                                         <label
                                             htmlFor="expense_type_d"
-                                            className="inline-flex items-center justify-between w-1/2 p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                            className="peer-disabled:bg-gray-50 peer-disabled:text-gray-300 iinline-flex items-center justify-between w-1/2 p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
                                         >
                                             <div className="block">
                                                 <div className="w-full text-md font-semibold">야근 식대</div>
@@ -309,17 +310,17 @@ const TransactionDrawer = ({
                                         value="RegularExpense"
                                         className="hidden peer"
                                         checked={expenseType === 'RegularExpense'}
-                                        disabled={!transactionData.expense_type && cardBalance === 0} // 신규 & 잔액 0일 때 비활성화
+                                        disabled={isEditing && transactionData.expense_type !== 'RegularExpense' || !isEditing && cardBalance === 0}
                                         onChange={() => handleExpenseTypeChange('RegularExpense')}
                                         required
                                     />
                                     <label
                                         htmlFor="expense_type_a"
-                                        className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                        className="peer-disabled:bg-gray-50 peer-disabled:text-gray-300 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-md font-semibold">일반 지출</div>
-                                            <div className="w-full text-sm">잔액: {cardBalance.toLocaleString()}원</div>
+                                            {!isEditing && <div className="w-full text-sm">잔액: {cardBalance.toLocaleString()}원</div>}
                                         </div>
                                         {expenseType === 'RegularExpense' && <IoCheckmark className="w-6 h-6" />}
                                     </label>
@@ -332,16 +333,16 @@ const TransactionDrawer = ({
                                         value="TeamFund"
                                         className="hidden peer"
                                         checked={expenseType === 'TeamFund'}
-                                        disabled={!transactionData.expense_type && teamFund === 0}
+                                        disabled={isEditing && transactionData.expense_type !== 'TeamFund' || !isEditing && teamFund === 0}
                                         onChange={() => handleExpenseTypeChange('TeamFund')}
                                     />
                                     <label
                                         htmlFor="expense_type_b"
-                                        className="inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                        className="peer-disabled:bg-gray-50 peer-disabled:text-gray-300 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
                                     >
                                         <div className="block">
                                             <div className="w-full text-md font-semibold">팀 운영비</div>
-                                            <div className="w-full text-sm">잔액: {teamFund.toLocaleString()}원</div>
+                                            {!isEditing && <div className="w-full text-sm">잔액: {teamFund.toLocaleString()}원</div> }
                                         </div>
                                         {expenseType === 'TeamFund' && <IoCheckmark className="w-6 h-6" />}
                                     </label>
