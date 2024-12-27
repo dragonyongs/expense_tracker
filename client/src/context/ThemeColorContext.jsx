@@ -19,24 +19,26 @@ export const ThemeProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        if (isCustomTheme) return; // 사용자 정의 상태일 경우 기본 로직 실행 안 함
+    if (isCustomTheme) return; // 사용자 정의 상태일 경우 기본 로직 실행 안 함
 
-        const determineThemeColor = () => {
-            if (isDarkMode && specialPaths.includes(location.pathname)) {
-                return '#1e293b';
-            } else {
-                if (location.pathname === '/') return '#0433FF';
-                if (specialPaths.includes(location.pathname)) return '#dce8f5';
-                return '#ffffff';
-            }
-        };
-
-        const newColor = determineThemeColor();
-        if (themeColor !== newColor) {
-            setThemeColor(newColor);
-            updateMetaTag(newColor); 
+    const determineThemeColor = () => {
+        if (location.pathname === '/') {
+            return '#0433FF'; // 메인 페이지 색상
+        } else if (isDarkMode && specialPaths.includes(location.pathname)) {
+            return '#1e293b'; // 다크모드와 specialPaths
+        } else if (specialPaths.includes(location.pathname)) {
+            return '#dce8f5'; // specialPaths 일반 모드
+        } else {
+            return '#ffffff'; // 기본 색상
         }
-    }, [isDarkMode, location.pathname, isCustomTheme]); // isCustomTheme 추가
+    };
+
+    const newColor = determineThemeColor();
+    if (themeColor !== newColor) {
+        setThemeColor(newColor);
+        updateMetaTag(newColor);
+    }
+}, [isDarkMode, location.pathname, isCustomTheme]);
 
     const handleSetThemeColor = (color) => {
         setThemeColor(color);
