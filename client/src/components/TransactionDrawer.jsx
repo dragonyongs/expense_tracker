@@ -65,9 +65,9 @@ const TransactionDrawer = ({
             metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#FFFFFF");
         } else if (location.pathname === '/') {
             metaTag.setAttribute("content", "#0433FF");
-        } else if (location.pathname === '/contacts') && isOpen) {
+        } else if (location.pathname === '/contacts' && isOpen) {
             metaTag.setAttribute("content", "#0433FF"); 
-        } else if (location.pathname === '/profile') && isOpen) {
+        } else if (location.pathname === '/profile' && isOpen) {
             metaTag.setAttribute("content", "#5B626D"); 
         } else {
             metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#dce8f5");
