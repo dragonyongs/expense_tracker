@@ -10,8 +10,6 @@ import { useDarkMode } from '../context/DarkModeContext';
 import { useLocation } from 'react-router-dom';
 // import { useTheme } from '../context/ThemeColorContext';
 
-const specialPaths = ['/transactions', '/contacts', '/profile', '/teams'];
-
 const TransactionDrawer = ({
     isOpen,
     onClose,
@@ -23,8 +21,6 @@ const TransactionDrawer = ({
     cardBalance,
     teamFund,
     errMsg,
-    color,
-    darkColor,
 }) => {
 
     // const { setThemeColor } = useTheme();
@@ -65,8 +61,18 @@ const TransactionDrawer = ({
 
     useEffect(() => {
         const metaTag = document.querySelector("meta[name='theme-color']");
-        metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#FFFFFF");
-    }, [isDarkMode]);
+        if (location.pathname === '/' && isOpen) {
+            metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#FFFFFF");
+        } else if (location.pathname === '/') {
+            metaTag.setAttribute("content", "#0433FF");
+        } else if (location.pathname === '/contacts') && isOpen) {
+            metaTag.setAttribute("content", "#0433FF"); 
+        } else if (location.pathname === '/profile') && isOpen) {
+            metaTag.setAttribute("content", "#5B626D"); 
+        } else {
+            metaTag.setAttribute("content", isDarkMode ? "#1e293b" : "#dce8f5");
+        }
+    }, [isOpen, isDarkMode]);
 
     // useEffect(() => {, location.pathname, color, darkColor
     //     const metaTag = document.querySelector("meta[name='theme-color']");
