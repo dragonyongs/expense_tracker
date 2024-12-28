@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Drawer from 'react-modern-drawer';
 import 'react-modern-drawer/dist/index.css';
 import { MdClose } from 'react-icons/md';
@@ -7,17 +7,18 @@ import useMediaQuery from '../hooks/useMediaQuery';
 import { useDarkMode } from '../context/DarkModeContext';
 
 const CommonDrawer = ({ isOpen, onClose, title, color, darkColor, children, className }) => {
-    
-    const { setThemeColor } = useTheme();
+    const { setThemeColor, resetThemeColor } = useTheme();
     const { isDarkMode } = useDarkMode();
 
     useEffect(() => {
         if (isOpen) {
+            // Drawer가 열릴 때만 전역 테마 색상 변경
             setThemeColor(isDarkMode ? darkColor || "#1d293b" : color);
         } else {
-            setThemeColor("#dce8f5");
+            // Drawer가 닫힐 때 테마 색상을 초기화
+            resetThemeColor();
         }
-    }, [isOpen, color, darkColor, isDarkMode, setThemeColor]);
+    }, [isOpen, color, darkColor, isDarkMode, setThemeColor, resetThemeColor]);
 
     const isMobile = useMediaQuery('(max-width: 640px)');
     const drawerSize = isMobile ? '100%' : '375px';
