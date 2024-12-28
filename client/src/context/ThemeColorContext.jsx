@@ -19,7 +19,7 @@ export const ThemeProvider = ({ children }) => {
     };
 
     const getDefaultThemeColor = () => {
-        // 기본 경로에 따른 색상 계산
+        // 첫 페이지(/)와 특별 경로에서 색상 지정
         if (location.pathname === '/') {
             return '#0433FF'; // 대시보드 경로
         } else if (specialPaths.includes(location.pathname)) {
@@ -29,21 +29,16 @@ export const ThemeProvider = ({ children }) => {
         }
     };
 
-    const determineThemeColor = () => {
-        return isCustomTheme ? themeColor : getDefaultThemeColor(); // 사용자 정의 상태 유지 또는 기본값 반환
-    };
-
     useEffect(() => {
-        if (!isCustomTheme) {
-            const newColor = getDefaultThemeColor();
+        // 사용자 정의 상태가 아니면 기본 경로에 맞는 색상을 설정
+        const newColor = isCustomTheme ? themeColor : getDefaultThemeColor();
 
-            // 새로운 색상이 기존 색상과 다를 경우만 업데이트
-            if (themeColor !== newColor) {
-                setThemeColor(newColor);
-                updateMetaTag(newColor);
-            }
+        // 색상이 변경될 때만 테마 색상 설정
+        if (themeColor !== newColor) {
+            setThemeColor(newColor);
+            updateMetaTag(newColor);
         }
-    }, [location.pathname, isDarkMode, isCustomTheme]); // themeColor 의존성 제거
+    }, [location.pathname, isDarkMode, isCustomTheme, themeColor]);
 
     const handleSetThemeColor = (color) => {
         setThemeColor(color);
