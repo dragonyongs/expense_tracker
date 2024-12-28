@@ -5,29 +5,43 @@ import { MdClose } from 'react-icons/md';
 import { useTheme } from '../context/ThemeColorContext';
 import useMediaQuery from '../hooks/useMediaQuery';
 import { useDarkMode } from '../context/DarkModeContext';
+import { useLocation } from 'react-router-dom';
 
 const CommonDrawer = ({ isOpen, onClose, title, color, darkColor, children, className }) => {
     const { setThemeColor, resetThemeColor, themeColor } = useTheme();
     const { isDarkMode } = useDarkMode();
+    const location = useLocation();
 
     useEffect(() => {
-        if (isOpen) {
-            const targetColor = isDarkMode ? darkColor || "#1d293b" : color;
+        const targetColor = isDarkMode ? darkColor || "#1d293b" : color;
 
-            // 현재 테마 색상이 다를 때만 업데이트
+        if (isOpen) {
+            // 드로어 열림: 목표 색상이 이미 설정된 경우 변경하지 않음
             if (themeColor !== targetColor) {
                 setThemeColor(targetColor);
             }
         } else {
-            // 드로어가 닫힐 때 테마 초기화
-            resetThemeColor();
+            // 드로어 닫힘: 기본 경로 색상 복원
+            const defaultColor =
+                location.pathname === "/"
+                    ? "#0433FF"
+                    : location.pathname === "/contacts" || location.pathname === "/profile"
+                    ? isDarkMode
+                        ? "#1e293b"
+                        : "#dce8f5"
+                    : "#FFFFFF";
+
+            // 기본 색상이 이미 설정된 경우 reset 호출하지 않음
+            if (themeColor !== defaultColor) {
+                resetThemeColor();
+            }
         }
-    }, [isOpen, color, darkColor, isDarkMode, setThemeColor, resetThemeColor, themeColor]);
+    }, [isOpen, color, darkColor, isDarkMode, setThemeColor, resetThemeColor, themeColor, location.pathname]);
 
-    const isMobile = useMediaQuery('(max-width: 640px)');
-    const drawerSize = isMobile ? '100%' : '375px';
+    const isMobile = useMediaQuery("(max-width: 640px)");
+    const drawerSize = isMobile ? "100%" : "375px";
 
-    const backgroundColor = isDarkMode && darkColor ? darkColor : isDarkMode ? 'bg-slate-800' : '';
+    const backgroundColor = isDarkMode && darkColor ? darkColor : isDarkMode ? "bg-slate-800" : "";
 
     return (
         <Drawer open={isOpen} onClose={onClose} className="h-real-screen" duration="300" direction="right" size={drawerSize}>
@@ -40,9 +54,7 @@ const CommonDrawer = ({ isOpen, onClose, title, color, darkColor, children, clas
                     <MdClose className="text-2xl dark:text-slate-300" />
                 </button>
             </div>
-            <div className="dark:bg-slate-800">
-                {children}
-            </div>
+            <div className="dark:bg-slate-800">{children}</div>
         </Drawer>
     );
 };
