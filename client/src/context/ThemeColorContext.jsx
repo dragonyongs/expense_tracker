@@ -8,7 +8,7 @@ const specialPaths = ['/contacts', '/profile'];
 export const ThemeProvider = ({ children }) => {
     const { isDarkMode } = useDarkMode();
     const location = useLocation();
-    const [themeColor, setThemeColor] = useState('#ffffff');
+    const [themeColor, setThemeColor] = useState('#FFFFFF');
     const [isCustomTheme, setIsCustomTheme] = useState(false); // 사용자 정의 여부
 
     const updateMetaTag = (color) => {
@@ -31,12 +31,15 @@ export const ThemeProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const newColor = determineThemeColor();
-        if (themeColor !== newColor) {
-            setThemeColor(newColor);
-            updateMetaTag(newColor);
+        // 사용자 정의 색상이 아닐 때만 테마 색상 변경
+        if (!isCustomTheme) {
+            const newColor = determineThemeColor();
+            if (themeColor !== newColor) {
+                setThemeColor(newColor);
+                updateMetaTag(newColor);
+            }
         }
-    }, [isDarkMode, location.pathname, isCustomTheme, themeColor]);
+    }, [isDarkMode, location.pathname, isCustomTheme]);
 
     const handleSetThemeColor = (color) => {
         setThemeColor(color);
@@ -44,8 +47,18 @@ export const ThemeProvider = ({ children }) => {
         updateMetaTag(color);
     };
 
+    const resetThemeColor = () => {
+        setIsCustomTheme(false); // 사용자 정의 플래그 초기화
+    };
+
     return (
-        <ThemeColorContext.Provider value={{ themeColor, setThemeColor: handleSetThemeColor }}>
+        <ThemeColorContext.Provider
+            value={{
+                themeColor,
+                setThemeColor: handleSetThemeColor,
+                resetThemeColor,
+            }}
+        >
             {children}
         </ThemeColorContext.Provider>
     );
