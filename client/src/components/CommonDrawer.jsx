@@ -13,30 +13,23 @@ const CommonDrawer = ({ isOpen, onClose, title, color, darkColor, children, clas
     const location = useLocation();
 
     useEffect(() => {
-        const targetColor = isDarkMode ? darkColor || "#1d293b" : color;
+        const targetColor = isOpen
+            ? isDarkMode
+                ? darkColor || "#1d293b"
+                : color
+            : location.pathname === "/"
+            ? "#0433FF" // 첫 페이지 기본 색상
+            : location.pathname === "/contacts" || location.pathname === "/profile"
+            ? isDarkMode
+                ? "#1e293b"
+                : "#dce8f5"
+            : "#FFFFFF";
 
-        if (isOpen) {
-            // 드로어 열림: 목표 색상이 이미 설정된 경우 변경하지 않음
-            if (themeColor !== targetColor) {
-                setThemeColor(targetColor);
-            }
-        } else {
-            // 드로어 닫힘: 기본 경로 색상 복원
-            const defaultColor =
-                location.pathname === "/"
-                    ? "#0433FF"
-                    : location.pathname === "/contacts" || location.pathname === "/profile"
-                    ? isDarkMode
-                        ? "#1e293b"
-                        : "#dce8f5"
-                    : "#FFFFFF";
-
-            // 기본 색상이 이미 설정된 경우 reset 호출하지 않음
-            if (themeColor !== defaultColor) {
-                resetThemeColor();
-            }
+        // 현재 테마 색상이 목표 색상과 다를 때만 상태 업데이트
+        if (themeColor !== targetColor) {
+            setThemeColor(targetColor);
         }
-    }, [isOpen, color, darkColor, isDarkMode, setThemeColor, resetThemeColor, themeColor, location.pathname]);
+    }, [isOpen, color, darkColor, isDarkMode, location.pathname, setThemeColor, themeColor]);
 
     const isMobile = useMediaQuery("(max-width: 640px)");
     const drawerSize = isMobile ? "100%" : "375px";
