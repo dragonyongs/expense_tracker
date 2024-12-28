@@ -11,15 +11,15 @@ const CommonDrawer = ({ isOpen, onClose, title, color, darkColor, children, clas
     const { isDarkMode } = useDarkMode();
 
     useEffect(() => {
-        const targetColor = isDarkMode ? darkColor || "#1d293b" : color;
-
         if (isOpen) {
-            // 드로어가 열릴 때만 색상 변경 (이미 설정된 값과 동일하면 변경하지 않음)
+            const targetColor = isDarkMode ? darkColor || "#1d293b" : color;
+
+            // 현재 테마 색상이 다를 때만 업데이트
             if (themeColor !== targetColor) {
                 setThemeColor(targetColor);
             }
         } else {
-            // 드로어가 닫힐 때 테마를 초기화 (경로 기반으로 복원)
+            // 드로어가 닫힐 때 테마 초기화
             resetThemeColor();
         }
     }, [isOpen, color, darkColor, isDarkMode, setThemeColor, resetThemeColor, themeColor]);
