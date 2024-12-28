@@ -18,33 +18,25 @@ export const ThemeProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-    if (isCustomTheme) return; // 사용자 정의 상태일 경우 기본 로직 실행 안 함
-
     const determineThemeColor = () => {
+        if (isCustomTheme) return themeColor; // 사용자 정의 상태일 경우 현재 색상 유지
+
         if (location.pathname === '/') {
             return '#0433FF'; // 메인 페이지 색상
         } else if (specialPaths.includes(location.pathname)) {
-            // /contacts와 /profile 경로
-            return isDarkMode ? '#1e293b' : '#dce8f5';
+            return isDarkMode ? '#1e293b' : '#dce8f5'; // /contacts, /profile 색상
         } else {
-            return '#FFFFFF'; // 나머지 페이지 기본 색상
+            return '#FFFFFF'; // 기본 색상
         }
     };
 
-    const newColor = determineThemeColor();
-    if (themeColor !== newColor) {
-        setThemeColor(newColor);
-        updateMetaTag(newColor);
-    }
-}, [isDarkMode, location.pathname, isCustomTheme]);
-
-    const newColor = determineThemeColor();
-    if (themeColor !== newColor) {
-        setThemeColor(newColor);
-        updateMetaTag(newColor);
-    }
-}, [isDarkMode, location.pathname, isCustomTheme]);
+    useEffect(() => {
+        const newColor = determineThemeColor();
+        if (themeColor !== newColor) {
+            setThemeColor(newColor);
+            updateMetaTag(newColor);
+        }
+    }, [isDarkMode, location.pathname, isCustomTheme, themeColor]);
 
     const handleSetThemeColor = (color) => {
         setThemeColor(color);
