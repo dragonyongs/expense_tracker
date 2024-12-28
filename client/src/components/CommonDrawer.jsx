@@ -7,18 +7,22 @@ import useMediaQuery from '../hooks/useMediaQuery';
 import { useDarkMode } from '../context/DarkModeContext';
 
 const CommonDrawer = ({ isOpen, onClose, title, color, darkColor, children, className }) => {
-    const { setThemeColor, resetThemeColor } = useTheme();
+    const { setThemeColor, resetThemeColor, themeColor } = useTheme();
     const { isDarkMode } = useDarkMode();
 
     useEffect(() => {
+        const targetColor = isDarkMode ? darkColor || "#1d293b" : color;
+
         if (isOpen) {
-            // Drawer가 열릴 때만 전역 테마 색상 변경
-            setThemeColor(isDarkMode ? darkColor || "#1d293b" : color);
+            // 드로어가 열릴 때만 색상 변경 (이미 설정된 값과 동일하면 변경하지 않음)
+            if (themeColor !== targetColor) {
+                setThemeColor(targetColor);
+            }
         } else {
-            // Drawer가 닫힐 때 테마 색상을 초기화
+            // 드로어가 닫힐 때 테마를 초기화 (경로 기반으로 복원)
             resetThemeColor();
         }
-    }, [isOpen, color, darkColor, isDarkMode, setThemeColor, resetThemeColor]);
+    }, [isOpen, color, darkColor, isDarkMode, setThemeColor, resetThemeColor, themeColor]);
 
     const isMobile = useMediaQuery('(max-width: 640px)');
     const drawerSize = isMobile ? '100%' : '375px';
