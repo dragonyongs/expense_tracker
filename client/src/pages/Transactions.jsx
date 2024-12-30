@@ -154,8 +154,8 @@ const Transactions = () => {
     const handleSearchTermChange = async (term) => {
         try {
             if (term) {
-                const year = selectedYear; // 선택된 년도
-                const month = selectedMonth; // 선택된 월
+                const year = selectedYear;
+                const month = selectedMonth;
 
                 const response = await axios.get(`${API_URLS.TRANSACTIONS}/search/all/${term}`, {
                     params: {

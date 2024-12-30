@@ -659,10 +659,17 @@ exports.getAllTransactionsByKeyword = async (req, res) => {
     
         // 년도와 월이 제공된 경우에만 필터링
         if (year && month) {
-            const startDate = new Date(year, month - 1, 1); // 시작일 (1일)
-            const endDate = new Date(year, month, 1); // 다음 달 1일 (끝일)
-    
-            query.transaction_date = { $gte: startDate, $lt: endDate }; // 해당 월의 트랜잭션만 포함
+            if (month === '-1') {
+                // 특정 년도의 전체 데이터
+                const startDate = new Date(year, 0, 1); // 해당 년도의 1월 1일
+                const endDate = new Date(Number(year) + 1, 0, 1); // 다음 년도의 1월 1일
+                query.transaction_date = { $gte: startDate, $lt: endDate };
+            } else {
+                // 특정 년도의 특정 월 데이터
+                const startDate = new Date(year, month - 1, 1); // 시작일 (1일)
+                const endDate = new Date(year, month, 1); // 다음 달 1일 (끝일)
+                query.transaction_date = { $gte: startDate, $lt: endDate };
+            }
         }
     
         // 키워드에 맞는 트랜잭션 검색
@@ -672,4 +679,4 @@ exports.getAllTransactionsByKeyword = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: '트랜잭션 조회 중 오류가 발생했습니다.', error });
     }
-    };
+};

@@ -19,16 +19,16 @@ const Header = () => {
             setGreeting('좋은 아침입니다!');
         } else if (currentHour >= 9 && currentHour < 12) {
             setGreeting('좋은 하루 되세요!');
-        } else if (currentHour >= 12 && currentHour < 14) {
+        } else if (currentHour >= 12 && currentHour < 13) {
             setGreeting('맛점하세요!');
-        } else if (currentHour >= 14 && currentHour < 18) {
+        } else if (currentHour >= 13 && currentHour < 18) {
             setGreeting('오후도 힘내세요!');
         } else if (currentHour >= 18 && currentHour < 21) {
             setGreeting('수고하셨습니다!');
         } else if (currentHour >= 21 && currentHour < 24) {
             setGreeting('폰 그만보고, 잘 자요!');
         } else {
-            setGreeting('편안한 밤 되세요.');
+            setGreeting('이른 시간이네요~!');
         }
     }, []);
 

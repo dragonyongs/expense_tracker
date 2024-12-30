@@ -18,21 +18,21 @@ function SearchInput({ onSearch }) {
 
     return (
         <div className="w-full max-w-2xl mx-auto">
-            <div className="relative flex items-center gap-3 p-2 bg-white rounded-xl shadow-lg">
+            <div className="relative flex items-center gap-3 p-2 bg-white dark:bg-slate-700 rounded-xl shadow-lg">
                 {/* Custom Select */}
                 <div className="relative min-w-[120px]">
                     <button
                         onClick={() => setIsSelectOpen(!isSelectOpen)}
-                        className="w-full px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between gap-2"
+                        className="w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-400 bg-gray-50 dark:bg-slate-800 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between gap-2"
                     >
                         {searchField === 'member_id.member_name' && '이름'}
                         {searchField === 'phones.phone_number' && '전화번호'}
                         {searchField === 'member_id.team_id.team_name' && '팀명'}
-                        <IoChevronDown className="w-4 h-4 text-gray-500" />
+                        <IoChevronDown className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                     </button>
                     
                     {isSelectOpen && (
-                        <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100">
+                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-100 dark:border-slate-800">
                             <div className="py-1">
                                 {[
                                     { value: 'member_id.member_name', label: '이름' },
@@ -45,7 +45,7 @@ function SearchInput({ onSearch }) {
                                             setSearchField(option.value);
                                             setIsSelectOpen(false);
                                         }}
-                                        className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                                        className="w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900 hover:text-blue-600 transition-colors duration-200"
                                     >
                                         {option.label}
                                     </button>

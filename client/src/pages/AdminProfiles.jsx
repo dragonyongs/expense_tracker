@@ -7,9 +7,11 @@ import AdminProfileDrawer from '../components/AdminProfileDrawer';
 import ProfileEditDrawer from '../components/ProfileEditDrawer';
 import { TbAddressBookOff, TbCalendarOff, TbPhoneOff } from "react-icons/tb";
 import { filterDataBySearchTerm } from '../utils/search';
+import AvatarPreview from '../components/AvatarPreview';
 
 function AdminProfiles() {
     const [profiles, setProfiles] = useState([]);
+    const [avatar, setAvatar] = useState({});
     const [selectedProfile, setSelectedProfile] = useState(null);
     const [filteredProfiles, setFilteredProfiles] = useState([]);
 
@@ -48,6 +50,7 @@ function AdminProfiles() {
 
     const handleOpenDrawer = (profile) => {
         setSelectedProfile(profile);
+        setAvatar(profile.avatar_id);
         setIsProfileOpen(true);
     };
 
@@ -92,10 +95,10 @@ function AdminProfiles() {
                                 <li
                                     key={profile._id}
                                     onClick={() => handleOpenDrawer(profile)}
-                                    className={`flex items-center gap-x-4 py-3 px-4 sm:py-4 sm:px-6 cursor-pointer active:bg-gray-50 dark:active:bg-slate-500 dark:text-slate-300 ${formerEmployee && 'bg-gray-100'}`}
+                                    className={`flex items-center gap-x-4 py-3 px-4 sm:py-4 sm:px-6 cursor-pointer active:bg-gray-50 dark:active:bg-slate-500 dark:text-slate-300 ${formerEmployee && 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'}`}
                                 >
-                                    <span className={`flex-1 text-sm sm:text-base ${formerEmployee && 'text-gray-400'}`}>{profile?.member_id?.member_name}</span>
-                                    <div className={`flex justify-between items-center gap-x-2 ${formerEmployee && 'text-gray-400'}`}>
+                                    <span className="flex-1 text-sm sm:text-base">{profile?.member_id?.member_name}</span>
+                                    <div className="flex justify-between items-center gap-x-2">
                                         {!hasPhones && <span className='flex gap-x-1 items-center text-lg'><TbPhoneOff /></span>}
                                         {!hasAddresses && <span className='flex gap-x-1 items-center text-lg'><TbAddressBookOff /></span>}
                                         {!hasDates && <span className='flex gap-x-1 items-center text-lg'><TbCalendarOff /></span>}
@@ -112,56 +115,97 @@ function AdminProfiles() {
                 title={"프로필 관리"}
                 onClose={handleCloseDrawer}
             >
-                <h1>{selectedProfile?.member_id?.member_name}</h1>
-                <p>{selectedProfile?.member_id?.email}</p>  
+                {/* Basic Info */}
+                <div className="flex items-center space-x-4">
+                    <AvatarPreview avatarConfig={avatar} shape="circle" /> 
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900">{selectedProfile?.member_id?.member_name}</h2>
+                        <p className="text-gray-600">{selectedProfile?.member_id?.email}</p>
+                    </div>
+                </div>
 
-                <div className="mt-4">
-                    <h2 className="text-lg font-semibold">전화번호</h2>
+                {/* Phone Numbers */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-3">
+                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <h3 className="font-semibold text-gray-900">연락처</h3>
+                    </div>
                     {selectedProfile?.phones?.length > 0 ? (
-                        <ul className="list-disc pl-5 space-y-1">
+                        <div className="space-y-2">
                             {selectedProfile.phones.map((phone) => (
-                                <li key={phone._id}>
-                                    {`${phone.phone_name}: ${phone.phone_number}${phone.extension ? ` (내선: ${phone.extension})` : ''}`}
-                                </li>
+                                <div key={phone._id} className="flex justify-between items-center">
+                                    <span className="text-gray-600">{phone.phone_name}</span>
+                                    <span className="text-gray-900">
+                                        {phone.phone_number}
+                                        {phone.extension && <span className="text-gray-500 ml-1">({phone.extension})</span>}
+                                    </span>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     ) : (
-                        <p className="text-gray-500">등록된 전화번호가 없습니다.</p>
+                        <p className="text-gray-500 text-center">등록된 전화번호가 없습니다.</p>
                     )}
                 </div>
 
-                <div className="mt-4">
-                    <h2 className="text-lg font-semibold">주소</h2>
+                {/* Addresses */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-3">
+                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <h3 className="font-semibold text-gray-900">주소</h3>
+                    </div>
                     {selectedProfile?.addresses?.length > 0 ? (
-                        <ul className="list-disc pl-5 space-y-1">
+                        <div className="space-y-2">
                             {selectedProfile.addresses.map((address) => (
-                                <li key={address._id}>
-                                    {`${address.address_name}: ${address.address_line1}, ${address.address_line2}, ${address.postal_code}`}
-                                </li>
+                                <div key={address._id} className="flex justify-between items-center">
+                                    <span className="text-gray-600">{address.address_name}</span>
+                                    <p className="text-gray-900 mt-1">
+                                        {address.address_line1}, {address.address_line2}
+                                        <span className="text-gray-500 ml-1">({address.postal_code})</span>
+                                    </p>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     ) : (
-                        <p className="text-gray-500">등록된 주소가 없습니다.</p>
+                        <p className="text-gray-500 text-center">등록된 주소가 없습니다.</p>
                     )}
                 </div>
 
-                <div className="mt-4">
-                    <h2 className="text-lg font-semibold">기념일</h2>
+                {/* Important Dates */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-3">
+                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h3 className="font-semibold text-gray-900">기념일</h3>
+                    </div>
                     {selectedProfile?.dates?.length > 0 ? (
-                        <ul className="list-disc pl-5 space-y-1">
+                        <div className="space-y-2">
                             {selectedProfile.dates.map((date) => (
-                                <li key={date._id}>
-                                    {`${date.date_name}: ${new Date(date.date).toLocaleDateString('ko-KR')}`}
-                                </li>
+                                <div key={date._id} className="flex justify-between items-center">
+                                    <span className="text-gray-600">{date.date_name}</span>
+                                    <span className="text-gray-900">
+                                        {new Date(date.date).toLocaleDateString('ko-KR')}
+                                    </span>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     ) : (
-                        <p className="text-gray-500">등록된 입사일 정보가 없습니다.</p>
+                        <p className="text-gray-500 text-center">등록된 기념일이 없습니다.</p>
                     )}
                 </div>
-                <div className='mt-10'>
-                    <button onClick={() => handleOpenEditDrawer(selectedProfile)} className='p-2 bg-blue-500 text-white rounded'>편집</button>
-                </div>
+
+                {/* Edit Button */}
+                <button 
+                    onClick={() => handleOpenEditDrawer(selectedProfile)} 
+                    className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+                >
+                    프로필 수정
+                </button>
             </AdminProfileDrawer>
             <ProfileEditDrawer
                 isOpen={isEditDrawerOpen}

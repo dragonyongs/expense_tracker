@@ -21,7 +21,7 @@ const HeaderWithTabs = ({ tabs }) => {
                         onClick={() => navigate(tab.path)}
                         className={`flex-1 py-3 text-lg font-medium text-center transition-colors duration-200 ${
                             location.pathname === tab.path
-                                ? 'text-blue-600 border-b-2 border-blue-600'
+                                ? 'text-blue-500 border-b-2 border-blue-600'
                                 : 'text-gray-500'
                         }`}
                     >

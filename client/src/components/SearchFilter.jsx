@@ -20,8 +20,7 @@ function SearchFilter({ onSearchStateChange, onSearchTermChange }) {
     };
 
     const handleSearch = () => {
-        console.log('검색어:', searchText);
-        onSearchTermChange(searchText); // 부모 컴포넌트에 검색어 전달
+        onSearchTermChange(searchText);
     };
 
     const handleKeyPress = (e) => {

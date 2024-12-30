@@ -32,14 +32,16 @@ const AdminProfileDrawer = ({ isOpen, onClose, title, children }) =>  {
             className="rounded-t-xl overflow-hidden" 
             style={isMobile ? mobileStyle : desktopStyle}
         >
-            <div className='flex justify-between items-center w-full h-10 bg-green-600 px-4'>
-                <h1 className='font-bold text-white'>{title}</h1>
-                <button onClick={onClose}>
-                    <MdClose className='text-2xl text-white dark:text-slate-300'/>
+             {/* Header */}
+            <div className='flex justify-between items-center w-full h-12 bg-emerald-600 px-6'>
+                <h1 className='font-medium text-lg text-white'>{title}</h1>
+                <button onClick={onClose} className="hover:bg-emerald-700 p-2 rounded-lg transition-colors">
+                    <MdClose className='text-2xl text-white'/>
                 </button>
             </div>
 
-            <div className="p-4">
+            {/* Content */}
+            <div className="p-6 space-y-6">
                 {children}
             </div>
 
