@@ -12,14 +12,12 @@ import { filterDataBySearchTerm } from '../utils/search';
 import SearchInput from '../components/SearchInput';
 
 function Contacts() {
-    // const [contacts, setContacts ] = useState([]);
+    const [contacts, setContacts] = useState([]); // 전체 데이터를 저장
+    const [filteredContacts, setFilteredContacts] = useState([]); // 검색된 결과를 저장
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedYears, setSelectedYears] = useState('');
     const [selectedDays, setSelectedDays] = useState('');
     const [selectedContact, setSelectedContact] = useState("");
-
-    const [filteredContacts, setFilteredContacts] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -30,7 +28,7 @@ function Contacts() {
             try {
                 const { data } = await axios.get(API_URLS.PROFILES);
                 const filtered = data.filter(contact => contact?.member_id?.role_id?.role_name !== 'former_employee');
-                // setContacts(filtered);
+                setContacts(filtered);
                 setFilteredContacts(filtered);
             } catch (error) {
                 console.error("Error fetching contacts:", error);
@@ -142,32 +140,19 @@ function Contacts() {
         return sortedGroupedContacts;
     };
 
-    // const groupByTeam = (contacts) => {
-    //     const sortedContacts = sortContacts(contacts);
-    //     return sortedContacts.reduce((groups, contact) => {
-    //         const teamName = contact?.member_id?.team_id?.team_name || "미지정팀";
-    //         if (teamName !== "미지정팀") {
-    //             groups[teamName] = groups[teamName] || [];
-    //             groups[teamName].push(contact);
-    //         }
-    //         return groups;
-    //     }, {});
-    // };
-    
-    // const groupedContacts = useMemo(() => groupByTeam(contacts), [contacts]);
-    const groupedContacts = useMemo(() => groupByTeam(filteredContacts), [filteredContacts]);
 
     const handleSearch = (field, term) => {
         setSearchTerm(term);
 
         if (!term) {
-            setFilteredContacts(filteredContacts);
+            setFilteredContacts(contacts);
         } else {
-            const filtered = filterDataBySearchTerm(filteredContacts, field, term);
+            const filtered = filterDataBySearchTerm(contacts, field, term);
             setFilteredContacts(filtered);
         }
     };
 
+    const groupedContacts = useMemo(() => groupByTeam(filteredContacts), [filteredContacts]);
     const isNoResults = groupedContacts && Object.keys(groupedContacts).length === 0;
     
     return (
@@ -324,34 +309,6 @@ function Contacts() {
                                     </li>
                                 ))}
                         </ul>
-
-                        {/* <ul className="relative ml-3 border-l border-gray-200">
-                            {selectedContact?.dates && selectedContact.dates.map((date, index) => (
-                                <li key={date._id} className="mb-10 ml-6">
-                                    <div className={`absolute -left-3 w-6 h-6 rounded-full ${
-                                        date.date_type === 'birthday' ? 'bg-blue-500' : 
-                                        date.date_type === 'entry' ? 'bg-green-500' : 'bg-red-500'
-                                    } flex items-center justify-center`}>
-                                        {date.date_type === 'birthday' && (
-                                            <span className="text-white text-xs font-bold">🎂</span>
-                                        )}
-                                        {date.date_type === 'entry' && (
-                                            <span className="text-white text-xs font-bold">📥</span>
-                                        )}
-                                        {date.date_type === 'leave' && (
-                                            <span className="text-white text-xs font-bold">📤</span>
-                                        )}
-                                    </div>
-                                    <time className="block mb-1 text-sm font-normal leading-none text-gray-500">
-                                        {formatDateToKorean(date.date)}
-                                    </time>
-                                    <p className="text-lg font-semibold text-gray-900">
-                                        {renderDateLabel(date.date_type)}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul> */}
-
                     </div>
                 </div>
             </CommonDrawer>
@@ -360,31 +317,3 @@ function Contacts() {
 }
 
 export default Contacts;
-
-    // const groupByTeam = (contacts) => {
-    //     const positionOrder = ['임원', '팀장', '파트장', '팀원'];
-    //     const rankOrder = ['대표', '전무', '상무', '이사', '부장', '차장', '과장', '대리', '사원'];
-        
-    //     return contacts.reduce((groups, contact) => {
-    //         const teamName = contact?.member_id?.team_id?.team_name || '미지정팀';
-            
-    //         if (teamName !== '미지정팀') {
-    //             groups[teamName] = groups[teamName] || [];
-    //             groups[teamName].push(contact);
-    //             groups[teamName].sort((a, b) => {
-    //                 const positionAIndex = positionOrder.indexOf(a.member_id.position);
-    //                 const positionBIndex = positionOrder.indexOf(b.member_id.position);
-    //                 const rankAIndex = rankOrder.indexOf(a.member_id.rank);
-    //                 const rankBIndex = rankOrder.indexOf(b.member_id.rank);
-    
-    //                 if (positionAIndex < positionBIndex) return -1;
-    //                 if (positionAIndex > positionBIndex) return 1;
-    //                 if (rankAIndex < rankBIndex) return -1;
-    //                 if (rankAIndex > rankBIndex) return 1;
-    //                 return 0;
-    //             });
-    //         }
-    
-    //         return groups;
-    //     }, {});
-    // };

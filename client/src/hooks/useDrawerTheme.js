@@ -11,7 +11,6 @@ const useDrawerTheme = (isOpen) => {
     useEffect(() => {
         if (isOpen) {
             const newColor = getDrawerColor(location.pathname);
-            console.log(newColor);
             setThemeColor(newColor);
         } else {
             resetThemeColor();
