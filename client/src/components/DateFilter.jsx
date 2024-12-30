@@ -71,7 +71,7 @@ function DateFilter({ title, onDateSelect, className}) {
                 <IoIosArrowDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 
                 {/* Hover Effect Pulse */}
-                <span className="absolute inset-0 rounded-lg bg-blue-100 dark:bg-blue-900/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                <span className="absolute inset-0 rounded-lg bg-blue-100 dark:bg-blue-900/30 opacity-0 group-hover:opacity-60 transition-opacity duration-200" />
             </button>
 
             <Drawer
@@ -96,64 +96,66 @@ function DateFilter({ title, onDateSelect, className}) {
                         </button>
                     </div>
                     <div className="overflow-y-auto h-dateFilter-screen py-4">
-                        <ul className="grid gap-2">
-                            <li
-                                key="all"
-                                className={`
-                                    flex justify-between items-center py-3 px-4 rounded-xl cursor-pointer
-                                    transition-all duration-200 relative overflow-hidden
-                                    ${selectedDate === '전체' 
-                                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' 
-                                        : 'hover:bg-gray-50 dark:hover:bg-slate-700'
-                                    }
-                                `}
-                                onClick={() => handleDateSelect(false)} // "전체" 선택 시 selectedDate 초기화 ${new Date().getFullYear()}년 ${new Date().getMonth() + 1}월
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span className={`text-sm ${selectedDate === '전체' ? 'text-blue-100' : 'text-gray-400'}`}>
-                                        전체
-                                    </span>
-                                </div>
-                                {selectedDate === '전체' && (
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium">선택됨</span>
-                                        <LuCheck className="w-5 h-5" />
-                                    </div>
-                                )}
-                            </li>
-                            {dates.map((date) => {
-                                const formattedDate = `${date.year}년 ${date.month}월`;
-                                const isSelected = selectedDate === formattedDate;
+                    <ul className="grid grid-cols-2 gap-3">
+                        <li
+                        key="all"
+                        className={`
+                            col-span-2 flex justify-between items-center py-4 px-4 rounded-xl cursor-pointer
+                            transition-all duration-200 relative overflow-hidden
+                            ${selectedDate === '전체' 
+                            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' 
+                            : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-100'
+                            }
+                        `}
+                        onClick={() => handleDateSelect(false)}
+                        >
+                        <div className="flex items-center gap-3">
+                            <span className={`text-base font-medium ${selectedDate === '전체' ? 'text-white' : 'text-gray-900'}`}>
+                            전체
+                            </span>
+                        </div>
+                        {selectedDate === '전체' && (
+                            <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">선택됨</span>
+                            <LuCheck className="w-5 h-5" />
+                            </div>
+                        )}
+                        </li>
 
-                                return (
-                                    <li
-                                        key={`${date.year}-${date.month}`}
-                                        className={`
-                                            flex justify-between items-center py-3 px-4 rounded-xl cursor-pointer
-                                            transition-all duration-200 relative overflow-hidden
-                                            ${isSelected 
-                                                ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' 
-                                                : 'hover:bg-gray-50 dark:hover:bg-slate-700'
-                                            }
-                                        `}
-                                        onClick={() => handleDateSelect(date)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <span className={`text-sm ${isSelected ? 'text-blue-100' : 'text-gray-400'}`}>
-                                                {date.year}년
-                                            </span>
-                                            <span className="font-medium">{date.month}월</span>
-                                        </div>
-                                        {isSelected && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium">선택됨</span>
-                                                <LuCheck className="w-5 h-5" />
-                                            </div>
-                                        )}
-                                    </li>
-                                );
-                            })}
-                        </ul>
+                        {dates.map((date) => {
+                        const formattedDate = `${date.year}년 ${date.month}월`;
+                        const isSelected = selectedDate === formattedDate;
+                        return (
+                            <li
+                            key={`${date.year}-${date.month}`}
+                            className={`
+                                flex justify-between items-center py-4 px-4 rounded-xl cursor-pointer
+                                transition-all duration-200 relative overflow-hidden
+                                ${isSelected 
+                                ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' 
+                                : 'hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-100'
+                                }
+                            `}
+                            onClick={() => handleDateSelect(date)}
+                            >
+                            <div className="flex flex-col gap-1">
+                                <span className={`text-sm ${isSelected ? 'text-blue-100' : 'text-gray-400'}`}>
+                                {date.year}
+                                </span>
+                                <span className="text-base font-medium">
+                                {date.month}월
+                                </span>
+                            </div>
+                            {isSelected && (
+                                <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">선택됨</span>
+                                <LuCheck className="w-5 h-5" />
+                                </div>
+                            )}
+                            </li>
+                        );
+                        })}
+                    </ul>
                     </div>
                 </div>
             </Drawer>

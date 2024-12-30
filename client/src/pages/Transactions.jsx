@@ -21,11 +21,11 @@ const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
     const [depositType, setDepositType] = useState('');
-    const [expenseCard, setExpenseCard] = useState('TeamCard'); // 기본값: 팀카드
+    // const [expenseCard, setExpenseCard] = useState('TeamCard'); // 기본값: 팀카드
     const [expenseType, setExpenseType] = useState('RegularExpense'); // 기본값: 일반 지출
-    const expenceCardRef = useRef(null);
+    // const expenceCardRef = useRef(null);
     // const expenceTypeRef = useRef(null);
-    const expenceMerchantRef = useRef(null);
+    // const expenceMerchantRef = useRef(null);
     const [cardBalance, setCardBalance] = useState(0);
     const [teamFund, setTeamFund] = useState(0);
     const [errMsg, setErrMsg] = useState('');
@@ -47,7 +47,7 @@ const Transactions = () => {
     const [selectedCardId, setSelectedCardId] = useState(''); // 현재 선택된 카드 ID
     const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
-    const [isDateOpen, setIsDateOpen] = useState(false);
+    // const [isDateOpen, setIsDateOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -173,7 +173,6 @@ const Transactions = () => {
     };
 
     const handleSelectedDate = (date) => {
-        console.log(date);
         fetchTransactionsForMonth(date.year, date.month);
         setSelectedYear(date.year);
         setSelectedMonth(date.month);
@@ -437,8 +436,6 @@ const Transactions = () => {
                 
                 {/* 트랜잭션 드로어 컴포넌트 */}
                 <TransactionDrawer
-                    color="#dce8f5"
-                    darkColor="#1e293b"
                     isOpen={isOpen}
                     onClose={handleCloseDrawer}
                     onSave={handleSave}

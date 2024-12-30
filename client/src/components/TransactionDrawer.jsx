@@ -8,9 +8,6 @@ import PropTypes from 'prop-types';
 import { IoCheckmark } from "react-icons/io5";
 import { MdClose } from 'react-icons/md';
 import { API_URLS } from '../services/apiUrls';
-// import { useDarkMode } from '../context/DarkModeContext';
-// import { useLocation } from 'react-router-dom';
-// import { useTheme } from '../context/ThemeColorContext';
 import useDrawerTheme from '../hooks/useDrawerTheme';
 
 const TransactionDrawer = ({
@@ -45,34 +42,7 @@ const TransactionDrawer = ({
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [merchantSuggestions, setMerchantSuggestions] = useState([]);
     const [menuSuggestions, setMenuSuggestions] = useState([]);
-    
-    // const { isDarkMode } = useDarkMode();
-    // const { setThemeColor, resetThemeColor } = useTheme();
-    // const location = useLocation();
 
-    // useEffect(() => {
-    //     if (isOpen) {
-    //         const newColor = getDrawerColor(location.pathname);
-    //         setThemeColor(newColor);
-    //     } else {
-    //         resetThemeColor();
-    //     }
-    // }, [isOpen, location.pathname, setThemeColor, resetThemeColor]);
-
-    // const getDrawerColor = (pathname) => {
-    //     console.log(pathname);
-    //     if (pathname === '/') {
-    //         return '#0433FF';
-    //     } else if (pathname === '/contacts') {
-    //         return '#0433FF';
-    //     } else if (pathname === '/contact') {
-    //         return '#dce8f5';
-    //     } else if (pathname === '/profile') {
-    //         return '#59626e';
-    //     } else {
-    //         return '#FFFFFF';
-    //     }
-    // };
     useDrawerTheme(isOpen);
 
     useEffect(() => {
