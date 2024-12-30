@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { MutatingDots } from 'react-loader-spinner';
 import { LuConstruction } from "react-icons/lu";
+import AppravalList from '../../components/approval/AppravalList';
+// import DateFilter from '../../components/DateFilter';
+// import SearchFilter from '../../components/SearchFilter';
+// import { MdClose } from 'react-icons/md';
 
 function Index() {
     const [activeTab, setActiveTab] = useState('approval-list');
@@ -38,7 +42,8 @@ function Index() {
                 </div>
             </header>
             <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
-                <div className='relative flex flex-col justify-center items-center gap-y-4 p-6 w-full bg-white text-slate-700 dark:text-slate-400 dark:bg-slate-800 rounded-lg shadow-sm min-h-contentWithTab-screen'>
+            {/* flex flex-col justify-center items-center gap-y-4  */}
+                {/* <div className='relative w-full bg-white text-slate-700 dark:text-slate-400 dark:bg-slate-800 rounded-lg shadow-sm min-h-contentWithTab-screen overflow-hidden'> */}
                     {isLoading ? ( 
                         <MutatingDots
                             visible={true}
@@ -53,10 +58,15 @@ function Index() {
                         />
                         ) : (
                             isPublish ? (
-                                <div className="p-4">
+                                <div>
                                     {activeTab === 'approval-list' && (
-                                        <span className="font-semibold text-2xl">결재 리스트</span>
-                                        
+                                        <>
+                                            {/* <div className='flex justify-between px-2 mb-2'>
+                                                <DateFilter title={'결재 기간 선택'}/>
+                                                <SearchFilter placeHolder={'결재 검색'} />
+                                            </div> */}
+                                            <AppravalList />
+                                        </>
                                     )}
 
                                     {activeTab === 'approval-select' && (
@@ -71,7 +81,7 @@ function Index() {
                             )
                         )
                     }
-                </div>
+                {/* </div> */}
             </div>
         </>
     )

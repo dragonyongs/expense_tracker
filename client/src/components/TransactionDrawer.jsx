@@ -154,7 +154,7 @@ const TransactionDrawer = ({
             setErrorMessage("필수 필드를 모두 입력해주세요.");
             return;
         }
-        setInitialColor(originalColor);
+        // setInitialColor(originalColor);
         onSave(selectedTransaction);
     };
 
@@ -237,7 +237,6 @@ const TransactionDrawer = ({
                 <div className="dark:bg-slate-800">
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
                         {errMsg || errorMessage && <div className="text-red-600 dark:text-red-300">{errMsg || errorMessage }</div>}
-
                         <div>
                             <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 타입</h3>
                             { selectedTransaction.expense_card === 'OvertimeMealCard' ? ( 
@@ -461,8 +460,8 @@ const TransactionDrawer = ({
                             </button>
                         )}
                     </div>
-                    </div>
-                </Drawer>
+                </div>
+            </Drawer>
 
             {/* 삭제 모달 : 추후 컴포넌트로 변경 */}
             {isDeleteConfirmOpen && (

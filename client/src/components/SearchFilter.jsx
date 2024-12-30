@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { IoSearch, IoClose } from "react-icons/io5";
 import { IoMdClose} from "react-icons/io";
 
-function SearchFilter({ onSearchStateChange, onSearchTermChange }) {
+function SearchFilter({ onSearchStateChange, onSearchTermChange, placeHolder='거래내역 검색...'}) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
     const inputRef = useRef(null);
@@ -53,7 +53,7 @@ function SearchFilter({ onSearchStateChange, onSearchTermChange }) {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="거래내역 검색..."
+                        placeholder={placeHolder}
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                         onKeyPress={handleKeyPress}

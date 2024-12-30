@@ -13,11 +13,16 @@ export default {
       },
       animation: {
         'flip-once': 'flip-once 0.5s ease-in-out forwards', // 한 번만 플립되는 애니메이션
+        'pulse-expand': 'pulse-expand 1s ease-out infinite',
       },
       keyframes: {
         'flip-once': {
           '0%': { transform: 'rotateY(0deg)' },
           '100%': { transform: 'rotateY(360deg)' },
+        },
+        'pulse-expand': {
+          '0%': { transform: 'scale(1)', opacity: '0.4' },
+          '100%': { transform: 'scale(3)', opacity: '0' },
         },
       },
       backgroundImage: {
