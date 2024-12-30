@@ -14,7 +14,7 @@ const HeaderWithTabs = ({ tabs }) => {
                     {currentTab ? currentTab.title : 'Unknown Tab'}
                 </span>
             </div>
-            <div className="flex w-full border-b border-gray-200">
+            <div className="flex w-full border-b border-gray-200 dark:border-slate-600">
                 {tabs.map(tab => (
                     <button
                         key={tab.path}

@@ -123,7 +123,6 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
 
         {/* CommonDrawer 컴포넌트 추가 */}
         <CommonDrawer
-            color="#FFFFFF"
             isOpen={isTransactionReceiptOpen}
             userCards={userCards}
             onClose={handleCloseDrawer}

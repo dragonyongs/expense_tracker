@@ -14,13 +14,13 @@ const TransactionReceipt = forwardRef(({ transaction, cardNumber, cardUser }, re
 
     return (
         <>
-            <div ref={ref} className="mx-auto w-full bg-white">
+            <div ref={ref} className="mx-auto w-full bg-white dark:bg-slate-800">
                 <div className='pt-6'>
                     <div className="flex flex-col items-center justify-between mb-3 gap-y-3">
                         <div className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center">
                             <TbCreditCardPay className="w-6 h-6" />
                         </div>
-                        <div className="print:text-xl text-2xl font-semibold text-center">{transaction.merchant_name}</div>
+                        <div className="print:text-xl text-2xl font-semibold text-center dark:text-slate-200">{transaction.merchant_name}</div>
                     </div>
 
                     <div className="text-center text-green-500 print:text-2xl text-3xl font-bold mt-2 mb-6">
@@ -28,7 +28,7 @@ const TransactionReceipt = forwardRef(({ transaction, cardNumber, cardUser }, re
                     </div>
                 </div>
 
-                <div className="max-w-sm mx-auto pt-6 border-t-2 border-dashed border-t-gray-200 py-6 px-8">
+                <div className="max-w-sm mx-auto pt-6 border-t-2 border-dashed border-t-gray-200 dark:border-t-gray-500 dark:text-slate-400 py-6 px-8">
                     <div className="grid grid-cols-4 gap-4 print:text-lg">
                         <div className="font-medium">카드번호</div>
                         <div className='col-span-3'>{cardNumber}</div>

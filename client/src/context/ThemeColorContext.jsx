@@ -19,13 +19,12 @@ export const ThemeProvider = ({ children }) => {
     };
 
     const getDefaultThemeColor = () => {
-        // 첫 페이지(/)와 특별 경로에서 색상 지정
         if (location.pathname === '/') {
-            return '#0433FF'; // 대시보드 경로
+            return '#0433FF';
         } else if (specialPaths.includes(location.pathname)) {
-            return isDarkMode ? '#1e293b' : '#dce8f5'; // 특별 경로 색상
+            return isDarkMode ? '#1e293b' : '#dce8f5';
         } else {
-            return '#FFFFFF'; // 기본 색상
+            return '#FFFFFF';
         }
     };
 

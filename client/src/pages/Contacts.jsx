@@ -252,7 +252,7 @@ function Contacts() {
             )}
 
             </div>
-            <CommonDrawer color="#0433ff" darkColor="#312e81" isOpen={isOpen} title="프로필 정보" className="text-white bg-starBlue  dark:bg-indigo-900" onClose={handleCloseDrawer}>
+            <CommonDrawer isOpen={isOpen} title="프로필 정보" className="text-white bg-starBlue  dark:bg-indigo-900" onClose={handleCloseDrawer}>
                 <div className="overflow-y-auto h-profile-screen">
                     <div className="py-4 flex flex-col items-center gap-y-4 bg-starBlue dark:bg-indigo-900">
                         <div className="flex justify-center items-center w-24 h-24 bg-white border border-slate-200 rounded-full dark:text-white dark:border-white dark:bg-transparent">

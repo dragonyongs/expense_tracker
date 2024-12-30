@@ -12,8 +12,10 @@ import { ThreeDots } from 'react-loader-spinner';
 import { FaChevronDown } from "react-icons/fa";
 import { LuTrash } from "react-icons/lu";
 import { formatDateForInput } from '../utils/dateUtils';
+import useDrawerTheme from '../hooks/useDrawerTheme';
 
 const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose, onSave, isOpen }) => {
+    useDrawerTheme(isOpen);
 
     const [profile, setProfile] = useState({
         phones: [],

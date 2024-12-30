@@ -202,14 +202,12 @@ const LeaderCardDetail = ({leaderCards, teamMembersCount, remainingDays}) => {
             ))}
 
             {/* 팀 운영비 표시 */}
-            {teamFund > 0 && (
-                <div className="flex justify-between mt-2">
-                    <h4 className="text-md dark:text-slate-500">팀 운영비</h4>
-                    <span className="text-lg font-bold dark:text-slate-400">
-                        {teamFund.toLocaleString()}원
-                    </span>
-                </div>
-            )}
+            <div className="flex justify-between mt-2">
+                <h4 className="text-md dark:text-slate-500">팀 운영비</h4>
+                <span className="text-lg font-bold dark:text-slate-400">
+                    {teamFund.toLocaleString()}원
+                </span>
+            </div>
 
             {/* 전체 잔액 (카드 + 팀 운영비) */}
             <div className="flex justify-between mt-4 border-t pt-2 dark:border-slate-600">

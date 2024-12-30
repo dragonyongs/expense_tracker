@@ -76,11 +76,11 @@ const Signin = () => {
                             />
                             <span className="ml-2 text-sm text-gray-600 dark:text-slate-400">이메일 기억하기</span>
                         </label>
-                        <a href="/signup" className="text-sm text-blue-600 hover:underline">회원가입</a>
+                        <a href="/signup" className="text-sm text-blue-600 dark:text-slate-300 hover:underline">회원가입</a>
                     </div>
                     <button
                         type="submit"
-                        className={`w-full text-white ${email && password ? 'bg-gray-800 hover:bg-gray-900' : 'bg-gray-400 cursor-not-allowed dark:bg-slate-700'} focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-lg px-5 py-2.5 me-2 mb-2`}
+                        className={`w-full text-white dark:text-slate-300 ${email && password ? 'bg-gray-800 hover:bg-gray-900' : 'bg-gray-400 cursor-not-allowed dark:bg-slate-700'} focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-lg px-5 py-2.5 me-2 mb-2`}
                         disabled={!email || !password}
                     >
                         로그인
