@@ -18,6 +18,7 @@ const useDrawerTheme = (isOpen) => {
     }, [isOpen, location.pathname, setThemeColor, resetThemeColor]);
 
     const getDrawerColor = (pathname, isOpen) => {
+        console.log(pathname, isOpen)
         if (pathname === '/') {
             return isOpen ? '#FFFFFF' : '#0433FF';
         } else if (pathname === '/contacts') {

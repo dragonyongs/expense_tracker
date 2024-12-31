@@ -10,8 +10,10 @@ import { DRAWER_STYLES } from '../../styles/drawerStyles';
 import { FaChevronDown } from "react-icons/fa";
 import { ThreeDots } from 'react-loader-spinner';
 import PasswordValidation from '../PasswordValidation';
+import useDrawerTheme from '../../hooks/useDrawerTheme';
 
 const PasswordChangeDrawer = ({ isOpen, onClose, onSave, memberId, title, successMsg, errMsg }) => {
+    useDrawerTheme(isOpen);
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
