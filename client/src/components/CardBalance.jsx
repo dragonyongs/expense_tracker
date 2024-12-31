@@ -4,12 +4,10 @@ import { ConfettiEffect } from './ConfettiEffect';
 import TransactionDrawer from './TransactionDrawer';
 import AnimatedNumber from './AnimatedNumber';
 import { TiPlus } from "react-icons/ti";
-import useDrawerTheme from '../hooks/useDrawerTheme';
 
 function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, cardBalance, errMsg }) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [confettiTrigger, setConfettiTrigger] = useState(false);
-    useDrawerTheme(isDrawerOpen);
 
     const handleSave = async (transactionData) => {
         try {
