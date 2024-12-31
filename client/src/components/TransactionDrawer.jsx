@@ -44,10 +44,9 @@ const TransactionDrawer = ({
     const [merchantSuggestions, setMerchantSuggestions] = useState([]);
     const [menuSuggestions, setMenuSuggestions] = useState([]);
 
-    useDrawerTheme(isOpen);
-
     useEffect(() => {
         if (isOpen) {
+            useDrawerTheme(isOpen);
             const isExistingTransaction = Boolean(transactionData && transactionData.expense_type);
     
             if (isExistingTransaction) {
