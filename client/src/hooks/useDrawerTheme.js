@@ -10,14 +10,14 @@ const useDrawerTheme = (isOpen) => {
 
     useEffect(() => {
         if (isOpen) {
-            const newColor = getDrawerColor(location.pathname);
+            const newColor = getDrawerColor(location.pathname, isOpen);
             setThemeColor(newColor);
         } else {
             resetThemeColor();
         }
     }, [isOpen, location.pathname, setThemeColor, resetThemeColor]);
 
-    const getDrawerColor = (pathname) => {
+    const getDrawerColor = (pathname, isOpen) => {
         if (pathname === '/') {
             return isOpen ? '#FFFFFF' : '#0433FF';
         } else if (pathname === '/contacts') {
