@@ -18,6 +18,18 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
         setFileDrawerOpen(true);
     };
 
+    const isHalfDay = (selectedItem) => {
+        const startDate = new Date(selectedItem.date_start);
+        const endDate = new Date(selectedItem.date_end);
+        
+        // 오전 반차: 09:00 ~ 13:00
+        const isMorningHalfDay = startDate.getHours() === 9 && endDate.getHours() === 13;
+        // 오후 반차: 14:00 ~ 18:00
+        const isAfternoonHalfDay = startDate.getHours() === 14 && endDate.getHours() === 18;
+    
+        return isMorningHalfDay || isAfternoonHalfDay;
+    };
+
     return (
     <>
         <Drawer
@@ -63,7 +75,7 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
                     </div>
                     <div className="flex justify-between items-start">
                         <span className="text-gray-600">기간</span>
-                        <span className="text-right max-w-[200px]">{formatDuration(selectedItem.date_start, selectedItem.date_end)}</span>
+                        <span className="text-right max-w-[200px]">{formatDuration(selectedItem.date_start, selectedItem.date_end, isHalfDay(selectedItem))}</span>
                     </div>
                     {selectedItem.reason && (
                         <div className="flex justify-between items-start">

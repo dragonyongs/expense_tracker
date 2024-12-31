@@ -69,7 +69,14 @@ export const getStatusStyle = (status) => {
     return styles[status] || 'bg-gray-100 text-gray-700 border border-gray-200';
 };
 
-export const formatDuration = (start, end) => {
+const calculateDuration = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const durationInHours = (endDate - startDate) / (1000 * 60 * 60); // 시간 단위로 변환
+    return durationInHours > 0 ? `(${durationInHours}시간)` : '';
+};
+
+export const formatDuration = (start, end, isHalfDay = false) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
     const isSameDay = format(startDate, 'yyyy.MM.dd') === format(endDate, 'yyyy.MM.dd');
@@ -81,11 +88,16 @@ export const formatDuration = (start, end) => {
     const validDays = eachDayOfInterval({ start: startDate, end: endDate })
         .filter(date => !isHoliday(date)); // 휴일 제외
     
-        // const dayDifference = differenceInDays(endDate, startDate) + 1; // 기간 계산
     const dayDifference = validDays.length; // 유효한 날짜 수
 
+    if (isHalfDay) {
+        const startTime = format(startDate, 'HH:mm');
+        const endTime = format(endDate, 'HH:mm');
+        return `${format(startDate, 'yyyy.MM.dd')} ${startTime} ~ ${endTime} ${calculateDuration(startDate, endDate)}`;
+    }
+
     if (isSameDay) {
-        return `${format(startDate, 'yyyy.MM.dd')}(${startDayOfWeek}) (${dayDifference}일간)`;
+        return `${format(startDate, 'yyyy.MM.dd')}(${startDayOfWeek}) (1일간)`;
     }
     
     return `${format(startDate, 'yyyy.MM.dd')}(${startDayOfWeek}) ~ ${format(endDate, 'yyyy.MM.dd')}(${endDayOfWeek}) (${dayDifference}일간)`;

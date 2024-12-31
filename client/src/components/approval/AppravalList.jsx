@@ -116,8 +116,8 @@ const ApprovalList = ({ isEditing, isApprover, isLoading }) => {
         },
         {
             id: 1,
-            date_start: '2024-11-15T13:00:00',
-            date_end: '2024-11-15T17:00:00',
+            date_start: '2024-11-15T14:00:00',
+            date_end: '2024-11-15T18:00:00',
             type: '오후반차',
             name: '박철수',
             status: '완료',
