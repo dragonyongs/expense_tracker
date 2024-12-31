@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "../services/axiosInstance";
 import Drawer from 'react-modern-drawer';
+import 'react-modern-drawer/dist/index.css';
 import useMediaQuery from '../hooks/useMediaQuery';
 import InputField from '../components/InputField'; 
 import SelectField from '../components/SelectField';
