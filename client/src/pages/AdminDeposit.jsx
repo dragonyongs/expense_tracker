@@ -706,7 +706,7 @@ const AdminDeposit = () => {
                             label="거래일" 
                             id="transaction_date" 
                             type='date'
-                            value={state.selectedDeposit?.transaction_date?.split("T")[0] || ""}
+                            value={state.selectedDeposit?.transaction_date?.split("T")[0] || new Date().toISOString().split('T')[0]}
                             className={"bg-white border border-slate-200"}
                             onChange={(e) => 
                                 setState(prevState => ({

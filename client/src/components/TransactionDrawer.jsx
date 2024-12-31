@@ -148,7 +148,7 @@ const TransactionDrawer = ({
     };
 
     const handleSaveClick = () => {
-        if (cardBalance === 0 && teamFund === 0) {
+        if (!isEditing && cardBalance === 0 && teamFund === 0) {
             setErrorMessage("잔액을 모두 사용해 기록할 수 없습니다.");
             return;
         } else if (!selectedTransaction.card_id || !selectedTransaction.transaction_amount || !selectedTransaction.transaction_date || !selectedTransaction.merchant_name || !selectedTransaction.merchant_name) {

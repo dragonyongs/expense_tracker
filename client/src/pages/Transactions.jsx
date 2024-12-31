@@ -221,7 +221,7 @@ const Transactions = () => {
     const handleSave = async (updatedTransaction) => {
         try {
             setErrMsg('');
-
+    
             const transactionData = {
                 card_id: updatedTransaction.card_id,
                 transaction_date: updatedTransaction.transaction_date,
@@ -241,13 +241,19 @@ const Transactions = () => {
                 transactionData.transaction_amount = currentAmount;
             }
     
+            // 연도와 월을 transaction_date에서 추출
+            const transactionDate = new Date(updatedTransaction.transaction_date);
+            const transactionYear = transactionDate.getFullYear();
+            const transactionMonth = transactionDate.getMonth() + 1; // getMonth()는 0부터 시작하므로 1을 더함
+    
             if (isEditing) {
                 await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
             } else {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
     
-            await fetchTransactionsForMonth(selectedYear, selectedMonth);
+            // 수정된 연도와 월을 사용하여 거래 내역을 가져옴
+            await fetchTransactionsForMonth(transactionYear, transactionMonth);
             await fetchCards();
             handleCloseDrawer();
     
@@ -257,6 +263,7 @@ const Transactions = () => {
             setErrMsg(errorMsg);
         }
     };
+    
 
     const handleDelete = async () => {
         try {

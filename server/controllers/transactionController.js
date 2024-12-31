@@ -254,58 +254,63 @@ exports.updateTransaction = async (req, res) => {
                 // 단순 상점명, 메뉴명 수정
                 console.log('No amount or expense type change detected, skipping balance updates.');
             } else {
-                // (1) 이전 금액 복구 로직
-                if (previousExpenseType === 'TeamFund' && transaction.teamFundDeducted > 0) {
-                    card.team_fund += transaction.teamFundDeducted;
-                }
-        
-                if (transaction.rolloverAmounted > 0) {
-                    card.rollover_amount += transaction.rolloverAmounted;
-                }
-        
-                if (previousExpenseType === 'RegularExpense' || !isExpenseTypeChanged) {
-                    card.balance += previousAmount;
-                }
-        
-                // (2) 새로운 금액 차감 로직
-                let remainingAmount = newAmount;
-                let newTeamFundDeducted = 0;
-                let newRolloverAmounted = 0;
-        
-                if (expense_type === 'TeamFund') {
-                    if (card.team_fund >= newAmount) {
-                        card.team_fund -= newAmount;
-                        newTeamFundDeducted = newAmount;
-                    } else {
-                        return res.status(400).json({ error: '팀 운영비 잔액이 부족합니다.' });
+                // 금액이 변경된 경우에만 복구 및 차감 로직 실행
+                if (newAmount !== previousAmount) {
+                    // (1) 이전 금액 복구 로직
+                    if (previousExpenseType === 'TeamFund' && transaction.teamFundDeducted > 0) {
+                        card.team_fund += transaction.teamFundDeducted;
                     }
-                } else if (expense_type === 'RegularExpense' || !expense_type) {
-                    if (card.balance >= newAmount) {
-                        card.balance -= newAmount;
-                    } else {
-                        remainingAmount = newAmount - card.balance;
-                        card.balance = 0;
         
-                        if (remainingAmount <= card.rollover_amount) {
-                            newRolloverAmounted = remainingAmount;
-                            card.rollover_amount -= remainingAmount;
+                    if (transaction.rolloverAmounted > 0) {
+                        card.rollover_amount += transaction.rolloverAmounted;
+                    }
+        
+                    if (previousExpenseType === 'RegularExpense' || !isExpenseTypeChanged) {
+                        card.balance += previousAmount;
+                    }
+        
+                    // (2) 새로운 금액 차감 로직
+                    let remainingAmount = newAmount;
+                    let newTeamFundDeducted = 0;
+                    let newRolloverAmounted = 0;
+        
+                    if (expense_type === 'TeamFund') {
+                        if (card.team_fund >= newAmount) {
+                            card.team_fund -= newAmount;
+                            newTeamFundDeducted = newAmount;
                         } else {
-                            remainingAmount -= card.rollover_amount;
-                            card.rollover_amount = 0;
+                            return res.status(400).json({ error: '팀 운영비 잔액이 부족합니다.' });
+                        }
+                    } else if (expense_type === 'RegularExpense' || !expense_type) {
+                        if (card.balance >= newAmount) {
+                            card.balance -= newAmount;
+                        } else {
+                            remainingAmount = newAmount - card.balance;
+                            card.balance = 0;
         
-                            if (remainingAmount <= card.team_fund) {
-                                card.team_fund -= remainingAmount;
-                                newTeamFundDeducted = remainingAmount;
+                            if (remainingAmount <= card.rollover_amount) {
+                                newRolloverAmounted = remainingAmount;
+                                card.rollover_amount -= remainingAmount;
                             } else {
-                                return res.status(400).json({ error: '잔액, 이월 금액 및 팀 운영비가 부족합니다.' });
+                                remainingAmount -= card.rollover_amount;
+                                card.rollover_amount = 0;
+        
+                                if (remainingAmount <= card.team_fund) {
+                                    card.team_fund -= remainingAmount;
+                                    newTeamFundDeducted = remainingAmount;
+                                } else {
+                                    return res.status(400).json({ error: '잔액, 이월 금액 및 팀 운영비가 부족합니다.' });
+                                }
                             }
                         }
                     }
-                }
         
-                // 업데이트된 차감 데이터 저장
-                transaction.teamFundDeducted = newTeamFundDeducted;
-                transaction.rolloverAmounted = newRolloverAmounted;
+                    // 업데이트된 차감 데이터 저장
+                    transaction.teamFundDeducted = newTeamFundDeducted;
+                    transaction.rolloverAmounted = newRolloverAmounted;
+                } else {
+                    console.log('Transaction amount is unchanged, skipping balance updates.');
+                }
             }
         }
 

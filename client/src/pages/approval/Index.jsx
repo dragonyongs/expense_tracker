@@ -2,9 +2,11 @@ import React, { useState, useEffect, useContext } from 'react'
 import { MutatingDots } from 'react-loader-spinner';
 import { LuConstruction } from "react-icons/lu";
 import AppravalList from '../../components/approval/AppravalList';
+import ApprovalTabs from '../../components/approval/tabs/ApprovalTabs';
 
 function Index() {
     const [activeTab, setActiveTab] = useState('approval-list');
+    const [isApprover, setIsApprover] = useState(false);
     const [isPublish, setIsPublish] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [errMsg, setErrMsg] = useState('');
@@ -15,28 +17,7 @@ function Index() {
                 <h1 className="text-2xl font-medium mb-2">
                     <span className='font-semibold'>결재</span>
                 </h1>
-                <div className="flex w-full border-b border-gray-200 dark:border-slate-600">
-                    <button
-                        onClick={() => setActiveTab('approval-list')}
-                        className={`flex-1 py-3 text-lg font-medium text-center transition-colors duration-200
-                        ${activeTab === 'approval-list' 
-                            ? 'text-blue-500 border-b-2 border-blue-600' 
-                            : 'text-gray-500'
-                        }`}
-                    >
-                        리스트
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('approval-select')}
-                        className={`flex-1 py-3 text-lg font-medium text-center transition-colors duration-200
-                        ${activeTab === 'approval-select' 
-                            ? 'text-blue-600 border-b-2 border-blue-600' 
-                            : 'text-gray-500'
-                        }`}
-                    >
-                        신청
-                    </button>
-                </div>
+                <ApprovalTabs activeTab={activeTab} setActiveTab={setActiveTab} isApprover={isApprover} />
             </header>
             <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
                 {isLoading ? ( 
