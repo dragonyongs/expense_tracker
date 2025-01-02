@@ -35,9 +35,14 @@ const MemberManagement = ({
     uploadStatus,
 }) => {
     
+    const [newPassword, setNewPassword] = useState('');
     const [resetPassword, setResetPassword] = useState('');
     
     const handleInputChange = (field, value) => {
+        if(field === 'password') {
+            setNewPassword(value);
+            setSelectedMember({ ...selectedMember, [field]: newPassword });
+        }
         setSelectedMember({ ...selectedMember, [field]: value });
     };
 
@@ -53,20 +58,19 @@ const MemberManagement = ({
     };
 
     const handlePasswordReset = async () => {
-        const newPassword = generateRandomPassword(); // 랜덤 비밀번호 생성 함수
+        const randomPassword = generateRandomPassword(); // 랜덤 비밀번호 생성 함수
     
         try {
             const response = await axios.post(
                 `${API_URLS.MEMBERS}/${selectedMember._id}/reset-password`,
                 {
-                    password: newPassword,
+                    password: randomPassword,
                     is_password_reset: true,
                 }
             );
     
-            // 서버에서 반환된 데이터 확인
-            if (response.data.success) { // 서버에서 success: true 반환한다고 가정
-                setResetPassword(newPassword); // 화면에 비밀번호 표시
+            if (response.data.success) {
+                setResetPassword(randomPassword);
                 alert("비밀번호가 초기화되었습니다. 사용자에게 전달하세요.");
             } else {
                 alert(`비밀번호 초기화 실패: ${response.data.message}`);
@@ -119,10 +123,10 @@ const MemberManagement = ({
                                     label="비밀번호" 
                                     id="password"
                                     type="password"
-                                    value={password}
+                                    value={newPassword}
                                     onChange={(e) => handleInputChange('password', e.target.value)}
-                                    showReset={isEditing} // 수정 시에만 초기화 버튼 노출
-                                    onReset={handlePasswordReset} // 초기화 버튼 핸들러
+                                    showReset={isEditing}
+                                    onReset={handlePasswordReset}
                                     placeholder="비밀번호 변경 없음" 
                                     required={false} 
                                 />
