@@ -171,7 +171,7 @@ exports.createTransaction = async (req, res) => {
                 depositAmount = Math.min(maxLimit - card.balance, depositAmount);
             }
 
-            if (`deposit_type` === 'TeamFund') {
+            if (deposit_type === 'TeamFund') {
                 card.team_fund += depositAmount;
             } else {
                 card.balance += depositAmount;
