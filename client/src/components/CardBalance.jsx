@@ -56,7 +56,6 @@ function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, ca
 
             {/* 트랜잭션 드로어 컴포넌트 */}
             <TransactionDrawer
-                drawerColor="#FFFFFF"
                 isOpen={isDrawerOpen}
                 onClose={handleCloseDrawer}
                 onSave={handleSave} // 저장 요청 전달

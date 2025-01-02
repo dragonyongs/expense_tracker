@@ -89,9 +89,9 @@ const Dashboard = () => {
 
         try {
             if (newTransaction._id) {
-                await axios.put(`${API_URLS.TRANSACTIONS}/${newTransaction._id}`, newTransaction);
+                await axios.put(`${API_URLS.TRANSACTIONS}/${newTransaction._id}`, transactionData);
             } else {
-                await axios.post(API_URLS.TRANSACTIONS, newTransaction);
+                await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
 
             await fetchTransactions();

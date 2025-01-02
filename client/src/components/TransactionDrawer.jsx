@@ -23,7 +23,6 @@ const TransactionDrawer = ({
     teamFund,
     errMsg,
 }) => {
-    
     const [errorMessage, setErrorMessage] = useState('');
     const [selectedTransaction, setSelectedTransaction] = useState({
         card_id: "",
@@ -38,15 +37,15 @@ const TransactionDrawer = ({
         teamFundDeducted: 0,
         is_deducted: false,      
     });
-    
     const [expenseType, setExpenseType] = useState('RegularExpense');
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [merchantSuggestions, setMerchantSuggestions] = useState([]);
     const [menuSuggestions, setMenuSuggestions] = useState([]);
 
+    useDrawerTheme(isOpen);
+
     useEffect(() => {
         if (isOpen) {
-            useDrawerTheme(isOpen);
             const isExistingTransaction = Boolean(transactionData && transactionData.expense_type);
     
             if (isExistingTransaction) {

@@ -15,16 +15,16 @@ const useDrawerTheme = (isOpen) => {
         } else {
             resetThemeColor();
         }
-    }, [isOpen, location.pathname, setThemeColor, resetThemeColor]);
+    }, [isOpen, location.pathname]);
 
     const getDrawerColor = (pathname, isOpen) => {
-        console.log(pathname, isOpen)
+
         if (pathname === '/') {
             return isOpen ? '#FFFFFF' : '#0433FF';
         } else if (pathname === '/contacts') {
             return isDarkMode ? '#312e80' : isOpen ? '#0433FF' : '#dce8f5';
         } else if (pathname === '/profile') {
-            return isDarkMode ? '#121924' : '#59626e';
+            return isDarkMode ? '#121924' : '#848b93';
         } else {
             return isDarkMode ? '#1d293b' : '#FFFFFF';
         }

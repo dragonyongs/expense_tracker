@@ -83,7 +83,7 @@ function DateFilter({ title, onDateSelect, className}) {
                 style={isMobile ? styles.mobile : styles.desktop}
             >
                 <div className="px-4 bg-white dark:bg-slate-800 dark:text-slate-200">
-                    <div className="flex justify-between items-center py-4 border-b dark:border-slate-700">
+                    <div className="flex justify-between items-center pt-4">
                         <h5 className="text-lg font-bold flex items-center gap-2">
                             <LuCalendar className="w-5 h-5 text-blue-500" />
                             {title}

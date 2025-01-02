@@ -1,19 +1,25 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Drawer from 'react-modern-drawer';
+import 'react-modern-drawer/dist/index.css';
 import { Link } from 'react-router-dom';
 import { RiArrowRightSLine } from "react-icons/ri";
 import { BsPrinter } from "react-icons/bs";
 import { MutatingDots } from 'react-loader-spinner';
 import PropTypes from 'prop-types';
-import CommonDrawer from '../components/CommonDrawer'; // CommonDrawer 호출
 import TransactionReceipt from '../components/TransactionReceipt';
+import useMediaQuery from '../hooks/useMediaQuery';
+import useDrawerTheme from '../hooks/useDrawerTheme';
 
 const PayHistory = ({ transactions, userCards, isLoading }) => {
     const [isTransactionReceiptOpen, setTransactionReceiptOpen] = useState(false);
-    const [selectedTransaction, setSelectedTransaction] = useState(''); // 선택된 거래 내역
+    const [selectedTransaction, setSelectedTransaction] = useState('');
     const [selectedCardNumber, setSelectedCardNumber] = useState('');
     const [selectedCardUser, setSelectedCardUser] = useState({});
-
+    const isMobile = useMediaQuery("(max-width: 640px)");
+    const drawerSize = isMobile ? "100%" : "375px";
     const transactionRef = useRef(null);
+
+    useDrawerTheme(isTransactionReceiptOpen);
 
     useEffect(() => {
         if (selectedTransaction) {
@@ -25,16 +31,15 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
     
 
     const handleOpenTransactionReceipt = (transaction) => {
-        setSelectedTransaction(transaction); // 선택된 거래 내역 설정
-        setTransactionReceiptOpen(true); // Drawer 열기
+        setSelectedTransaction(transaction);
+        setTransactionReceiptOpen(true);
     };
 
     const handleCloseDrawer = () => {
-        setTransactionReceiptOpen(false); // Drawer 닫기
+        setTransactionReceiptOpen(false);
     };
 
     const handlePrint = () => {
-        console.log('transactionRef', transactionRef);
         if (transactionRef.current) {
             const printWindow = window.open('', '_blank');
             if (printWindow) {
@@ -121,13 +126,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
             </div>
         )}
 
-        {/* CommonDrawer 컴포넌트 추가 */}
-        <CommonDrawer
-            isOpen={isTransactionReceiptOpen}
-            userCards={userCards}
-            onClose={handleCloseDrawer}
-            title="거래 내역"
-        >
+        <Drawer open={isTransactionReceiptOpen} userCards={userCards} onClose={handleCloseDrawer} duration="300" direction="right" size={drawerSize}>
             <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen dark:bg-slate-800">
                 <TransactionReceipt ref={transactionRef} transaction={selectedTransaction} cardNumber={selectedCardNumber} cardUser={selectedCardUser} />
             </div>
@@ -147,7 +146,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
                     닫기
                 </button>
             </div>
-        </CommonDrawer>
+        </Drawer>
         </div>
     );
 };
