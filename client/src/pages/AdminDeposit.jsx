@@ -269,6 +269,8 @@ const AdminDeposit = () => {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
 
+            await fetchData(`${API_URLS.DEPOSITS}/${currentYear}/${currentMonth}`, 'deposits');
+            
             setState(prev => ({ ...prev, isOpen: false, errMsg: "" }));
         } catch (error) {
             setState(prev => ({ ...prev, errMsg: error.response?.data?.message || error.message }));
