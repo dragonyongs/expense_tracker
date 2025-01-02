@@ -48,7 +48,6 @@ const Dashboard = () => {
 
     const { fetchData: fetchTransactions, isLoading: isLoadingTransactions, error: transactionError } = useFetchData(async () => {
         const response = await axios.get(API_URLS.TRANSACTIONS);
-        console.log(response.data)
         setTransactions(response.data);
     });
 
