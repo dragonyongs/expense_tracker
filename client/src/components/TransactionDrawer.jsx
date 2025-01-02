@@ -47,7 +47,8 @@ const TransactionDrawer = ({
     useEffect(() => {
         if (isOpen) {
             const isExistingTransaction = Boolean(transactionData && transactionData.expense_type);
-    
+            console.log(isExistingTransaction, transactionData);
+
             if (isExistingTransaction) {
                 setSelectedTransaction({
                     ...transactionData,
@@ -58,12 +59,16 @@ const TransactionDrawer = ({
                 if (cardBalance <= 0) {
                     setExpenseType("TeamFund");
                     setSelectedTransaction({
-                        ...selectedTransaction, 
+                        ...transactionData, 
                         card_id: userCards.length > 0 ? userCards[0]._id : "",
                         expense_type: 'TeamFund'
                     });
                 } else {
                     setExpenseType("RegularExpense");
+                    setSelectedTransaction({
+                        ...transactionData,
+                        card_id: userCards.length > 0 ? userCards[0]._id : "",
+                    });
                 }
             }
     
@@ -409,7 +414,7 @@ const TransactionDrawer = ({
                             label="거래일"
                             id="transaction_date"
                             type="date"
-                            value={selectedTransaction.transaction_date || ''}  // 값이 없으면 기본값 설정
+                            value={selectedTransaction.transaction_date || new Date()}  // 값이 없으면 기본값 설정
                             className="bg-white border border-slate-200"
                             onChange={(e) => {
                                 console.log("Transaction date changed:", e.target.value);  // 값 변경 로그 확인

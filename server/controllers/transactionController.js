@@ -437,9 +437,8 @@ exports.getTransactionsByYearAndMonth = async (req, res) => {
                 transaction_date: { $gte: startDate, $lt: endDate }
             })
             .populate('card_id', 'card_number')
-            .sort({ transaction_date: -1 });
+            .sort({ transaction_date: 1 });
         }
-
         res.status(200).json(transactions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching transactions by year and month', error });

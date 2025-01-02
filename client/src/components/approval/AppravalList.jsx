@@ -21,7 +21,14 @@ const ApprovalList = ({ isEditing, isApprover, isLoading }) => {
     const handleApprove = () => { /* 승인 처리 로직 */ };
     const handleReject = () => { /* 반려 처리 로직 */ };
     const handleModify = () => { /* 수정 작업 로직 */ };
-
+    const formatDate = (dateString) => {
+    const date = new Date(dateString);
+        return date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\. /g, '.').replace('.', '');
+    };
     const data = [
         {
             id: 5,
@@ -135,57 +142,61 @@ const ApprovalList = ({ isEditing, isApprover, isLoading }) => {
     ];
 
     return (
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
-            {/* Header Section */}
-            <div className="sticky top-0 bg-white px-6 py-4 border-b rounded-t-lg">
+        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="sticky top-0 bg-white/95 backdrop-blur-sm px-6 py-4 border-b">
                 <div className="flex justify-between items-center text-sm font-medium text-gray-600">
-                <div className="w-24">신청일</div>
-                <div className="w-20">구분</div>
-                <div className="w-14">신청인</div>
-                <div className="w-14 text-center">현황</div>
-                <div className="w-12 text-center">첨부</div>
+                    <div className="w-28">신청일</div>
+                    <div className="w-24">구분</div>
+                    <div className="flex-1">신청인</div>
+                    <div className="w-16 text-center">현황</div>
                 </div>
             </div>
-
-            {/* List Section */}
-            <ul className="divide-y divide-gray-100">
-                {data.map((item) => (
-                <li
-                    key={item.id}
-                    onClick={() => handleOpenDrawer(item)}
-                    className="px-3 py-4 hover:bg-gray-50 cursor-pointer transition-all duration-200"
+    
+            {/* List */}
+            <div className="divide-y divide-gray-100">
+            {data.map((item) => (
+                <div
+                key={item.id}
+                onClick={() => handleOpenDrawer(item)}
+                className="group px-6 py-4 hover:bg-gray-50 cursor-pointer transition-all duration-200"
                 >
-                    <div className="flex justify-between items-center">
-                    <div className="w-24 flex items-center gap-2">
-                        <MdCalendarToday className="text-gray-400" />
-                        <span className="text-sm text-gray-600">
-                            {format(new Date(item.createdAt), 'yyyy.MM.dd')}
+                <div className="flex items-center space-x-4">
+                    {/* Date */}
+                    <div className="w-28">
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <MdCalendarToday className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                        <span className="text-sm">
+                        {formatDate(item.createdAt)}
                         </span>
                     </div>
+                    </div>
+    
+                    {/* Type */}
                     <div className="w-20">
-                        <span className="px-2 py-1 text-sm rounded-full border border-gray-200 font-medium">
+                    <span className="px-3 py-1.5 text-sm rounded-full bg-gray-100 text-gray-700 group-hover:bg-gray-200 transition-colors">
                         {item.type}
-                        </span>
+                    </span>
                     </div>
-                    <div className="w-14">
-                        <div className="text-sm font-medium">{item.name}</div>
+    
+                    {/* User Info */}
+                    <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900">{item.name}</div>
                         <div className="text-xs text-gray-500">{item.department}</div>
                     </div>
-                    <div className="w-14 flex justify-center">
-                        <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(item.status)}`}
-                        >
+    
+                    {/* Status */}
+                    <div className="w-16 flex justify-center">
+                    <span
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${getStatusStyle(item.status)}`}
+                    >
                         {item.status}
-                        </span>
+                    </span>
                     </div>
-                    <div className="w-12 text-center">
-                        {item.attachments && item.attachments.length > 0 && <MdOutlineAttachFile className="inline-block text-gray-500 h-5 w-5" />}
-                    </div>
-                    </div>
-                </li>
-                ))}
-            </ul>
-        
+                </div>
+                </div>
+            ))}
+            </div>
             <ApprovalDetailDrawer
                 selectedItem={selectedItem}
                 isOpen={isOpen}
@@ -197,7 +208,7 @@ const ApprovalList = ({ isEditing, isApprover, isLoading }) => {
                 isEditing={isEditing}
                 isLoading={isLoading}
             />
-    </div>
+        </div>
     );  
 };
 

@@ -105,11 +105,21 @@ const Transactions = () => {
             const monthParam = month === -1 ? 'all' : month;
             const response = await axios.get(`${API_URLS.TRANSACTIONS}/${year}/${monthParam}`);
             
-            const sortedTransactions = response.data
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date));
-    
+            const sortedTransactions = response.data.sort((a, b) => {
+                const dateA = new Date(a.createdAt);
+                const dateB = new Date(b.createdAt);
+                
+                // transaction_date 기준으로 정렬
+                if (dateA - dateB !== 0) {
+                    return dateB - dateA;
+                }
+                
+                // transaction_date가 같을 경우 createdAt 기준으로 정렬
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            
             setTransactions(sortedTransactions);
+
         } catch (error) {
             console.error('Error fetching transactions for the selected month:', error);
         } finally {

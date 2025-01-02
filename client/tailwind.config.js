@@ -65,7 +65,7 @@ export default {
         'default-screen': 'calc((var(--vh, 1vh) * 100) - 142px)',
         'FullDrawer-screen': 'calc((var(--vh, 1vh) * 100) - 164px)',
         'drawer-screen': 'calc((var(--vh, 1vh) * 100) - 172px)',
-        'profileDrawerMobile-screen': 'calc((var(--vh, 1vh) * 100) - 380px)',
+        'profileDrawerMobile-screen': 'calc((var(--vh, 1vh) * 100) - 260px)',
         'profileDrawer-screen': 'calc((var(--vh, 1vh) * 100) - 341px)',
         'dashboard-screen': 'calc((var(--vh, 1vh) * 100) - 381px)',
       },

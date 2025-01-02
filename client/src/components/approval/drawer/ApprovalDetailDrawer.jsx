@@ -146,7 +146,7 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
                         승인
                     </button>
                 </div>}
-                {selectedItem.status === '반려' && (
+                {selectedItem.status === '반려' && ( // 신청자와 해당 신청서와 동일인물인 경우에 노출로 관리자는 노출되면 안됨
                     <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors">
                         수정하기
                     </button>
