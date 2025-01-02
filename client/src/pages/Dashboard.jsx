@@ -48,6 +48,7 @@ const Dashboard = () => {
 
     const { fetchData: fetchTransactions, isLoading: isLoadingTransactions, error: transactionError } = useFetchData(async () => {
         const response = await axios.get(API_URLS.TRANSACTIONS);
+        console.log(response.data)
         setTransactions(response.data);
     });
 
@@ -97,7 +98,7 @@ const Dashboard = () => {
             await fetchTransactions();
             await fetchUserCard(); 
         } catch (error) {
-            console.error("Error saving transaction:", error);
+            console.error("handleSaveTransaction-Error saving transaction:", error);
             setErrMsg(handleError(error));
         }
     };
@@ -132,6 +133,7 @@ const Dashboard = () => {
                             userCards={userCards}
                             cardBalance={cardBalance}
                             errMsg={errMsg}
+                            setErrMsg={setErrMsg}
                         />
                         <PayHistory
                             transactions={transactions}

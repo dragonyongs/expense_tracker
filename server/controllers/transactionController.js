@@ -7,18 +7,40 @@ exports.getAllTransactions = async (req, res) => {
         const userCards = await Card.find({ member_id: userId });
 
         const cardIds = userCards.map(card => card._id); 
-        const transactions = await Transaction.find({ card_id: { $in: cardIds } }).sort({ transaction_date: -1 });
-
+        const transactions = await Transaction.find({ card_id: { $in: cardIds } }).sort({ createdAt: -1 });
         res.status(200).json(transactions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching transactions', error });
     }
 };
 
+// exports.getCardTransactions = async (req, res) => {
+//     try {
+//         const { cardId } = req.params;
+//         const transactions = await Transaction.find({ card_id: cardId });
+//         return res.status(200).json(transactions || []);
+//     } catch (error) {
+//         return res.status(500).json({ error: "트랜잭션 조회 중 오류가 발생했습니다." });
+//     }
+// };
+
 exports.getCardTransactions = async (req, res) => {
     try {
         const { cardId } = req.params;
-        const transactions = await Transaction.find({ card_id: cardId });
+        
+        // 현재 달의 시작일과 종료일 계산
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        const transactions = await Transaction.find({
+            card_id: cardId,
+            transaction_date: {
+                $gte: startOfMonth,
+                $lte: endOfMonth
+            }
+        }).sort({ transaction_date: -1 }); // 최신 거래내역부터 정렬
+
         return res.status(200).json(transactions || []);
     } catch (error) {
         return res.status(500).json({ error: "트랜잭션 조회 중 오류가 발생했습니다." });
@@ -39,6 +61,16 @@ exports.createTransaction = async (req, res) => {
         deposit_type,
     } = req.body;
 
+    console.log(card_id, 
+        expense_card,
+        expense_type,
+        is_deducted,
+        menu_name, 
+        merchant_name, 
+        transaction_date, 
+        transaction_amount, 
+        transaction_type, 
+        deposit_type,)
     if (!card_id || !transaction_date || transaction_amount <= 0 || !transaction_type || !merchant_name.trim() || !menu_name.trim()) {
         return res.status(400).json({ error: '필수 값이 누락되었습니다.' });
     }

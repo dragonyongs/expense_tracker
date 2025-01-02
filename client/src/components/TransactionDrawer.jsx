@@ -36,8 +36,10 @@ const TransactionDrawer = ({
         rolloverAmounted: 0,
         teamFundDeducted: 0,
         is_deducted: false,      
+        deposit_type: ""
     });
     const [expenseType, setExpenseType] = useState('RegularExpense');
+    const [userPosition, setUserPosition] = useState('');
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [merchantSuggestions, setMerchantSuggestions] = useState([]);
     const [menuSuggestions, setMenuSuggestions] = useState([]);
@@ -46,9 +48,10 @@ const TransactionDrawer = ({
 
     useEffect(() => {
         if (isOpen) {
-            const isExistingTransaction = Boolean(transactionData && transactionData.expense_type);
-            console.log(isExistingTransaction, transactionData);
+            setUserPosition(userCards[0].member_id.position);
 
+            const isExistingTransaction = Boolean(transactionData && transactionData.expense_type);
+            
             if (isExistingTransaction) {
                 setSelectedTransaction({
                     ...transactionData,
@@ -59,15 +62,17 @@ const TransactionDrawer = ({
                 if (cardBalance <= 0) {
                     setExpenseType("TeamFund");
                     setSelectedTransaction({
-                        ...transactionData, 
+                        ...selectedTransaction, 
                         card_id: userCards.length > 0 ? userCards[0]._id : "",
-                        expense_type: 'TeamFund'
+                        expense_type: 'TeamFund',
+                        transaction_date: new Date().toISOString().split('T')[0],
                     });
                 } else {
                     setExpenseType("RegularExpense");
                     setSelectedTransaction({
-                        ...transactionData,
+                        ...selectedTransaction,
                         card_id: userCards.length > 0 ? userCards[0]._id : "",
+                        transaction_date: new Date().toISOString().split('T')[0],
                     });
                 }
             }
@@ -241,6 +246,8 @@ const TransactionDrawer = ({
                 <div className="dark:bg-slate-800">
                     <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
                         {errMsg || errorMessage && <div className="text-red-600 dark:text-red-300">{errMsg || errorMessage }</div>}
+
+                        {userPosition === "팀장" && 
                         <div>
                             <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">지출 타입</h3>
                             { selectedTransaction.expense_card === 'OvertimeMealCard' ? ( 
@@ -318,7 +325,7 @@ const TransactionDrawer = ({
                                     </li>
                                 </ul>
                                 ) }
-                        </div>
+                        </div>}
 
                         <div className='relative'>
                             <InputField

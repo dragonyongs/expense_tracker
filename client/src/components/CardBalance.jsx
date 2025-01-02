@@ -5,7 +5,7 @@ import TransactionDrawer from './TransactionDrawer';
 import AnimatedNumber from './AnimatedNumber';
 import { TiPlus } from "react-icons/ti";
 
-function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, cardBalance, errMsg }) {
+function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, cardBalance, errMsg, setErrMsg }) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [confettiTrigger, setConfettiTrigger] = useState(false);
 
@@ -13,11 +13,12 @@ function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, ca
         try {
             await onSave(transactionData); // 부모로 저장 요청 전달
         } catch (error) {
-            console.error("Error saving transaction:", error);
+            console.error("CardBalance - Error saving transaction:", error);
         } finally {
             setConfettiTrigger(true);
             setTimeout(() => setConfettiTrigger(false), 3000);
             setIsDrawerOpen(false);
+            // 카드 지출 오픈 상태는 Dashboard로 이동해야함
         }
     };
     
@@ -30,7 +31,10 @@ function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, ca
         }
     };
 
-    const handleOpenDrawer = () => setIsDrawerOpen(true);
+    const handleOpenDrawer = () => {
+        setErrMsg('');
+        setIsDrawerOpen(true)
+    };
     const handleCloseDrawer = () => setIsDrawerOpen(false);
 
     return (
