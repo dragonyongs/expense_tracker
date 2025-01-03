@@ -1,6 +1,7 @@
-import { LuBuilding, LuSmartphone, LuCake, LuCalendarDays, LuHome } from 'react-icons/lu';
+import { LuBuilding, LuSmartphone, LuCake, LuCalendarDays } from 'react-icons/lu';
 import { LiaFaxSolid } from 'react-icons/lia';
 import { CiDeliveryTruck } from 'react-icons/ci';
+import { GoHome } from "react-icons/go";
 
 const contactIcons = {
     company_phone: <LuBuilding />,
@@ -29,7 +30,7 @@ const dateLabels = {
 };
 
 const addressIcons = {
-    home: <LuHome />,
+    home: <GoHome />,
     work: <LuBuilding />,
     delivery: <CiDeliveryTruck />
 };
