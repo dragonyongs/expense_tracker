@@ -2,7 +2,9 @@ import React, { useState, useEffect, useContext } from 'react'
 import { MutatingDots } from 'react-loader-spinner';
 import { LuConstruction } from "react-icons/lu";
 import AppravalList from '../../components/approval/AppravalList';
+import AppravalApply from '../../components/approval/AppravalApply';
 import ApprovalTabs from '../../components/approval/tabs/ApprovalTabs';
+import AppravalPending from '../../components/approval/AppravalPending';
 
 function Index() {
     const [activeTab, setActiveTab] = useState('approval-list');
@@ -39,8 +41,13 @@ function Index() {
                                     <AppravalList />
                                 )}
 
-                                {activeTab === 'approval-select' && (
-                                    <span className="font-semibold text-2xl">신청 선택</span>
+
+                                {activeTab === 'approval-pending' && (
+                                    <AppravalPending isApprover={isApprover}/>
+                                )}
+
+                                {activeTab === 'approval-apply' && (
+                                    <AppravalApply />
                                 )}
                             </div>
                         ) : (

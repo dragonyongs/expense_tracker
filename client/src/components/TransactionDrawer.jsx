@@ -10,6 +10,7 @@ import { IoCheckmark } from "react-icons/io5";
 import { MdClose } from 'react-icons/md';
 import { API_URLS } from '../services/apiUrls';
 import useDrawerTheme from '../hooks/useDrawerTheme';
+import ConfirmModal from './common/ConfirmModal';
 
 const TransactionDrawer = ({
     isOpen,
@@ -475,7 +476,7 @@ const TransactionDrawer = ({
             </Drawer>
 
             {/* 삭제 모달 : 추후 컴포넌트로 변경 */}
-            {isDeleteConfirmOpen && (
+            {/* {isDeleteConfirmOpen && (
                 <div className="fixed inset-0 z-110 flex items-center justify-center bg-gray-900 bg-opacity-50">
                     <div className="bg-white rounded-lg p-6 w-11/12 md:w-96">
                         <h3 className="text-lg font-semibold mb-4">정말로 삭제하시겠습니까?</h3>
@@ -497,7 +498,17 @@ const TransactionDrawer = ({
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
+
+            <ConfirmModal
+                isOpen={isDeleteConfirmOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteClick}
+                title="지출 삭제"
+                description="정말로 삭제하시겠습니까?"
+                confirmText="삭제"
+                confirmColor="red"
+            />
         </>
     );
 };

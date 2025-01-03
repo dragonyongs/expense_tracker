@@ -2,8 +2,8 @@
 const ApprovalTabs = ({ activeTab, setActiveTab, isApprover = false }) => {
     const tabs = [
         { id: 'approval-list', label: '신청 내역' },
+        isApprover && { id: 'approval-pending', label: '결재 내역' },
         { id: 'approval-apply', label: '신청 항목' },
-        isApprover && { id: 'approval-pending', label: '결재 내역' }
     ].filter(Boolean);
     
     return (

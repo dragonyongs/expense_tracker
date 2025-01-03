@@ -7,9 +7,12 @@ import FilePreviewDrawer from '../drawer/FilePreviewDrawer';
 import { getFileTypeInfo, formatDuration } from '../../../utils/approval';
 import { MdOutlineAttachFile, MdClose } from 'react-icons/md';
 import { IoIosArrowDown } from 'react-icons/io';
+import RejectionModal from '../../RejectionModal';
+import MessageModal from '../../common/MessageModal';
 
 const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReject, onModify, isApprover, isEditing, isLoading }) => {
     const [selectedFile, setSelectedFile] = useState(null);
+    const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
     const [fileOpen, setFileOpen] = useState(false);
     const [fileDrawerOpen, setFileDrawerOpen] = useState(false);
 
@@ -28,6 +31,11 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
         const isAfternoonHalfDay = startDate.getHours() === 14 && endDate.getHours() === 18;
     
         return isMorningHalfDay || isAfternoonHalfDay;
+    };
+
+    const handleReject = (message) => {
+        console.log('Rejection message:', message);
+        // 여기에 실제 반려 처리 로직 추가
     };
 
     return (
@@ -138,15 +146,20 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
 
             </div>
             <div className="space-y-3 p-4">
-                {selectedItem.status !== '완료' && <div className='flex justify-between gap-x-2'> {/* 결재권자의 경우 노출, 현재 단계 자신의 승인 단계 일때만 노출 조건 필요 */}
-                    <button className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition-colors">
+                {/* 결재권자의 경우 노출, 현재 단계 자신의 승인 단계 일때만 노출 조건 필요 */}
+                {/* 조건: 결재권자인경우 진행중인경우 */}
+                {isApprover && selectedItem.status === '진행중' && <div className='flex justify-between gap-x-2'> 
+                    <button className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition-colors" onClick={() => setIsRejectionModalOpen(true)}>
                         반려
                     </button>
                     <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors">
                         승인
                     </button>
                 </div>}
-                {selectedItem.status === '반려' && ( // 신청자와 해당 신청서와 동일인물인 경우에 노출로 관리자는 노출되면 안됨
+
+                {/* 신청자와 해당 신청서와 동일인물인 경우에 노출로 관리자는 노출되면 안됨 */}
+                {/* 조건: 신청자인 경우, 상태가 반려인 경우만 노출(결재권자X) */}
+                {!isApprover && selectedItem.status === '반려' && (
                     <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors">
                         수정하기
                     </button>
@@ -157,7 +170,21 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
                 >
                     닫기
                 </button>
-            </div> 
+            </div>
+            {/* <RejectionModal
+                isOpen={isRejectionModalOpen}
+                onClose={() => setIsRejectionModalOpen(false)}
+                onSave={handleReject}
+            />  */}
+            <MessageModal
+                isOpen={isRejectionModalOpen}
+                onClose={() => setIsRejectionModalOpen(false)}
+                onConfirm={handleReject}
+                title="반려 사유"
+                description="반려 사유를 입력해주세요."
+                confirmText="반려"
+                confirmColor="red"
+            />
             </>
         )}
         </Drawer>
