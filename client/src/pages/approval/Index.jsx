@@ -6,20 +6,20 @@ import ApprovalTabs from '../../components/approval/tabs/ApprovalTabs';
 
 function Index() {
     const [activeTab, setActiveTab] = useState('approval-list');
-    const [isApprover, setIsApprover] = useState(false);
+    const [isApprover, setIsApprover] = useState(true);
     const [isPublish, setIsPublish] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [errMsg, setErrMsg] = useState('');
     
     return (
         <>
-            <header className={`flex flex-col mb-6 pt-4 px-6 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+            <header className={`flex flex-col mb-4 pt-4 px-6 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                 <h1 className="text-2xl font-medium mb-2">
                     <span className='font-semibold'>결재</span>
                 </h1>
                 <ApprovalTabs activeTab={activeTab} setActiveTab={setActiveTab} isApprover={isApprover} />
             </header>
-            <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
+            <div className='flex flex-col gap-y-3 px-3 pb-4 dark:bg-slate-800'>
                 {isLoading ? ( 
                     <MutatingDots
                         visible={true}
