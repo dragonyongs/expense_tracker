@@ -1,3 +1,17 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("../node_modules/pretendard/dist/Pretendard-Regular.woff2")
+      format("woff2"),
+    url("../node_modules/pretendard/dist/Pretendard-Regular.woff")
+      format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "Pretendard", sans-serif;
+}
+
 #root {
   height: calc(var(--vh, 1vh) * 100);
 }

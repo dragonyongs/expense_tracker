@@ -6,7 +6,7 @@ import { RiArrowRightSLine } from "react-icons/ri";
 import { BsPrinter } from "react-icons/bs";
 import { MutatingDots } from "react-loader-spinner";
 import PropTypes from "prop-types";
-import TransactionReceiptPater from "./transaction/TransactionReceiptPaper";
+import TransactionReceiptPaper from "./transaction/TransactionReceiptPaper";
 import useMediaQuery from "../hooks/useMediaQuery";
 import useDrawerTheme from "../hooks/useDrawerTheme";
 
@@ -54,7 +54,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
                         </head>
                         <body>
                             <div class="flex justify-center items-center w-full h-full bg-gray-50">
-                                <div class="flex-grow max-w-sm py-6 border border-gray-300 rounded-md bg-white">
+                                <div class="flex-grow max-w-sm py-6">
                                     ${transactionRef.current.outerHTML}
                                 </div>
                             </div>
@@ -171,12 +171,13 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
         direction="right"
         size={drawerSize}
       >
-        <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen dark:bg-slate-800">
-          <TransactionReceiptPater
+        <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen bg-slate-50 dark:bg-slate-800">
+          <TransactionReceiptPaper
             ref={transactionRef}
             transaction={selectedTransaction}
             cardNumber={selectedCardNumber}
             cardUser={selectedCardUser}
+            onClose={handleCloseDrawer}
           />
         </div>
         <div className="flex flex-col gap-y-2 px-6 dark:bg-slate-800">

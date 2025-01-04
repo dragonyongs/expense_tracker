@@ -13,15 +13,20 @@ export const formatDateToKorean = (dateString, format = "full") => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0"); // 월은 0부터 시작하므로 +1
   const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0"); // 시
+  const hours = date.getHours();
   const minutes = String(date.getMinutes()).padStart(2, "0"); // 분
 
+  const ampm = hours >= 12 ? "오후" : "오전"; // 오전/오후 구분
+  const formattedHours = String(hours % 12 || 12).padStart(2, "0"); // 12시간 형식으로 변환
+
   if (format === "full") {
-    return `${year}년 ${month}월 ${day}일`; // 전체 형식
+    return `${year}년 ${month}월 ${day}일`;
   } else if (format === "monthDay") {
-    return `${month}월 ${day}일`; // 월과 일만
+    return `${month}월 ${day}일`;
   } else if (format === "fullWithTime") {
-    return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`; // 전체 형식(시간 포함)
+    return `${year}년 ${month}월 ${day}일 ${ampm} ${formattedHours}시 ${minutes}분`;
+  } else if (format === "time") {
+    return `${ampm} ${formattedHours}시 ${minutes}분`;
   }
   return ""; // 기본값
 };
