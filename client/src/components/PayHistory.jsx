@@ -23,7 +23,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
 
   useEffect(() => {
     if (selectedTransaction) {
-      csonst foundCard = userCards.find(
+      const foundCard = userCards.find(
         (card) => card._id === selectedTransaction.card_id
       );
       setSelectedCardNumber(foundCard.card_number);
