@@ -17,15 +17,22 @@ export const getExpenseLabel = (expenseType) => {
 const TransactionReceiptPaper = forwardRef(
   ({ transaction, cardNumber, cardUser, onClose }, ref) => {
     const handleDownloadImage = async () => {
-      if (ref.current) {
+      if (ref.current && transaction) {
         try {
+          const formattedDate = formatDateToKorean(
+            transaction.transaction_date,
+            "full"
+          );
+
+          const fileName = `영수증_${formattedDate}_${transaction.merchant_name}_${cardUser.member_name}.png`;
+
           const dataUrl = await toPng(ref.current, {
             width: ref.current.offsetWidth,
             height: ref.current.offsetHeight,
           });
           const link = document.createElement("a");
           link.href = dataUrl;
-          link.download = "receipt.png"; // 저장될 파일 이름
+          link.download = fileName; // 동적 파일 이름 설정
           link.click();
         } catch (error) {
           console.error("이미지 저장 중 오류가 발생했습니다:", error);
