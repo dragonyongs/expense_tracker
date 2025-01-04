@@ -70,7 +70,7 @@ const TransactionReceiptPaper = forwardRef(
         </div>
 
         {/* Receipt Paper Effect */}
-        <div className="flex justify-center">
+        <div className="flex justify-center font-mono">
           <div
             ref={ref}
             className="max-w-lg shadow-xl bg-white dark:bg-slate-900 relative border border-gray-100 dark:border-transparent dark:text-gray-300"
@@ -97,7 +97,7 @@ const TransactionReceiptPaper = forwardRef(
               </div>
 
               {/* Store Info */}
-              <div className="mt-4 text-sm space-y-1 font-mono">
+              <div className="mt-4 text-sm space-y-1">
                 <p>
                   카드번호: <span>{cardNumber}</span>
                 </p>
@@ -114,7 +114,7 @@ const TransactionReceiptPaper = forwardRef(
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>{transaction.menu_name}</span>
-                  <div className="flex space-x-4 font-mono">
+                  <div className="flex space-x-4">
                     <span>1</span>
                     <span>
                       {transaction.transaction_amount.toLocaleString()}
@@ -146,7 +146,7 @@ const TransactionReceiptPaper = forwardRef(
               <div className="my-4 border-t border-gray-300 dark:border-gray-800 border-dashed" />
 
               {/* Payment Info */}
-              <div className="flex flex-col space-y-2 font-mono text-sm">
+              <div className="flex flex-col space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>결제자</span>
                   <span className="tracking-tighter">
