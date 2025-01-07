@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
+import { TbUserPlus } from "react-icons/tb";
 
 const SampleForm = () => {
   const [leaveType, setLeaveType] = useState("하루종일");
-  const [showPopover, setShowPopover] = useState(false);
   const [newApprover, setNewApprover] = useState("");
   const [morningStartTime, setMorningStartTime] = useState("09:00");
   const [morningEndTime, setMorningEndTime] = useState("13:00");
   const [afternoonStartTime, setAfternoonStartTime] = useState("14:00");
   const [afternoonEndTime, setAfternoonEndTime] = useState("18:00");
   const [draggingItem, setDraggingItem] = useState(null); // 드래그 중인 항목 저장
+  const [showInput, setShowInput] = useState(false); // 입력 필드 표시 상태 추가
 
   const [columns, setColumns] = useState({
     approvers: {
@@ -33,7 +34,7 @@ const SampleForm = () => {
         },
       }));
       setNewApprover("");
-      setShowPopover(false);
+      setShowInput(false); // 입력 필드 숨김
     }
   };
 
@@ -47,47 +48,51 @@ const SampleForm = () => {
     }));
   };
 
+  const handleRemoveNewApprover = () => {
+    setNewApprover(""); // 신규 결재자 이름 초기화
+    setShowInput(false); // 입력 필드 숨김
+  };
+
   const renderTimeInputs = () => {
-    if (leaveType === "오전반차") {
+    if (leaveType === "오전반차" || leaveType === "오후반차") {
       return (
-        <div className="flex gap-4">
-          <input
-            type="time"
-            value={morningStartTime}
-            min="09:00"
-            max="13:00"
-            onChange={(e) => setMorningStartTime(e.target.value)}
-            className="p-2 border rounded"
-          />
-          <input
-            type="time"
-            value={morningEndTime}
-            min="09:00"
-            max="13:00"
-            onChange={(e) => setMorningEndTime(e.target.value)}
-            className="p-2 border rounded"
-          />
-        </div>
-      );
-    } else if (leaveType === "오후반차") {
-      return (
-        <div className="flex gap-4">
-          <input
-            type="time"
-            value={afternoonStartTime}
-            min="14:00"
-            max="18:00"
-            onChange={(e) => setAfternoonStartTime(e.target.value)}
-            className="p-2 border rounded"
-          />
-          <input
-            type="time"
-            value={afternoonEndTime}
-            min="14:00"
-            max="18:00"
-            onChange={(e) => setAfternoonEndTime(e.target.value)}
-            className="p-2 border rounded"
-          />
+        <div className="bg-white mt-4">
+          <div className="flex gap-4">
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700">시작 시간</label>
+              <input
+                type="time"
+                value={leaveType === "오전반차" ? morningStartTime : afternoonStartTime}
+                min={leaveType === "오전반차" ? "09:00" : "14:00"}
+                max={leaveType === "오전반차" ? "13:00" : "18:00"}
+                onChange={(e) => {
+                  if (leaveType === "오전반차") {
+                    setMorningStartTime(e.target.value);
+                  } else {
+                    setAfternoonStartTime(e.target.value);
+                  }
+                }}
+                className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700">종료 시간</label>
+              <input
+                type="time"
+                value={leaveType === "오전반차" ? morningEndTime : afternoonEndTime}
+                min={leaveType === "오전반차" ? "09:00" : "14:00"}
+                max={leaveType === "오전반차" ? "13:00" : "18:00"}
+                onChange={(e) => {
+                  if (leaveType === "오전반차") {
+                    setMorningEndTime(e.target.value);
+                  } else {
+                    setAfternoonEndTime(e.target.value);
+                  }
+                }}
+                className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
         </div>
       );
     }
@@ -137,60 +142,11 @@ const SampleForm = () => {
             </label>
             <button
               className="text-blue-600 text-sm hover:text-blue-700 transition-colors"
-              onClick={() => setShowPopover(true)}
+              onClick={() => setShowInput(true)}
             >
               + 결재자 추가
             </button>
           </div>
-          {showPopover && (
-            <div className="p-4 bg-white shadow-lg rounded-lg border border-gray-200">
-              <input
-                type="text"
-                value={newApprover}
-                onChange={(e) => setNewApprover(e.target.value)}
-                placeholder="결재자 이름 입력"
-                className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleAddApprover();
-                  }
-                }}
-              />
-              <div className="flex justify-end mt-3">
-                <button
-                  onClick={handleAddApprover}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  추가
-                </button>
-              </div>
-            </div>
-          )}
-          {/* <div className="space-y-2 p-4 rounded-lg bg-gray-50">
-            {columns.approvers.items.map((item, index) => (
-              <div key={index} className="border rounded-lg bg-white">
-                <div className="flex items-center justify-between p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
-                      <MdDragIndicator size={24} />
-                    </div>
-                    <span className="flex items-center justify-center bg-blue-100 text-blue-800 rounded-full w-5 h-5 font-medium text-xs">
-                      {index + 1}
-                    </span>
-                    <span className="text-gray-900 font-medium">
-                      {item.name}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveApprover(item.id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <MdClose size={20} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div> */}
           <div className="space-y-6 overflow-y-auto">
             {/* 결재 라인 */}
             <div className="space-y-4">
@@ -225,6 +181,37 @@ const SampleForm = () => {
                     </div>
                   </div>
                 ))}
+                {showInput && (
+                  <div
+                    className="border rounded-lg bg-white"
+                  >
+                    <div className="flex items-center justify-between p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="text-blue-600 cursor-grab active:cursor-grabbing">
+                          <TbUserPlus size={24} />
+                        </div>
+                        <input
+                          type="text"
+                          value={newApprover}
+                          onChange={(e) => setNewApprover(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter" && newApprover.trim()) {
+                              handleAddApprover();
+                            }
+                          }}
+                          placeholder="결재자 이름 입력"
+                          className="text-gray-900 font-medium p-1 border rounded"
+                        />
+                      </div>
+                      <button
+                        onClick={handleRemoveNewApprover}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <MdClose size={20} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -241,9 +228,7 @@ const SampleForm = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            종류
-          </label>
+          <label className="block text-sm font-medium text-gray-700">종류</label>
           <ul className="flex gap-4 mt-2">
             {["하루종일", "오전반차", "오후반차"].map((type) => (
               <li key={type}>
@@ -251,8 +236,8 @@ const SampleForm = () => {
                   onClick={() => setLeaveType(type)}
                   className={`px-4 py-2 rounded-full transition-all ${
                     leaveType === type
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-blue-50 text-blue-600 shadow-md shadow-blue-100 border border-blue-100"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-transparent border-transparent"
                   }`}
                 >
                   {type}
@@ -260,7 +245,9 @@ const SampleForm = () => {
               </li>
             ))}
           </ul>
-          <div className="mt-4">{renderTimeInputs()}</div>
+          <div className="mt-4">
+            {renderTimeInputs()}
+          </div>
         </div>
 
         <div className="space-y-2">

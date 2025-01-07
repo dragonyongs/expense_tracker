@@ -11,6 +11,7 @@ import { MdClose } from "react-icons/md";
 import { API_URLS } from "../services/apiUrls";
 import useDrawerTheme from "../hooks/useDrawerTheme";
 import ConfirmModal from "./common/ConfirmModal";
+import { IoRibbonOutline } from "react-icons/io5";
 
 const TransactionDrawer = ({
   isOpen,
@@ -235,6 +236,11 @@ const TransactionDrawer = ({
       }
     } else {
       setMerchantSuggestions([]);
+    }
+
+    // 상호명이 비어있을 경우 메뉴 제안 레이어 닫기
+    if (value.length === 0) {
+      setMenuSuggestions([]); // 메뉴 제안 목록 초기화
     }
   };
 
@@ -615,7 +621,10 @@ const TransactionDrawer = ({
                               className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
                             >
                               <div className="flex justify-between items-center">
-                                <span className="font-medium">{menu.name}</span>
+                                <span className="font-medium">
+                                    {menu.name} 
+                                    {menu.count >= 4 && <IoRibbonOutline className="inline-block text-green-500 ml-2" />}
+                                </span>
                                 <span className="text-sm text-gray-500">{menu.price.toLocaleString()}원</span>
                               </div>
                             </li>
@@ -687,7 +696,6 @@ const TransactionDrawer = ({
               value={selectedTransaction.transaction_date || new Date()} // 값이 없으면 기본값 설정
               className="bg-white border border-slate-200"
               onChange={(e) => {
-                console.log("Transaction date changed:", e.target.value); // 값 변경 로그 확인
                 setSelectedTransaction((prev) => ({
                   ...prev,
                   transaction_date: e.target.value,
