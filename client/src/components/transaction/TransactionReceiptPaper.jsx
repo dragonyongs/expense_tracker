@@ -112,15 +112,15 @@ const TransactionReceiptPaper = forwardRef(
 
               {/* Order Details */}
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>{transaction.menu_name}</span>
-                  <div className="flex space-x-4">
-                    <span>1</span>
-                    <span>
-                      {transaction.transaction_amount.toLocaleString()}
-                    </span>
+                {transaction.menu_items.map((item, index) => (
+                  <div key={index} className="flex justify-between">
+                    <span>{item.name}</span>
+                    <div className="flex space-x-4">
+                      <span>{item.quantity}</span>
+                      <span>{(item.price * item.quantity).toLocaleString()}</span>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
 
               {/* Dotted Line */}

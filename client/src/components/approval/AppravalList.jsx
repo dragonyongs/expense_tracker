@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { MdCalendarToday } from "react-icons/md";
+import { MdCalendarToday, MdAccessTime, MdPerson, MdPeople } from "react-icons/md";
 import {
   formatDateRange,
   formatCreatedAt,
   StatusLabel,
   TypeBadge,
-  formatDuration,
 } from "../../utils/approval";
 import ApprovalDetailDrawer from "./drawer/ApprovalDetailDrawer";
 
@@ -19,8 +18,8 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
   };
 
   const handleCloseDrawer = () => {
-    setSelectedItem(null); // 선택된 항목 초기화
-    setIsOpen(false); // 드로어 닫기
+    setSelectedItem(null);
+    setIsOpen(false);
   };
 
   const handleApprove = () => {
@@ -40,6 +39,7 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
       date_end: "2025-01-15T19:00:00",
       type: "연차",
       name: "홍길동",
+      position: "팀장",
       status: "진행중",
       reason: "연차 사용",
       message: "",
@@ -57,6 +57,7 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
       date_end: "2024-12-12T19:00:00",
       type: "연차",
       name: "홍길동",
+      position: "팀장",
       status: "완료",
       reason: "연차 사용",
       message: "",
@@ -70,159 +71,99 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
     },
   ];
 
-  return (
-    // max-w-4xl mx-auto
-    <div className="overflow-hidden bg-white rounded-xl shadow-lg">
-      {/* Header */}
-      <div className="hidden sm:block sticky top-0 bg-white/95 backdrop-blur-sm px-4 sm:px-6 py-4 border-b">
-        <div className="flex justify-between items-center text-sm font-medium text-gray-600 text-center">
-          <div className="w-5/12">신청기간</div>
-          <div className="w-2/12">구분</div>
-          <div className="w-3/12">신청인</div>
-          <div className="w-2/12 text-center">현황</div>
-        </div>
-      </div>
+  const getStatusStyles = (status) => {
+    const baseStyles = "relative flex items-center";
+    const dotStyles = "w-2 h-2 rounded-full mr-2";
+    const borderStyle = "border-l-4";
+    
+    switch (status) {
+      case '진행중':
+        return {
+          container: `${baseStyles} text-blue-600`,
+          dot: `${dotStyles} bg-blue-600 animate-pulse`,
+          border: `${borderStyle} border-blue-500`
+        };
+      case '완료':
+        return {
+          container: `${baseStyles} text-green-600`,
+          dot: `${dotStyles} bg-green-600`,
+          border: `${borderStyle} border-green-500`
+        };
+      // ... other status cases ...
+    }
+  };
 
-      {/* List */}
-      <div className="divide-y divide-gray-100">
-        {data.map((item) => (
+  return (
+    <div className="space-y-4 p-4">
+      {data.map((item) => {
+        const statusStyles = getStatusStyles(item.status);
+        
+        return (
           <div
             key={item.id}
+            className={`bg-white rounded-lg ${statusStyles.border} shadow hover:shadow-lg transition-all duration-200 cursor-pointer`}
             onClick={() => handleOpenDrawer(item)}
-            className="group px-4 sm:px-4 py-4 hover:bg-gray-50 cursor-pointer transition-all duration-200"
           >
-            {/* Mobile Layout */}
-            <div className="sm:hidden space-y-2.5">
-              <div className="flex justify-between items-start">
+            <div className="p-4 space-y-3">
+              {/* Status Header */}
+              <div className="flex items-center justify-between">
+                <div className={statusStyles.container}>
+                  <span className={statusStyles.dot}></span>
+                  <span className="text-sm font-medium">
+                    {item.status === '진행중' && item.approvalProcess 
+                      ? `${item.approvalProcess[item.approvalProcess.length - 1].name} ${item.approvalProcess[item.approvalProcess.length - 1].role} 결재중`
+                      : item.status}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {formatCreatedAt(item.createdAt)} 신청
+                </div>
+              </div>
+
+              {/* Title & Date */}
+              <div className="space-y-2">
+                <div className="text-lg font-medium text-gray-900">
+                  <TypeBadge type={item.type} />
+                </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <MdCalendarToday className="w-4 h-4 text-gray-400" />
                   <span className="text-sm">
                     {formatDateRange(item.date_start, item.date_end, item.type)}
                   </span>
                 </div>
-                <StatusLabel status={item.status} />
               </div>
-              <div className="flex items-center space-x-3">
-                <TypeBadge type={item.type} />
-                <div className="flex items-center gap-x-2">
-                  <div className="text-md font-medium text-gray-900">
-                    {item.name}
-                  </div>
-                  <div className="text-sm text-gray-500">{item.department}</div>
-                </div>
-              </div>
-            </div>
 
-            {/* Desktop Layout */}
-            <div className="hidden sm:flex items-center">
-              <div className="w-5/12">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MdCalendarToday className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                  <span className="text-sm">
-                    {formatDateRange(item.date_start, item.date_end, item.type)}
+              {/* User Info */}
+              <div className="flex items-center gap-4 pt-1">
+                <div className="flex items-center gap-2">
+                  <MdPerson className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-900">
+                    {`${item.name} ${item.position}`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MdPeople className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">
+                    {item.department}
                   </span>
                 </div>
               </div>
-
-              <div className="w-2/12 flex justify-center">
-                <TypeBadge type={item.type} />
-              </div>
-
-              <div className="flex flex-col flex-1 items-center">
-                <div className="text-sm font-medium text-gray-900">
-                  {item.name}
-                </div>
-                <div className="text-xs text-gray-500">{item.department}</div>
-              </div>
-
-              <div className="w-2/12 flex justify-center">
-                <StatusLabel status={item.status} />
-              </div>
             </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
+
       <ApprovalDetailDrawer
         selectedItem={selectedItem}
         isOpen={isOpen}
         onClose={handleCloseDrawer}
-        onApprove={handleApprove}
-        onReject={handleReject}
-        onModify={handleModify}
+        onApprove={() => {}}
+        onReject={() => {}}
+        onModify={() => {}}
         isApprover={isApprover}
-        isEditing={isEditing}
-        isLoading={isLoading}
       />
     </div>
   );
 };
 
 export default ApprovalList;
-
-// <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-//     {/* Header */}
-//     <div className="sticky top-0 bg-white/95 backdrop-blur-sm px-6 py-4 border-b">
-//         <div className="flex justify-between items-center text-sm font-medium text-gray-600">
-//             <div className="w-28">신청일</div>
-//             <div className="w-24">구분</div>
-//             <div className="flex-1">신청인</div>
-//             <div className="w-16 text-center">현황</div>
-//         </div>
-//     </div>
-
-//     {/* List */}
-//     <div className="divide-y divide-gray-100">
-//     {data.map((item) => (
-//         <div
-//         key={item.id}
-//         onClick={() => handleOpenDrawer(item)}
-//         className="group px-3 py-4 hover:bg-gray-50 cursor-pointer transition-all duration-200"
-//         >
-//         <div className="flex items-center space-x-2">
-//             {/* Date */}
-//             <div className="w-28">
-//             <div className="flex items-center gap-2 text-gray-600">
-//                 <MdCalendarToday className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-//                 <span className="text-sm">
-//                 {formatDate(item.createdAt)}
-//                 </span>
-//             </div>
-//             </div>
-
-//             {/* Type */}
-//             <div className="w-20">
-//             <span className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 group-hover:bg-gray-200 transition-colors">
-//                 {item.type}
-//             </span>
-//             </div>
-
-//             {/* User Info */}
-//             <div className="flex-1">
-//                 <div className="text-sm font-medium text-gray-900">{item.name}</div>
-//                 <div className="w-20 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-500">{item.department}</div>
-//             </div>
-
-//             {/* Status */}
-//             <div className="w-16 flex justify-center">
-//             <span
-//                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${getStatusStyle(item.status)}`}
-//             >
-//                 {item.status}
-//             </span>
-//             </div>
-//         </div>
-//         </div>
-//     ))}
-//     </div>
-//     <ApprovalDetailDrawer
-//         selectedItem={selectedItem}
-//         isOpen={isOpen}
-//         onClose={handleCloseDrawer}
-//         onApprove={handleApprove}
-//         onReject={handleReject}
-//         onModify={handleModify}
-//         isApprover={isApprover}
-//         isEditing={isEditing}
-//         isLoading={isLoading}
-//     />
-// </div>

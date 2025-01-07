@@ -1,10 +1,17 @@
 const mongoose = require('mongoose');
 
+const menuItemSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    quantity: { type: Number, required: true, default: 1 }
+});
+
 const transactionSchema = new mongoose.Schema({
     card_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true },
     transaction_date: { type: Date, required: true },
     merchant_name: { type: String, required: true },
     menu_name: { type: String },
+    menu_items: [menuItemSchema],
     transaction_amount: { type: Number, required: true },
     transaction_type: { type: String, enum: ['expense', 'income'], required: true },
     deposit_type: { 
@@ -34,6 +41,15 @@ const transactionSchema = new mongoose.Schema({
     teamFundDeducted: { type: Number, default: 0 },
     is_deducted: { type: Boolean, default: false },
 }, { timestamps: true });
+
+transactionSchema.pre('save', function(next) {
+    if (this.menu_items && this.menu_items.length > 0) {
+        this.transaction_amount = this.menu_items.reduce((total, item) => {
+            return total + (item.price * item.quantity);
+        }, 0);
+    }
+    next();
+});
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 

@@ -34,7 +34,7 @@ const Transactions = () => {
         card_id: "",
         transaction_date: new Date().toISOString().split('T')[0],
         merchant_name: "",
-        menu_name: "",
+        menu_items: [],
         transaction_amount: 0,
         transaction_type: "expense",
         expense_card: "TeamCard",
@@ -53,8 +53,8 @@ const Transactions = () => {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSearchActive, setIsSearchActive] = useState(false);
-    const [selectedYear, setSelectedYear] = useState('');
-    const [selectedMonth, setSelectedMonth] = useState('');
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
     const tabs = [
         { path: '/transactions', label: '지출 내역', title: '내카드' },
@@ -67,11 +67,14 @@ const Transactions = () => {
             try {
                 const currentDate = new Date();
                 const year = currentDate.getFullYear();
-                const month = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 1을 더함
-    
+                const month = currentDate.getMonth() + 1;
+
+                setSelectedYear(year);
+                setSelectedMonth(month);
+
                 const [cardsResponse] = await Promise.all([
                     axios.get(API_URLS.CARDS),
-                    fetchTransactionsForMonth(year, month) // 현재 월의 거래 내역 가져오기
+                    fetchTransactionsForMonth(year, month)
                 ]);
     
                 const fetchedCards = cardsResponse.data;
@@ -231,42 +234,30 @@ const Transactions = () => {
     const handleSave = async (updatedTransaction) => {
         try {
             setErrMsg('');
-    
+
             const transactionData = {
                 card_id: updatedTransaction.card_id,
                 transaction_date: updatedTransaction.transaction_date,
                 merchant_name: updatedTransaction.merchant_name,
-                menu_name: updatedTransaction.menu_name,
+                menu_items: updatedTransaction.menu_items,
                 transaction_type: "expense",
                 expense_card: updatedTransaction.expense_card,
                 expense_type: updatedTransaction.expense_type,
-                transaction_amount: updatedTransaction.transaction_amount,
                 is_deducted: false,
+                transaction_amount: updatedTransaction.menu_items.reduce((sum, item) => 
+                    sum + (Number(item.price) * Number(item.quantity)), 0)
             };
-    
-            const originalAmount = Number(prevTransaction.transaction_amount);
-            const currentAmount = Number(updatedTransaction.transaction_amount);
-    
-            if (originalAmount !== currentAmount) {
-                transactionData.transaction_amount = currentAmount;
-            }
-    
-            // 연도와 월을 transaction_date에서 추출
-            const transactionDate = new Date(updatedTransaction.transaction_date);
-            const transactionYear = transactionDate.getFullYear();
-            const transactionMonth = transactionDate.getMonth() + 1; // getMonth()는 0부터 시작하므로 1을 더함
-    
+
             if (isEditing) {
                 await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
             } else {
                 await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
-    
-            // 수정된 연도와 월을 사용하여 거래 내역을 가져옴
-            await fetchTransactionsForMonth(transactionYear, transactionMonth);
+
+            await fetchTransactionsForMonth(selectedYear, selectedMonth);
             await fetchCards();
             handleCloseDrawer();
-    
+
         } catch (error) {
             const errorMsg = handleError(error);
             console.log('errorMsg', errorMsg);
@@ -430,7 +421,10 @@ const Transactions = () => {
                                                             {transaction.merchant_name}
                                                         </p>
                                                         <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                            {transaction.menu_name === '' ? `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})` : transaction.menu_name }
+                                                            {transaction.menu_items?.length > 0 
+                                                                ? transaction.menu_items.map(item => item.name).join(', ')
+                                                                : `비씨카드(${transaction.card_id.card_number.split('-').reverse()[0]})`
+                                                            }
                                                         </p>
                                                     </div>
                                                     <div className="inline-flex flex-col gap-x-3 items-center">

@@ -53,25 +53,39 @@ exports.createTransaction = async (req, res) => {
         expense_card,
         expense_type,
         is_deducted,
-        menu_name, 
         merchant_name, 
+        menu_items, // 배열로 받음
         transaction_date, 
-        transaction_amount, 
         transaction_type, 
         deposit_type,
     } = req.body;
+
+    // 기본 유효성 검사
+    if (!card_id || !transaction_date || !transaction_type || !merchant_name.trim()) {
+        return res.status(400).json({ error: '필수 값이 누락되었습니다.' });
+    }
+
+    // 메뉴 항목 유효성 검사
+    if (!menu_items || !Array.isArray(menu_items) || menu_items.length === 0) {
+        return res.status(400).json({ error: '최소 하나 이상의 메뉴 항목이 필요합니다.' });
+    }
+
+    // 총 거래 금액 계산
+    const transaction_amount = menu_items.reduce((total, item) => {
+        return total + (item.price * item.quantity);
+    }, 0);
 
     console.log(card_id, 
         expense_card,
         expense_type,
         is_deducted,
-        menu_name, 
         merchant_name, 
+        menu_items,
         transaction_date, 
         transaction_amount, 
         transaction_type, 
         deposit_type,)
-    if (!card_id || !transaction_date || transaction_amount <= 0 || !transaction_type || !merchant_name.trim() || !menu_name.trim()) {
+    if (!card_id || !transaction_date || transaction_amount <= 0 || !transaction_type || !merchant_name.trim() || !menu_items.length) {
         return res.status(400).json({ error: '필수 값이 누락되었습니다.' });
     }
     
@@ -143,7 +157,6 @@ exports.createTransaction = async (req, res) => {
     
     try {
         const sanitizedMerchantName = sanitizeInput(merchant_name);
-        const sanitizedMenuName = sanitizeInput(menu_name);
 
         const card = await Card.findById(card_id);
         if (!card) {
@@ -178,8 +191,8 @@ exports.createTransaction = async (req, res) => {
                 card_id,
                 transaction_date,
                 merchant_name: sanitizedMerchantName,
-                menu_name: sanitizedMenuName,
-                transaction_amount: transaction_amount - finalRemaining,
+                menu_items, // 메뉴 배열 저장
+                transaction_amount,
                 transaction_type,
                 expense_card,
                 expense_type,
@@ -213,7 +226,7 @@ exports.createTransaction = async (req, res) => {
                 card_id,
                 transaction_date,
                 merchant_name: sanitizedMerchantName,
-                menu_name: sanitizedMenuName,
+                menu_items, // 메뉴 배열 저장
                 transaction_amount: depositAmount,
                 transaction_type,
                 deposit_type,
@@ -251,116 +264,139 @@ exports.getTransactionById = async (req, res) => {
 
 exports.updateTransaction = async (req, res) => {
     try {
+        // console.log('Update Transaction Request Body:', req.body); // 요청 데이터 로깅
+
+        const { 
+            merchant_name, 
+            menu_items,
+            transaction_date,
+            transaction_type,
+            expense_type 
+        } = req.body;
+
         const sanitizeInput = (input) => 
             input === undefined || input === null ? undefined : input.replace(/[\u0000-\u001F\u007F]/g, '').trim();
 
-        const { merchant_name, menu_name, transaction_amount, transaction_date, transaction_type, expense_type } = req.body;
-
         const sanitizedMerchantName = sanitizeInput(merchant_name);
-        const sanitizedMenuName = sanitizeInput(menu_name);
+
+        // menu_items 검증 및 로깅
+        // console.log('Received menu_items:', menu_items);
+        
+        // menu_items가 있는 경우 transaction_amount 재계산
+        const transaction_amount = menu_items?.length > 0
+            ? menu_items.reduce((total, item) => {
+                console.log('Calculating item:', item, 'amount:', item.price * item.quantity);
+                return total + (item.price * item.quantity);
+            }, 0)
+            : undefined;
+
+        // console.log('Calculated transaction_amount:', transaction_amount);
 
         const updateData = {
-            ...(transaction_amount !== undefined && { transaction_amount }),
-            ...(transaction_date !== undefined && { transaction_date }),
-            ...(sanitizedMerchantName !== undefined && { merchant_name: sanitizedMerchantName }),
-            ...(menu_name !== undefined && { menu_name: sanitizedMenuName !== undefined ? sanitizedMenuName : '' }),
-            ...(expense_type !== undefined && { expense_type }),
+            merchant_name: sanitizedMerchantName,
+            menu_items: menu_items || [], // 빈 배열이라도 업데이트
+            transaction_amount, // 계산된 새로운 금액
+            ...(transaction_date && { transaction_date }),
+            ...(expense_type && { expense_type }),
         };
+
+        // console.log('Update Data:', updateData); // 업데이트 데이터 로깅
 
         const transaction = await Transaction.findById(req.params.id);
         if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+
+        // console.log('Previous Transaction:', transaction); // 기존 트랜잭션 로깅
 
         const card = await Card.findById(transaction.card_id);
         if (!card) return res.status(404).json({ message: 'Card not found' });
 
         const previousAmount = transaction.transaction_amount;
-        const newAmount = transaction_amount !== undefined ? Number(transaction_amount) : previousAmount;
+        const newAmount = transaction_amount;
         const difference = newAmount - previousAmount;
 
-        const previousExpenseType = transaction.expense_type;
-        const isExpenseTypeChanged = expense_type && expense_type !== previousExpenseType;
+        // console.log('Amount Difference:', difference); // 금액 차이 로깅
 
-        if (transaction_type === 'expense') {
-            // 금액이나 유형 변경이 없는 경우 복구/차감 로직을 건너뜀
-            if (transaction_amount === undefined && !isExpenseTypeChanged) {
-                // 단순 상점명, 메뉴명 수정
-                console.log('No amount or expense type change detected, skipping balance updates.');
-            } else {
-                // 금액이 변경된 경우에만 복구 및 차감 로직 실행
-                if (newAmount !== previousAmount) {
-                    // (1) 이전 금액 복구 로직
-                    if (previousExpenseType === 'TeamFund' && transaction.teamFundDeducted > 0) {
-                        card.team_fund += transaction.teamFundDeducted;
+        // 금액이 변경된 경우에만 잔액 조정 로직 실행
+        if (difference !== 0) {
+            const previousExpenseType = transaction.expense_type;
+            const isExpenseTypeChanged = expense_type && expense_type !== previousExpenseType;
+
+            if (transaction_type === 'expense') {
+                // (1) 이전 금액 복구 로직
+                if (previousExpenseType === 'TeamFund' && transaction.teamFundDeducted > 0) {
+                    card.team_fund += transaction.teamFundDeducted;
+                }
+
+                if (transaction.rolloverAmounted > 0) {
+                    card.rollover_amount += transaction.rolloverAmounted;
+                }
+
+                if (previousExpenseType === 'RegularExpense' || !isExpenseTypeChanged) {
+                    card.balance += previousAmount;
+                }
+
+                // (2) 새로운 금액 차감 로직
+                let remainingAmount = newAmount;
+                let newTeamFundDeducted = 0;
+                let newRolloverAmounted = 0;
+
+                if (expense_type === 'TeamFund') {
+                    if (card.team_fund >= newAmount) {
+                        card.team_fund -= newAmount;
+                        newTeamFundDeducted = newAmount;
+                    } else {
+                        return res.status(400).json({ error: '팀 운영비 잔액이 부족합니다.' });
                     }
+                } else if (expense_type === 'RegularExpense' || !expense_type) {
+                    if (card.balance >= newAmount) {
+                        card.balance -= newAmount;
+                    } else {
+                        remainingAmount = newAmount - card.balance;
+                        card.balance = 0;
         
-                    if (transaction.rolloverAmounted > 0) {
-                        card.rollover_amount += transaction.rolloverAmounted;
-                    }
-        
-                    if (previousExpenseType === 'RegularExpense' || !isExpenseTypeChanged) {
-                        card.balance += previousAmount;
-                    }
-        
-                    // (2) 새로운 금액 차감 로직
-                    let remainingAmount = newAmount;
-                    let newTeamFundDeducted = 0;
-                    let newRolloverAmounted = 0;
-        
-                    if (expense_type === 'TeamFund') {
-                        if (card.team_fund >= newAmount) {
-                            card.team_fund -= newAmount;
-                            newTeamFundDeducted = newAmount;
+                        if (remainingAmount <= card.rollover_amount) {
+                            newRolloverAmounted = remainingAmount;
+                            card.rollover_amount -= remainingAmount;
                         } else {
-                            return res.status(400).json({ error: '팀 운영비 잔액이 부족합니다.' });
-                        }
-                    } else if (expense_type === 'RegularExpense' || !expense_type) {
-                        if (card.balance >= newAmount) {
-                            card.balance -= newAmount;
-                        } else {
-                            remainingAmount = newAmount - card.balance;
-                            card.balance = 0;
+                            remainingAmount -= card.rollover_amount;
+                            card.rollover_amount = 0;
         
-                            if (remainingAmount <= card.rollover_amount) {
-                                newRolloverAmounted = remainingAmount;
-                                card.rollover_amount -= remainingAmount;
+                            if (remainingAmount <= card.team_fund) {
+                                card.team_fund -= remainingAmount;
+                                newTeamFundDeducted = remainingAmount;
                             } else {
-                                remainingAmount -= card.rollover_amount;
-                                card.rollover_amount = 0;
-        
-                                if (remainingAmount <= card.team_fund) {
-                                    card.team_fund -= remainingAmount;
-                                    newTeamFundDeducted = remainingAmount;
-                                } else {
-                                    return res.status(400).json({ error: '잔액, 이월 금액 및 팀 운영비가 부족합니다.' });
-                                }
+                                return res.status(400).json({ error: '잔액, 이월 금액 및 팀 운영비가 부족합니다.' });
                             }
                         }
                     }
-        
-                    // 업데이트된 차감 데이터 저장
-                    transaction.teamFundDeducted = newTeamFundDeducted;
-                    transaction.rolloverAmounted = newRolloverAmounted;
-                } else {
-                    console.log('Transaction amount is unchanged, skipping balance updates.');
                 }
+        
+                // 업데이트된 차감 데이터 저장
+                updateData.teamFundDeducted = newTeamFundDeducted;
+                updateData.rolloverAmounted = newRolloverAmounted;
             }
+
+            // 카드 정보 저장
+            await card.save();
         }
 
-        // 금액 변경이 없는 경우: 단순 상점명, 메뉴명 등 수정
-        if (
-            transaction_type === 'expense' &&
-            transaction_amount === undefined &&
-            !isExpenseTypeChanged
-        ) {
-            // 기존 금액 관련 데이터는 변경하지 않음
+        // 트랜잭션 업데이트 - findByIdAndUpdate 대신 findOne과 save 사용
+        const existingTransaction = await Transaction.findById(req.params.id);
+        if (!existingTransaction) {
+            return res.status(404).json({ message: 'Transaction not found' });
         }
 
-        // 카드 정보 저장
+        // 각 필드 직접 업데이트
+        Object.assign(existingTransaction, updateData);
+
+        // 저장 전 검증
+        // console.log('Transaction before save:', existingTransaction);
+        
+        // 저장
+        const updatedTransaction = await existingTransaction.save();
+        // console.log('Updated Transaction:', updatedTransaction);
+
         await card.save();
-
-        // 트랜잭션 업데이트
-        const updatedTransaction = await Transaction.findByIdAndUpdate(req.params.id, updateData, { new: true });
-        if (!updatedTransaction) return res.status(404).json({ message: 'Transaction not found' });
 
         res.status(200).json({
             message: 'Transaction updated successfully',
@@ -369,7 +405,11 @@ exports.updateTransaction = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating transaction:', error);
-        res.status(500).json({ message: 'Error updating transaction', error });
+        res.status(500).json({ 
+            message: 'Error updating transaction', 
+            error: error.message,
+            stack: error.stack 
+        });
     }
 };
 
@@ -650,17 +690,34 @@ exports.getMenuForMerchant = async (req, res) => {
     };
 
     try {
-        const menus = await Transaction.find(query);
+        const transactions = await Transaction.find(query);
 
-        const menuCount = menus.reduce((acc, menu) => {
-            if (!acc[menu.menu_name]) {
-                acc[menu.menu_name] = {
-                    menu_name: menu.menu_name,
-                    transaction_amount: menu.transaction_amount,
-                    count: 0
-                };
+        const menuCount = transactions.reduce((acc, transaction) => {
+            // menu_items 배열이 있는 경우에만 처리
+            if (transaction.menu_items && transaction.menu_items.length > 0) {
+                transaction.menu_items.forEach(item => {
+                    const key = item.name;
+                    if (!acc[key]) {
+                        acc[key] = {
+                            name: item.name,
+                            price: item.price,
+                            count: 0
+                        };
+                    }
+                    acc[key].count += 1;
+                });
+            } else if (transaction.menu_name) {
+                // 이전 형식의 데이터도 처리 (하위 호환성 유지)
+                const key = transaction.menu_name;
+                if (!acc[key]) {
+                    acc[key] = {
+                        name: transaction.menu_name,
+                        price: transaction.transaction_amount,
+                        count: 0
+                    };
+                }
+                acc[key].count += 1;
             }
-            acc[menu.menu_name].count += 1;
             return acc;
         }, {});
 
@@ -676,12 +733,11 @@ exports.getMenuForMerchant = async (req, res) => {
 
 exports.getAllTransactionsByKeyword = async (req, res) => {
     const { keyword } = req.params;
-    const { year, month } = req.query; // 쿼리 파라미터에서 년도와 월을 가져옵니다.
+    const { year, month } = req.query;
     
     try {
         const userId = req.user.member_id;
         const userCards = await Card.find({ member_id: userId });
-    
         const cardIds = userCards.map(card => card._id); 
 
         // 기본 쿼리: 전체 트랜잭션을 검색
@@ -689,7 +745,10 @@ exports.getAllTransactionsByKeyword = async (req, res) => {
             card_id: { $in: cardIds },
             $or: [
                 { merchant_name: { $regex: keyword, $options: 'i' } },
-                { menu_name: { $regex: keyword, $options: 'i' } },
+                // menu_items 배열 내의 name 필드 검색
+                { 'menu_items.name': { $regex: keyword, $options: 'i' } },
+                // 하위 호환성을 위해 기존 menu_name 필드도 검색
+                { menu_name: { $regex: keyword, $options: 'i' } }
             ]
         };
     
@@ -697,22 +756,27 @@ exports.getAllTransactionsByKeyword = async (req, res) => {
         if (year && month) {
             if (month === '-1') {
                 // 특정 년도의 전체 데이터
-                const startDate = new Date(year, 0, 1); // 해당 년도의 1월 1일
-                const endDate = new Date(Number(year) + 1, 0, 1); // 다음 년도의 1월 1일
+                const startDate = new Date(year, 0, 1);
+                const endDate = new Date(Number(year) + 1, 0, 1);
                 query.transaction_date = { $gte: startDate, $lt: endDate };
             } else {
                 // 특정 년도의 특정 월 데이터
-                const startDate = new Date(year, month - 1, 1); // 시작일 (1일)
-                const endDate = new Date(year, month, 1); // 다음 달 1일 (끝일)
+                const startDate = new Date(year, month - 1, 1);
+                const endDate = new Date(year, month, 1);
                 query.transaction_date = { $gte: startDate, $lt: endDate };
             }
         }
     
         // 키워드에 맞는 트랜잭션 검색
-        const transactions = await Transaction.find(query).sort({ transaction_date: -1 }).populate('card_id', 'card_number');
+        const transactions = await Transaction.find(query)
+            .sort({ transaction_date: -1 })
+            .populate('card_id', 'card_number');
         
         res.status(200).json(transactions);
     } catch (error) {
-        res.status(500).json({ message: '트랜잭션 조회 중 오류가 발생했습니다.', error });
+        res.status(500).json({ 
+            message: '트랜잭션 조회 중 오류가 발생했습니다.', 
+            error 
+        });
     }
 };

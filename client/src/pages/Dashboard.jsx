@@ -74,13 +74,12 @@ const Dashboard = () => {
     }, [user?.member_id]);
 
     const handleSaveTransaction = async (newTransaction) => {
-
         const transactionData = {
             card_id: newTransaction.card_id,
             merchant_name: newTransaction.merchant_name,
-            menu_name: newTransaction.menu_name,
+            menu_items: newTransaction.menu_items || [],
             transaction_type: "expense",
-            expense_card: newTransaction.expense_card, // ?
+            expense_card: newTransaction.expense_card,
             expense_type: newTransaction.expense_type,
             transaction_amount: newTransaction.transaction_amount,
             transaction_date: newTransaction.transaction_date,
