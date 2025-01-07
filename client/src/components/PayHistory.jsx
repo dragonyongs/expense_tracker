@@ -150,7 +150,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
                         {transaction.merchant_name}
                       </span>
                       <span className="ms-2 text-sm text-gray-400 dark:text-slate-500">
-                        {transaction.menu_name}
+                        {transaction.menu_items.map(item => item.name).join(', ')}
                       </span>
                     </p>
                   </div>

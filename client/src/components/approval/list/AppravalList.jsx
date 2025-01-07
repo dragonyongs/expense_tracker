@@ -5,8 +5,8 @@ import {
   formatCreatedAt,
   StatusLabel,
   TypeBadge,
-} from "../../utils/approval";
-import ApprovalDetailDrawer from "./drawer/ApprovalDetailDrawer";
+} from "../../../utils/approval";
+import ApprovalDetailDrawer from "../drawer/ApprovalDetailDrawer";
 
 const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -122,14 +122,16 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
 
               {/* Title & Date */}
               <div className="space-y-2">
-                <div className="text-lg font-medium text-gray-900">
-                  <TypeBadge type={item.type} />
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MdCalendarToday className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm">
-                    {formatDateRange(item.date_start, item.date_end, item.type)}
-                  </span>
+                <div className="flex items-center gap-x-3">
+                  <div className="text-lg font-medium text-gray-900">
+                    <TypeBadge type={item.type} />
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MdCalendarToday className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">
+                      {formatDateRange(item.date_start, item.date_end, item.type)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -137,13 +139,13 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
               <div className="flex items-center gap-4 pt-1">
                 <div className="flex items-center gap-2">
                   <MdPerson className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-900">
+                  <span className="text-md text-gray-900">
                     {`${item.name} ${item.position}`}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MdPeople className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-md text-gray-600">
                     {item.department}
                   </span>
                 </div>

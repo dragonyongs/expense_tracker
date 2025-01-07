@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { MutatingDots } from 'react-loader-spinner';
 import { LuConstruction } from "react-icons/lu";
-import AppravalList from '../../components/approval/AppravalList';
-import AppravalApply from '../../components/approval/AppravalApply';
 import ApprovalTabs from '../../components/approval/tabs/ApprovalTabs';
-import AppravalPending from '../../components/approval/AppravalPending';
+import AppravalList from '../../components/approval/list/AppravalList';
+import AppravalApply from '../../components/approval/list/AppravalApply';
+import AppravalPending from '../../components/approval/list/AppravalPending';
 
 function Index() {
     const [activeTab, setActiveTab] = useState('approval-list');
