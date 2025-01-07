@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
 import { TbUserPlus } from "react-icons/tb";
 
-const SampleForm = () => {
+const SampleForm = ({ onClose }) => {
   const [leaveType, setLeaveType] = useState("하루종일");
   const [newApprover, setNewApprover] = useState("");
   const [morningStartTime, setMorningStartTime] = useState("09:00");
@@ -130,7 +130,7 @@ const SampleForm = () => {
       <div className="space-y-6 h-dateFilter-screen overflow-y-auto">
         <div className="flex justify-between items-start sticky top-0 bg-white z-10 pb-4 border-b">
           <h5 className="text-xl font-bold">연차 신청서</h5>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" onClick={onClose}>
             <MdClose className="h-6 w-6" />
           </button>
         </div>

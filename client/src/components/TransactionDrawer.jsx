@@ -372,21 +372,19 @@ const TransactionDrawer = ({
       <Drawer
         open={isOpen}
         onClose={onClose}
-        className="h-real-screen"
         duration="300"
         direction="right"
         size={drawerSize}
       >
-        <div className="flex justify-between py-2 px-4 dark:bg-slate-800">
-          <h5 className="text-lg font-bold dark:text-slate-200">
-            {isEditing ? "카드 지출 수정" : "카드 지출 추가"}
-          </h5>
-          <button onClick={onClose}>
-            <MdClose className="text-2xl dark:text-slate-300" />
-          </button>
-        </div>
-        <div className="dark:bg-slate-800">
-          <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen p-6 dark:bg-slate-800">
+        <div className="flex justify-between p-4 border-b dark:border-b-gray-700 bg-white dark:bg-slate-800 ">
+            <h5 className="text-lg font-bold dark:text-slate-200">
+              {isEditing ? "카드 지출 수정" : "카드 지출 추가"}
+            </h5>
+            <button onClick={onClose}>
+              <MdClose className="text-2xl dark:text-slate-300" />
+            </button>
+          </div>
+        <div className="overflow-y-auto h-drawer-screen flex w-full flex-col gap-6 px-6 dark:bg-slate-800">
             {errMsg ||
               (errorMessage && (
                 <div className="text-red-600 dark:text-red-300">
@@ -494,7 +492,7 @@ const TransactionDrawer = ({
                       />
                       <label
                         htmlFor="expense_type_b"
-                        className="peer-disabled:border-gray-300 peer-disabled:bg-gray-50 peer-disabled:text-gray-300 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        className="peer-disabled:border-gray-300 peer-disabled:bg-gray-50 peer-disabled:text-gray-300 dark:peer-disabled:border-gray-950 dark:peer-disabled:bg-slate-900 dark:peer-disabled:text-slate-700 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
                       >
                         <div className="block">
                           <div className="w-full text-md font-semibold">
@@ -580,7 +578,7 @@ const TransactionDrawer = ({
                     {selectedTransaction.menu_items.map((item, index) => (
                       <li key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
                         <div className="flex-1">
-                          <span className="font-medium">{item.name}</span>
+                          <span className="font-medium dark:text-slate-300">{item.name}</span>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             {item.price.toLocaleString()}원 × {item.quantity}개
                             = {(item.price * item.quantity).toLocaleString()}원
@@ -602,13 +600,13 @@ const TransactionDrawer = ({
                 )}
 
                 {showMenuForm && (
-                  <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-lg">
+                  <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-lg dark:bg-slate-700">
                     <div className="relative">
                       <InputField
                         label="메뉴명"
                         id="menu_name"
                         value={currentMenuItem.name}
-                        className="bg-white border border-slate-200"
+                        className="bg-white border border-slate-200 dark:bg-slate-800"
                         onChange={handleMenuInputChange}
                         placeholder="메뉴명 입력"
                       />
@@ -640,7 +638,7 @@ const TransactionDrawer = ({
                           id="menu_price"
                           type="number"
                           value={currentMenuItem.price}
-                          className="bg-white border border-slate-200"
+                          className="bg-white border border-slate-200 dark:bg-slate-800"
                           onChange={(e) => setCurrentMenuItem(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
                           placeholder="가격 입력"
                         />
@@ -651,7 +649,7 @@ const TransactionDrawer = ({
                           id="menu_quantity"
                           type="number"
                           value={currentMenuItem.quantity}
-                          className="bg-white border border-slate-200"
+                          className="bg-white border border-slate-200 dark:bg-slate-800"
                           onChange={(e) => setCurrentMenuItem(prev => ({ ...prev, quantity: parseInt(e.target.value, 10) }))}
                           placeholder="수량"
                         />
@@ -669,7 +667,7 @@ const TransactionDrawer = ({
                       <button
                         type="button"
                         onClick={() => setShowMenuForm(false)}
-                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg text-sm px-5 py-2.5"
+                        className="bg-gray-200 dark:bg-slate-800 dark:text-slate-400 hover:bg-gray-300 text-gray-700 font-medium rounded-lg text-sm px-5 py-2.5"
                       >
                         취소
                       </button>
@@ -682,8 +680,8 @@ const TransactionDrawer = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
                   지출금액
                 </label>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-right">
-                  <span className="text-lg font-semibold text-blue-700">
+                <div className="bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-slate-700 rounded-lg p-3 text-right">
+                  <span className="text-lg font-semibold text-blue-700 dark:text-blue-500">
                     {(selectedTransaction.transaction_amount || 0).toLocaleString()}원
                   </span>
                 </div>
@@ -719,7 +717,7 @@ const TransactionDrawer = ({
             )}
           </div>
 
-          <div className="flex flex-col gap-y-2 px-6 dark:bg-slate-800">
+          <div className="flex flex-col gap-y-2 p-6 dark:bg-slate-800">
             <button
               type="button"
               onClick={handleSave}
@@ -745,7 +743,6 @@ const TransactionDrawer = ({
               </button>
             )}
           </div>
-        </div>
       </Drawer>
 
       {/* 삭제 모달 : 추후 컴포넌트로 변경 */}

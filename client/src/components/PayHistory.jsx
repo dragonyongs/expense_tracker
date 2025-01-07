@@ -180,18 +180,18 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
             onClose={handleCloseDrawer}
           />
         </div>
-        <div className="flex flex-col gap-y-2 px-6 dark:bg-slate-800">
+        <div className="flex flex-col gap-y-2 h-full pt-6 px-6 dark:bg-slate-800">
           <button
             type="button"
             onClick={handlePrint}
-            className="flex justify-center items-center gap-x-3 py-3 border border-gray-300 rounded-lg text-black font-semibold dark:text-gray-400 dark:font-normal"
+            className="flex justify-center items-center gap-x-3 py-3 border border-gray-300 rounded-lg text-black font-semibold dark:text-gray-400 dark:border-slate-600 dark:font-normal"
           >
             <BsPrinter className="w-5 h-5" /> 프린트
           </button>
           <button
             type="button"
             onClick={handleCloseDrawer}
-            className="py-3 border border-gray-300 rounded-lg text-gray-500 font-semibold dark:text-gray-400 dark:font-normal"
+            className="py-3 border border-gray-300 rounded-lg text-gray-500 font-semibold dark:text-gray-400 dark:border-slate-600 dark:font-normal"
           >
             닫기
           </button>

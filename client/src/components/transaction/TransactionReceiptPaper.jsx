@@ -49,19 +49,19 @@ const TransactionReceiptPaper = forwardRef(
     return (
       <>
         {/* Header */}
-        <div className="flex items-center justify-between p-2 border-b dark:border-b-gray-700">
+        <div className="flex items-center justify-between p-2 border-b dark:border-b-gray-700 bg-white dark:bg-transparent">
           <h1 className="text-md font-semibold pl-2 dark:text-gray-200">
             전자영수증
           </h1>
           <div className="flex items-center">
             <button
-              className="p-2 hover:bg-gray-100 rounded-full dark:text-gray-200"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-600 rounded-full dark:text-gray-200"
               onClick={handleDownloadImage}
             >
               <MdOutlineFileDownload className="w-5 h-5" />
             </button>
             <button
-              className="p-2 hover:bg-gray-100 rounded-full dark:text-gray-200"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-600 rounded-full dark:text-gray-200"
               onClick={onClose}
             >
               <CgClose className="w-5 h-5" />
@@ -88,7 +88,7 @@ const TransactionReceiptPaper = forwardRef(
             <div className="p-8 text-sm">
               {/* Store Header */}
               <div className="text-center space-y-2">
-                <h1 className="text-2xl font-bold tracking-tighter">
+                <h1 className="max-w-72 text-2xl font-bold tracking-tighter text-ellipsis overflow-hidden text-nowrap">
                   {transaction.merchant_name}
                 </h1>
                 <p className="text-sm">
@@ -116,8 +116,8 @@ const TransactionReceiptPaper = forwardRef(
                   <div key={index} className="flex justify-between">
                     <span>{item.name}</span>
                     <div className="flex space-x-4">
-                      <span>{item.quantity}</span>
-                      <span>{(item.price * item.quantity).toLocaleString()}</span>
+                      <span className="font-mono">{item.quantity}</span>
+                      <span className="font-mono">{(item.price * item.quantity).toLocaleString()}</span>
                     </div>
                   </div>
                 ))}
