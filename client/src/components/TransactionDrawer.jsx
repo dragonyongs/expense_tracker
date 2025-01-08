@@ -607,7 +607,7 @@ const TransactionDrawer = ({
                         onFocus={() => setShowMenuForm(true)}
                       />
                       {menuSuggestions.length > 0 && (
-                        <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                        <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg overflow-y-auto max-h-52">
                           {menuSuggestions.map((menu, index) => (
                             <li
                               key={index}
