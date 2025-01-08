@@ -193,10 +193,12 @@ const TransactionDrawer = ({
     try {
       const updatedTransaction = {
         ...selectedTransaction,
+        menu_items: [
+          ...(selectedTransaction.menu_items || [])
+        ],
         card_id: selectedTransaction.card_id,
         transaction_date: selectedTransaction.transaction_date,
         merchant_name: selectedTransaction.merchant_name,
-        menu_items: selectedTransaction.menu_items,
         transaction_type: "expense",
         expense_card: selectedTransaction.expense_card,
         expense_type: selectedTransaction.expense_type,
@@ -211,6 +213,19 @@ const TransactionDrawer = ({
         await onSave(updatedTransaction);
       }
       
+      // 저장 후 초기화
+      setSelectedTransaction({
+        card_id: '',
+        transaction_date: '',
+        merchant_name: '',
+        transaction_type: 'expense',
+        expense_card: '',
+        expense_type: '',
+        menu_items: [], // 메뉴 항목 초기화
+      });
+      setCurrentMenuItem({ name: '', price: 0, quantity: 1 }); // 현재 메뉴 항목 초기화
+      setErrMsg(''); // 오류 메시지 초기화
+
       onClose();
     } catch (error) {
       console.error('Error saving transaction:', error);
@@ -226,21 +241,19 @@ const TransactionDrawer = ({
     }));
 
     if (value.length > 1) {
-      // 최소 3자 이상 입력 시 검색
       try {
         const response = await axios.get(`${API_URLS.SEARCH_KEYWORD}/${value}`);
         setMerchantSuggestions(response.data);
       } catch (error) {
         console.error("검색 오류:", error);
-        setMerchantSuggestions([]); // 에러 발생 시 제안 목록 초기화
+        setMerchantSuggestions([]);
       }
     } else {
       setMerchantSuggestions([]);
     }
 
-    // 상호명이 비어있을 경우 메뉴 제안 레이어 닫기
     if (value.length === 0) {
-      setMenuSuggestions([]); // 메뉴 제안 목록 초기화
+      setMenuSuggestions([]);
     }
   };
 
@@ -250,7 +263,7 @@ const TransactionDrawer = ({
       merchant_name,
     }));
     setMerchantSuggestions([]);
-    fetchMenuForMerchant(merchant_name); // 선택한 상호명에 대한 메뉴 조회
+    fetchMenuForMerchant(merchant_name);
   };
 
   const handleMenuInputChange = async (e) => {
@@ -260,14 +273,12 @@ const TransactionDrawer = ({
       name: value
     }));
 
-    // 메뉴명 검색 로직
     if (value.length > 2 && selectedTransaction.merchant_name) {
       try {
         const response = await axios.get(
           `${API_URLS.SEARCH_MENU_FOR_MERCHANT}/${selectedTransaction.merchant_name}`
         );
         
-        // 입력된 값으로 메뉴 필터링
         const filteredMenus = response.data.filter((menu) =>
           menu.name?.toLowerCase().includes(value.toLowerCase())
         );
@@ -291,29 +302,25 @@ const TransactionDrawer = ({
   };
 
   const handleAddMenuItem = () => {
+    // 유효성 검사: 메뉴명, 가격, 수량이 모두 입력되었는지 확인
     if (!currentMenuItem.name || !currentMenuItem.price || !currentMenuItem.quantity) {
       setErrMsg('메뉴명, 가격, 수량을 모두 입력해주세요.');
-      return;
+      return; // 유효성 검사 실패 시 함수 종료
     }
-
-    setSelectedTransaction(prev => ({
+  
+    const newMenuItem = {
+      name: currentMenuItem.name, // 메뉴명으로 설정
+      price: currentMenuItem.price,
+      quantity: currentMenuItem.quantity,
+    };
+  
+    setSelectedTransaction((prev) => ({
       ...prev,
-      menu_items: [
-        ...(prev.menu_items || []),
-        {
-          name: currentMenuItem.name,
-          price: Number(currentMenuItem.price),
-          quantity: Number(currentMenuItem.quantity)
-        }
-      ]
+      menu_items: [...(prev.menu_items || []), newMenuItem], // 새로운 메뉴 항목 추가
     }));
-
-    // 입력 폼 초기화
-    setCurrentMenuItem({
-      name: '',
-      price: '',
-      quantity: 1
-    });
+  
+    // 현재 메뉴 항목 초기화
+    setCurrentMenuItem({ name: '', price: 0, quantity: 1 });
   };
 
   const handleRemoveMenuItem = (index) => {
@@ -333,8 +340,8 @@ const TransactionDrawer = ({
         merchant_name: merchant.name
     });
     setSelectedMerchant(merchant);
-    setIsMenuLayerOpen(true);  // 메뉴 레이어 열기
-    setIsMerchantLayerOpen(false);  // 상호명 레이어 닫기
+    setIsMenuLayerOpen(true);
+    setIsMerchantLayerOpen(false);
   };
 
   const handleMenuSelect = (menu) => {
@@ -349,14 +356,12 @@ const TransactionDrawer = ({
         menu_items: [...selectedTransaction.menu_items, newMenuItem]
     });
     
-    // 모든 레이어 닫기
     setIsMenuLayerOpen(false);
     setIsMerchantLayerOpen(false);
   };
 
   const handleMenuSearch = (searchTerm) => {
     if (selectedMerchant) {
-        // 선택된 상호의 메뉴만 필터링
         const filtered = menuSuggestions.filter(menu => 
             menu.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -539,37 +544,31 @@ const TransactionDrawer = ({
                   ))}
                 </ul>
               )}
-              {/* {merchantSuggestions.length > 0 && (
-                                <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
-                                    {merchantSuggestions.map((suggestion) => (
-                                        <li
-                                            key={suggestion._id}
-                                            onClick={() => handleMerchantSuggestionClick(suggestion)}
-                                            className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
-                                        >
-                                            {suggestion.merchant_name}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )} */}
             </div>
             <div className="relative space-y-4">
               <div className="mt-4">
+                {selectedTransaction.merchant_name && (
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-md font-medium text-gray-900 dark:text-white">
-                    지출 메뉴
-                  </h3>
-                  {(selectedTransaction.merchant_name || selectedTransaction.menu_items?.length > 0) && (
+                  
+                    <>
+                    <h3 className="text-md font-medium text-gray-900 dark:text-white">
+                      지출 메뉴
+                    </h3>
                     <button
-                      onClick={() => setShowMenuForm(true)}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                    >
+                        onClick={() => {
+                          setShowMenuForm(true);
+                          fetchMenuForMerchant(selectedTransaction.merchant_name);
+                        }}
+                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      >
                       + 메뉴 추가
                     </button>
-                  )}
-                </div>
+                  </>
 
-                {!selectedTransaction.merchant_name && selectedTransaction.menu_items?.length === 0 ? (
+                </div>
+                )}
+
+                {selectedTransaction.merchant_name && selectedTransaction.menu_items?.length === 0 && !showMenuForm ? (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
                     <p className="text-gray-500">상호명을 입력해주세요</p>
                   </div>
@@ -595,10 +594,6 @@ const TransactionDrawer = ({
                   </ul>
                 )}
 
-                {selectedTransaction.merchant_name && !showMenuForm && (
-                  setShowMenuForm(true)
-                )}
-
                 {showMenuForm && (
                   <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-lg dark:bg-slate-700">
                     <div className="relative">
@@ -609,6 +604,7 @@ const TransactionDrawer = ({
                         className="bg-white border border-slate-200 dark:bg-slate-800"
                         onChange={handleMenuInputChange}
                         placeholder="메뉴명 입력"
+                        onFocus={() => setShowMenuForm(true)}
                       />
                       {menuSuggestions.length > 0 && (
                         <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
@@ -619,10 +615,7 @@ const TransactionDrawer = ({
                               className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
                             >
                               <div className="flex justify-between items-center">
-                                <span className="font-medium">
-                                    {menu.name} 
-                                    {menu.count >= 4 && <IoRibbonOutline className="inline-block text-green-500 ml-2" />}
-                                </span>
+                                <span className="font-medium">{menu.name}</span>
                                 <span className="text-sm text-gray-500">{menu.price.toLocaleString()}원</span>
                               </div>
                             </li>
@@ -659,7 +652,10 @@ const TransactionDrawer = ({
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={handleAddMenuItem}
+                        onClick={() => {
+                          handleAddMenuItem();
+                          setShowMenuForm(false);
+                        }}
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm px-5 py-2.5"
                       >
                         추가하기
@@ -677,21 +673,38 @@ const TransactionDrawer = ({
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-                  지출금액
-                </label>
-                <div className="bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-slate-700 rounded-lg p-3 text-right">
-                  <span className="text-lg font-semibold text-blue-700 dark:text-blue-500">
-                    {(selectedTransaction.transaction_amount || 0).toLocaleString()}원
-                  </span>
-                </div>
+                {selectedTransaction.menu_items?.length > 0 ? (
+                    <>
+                    <label className="block text-md font-medium text-gray-700 dark:text-white mb-1">지출 금액</label>
+                    <div className="bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-slate-700 rounded-lg p-3 text-right">
+                      <span className="text-lg font-semibold text-blue-700 dark:text-blue-500">
+                        {(selectedTransaction.transaction_amount || 0).toLocaleString()}원
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <InputField
+                    label="지출금액"
+                    id="transaction_amount"
+                    type="number"
+                    value={selectedTransaction.transaction_amount || 0}
+                    className="bg-white border border-slate-200"
+                    onChange={(e) => {
+                      setSelectedTransaction((prev) => ({
+                        ...prev,
+                        transaction_amount: parseFloat(e.target.value) || 0,
+                      }));
+                    }}
+                    required={true}
+                  />
+                )}
               </div>
             </div>
             <InputField
               label="거래일"
               id="transaction_date"
               type="date"
-              value={selectedTransaction.transaction_date || new Date()} // 값이 없으면 기본값 설정
+              value={selectedTransaction.transaction_date || new Date()}
               className="bg-white border border-slate-200"
               onChange={(e) => {
                 setSelectedTransaction((prev) => ({
@@ -745,31 +758,6 @@ const TransactionDrawer = ({
           </div>
       </Drawer>
 
-      {/* 삭제 모달 : 추후 컴포넌트로 변경 */}
-      {/* {isDeleteConfirmOpen && (
-                <div className="fixed inset-0 z-110 flex items-center justify-center bg-gray-900 bg-opacity-50">
-                    <div className="bg-white rounded-lg p-6 w-11/12 md:w-96">
-                        <h3 className="text-lg font-semibold mb-4">정말로 삭제하시겠습니까?</h3>
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                type="button"
-                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md"
-                                onClick={handleDeleteCancel}
-                            >
-                                취소
-                            </button>
-                            <button
-                                type="button"
-                                className="px-4 py-2 bg-red-600 text-white rounded-md"
-                                onClick={handleDeleteClick}
-                            >
-                                삭제
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
-
       <ConfirmModal
         isOpen={isDeleteConfirmOpen}
         onClose={handleDeleteCancel}
@@ -814,66 +802,3 @@ TransactionDrawer.propTypes = {
 };
 
 export default TransactionDrawer;
-
-// const handleSave = async () => {
-//     try {
-//         setErrMsg('');
-
-//         const cardId = selectedTransaction.card_id || userCards[0]._id;
-//         const transactionData = {
-//             card_id: cardId,
-//             transaction_date: selectedTransaction.transaction_date,
-//             merchant_name: selectedTransaction.merchant_name,
-//             menu_name: selectedTransaction.menu_name,
-//             transaction_type: "expense",
-//             expense_card: selectedTransaction.expense_card,
-//             expense_type: expenseType,
-//             transaction_amount: selectedTransaction.transaction_amount,
-//         };
-
-//         // 금액이 변경된 경우에만 transaction_amount 추가
-//         const originalAmount = Number(transactionData.transaction_amount); // 예시로
-//         const currentAmount = Number(selectedTransaction.transaction_amount);
-
-//         if (originalAmount !== currentAmount) {
-//             transactionData.transaction_amount = currentAmount;
-//         }
-
-//         if (isEditing) {
-//             await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
-//         } else {
-//             const response = await axios.post(API_URLS.TRANSACTIONS, transactionData);
-//             onSave(response.data.transaction);
-//             onClose();
-//         }
-//     } catch (error) {
-//         const errorMsg = handleError(error);
-//         console.log('errorMsg', errorMsg);
-//         c
-//     }
-// };
-
-// const handleDelete = async () => {
-//     try {
-//         await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
-//         onDelete();
-//         onClose();
-//     } catch (error) {
-//         setErrMsg("삭제 중 오류가 발생했습니다.");
-//         console.error('삭제 중 오류:', error);
-//     }
-// };
-
-// useEffect(() => {
-//     if (transactionData.length > 0) {
-//         console.log("transactionData", transactionData);
-//         setSelectedTransaction(prev => ({
-//             ...prev,
-//             ...transactionData,
-//             card_id: transactionData.card_id || (userCards.length > 0 ? userCards[0]._id : ""),
-//             transaction_date: transactionData.transaction_date || new Date().toISOString().split('T')[0], // 기본값 설정
-//         }));
-//         setExpenseType(transactionData.expense_type);
-//         console.log("transactionData.expense_type", transactionData.expense_type);
-//     }
-// }, [transactionData, userCards]);

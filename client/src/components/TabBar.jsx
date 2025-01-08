@@ -58,7 +58,7 @@ const TabBarComponent = () => {
                     <div className='flex items-center justify-center w-8 h-8'>
                         <PiStamp className="text-2xl" />
                     </div>
-                    <span className="text-sm">결재</span>
+                    <span className="text-sm">신청</span>
                 </button>
             {/* )} */}
 
