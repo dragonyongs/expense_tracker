@@ -24,7 +24,7 @@ const TransactionDrawer = ({
   cardBalance,
   teamFund,
   errMsg,
-  setErrMsg,
+  // setErrMsg,
 }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState({
@@ -194,17 +194,18 @@ const TransactionDrawer = ({
       const updatedTransaction = {
         ...selectedTransaction,
         menu_items: [
-          ...(selectedTransaction.menu_items || [])
+          ...(selectedTransaction.menu_items || []),
+          ...(currentMenuItem.name && currentMenuItem.price ? [{ name: currentMenuItem.name, price: currentMenuItem.price, quantity: currentMenuItem.quantity }] : []),
         ],
         card_id: selectedTransaction.card_id,
-        transaction_date: selectedTransaction.transaction_date,
+        transaction_date: new Date(selectedTransaction.transaction_date).toISOString().split("T")[0],
         merchant_name: selectedTransaction.merchant_name,
         transaction_type: "expense",
-        expense_card: selectedTransaction.expense_card,
-        expense_type: selectedTransaction.expense_type,
+        expense_card: selectedTransaction.expense_card || "TeamCard",
+        expense_type: selectedTransaction.expense_type || "RegularExpense",
         is_deducted: false,
       };
-
+      console.log('updatedTransaction', updatedTransaction);
       console.log('Saving transaction with menu items:', updatedTransaction.menu_items);
       
       if (isEditing) {
@@ -221,15 +222,15 @@ const TransactionDrawer = ({
         transaction_type: 'expense',
         expense_card: '',
         expense_type: '',
-        menu_items: [], // 메뉴 항목 초기화
+        menu_items: [],
       });
-      setCurrentMenuItem({ name: '', price: 0, quantity: 1 }); // 현재 메뉴 항목 초기화
-      setErrMsg(''); // 오류 메시지 초기화
+      setCurrentMenuItem({ name: '', price: 0, quantity: 1 });
+      setErrorMessage('');
 
       onClose();
     } catch (error) {
       console.error('Error saving transaction:', error);
-      setErrMsg(error.message);
+      setErrorMessage(error.message || "오류가 발생했습니다.");
     }
   };
 
@@ -304,7 +305,7 @@ const TransactionDrawer = ({
   const handleAddMenuItem = () => {
     // 유효성 검사: 메뉴명, 가격, 수량이 모두 입력되었는지 확인
     if (!currentMenuItem.name || !currentMenuItem.price || !currentMenuItem.quantity) {
-      setErrMsg('메뉴명, 가격, 수량을 모두 입력해주세요.');
+      setErrorMessage('메뉴명, 가격, 수량을 모두 입력해주세요.');
       return; // 유효성 검사 실패 시 함수 종료
     }
   
@@ -577,7 +578,7 @@ const TransactionDrawer = ({
                     {selectedTransaction.menu_items.map((item, index) => (
                       <li key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
                         <div className="flex-1">
-                          <span className="font-medium dark:text-slate-300">{item.name}</span>
+                          <span className="font-medium dark:text-slate-300">{item.name || '미기입'}</span>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             {item.price.toLocaleString()}원 × {item.quantity}개
                             = {(item.price * item.quantity).toLocaleString()}원
@@ -795,7 +796,7 @@ TransactionDrawer.propTypes = {
   isEditing: PropTypes.bool.isRequired,
   onDelete: PropTypes.func.isRequired,
   errMsg: PropTypes.string,
-  setErrMsg: PropTypes.string,
+  // setErrMsg: PropTypes.func,
   cardBalance: PropTypes.number.isRequired,
   teamFund: PropTypes.number.isRequired,
   drawerColor: PropTypes.string,

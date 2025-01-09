@@ -158,67 +158,64 @@ const SampleForm = ({ onClose }) => {
     }
   };
   
-  const handleTouchEnd = (e) => {
-    if (draggingItem !== null && dragItemRef.current) {
-      const touch = e.changedTouches ? e.changedTouches[0] : null;
-  
-      if (!touch) return;
-  
-      const draggableItems = [...document.querySelectorAll('.draggable')];
-      const currentItems = columns.approvers.items;
-  
-      let targetIndex = draggingItem;
-      let closestDistance = Infinity;
-  
-      draggableItems.forEach((item, index) => {
-        if (index !== draggingItem) {
-          const rect = item.getBoundingClientRect();
-          const centerY = rect.top + rect.height / 2;
-          const distance = Math.abs(touch.clientY - centerY);
-  
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            targetIndex = index;
-          }
-        }
-      });
-  
-      // 드래그된 아이템의 순서를 업데이트
-      const items = [...currentItems];
-      const [draggedItem] = items.splice(draggingItem, 1);
-      items.splice(targetIndex, 0, draggedItem);
-  
-      setColumns((prev) => ({
+  const updateItemOrder = (draggingIndex, targetIndex) => {
+    const items = [...columns.approvers.items];
+    const [draggedItem] = items.splice(draggingIndex, 1);
+    items.splice(targetIndex, 0, draggedItem);
+
+    setColumns((prev) => ({
         ...prev,
         approvers: { ...prev.approvers, items },
-      }));
-  
-      // 스타일 초기화
-      dragItemRef.current.style.position = '';
-      dragItemRef.current.style.zIndex = '';
-      dragItemRef.current.style.top = '';
-      dragItemRef.current.style.left = '';
-      dragItemRef.current.style.width = '';
-      dragItemRef.current.style.opacity = '';
-      dragItemRef.current.style.transform = '';
-      dragItemRef.current.style.transition = '';
-  
-      setDraggingItem(null);
-      dragItemRef.current = null;
+    }));
+  };
+
+  const handleTouchEnd = (e) => {
+    if (draggingItem !== null && dragItemRef.current) {
+        const touch = e.changedTouches ? e.changedTouches[0] : null;
+
+        if (!touch) return;
+
+        const draggableItems = [...document.querySelectorAll('.draggable')];
+        let targetIndex = draggingItem;
+        let closestDistance = Infinity;
+
+        draggableItems.forEach((item, index) => {
+            if (index !== draggingItem) {
+                const rect = item.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const distance = Math.abs(touch.clientY - centerY);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    targetIndex = index;
+                }
+            }
+        });
+
+        // 공통 함수 호출
+        updateItemOrder(draggingItem, targetIndex);
+
+        // 스타일 초기화
+        resetDragStyles();
+        setDraggingItem(null);
+        dragItemRef.current = null;
     }
-  
+
     e.preventDefault(); // 기본 동작 방지
   };
 
-  // 공통 함수: 아이템 재정렬
-  const reorderItems = (sourceIndex, targetIndex) => {
-    const items = [...columns.approvers.items];
-    const [removed] = items.splice(sourceIndex, 1);
-    items.splice(targetIndex, 0, removed);
-    setColumns(prev => ({
-      ...prev,
-      approvers: { ...prev.approvers, items }
-    }));
+  // 스타일 초기화 함수
+  const resetDragStyles = () => {
+    if (dragItemRef.current) {
+        dragItemRef.current.style.position = '';
+        dragItemRef.current.style.zIndex = '';
+        dragItemRef.current.style.top = '';
+        dragItemRef.current.style.left = '';
+        dragItemRef.current.style.width = '';
+        dragItemRef.current.style.opacity = '';
+        dragItemRef.current.style.transform = '';
+        dragItemRef.current.style.transition = '';
+    }
   };
 
   // 드래그 시작 시 공통 스타일 적용
@@ -245,22 +242,22 @@ const SampleForm = ({ onClose }) => {
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // 기본 동작 방지
     const draggable = document.querySelector('.dragging');
     if (!draggable) return;
 
     const container = e.currentTarget.parentNode;
     const siblings = [...container.querySelectorAll('.draggable:not(.dragging)')];
-    
+
     const nextSibling = siblings.find(sibling => {
-      const rect = sibling.getBoundingClientRect();
-      return e.clientY < rect.top + rect.height / 2;
+        const rect = sibling.getBoundingClientRect();
+        return e.clientY < rect.top + rect.height / 2;
     });
 
     if (nextSibling) {
-      container.insertBefore(draggable, nextSibling);
+        container.insertBefore(draggable, nextSibling);
     } else {
-      container.appendChild(draggable);
+        container.appendChild(draggable);
     }
   };
 
@@ -269,11 +266,29 @@ const SampleForm = ({ onClose }) => {
     if (!draggable) return;
 
     removeDragStyles(draggable);
-    
-    if (draggingItem !== index) {
-      reorderItems(draggingItem, index);
+
+    // 드래그가 끝날 때 인덱스 업데이트
+    const draggableItems = [...document.querySelectorAll('.draggable')];
+    let targetIndex = draggingItem;
+
+    // 드래그된 아이템의 위치를 기준으로 가장 가까운 인덱스를 찾음
+    draggableItems.forEach((item, idx) => {
+        if (idx !== draggingItem) {
+            const rect = item.getBoundingClientRect();
+            const centerY = rect.top + rect.height / 2;
+            const distance = Math.abs(e.clientY - centerY);
+
+            if (distance < Math.abs(e.clientY - (draggable.getBoundingClientRect().top + draggable.offsetHeight / 2))) {
+                targetIndex = idx;
+            }
+        }
+    });
+
+    // 인덱스가 변경된 경우에만 업데이트
+    if (targetIndex !== draggingItem) {
+        updateItemOrder(draggingItem, targetIndex);
     }
-    
+
     setDraggingItem(null);
   };
 

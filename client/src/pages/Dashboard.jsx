@@ -131,7 +131,7 @@ const Dashboard = () => {
                             userCards={userCards}
                             cardBalance={cardBalance}
                             errMsg={errMsg}
-                            setErrMsg={setErrMsg}
+                            // setErrMsg={setErrMsg}
                         />
                         <PayHistory
                             transactions={transactions}

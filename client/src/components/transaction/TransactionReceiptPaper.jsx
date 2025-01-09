@@ -114,7 +114,7 @@ const TransactionReceiptPaper = forwardRef(
               <div className="space-y-2">
                 {transaction.menu_items.map((item, index) => (
                   <div key={index} className="flex justify-between">
-                    <span>{item.name}</span>
+                    <span>{item.name || '미기입'}</span>
                     <div className="flex space-x-4">
                       <span className="font-mono">{item.quantity}</span>
                       <span className="font-mono">{(item.price * item.quantity).toLocaleString()}</span>

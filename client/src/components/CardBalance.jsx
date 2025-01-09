@@ -5,7 +5,7 @@ import TransactionDrawer from './TransactionDrawer';
 import AnimatedNumber from './AnimatedNumber';
 import { TiPlus } from "react-icons/ti";
 
-function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, cardBalance, errMsg, setErrMsg }) {
+function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, cardBalance, errMsg }) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [confettiTrigger, setConfettiTrigger] = useState(false);
 
@@ -32,7 +32,7 @@ function CardBalance({ onSave, onDelete, currentBalance, teamFund, userCards, ca
     };
 
     const handleOpenDrawer = () => {
-        setErrMsg('');
+        // setErrMsg('');
         setIsDrawerOpen(true)
     };
     const handleCloseDrawer = () => setIsDrawerOpen(false);
@@ -82,7 +82,8 @@ CardBalance.propTypes = {
     teamFund: PropTypes.number, // 팀 펀드
     cardBalance: PropTypes.number, // 팀카드 잔액
     userCards: PropTypes.array.isRequired, // 카드 정보
-    errMsg: PropTypes.string.isRequired,
+    errMsg: PropTypes.string,
+    setErrMsg: PropTypes.func,
 };
 
 export default CardBalance;
