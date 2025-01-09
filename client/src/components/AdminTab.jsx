@@ -98,7 +98,7 @@ const AdminTab = () => {
 
             <div
                 ref={containerRef}
-                className="overflow-x-auto overflow-y-hidden scrollbar-hide mx-6"
+                className="overflow-x-auto overflow-y-hidden scrollbar-hide mx-6 no-scrollbar"
             >
                 <ul
                     ref={tabRef}

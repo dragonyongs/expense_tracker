@@ -76,7 +76,7 @@ const PasswordChangeDrawer = ({ isOpen, onClose, onSave, memberId, title, succes
                 </button>
             </div>
             <div className='dark:bg-slate-800'>
-                <div className={`overflow-y-auto ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6 flex flex-col space-y-4`}>
+                <div className={`overflow-y-auto no-scrollbar ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6 flex flex-col space-y-4`}>
                     <InputField
                         label="현재 비밀번호"
                         id="currentPassword"

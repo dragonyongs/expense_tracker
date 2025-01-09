@@ -21,7 +21,7 @@ const Layout = () => {
             {/* Mobile Layout */}
             <section className='lg:ml-mobile bg-blue-50 dark:bg-slate-700'>
                 <div className={`relative h-real-screen md:max-w-xl mx-auto lg:mx-0 flex flex-col bg-white dark:bg-slate-900 ${!isApprovedUser ? '' : 'justify-between'}`}>
-                    <div className={`overflow-y-auto shadow-md h-full ${isApprovedUser ? '' : 'flex items-center justify-center'} `}>
+                    <div className={`overflow-y-auto shadow-md h-full no-scrollbar ${isApprovedUser ? '' : 'flex items-center justify-center'} `}>
                         <div className={`${isApprovedUser ? 'relative min-h-default-screen bg-[#dce8f5] dark:bg-gray-800' : 'w-full h-full'}`}>
                             <Outlet />
                         </div>

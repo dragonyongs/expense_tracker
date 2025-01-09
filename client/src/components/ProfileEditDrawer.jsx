@@ -259,7 +259,7 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
                     </button>
                 </div>
                 <div className='dark:bg-slate-800'>
-                    <div className={`overflow-y-auto ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6`}>
+                    <div className={`overflow-y-auto no-scrollbar ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6`}>
                         <div className="flex flex-col items-center mb-4">
                             <AvatarComponent
                                 avatarConfig={profile.avatar} // 초기값 전달
