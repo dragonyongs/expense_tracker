@@ -35,9 +35,9 @@ const SampleForm = ({ onClose }) => {
     approvers: {
       name: "결재자 목록",
       items: [
-        { id: "1", name: "홍길동 팀장" },
-        { id: "2", name: "두울리 본부장" },
-        { id: "3", name: "고길동 대표" },
+        { id: "1", name: "001 팀장" },
+        { id: "2", name: "002 본부장" },
+        { id: "3", name: "003 대표" },
       ],
     },
   });
@@ -160,35 +160,37 @@ const SampleForm = ({ onClose }) => {
   
   const handleTouchEnd = (e) => {
     if (draggingItem !== null && dragItemRef.current) {
-      const touch = e.changedTouches ? e.changedTouches[0] : null; // changedTouches 확인
+      const touch = e.changedTouches ? e.changedTouches[0] : null;
   
-      if (!touch) return; // 터치가 없으면 리턴
+      if (!touch) return;
   
       const draggableItems = [...document.querySelectorAll('.draggable')];
-      let targetIndex = draggingItem;
+      const currentItems = columns.approvers.items;
   
-      // 가장 가까운 위치를 찾아서 드래그된 아이템을 삽입
+      let targetIndex = draggingItem;
+      let closestDistance = Infinity;
+  
       draggableItems.forEach((item, index) => {
         if (index !== draggingItem) {
           const rect = item.getBoundingClientRect();
           const centerY = rect.top + rect.height / 2;
+          const distance = Math.abs(touch.clientY - centerY);
   
-          if (touch.clientY < centerY && index < draggingItem) {
-            targetIndex = index;
-          } else if (touch.clientY > centerY && index > draggingItem) {
+          if (distance < closestDistance) {
+            closestDistance = distance;
             targetIndex = index;
           }
         }
       });
   
-      // 아이템 순서 업데이트
-      const items = [...columns.approvers.items];
+      // 드래그된 아이템의 순서를 업데이트
+      const items = [...currentItems];
       const [draggedItem] = items.splice(draggingItem, 1);
       items.splice(targetIndex, 0, draggedItem);
   
-      setColumns(prev => ({
+      setColumns((prev) => ({
         ...prev,
-        approvers: { ...prev.approvers, items }
+        approvers: { ...prev.approvers, items },
       }));
   
       // 스타일 초기화
@@ -205,7 +207,7 @@ const SampleForm = ({ onClose }) => {
       dragItemRef.current = null;
     }
   
-    e.preventDefault(); // 기본 동작을 방지하여 드래그 완료 후 UI를 업데이트
+    e.preventDefault(); // 기본 동작 방지
   };
 
   // 공통 함수: 아이템 재정렬
