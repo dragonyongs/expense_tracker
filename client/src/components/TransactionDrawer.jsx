@@ -389,7 +389,7 @@ const TransactionDrawer = ({
               <MdClose className="text-2xl dark:text-slate-300" />
             </button>
           </div>
-        <div className="overflow-y-auto h-drawer-screen flex w-full flex-col gap-6 px-6 dark:bg-slate-800">
+        <div className="overflow-y-auto h-drawer-screen flex w-full flex-col gap-6 pt-6 px-6 dark:bg-slate-800">
             {errMsg ||
               (errorMessage && (
                 <div className="text-red-600 dark:text-red-300">
