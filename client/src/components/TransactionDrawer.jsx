@@ -48,9 +48,9 @@ const TransactionDrawer = ({
   const [menuSuggestions, setMenuSuggestions] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [currentMenuItem, setCurrentMenuItem] = useState({
-    name: '',
-    price: 0,
-    quantity: 1
+    name: "",
+    price: "",
+    quantity: 1,
   });
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [isMenuLayerOpen, setIsMenuLayerOpen] = useState(false);
@@ -104,11 +104,11 @@ const TransactionDrawer = ({
   useEffect(() => {
     if (selectedTransaction.menu_items?.length > 0) {
       const total = selectedTransaction.menu_items.reduce((sum, item) => {
-        return sum + (item.price * item.quantity);
+        return sum + item.price * item.quantity;
       }, 0);
-      setSelectedTransaction(prev => ({
+      setSelectedTransaction((prev) => ({
         ...prev,
-        transaction_amount: total
+        transaction_amount: total,
       }));
     }
   }, [selectedTransaction.menu_items]);
@@ -191,48 +191,108 @@ const TransactionDrawer = ({
 
   const handleSave = async () => {
     try {
+      // 메뉴가 비어 있을 경우 기본 메뉴 항목 추가
+      const menuItems =
+        selectedTransaction.menu_items.length > 0
+          ? selectedTransaction.menu_items
+          : [
+              {
+                name: "",
+                price: selectedTransaction.transaction_amount || 0, // 트랜잭션 금액을 price로 설정
+                quantity: 1,
+              },
+            ];
+
       const updatedTransaction = {
         ...selectedTransaction,
-        menu_items: [
-          ...(selectedTransaction.menu_items || []),
-          ...(currentMenuItem.name && currentMenuItem.price ? [{ name: currentMenuItem.name, price: currentMenuItem.price, quantity: currentMenuItem.quantity }] : []),
-        ],
+        menu_items: menuItems,
         card_id: selectedTransaction.card_id,
-        transaction_date: new Date(selectedTransaction.transaction_date).toISOString().split("T")[0],
+        transaction_date: new Date(selectedTransaction.transaction_date)
+          .toISOString()
+          .split("T")[0],
         merchant_name: selectedTransaction.merchant_name,
         transaction_type: "expense",
         expense_card: selectedTransaction.expense_card || "TeamCard",
         expense_type: selectedTransaction.expense_type || "RegularExpense",
         is_deducted: false,
       };
-      console.log('updatedTransaction', updatedTransaction);
-      console.log('Saving transaction with menu items:', updatedTransaction.menu_items);
-      
+
+      console.log("updatedTransaction", updatedTransaction);
+      console.log(
+        "Saving transaction with menu items:",
+        updatedTransaction.menu_items
+      );
+
       if (isEditing) {
         await onSave(updatedTransaction);
       } else {
         await onSave(updatedTransaction);
       }
-      
+
       // 저장 후 초기화
       setSelectedTransaction({
-        card_id: '',
-        transaction_date: '',
-        merchant_name: '',
-        transaction_type: 'expense',
-        expense_card: '',
-        expense_type: '',
+        card_id: "",
+        transaction_date: "",
+        merchant_name: "",
+        transaction_type: "expense",
+        expense_card: "",
+        expense_type: "",
         menu_items: [],
       });
-      setCurrentMenuItem({ name: '', price: 0, quantity: 1 });
-      setErrorMessage('');
+      setCurrentMenuItem({ name: "", price: 0, quantity: 1 });
+      setErrorMessage("");
 
       onClose();
     } catch (error) {
-      console.error('Error saving transaction:', error);
+      console.error("Error saving transaction:", error);
       setErrorMessage(error.message || "오류가 발생했습니다.");
     }
   };
+
+  // const handleSave = async () => {
+  //   try {
+  //     const updatedTransaction = {
+  //       ...selectedTransaction,
+  //       menu_items: [
+  //         ...(selectedTransaction.menu_items || []),
+  //         ...(currentMenuItem.name && currentMenuItem.price ? [{ name: currentMenuItem.name, price: currentMenuItem.price, quantity: currentMenuItem.quantity }] : []),
+  //       ],
+  //       card_id: selectedTransaction.card_id,
+  //       transaction_date: new Date(selectedTransaction.transaction_date).toISOString().split("T")[0],
+  //       merchant_name: selectedTransaction.merchant_name,
+  //       transaction_type: "expense",
+  //       expense_card: selectedTransaction.expense_card || "TeamCard",
+  //       expense_type: selectedTransaction.expense_type || "RegularExpense",
+  //       is_deducted: false,
+  //     };
+  //     console.log('updatedTransaction', updatedTransaction);
+  //     console.log('Saving transaction with menu items:', updatedTransaction.menu_items);
+
+  //     if (isEditing) {
+  //       await onSave(updatedTransaction);
+  //     } else {
+  //       await onSave(updatedTransaction);
+  //     }
+
+  //     // 저장 후 초기화
+  //     setSelectedTransaction({
+  //       card_id: '',
+  //       transaction_date: '',
+  //       merchant_name: '',
+  //       transaction_type: 'expense',
+  //       expense_card: '',
+  //       expense_type: '',
+  //       menu_items: [],
+  //     });
+  //     setCurrentMenuItem({ name: '', price: 0, quantity: 1 });
+  //     setErrorMessage('');
+
+  //     onClose();
+  //   } catch (error) {
+  //     console.error('Error saving transaction:', error);
+  //     setErrorMessage(error.message || "오류가 발생했습니다.");
+  //   }
+  // };
 
   const handleMerchantInputChange = async (e) => {
     const value = e.target.value;
@@ -269,9 +329,9 @@ const TransactionDrawer = ({
 
   const handleMenuInputChange = async (e) => {
     const value = e.target.value;
-    setCurrentMenuItem(prev => ({
+    setCurrentMenuItem((prev) => ({
       ...prev,
-      name: value
+      name: value,
     }));
 
     if (value.length > 2 && selectedTransaction.merchant_name) {
@@ -279,7 +339,7 @@ const TransactionDrawer = ({
         const response = await axios.get(
           `${API_URLS.SEARCH_MENU_FOR_MERCHANT}/${selectedTransaction.merchant_name}`
         );
-        
+
         const filteredMenus = response.data.filter((menu) =>
           menu.name?.toLowerCase().includes(value.toLowerCase())
         );
@@ -297,76 +357,81 @@ const TransactionDrawer = ({
     setCurrentMenuItem({
       name: menu.name,
       price: menu.price,
-      quantity: 1
+      quantity: 1,
     });
     setMenuSuggestions([]);
   };
 
   const handleAddMenuItem = () => {
     // 유효성 검사: 메뉴명, 가격, 수량이 모두 입력되었는지 확인
-    if (!currentMenuItem.name || !currentMenuItem.price || !currentMenuItem.quantity) {
-      setErrorMessage('메뉴명, 가격, 수량을 모두 입력해주세요.');
+    if (
+      !currentMenuItem.name ||
+      !currentMenuItem.price ||
+      !currentMenuItem.quantity
+    ) {
+      setErrorMessage("메뉴명, 가격, 수량을 모두 입력해주세요.");
       return; // 유효성 검사 실패 시 함수 종료
     }
-  
+
     const newMenuItem = {
       name: currentMenuItem.name, // 메뉴명으로 설정
       price: currentMenuItem.price,
       quantity: currentMenuItem.quantity,
     };
-  
+
     setSelectedTransaction((prev) => ({
       ...prev,
       menu_items: [...(prev.menu_items || []), newMenuItem], // 새로운 메뉴 항목 추가
     }));
-  
+
     // 현재 메뉴 항목 초기화
-    setCurrentMenuItem({ name: '', price: 0, quantity: 1 });
+    setCurrentMenuItem({ name: "", price: 0, quantity: 1 });
   };
 
   const handleRemoveMenuItem = (index) => {
-    setSelectedTransaction(prev => {
+    setSelectedTransaction((prev) => {
       const removedItem = prev.menu_items[index];
       return {
         ...prev,
         menu_items: prev.menu_items.filter((_, i) => i !== index),
-        transaction_amount: prev.transaction_amount - (removedItem.price * removedItem.quantity)
+        transaction_amount:
+          prev.transaction_amount - removedItem.price * removedItem.quantity,
       };
     });
   };
 
-  const handleMerchantSelect = (merchant) => {
-    setSelectedTransaction({
-        ...selectedTransaction,
-        merchant_name: merchant.name
-    });
-    setSelectedMerchant(merchant);
-    setIsMenuLayerOpen(true);
-    setIsMerchantLayerOpen(false);
-  };
+  // const handleMerchantSelect = (merchant) => {
+  //   setSelectedTransaction({
+  //     ...selectedTransaction,
+  //     merchant_name: merchant.name,
+  //   });
+  //   setSelectedMerchant(merchant);
+  //   setIsMenuLayerOpen(true);
+  //   setIsMerchantLayerOpen(false);
+  // };
 
   const handleMenuSelect = (menu) => {
     const newMenuItem = {
-        name: menu.name,
-        price: menu.price,
-        quantity: 1
+      name: menu.name,
+      price: menu.price,
+      quantity: 1,
     };
-    
+
     setSelectedTransaction({
-        ...selectedTransaction,
-        menu_items: [...selectedTransaction.menu_items, newMenuItem]
+      ...selectedTransaction,
+      menu_items: [...selectedTransaction.menu_items, newMenuItem],
     });
-    
+
     setIsMenuLayerOpen(false);
     setIsMerchantLayerOpen(false);
   };
 
   const handleMenuSearch = (searchTerm) => {
     if (selectedMerchant) {
-        const filtered = menuSuggestions.filter(menu => 
-            menu.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredMenus(filtered);
+      const filtered = menuSuggestions.filter((menu) =>
+        menu.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredMenus(filtered);
     }
   };
 
@@ -383,380 +448,398 @@ const TransactionDrawer = ({
         size={drawerSize}
       >
         <div className="flex justify-between p-4 border-b dark:border-b-gray-700 bg-white dark:bg-slate-800 ">
-            <h5 className="text-lg font-bold dark:text-slate-200">
-              {isEditing ? "카드 지출 수정" : "카드 지출 추가"}
-            </h5>
-            <button onClick={onClose}>
-              <MdClose className="text-2xl dark:text-slate-300" />
-            </button>
-          </div>
+          <h5 className="text-lg font-bold dark:text-slate-200">
+            {isEditing ? "카드 지출 수정" : "카드 지출 추가"}
+          </h5>
+          <button onClick={onClose}>
+            <MdClose className="text-2xl dark:text-slate-300" />
+          </button>
+        </div>
         <div className="overflow-y-auto h-drawer-screen flex w-full flex-col gap-6 pt-6 px-6 dark:bg-slate-800">
-            {errMsg ||
-              (errorMessage && (
-                <div className="text-red-600 dark:text-red-300">
-                  {errMsg || errorMessage}
-                </div>
-              ))}
-
-            {userPosition === "팀장" && (
-              <div>
-                <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">
-                  지출 타입
-                </h3>
-                {selectedTransaction.expense_card === "OvertimeMealCard" ? (
-                  <ul className="grid w-full gap-2 grid-cols-1">
-                    <li>
-                      <input
-                        type="radio"
-                        id="expense_type_d"
-                        name="expenseType"
-                        value="OvertimeMealExpense"
-                        className="hidden peer"
-                        checked={expenseType === "OvertimeMealExpense"}
-                        onChange={() =>
-                          handleExpenseTypeChange("OvertimeMealExpense")
-                        }
-                        disabled={
-                          isEditing &&
-                          transactionData.expense_type !== "OvertimeMealExpense"
-                        }
-                        required
-                      />
-                      <label
-                        htmlFor="expense_type_d"
-                        className="peer-disabled:bg-gray-50 peer-disabled:dark:bg-slate-900 peer-disabled:dark:text-slate-500 peer-disabled:text-gray-300 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:dark:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                      >
-                        <div className="block">
-                          <div className="w-full text-md font-semibold">
-                            야근 식대
-                          </div>
-                          <div className="w-full text-sm">
-                            잔액: {selectedTransaction.balance.toLocaleString()}
-                            원
-                          </div>
-                        </div>
-                        {expenseType === "OvertimeMealExpense" && (
-                          <IoCheckmark className="w-6 h-6" />
-                        )}
-                      </label>
-                    </li>
-                  </ul>
-                ) : (
-                  <ul className="grid w-full gap-2 grid-cols-2">
-                    <li>
-                      <input
-                        type="radio"
-                        id="expense_type_a"
-                        name="expenseType"
-                        value="RegularExpense"
-                        className="hidden peer"
-                        checked={expenseType === "RegularExpense"}
-                        disabled={
-                          (isEditing &&
-                            transactionData.expense_type !==
-                              "RegularExpense") ||
-                          (!isEditing && cardBalance === 0)
-                        }
-                        onChange={() =>
-                          handleExpenseTypeChange("RegularExpense")
-                        }
-                        required
-                      />
-                      <label
-                        htmlFor="expense_type_a"
-                        className="peer-disabled:bg-gray-50 peer-disabled:dark:bg-slate-900 peer-disabled:dark:text-slate-500 peer-disabled:text-gray-300 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:dark:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                      >
-                        <div className="block">
-                          <div className="w-full text-md font-semibold">
-                            일반 지출
-                          </div>
-                          {!isEditing && (
-                            <div className="w-full text-sm">
-                              잔액: {cardBalance.toLocaleString()}원
-                            </div>
-                          )}
-                        </div>
-                        {expenseType === "RegularExpense" && (
-                          <IoCheckmark className="w-6 h-6" />
-                        )}
-                      </label>
-                    </li>
-                    <li>
-                      <input
-                        type="radio"
-                        id="expense_type_b"
-                        name="expenseType"
-                        value="TeamFund"
-                        className="hidden peer"
-                        checked={expenseType === "TeamFund"}
-                        disabled={
-                          (isEditing &&
-                            transactionData.expense_type !== "TeamFund") ||
-                          (!isEditing && teamFund === 0)
-                        }
-                        onChange={() => handleExpenseTypeChange("TeamFund")}
-                      />
-                      <label
-                        htmlFor="expense_type_b"
-                        className="peer-disabled:border-gray-300 peer-disabled:bg-gray-50 peer-disabled:text-gray-300 dark:peer-disabled:border-gray-950 dark:peer-disabled:bg-slate-900 dark:peer-disabled:text-slate-700 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
-                      >
-                        <div className="block">
-                          <div className="w-full text-md font-semibold">
-                            팀 운영비
-                          </div>
-                          {!isEditing && (
-                            <div className="w-full text-sm">
-                              잔액: {teamFund.toLocaleString()}원
-                            </div>
-                          )}
-                        </div>
-                        {expenseType === "TeamFund" && (
-                          <IoCheckmark className="w-6 h-6" />
-                        )}
-                      </label>
-                    </li>
-                  </ul>
-                )}
+          {errMsg ||
+            (errorMessage && (
+              <div className="text-red-600 dark:text-red-300">
+                {errMsg || errorMessage}
               </div>
-            )}
+            ))}
 
-            <div className="relative">
-              <InputField
-                label="상호명"
-                id="merchant_name"
-                value={selectedTransaction.merchant_name || ""}
-                className="bg-white border border-slate-200"
-                onChange={handleMerchantInputChange}
-                placeholder="상호명 입력"
-                required={true}
-              />
-              {merchantSuggestions.length > 0 && (
-                <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
-                  {merchantSuggestions.map((merchantName, index) => (
-                    <li
-                      key={index}
-                      onClick={() =>
-                        handleMerchantSuggestionClick(merchantName)
+          {userPosition === "팀장" && (
+            <div>
+              <h3 className="mb-2 text-md font-medium text-gray-900 dark:text-white">
+                지출 타입
+              </h3>
+              {selectedTransaction.expense_card === "OvertimeMealCard" ? (
+                <ul className="grid w-full gap-2 grid-cols-1">
+                  <li>
+                    <input
+                      type="radio"
+                      id="expense_type_d"
+                      name="expenseType"
+                      value="OvertimeMealExpense"
+                      className="hidden peer"
+                      checked={expenseType === "OvertimeMealExpense"}
+                      onChange={() =>
+                        handleExpenseTypeChange("OvertimeMealExpense")
                       }
-                      className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
+                      disabled={
+                        isEditing &&
+                        transactionData.expense_type !== "OvertimeMealExpense"
+                      }
+                      required
+                    />
+                    <label
+                      htmlFor="expense_type_d"
+                      className="peer-disabled:bg-gray-50 peer-disabled:dark:bg-slate-900 peer-disabled:dark:text-slate-500 peer-disabled:text-gray-300 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:dark:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
                     >
-                      {merchantName}
-                    </li>
-                  ))}
+                      <div className="block">
+                        <div className="w-full text-md font-semibold">
+                          야근 식대
+                        </div>
+                        <div className="w-full text-sm">
+                          잔액: {selectedTransaction.balance.toLocaleString()}원
+                        </div>
+                      </div>
+                      {expenseType === "OvertimeMealExpense" && (
+                        <IoCheckmark className="w-6 h-6" />
+                      )}
+                    </label>
+                  </li>
+                </ul>
+              ) : (
+                <ul className="grid w-full gap-2 grid-cols-2">
+                  <li>
+                    <input
+                      type="radio"
+                      id="expense_type_a"
+                      name="expenseType"
+                      value="RegularExpense"
+                      className="hidden peer"
+                      checked={expenseType === "RegularExpense"}
+                      disabled={
+                        (isEditing &&
+                          transactionData.expense_type !== "RegularExpense") ||
+                        (!isEditing && cardBalance === 0)
+                      }
+                      onChange={() => handleExpenseTypeChange("RegularExpense")}
+                      required
+                    />
+                    <label
+                      htmlFor="expense_type_a"
+                      className="peer-disabled:bg-gray-50 peer-disabled:dark:bg-slate-900 peer-disabled:dark:text-slate-500 peer-disabled:text-gray-300 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:dark:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                    >
+                      <div className="block">
+                        <div className="w-full text-md font-semibold">
+                          일반 지출
+                        </div>
+                        {!isEditing && (
+                          <div className="w-full text-sm">
+                            잔액: {cardBalance.toLocaleString()}원
+                          </div>
+                        )}
+                      </div>
+                      {expenseType === "RegularExpense" && (
+                        <IoCheckmark className="w-6 h-6" />
+                      )}
+                    </label>
+                  </li>
+                  <li>
+                    <input
+                      type="radio"
+                      id="expense_type_b"
+                      name="expenseType"
+                      value="TeamFund"
+                      className="hidden peer"
+                      checked={expenseType === "TeamFund"}
+                      disabled={
+                        (isEditing &&
+                          transactionData.expense_type !== "TeamFund") ||
+                        (!isEditing && teamFund === 0)
+                      }
+                      onChange={() => handleExpenseTypeChange("TeamFund")}
+                    />
+                    <label
+                      htmlFor="expense_type_b"
+                      className="peer-disabled:border-gray-300 peer-disabled:bg-gray-50 peer-disabled:text-gray-300 dark:peer-disabled:border-gray-950 dark:peer-disabled:bg-slate-900 dark:peer-disabled:text-slate-700 inline-flex items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                    >
+                      <div className="block">
+                        <div className="w-full text-md font-semibold">
+                          팀 운영비
+                        </div>
+                        {!isEditing && (
+                          <div className="w-full text-sm">
+                            잔액: {teamFund.toLocaleString()}원
+                          </div>
+                        )}
+                      </div>
+                      {expenseType === "TeamFund" && (
+                        <IoCheckmark className="w-6 h-6" />
+                      )}
+                    </label>
+                  </li>
                 </ul>
               )}
             </div>
-            <div className="relative space-y-4">
-              <div className="mt-4">
-                {selectedTransaction.merchant_name && (
+          )}
+
+          <div className="relative">
+            <InputField
+              label="상호명"
+              id="merchant_name"
+              value={selectedTransaction.merchant_name || ""}
+              className="bg-white border border-slate-200"
+              onChange={handleMerchantInputChange}
+              placeholder="상호명 입력"
+              required={true}
+            />
+            {merchantSuggestions.length > 0 && (
+              <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                {merchantSuggestions.map((merchantName, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleMerchantSuggestionClick(merchantName)}
+                    className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
+                  >
+                    {merchantName}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="relative space-y-4">
+            <div className="mt-4">
+              {selectedTransaction.merchant_name && (
                 <div className="flex justify-between items-center mb-2">
-                  
-                    <>
+                  <>
                     <h3 className="text-md font-medium text-gray-900 dark:text-white">
                       지출 메뉴
                     </h3>
                     <button
-                        onClick={() => {
-                          setShowMenuForm(true);
-                          fetchMenuForMerchant(selectedTransaction.merchant_name);
-                        }}
-                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                      >
+                      onClick={() => {
+                        setShowMenuForm(true);
+                        fetchMenuForMerchant(selectedTransaction.merchant_name);
+                      }}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
                       + 메뉴 추가
                     </button>
                   </>
-
                 </div>
-                )}
+              )}
 
-                {selectedTransaction.merchant_name && selectedTransaction.menu_items?.length === 0 && !showMenuForm ? (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                    <p className="text-gray-500">상호명을 입력해주세요</p>
-                  </div>
-                ) : (
-                  <ul className="space-y-2 mb-4">
-                    {selectedTransaction.menu_items.map((item, index) => (
-                      <li key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                        <div className="flex-1">
-                          <span className="font-medium dark:text-slate-300">{item.name || '미기입'}</span>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {item.price.toLocaleString()}원 × {item.quantity}개
-                            = {(item.price * item.quantity).toLocaleString()}원
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleRemoveMenuItem(index)}
-                          className="text-red-500 hover:text-red-700 p-1"
-                        >
-                          <MdClose />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {showMenuForm && (
-                  <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-lg dark:bg-slate-700">
-                    <div className="relative">
-                      <InputField
-                        label="메뉴명"
-                        id="menu_name"
-                        value={currentMenuItem.name}
-                        className="bg-white border border-slate-200 dark:bg-slate-800"
-                        onChange={handleMenuInputChange}
-                        placeholder="메뉴명 입력"
-                        onFocus={() => setShowMenuForm(true)}
-                      />
-                      {menuSuggestions.length > 0 && (
-                        <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg overflow-y-auto max-h-52">
-                          {menuSuggestions.map((menu, index) => (
-                            <li
-                              key={index}
-                              onClick={() => handleMenuSuggestionClick(menu)}
-                              className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
-                            >
-                              <div className="flex justify-between items-center">
-                                <span className="font-medium">{menu.name}</span>
-                                <span className="text-sm text-gray-500">{menu.price.toLocaleString()}원</span>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2">
+              {selectedTransaction.merchant_name &&
+              selectedTransaction.menu_items?.length === 0 &&
+              !showMenuForm ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                  <p className="text-gray-500">
+                    기존 메뉴 선택 시 금액 자동입력
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-2 mb-4">
+                  {selectedTransaction.menu_items.map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-700 rounded-lg"
+                    >
                       <div className="flex-1">
-                        <InputField
-                          label="가격"
-                          id="menu_price"
-                          type="number"
-                          value={currentMenuItem.price}
-                          className="bg-white border border-slate-200 dark:bg-slate-800"
-                          onChange={(e) => setCurrentMenuItem(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
-                          placeholder="가격 입력"
-                        />
+                        <span className="font-medium dark:text-slate-300">
+                          {item.name || "미기입"}
+                        </span>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {item.price.toLocaleString()}원 × {item.quantity}개 ={" "}
+                          {(item.price * item.quantity).toLocaleString()}원
+                        </div>
                       </div>
-                      <div className="w-24">
-                        <InputField
-                          label="수량"
-                          id="menu_quantity"
-                          type="number"
-                          value={currentMenuItem.quantity}
-                          className="bg-white border border-slate-200 dark:bg-slate-800"
-                          onChange={(e) => setCurrentMenuItem(prev => ({ ...prev, quantity: parseInt(e.target.value, 10) }))}
-                          placeholder="수량"
-                        />
-                      </div>
+                      <button
+                        onClick={() => handleRemoveMenuItem(index)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <MdClose />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {showMenuForm && (
+                <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-lg dark:bg-slate-700">
+                  <div className="relative">
+                    <InputField
+                      label="메뉴명"
+                      id="menu_name"
+                      value={currentMenuItem.name}
+                      className="bg-white border border-slate-200 dark:bg-slate-800"
+                      onChange={handleMenuInputChange}
+                      placeholder="메뉴명 입력"
+                      onFocus={() => setShowMenuForm(true)}
+                    />
+                    {menuSuggestions.length > 0 && (
+                      <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg overflow-y-auto max-h-52">
+                        {menuSuggestions.map((menu, index) => (
+                          <li
+                            key={index}
+                            onClick={() => handleMenuSuggestionClick(menu)}
+                            className="cursor-pointer py-2 px-4 hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium">{menu.name}</span>
+                              <span className="text-sm text-gray-500">
+                                {menu.price.toLocaleString()}원
+                              </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <InputField
+                        label="가격"
+                        id="menu_price"
+                        type="number"
+                        value={currentMenuItem.price}
+                        className="bg-white border border-slate-200 dark:bg-slate-800"
+                        onChange={(e) =>
+                          setCurrentMenuItem((prev) => ({
+                            ...prev,
+                            price: parseFloat(e.target.value),
+                          }))
+                        }
+                        placeholder="가격 입력"
+                      />
                     </div>
-                    
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleAddMenuItem();
-                          setShowMenuForm(false);
-                        }}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm px-5 py-2.5"
-                      >
-                        추가하기
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowMenuForm(false)}
-                        className="bg-gray-200 dark:bg-slate-800 dark:text-slate-400 hover:bg-gray-300 text-gray-700 font-medium rounded-lg text-sm px-5 py-2.5"
-                      >
-                        취소
-                      </button>
+                    <div className="w-24">
+                      <InputField
+                        label="수량"
+                        id="menu_quantity"
+                        type="number"
+                        value={currentMenuItem.quantity}
+                        className="bg-white border border-slate-200 dark:bg-slate-800"
+                        onChange={(e) =>
+                          setCurrentMenuItem((prev) => ({
+                            ...prev,
+                            quantity: parseInt(e.target.value, 10),
+                          }))
+                        }
+                        placeholder="수량"
+                      />
                     </div>
                   </div>
-                )}
-              </div>
 
-              <div className="mt-4">
-                {selectedTransaction.menu_items?.length > 0 ? (
-                    <>
-                    <label className="block text-md font-medium text-gray-700 dark:text-white mb-1">지출 금액</label>
-                    <div className="bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-slate-700 rounded-lg p-3 text-right">
-                      <span className="text-lg font-semibold text-blue-700 dark:text-blue-500">
-                        {(selectedTransaction.transaction_amount || 0).toLocaleString()}원
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <InputField
-                    label="지출금액"
-                    id="transaction_amount"
-                    type="number"
-                    value={selectedTransaction.transaction_amount || 0}
-                    className="bg-white border border-slate-200"
-                    onChange={(e) => {
-                      setSelectedTransaction((prev) => ({
-                        ...prev,
-                        transaction_amount: parseFloat(e.target.value) || 0,
-                      }));
-                    }}
-                    required={true}
-                  />
-                )}
-              </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleAddMenuItem();
+                        setShowMenuForm(false);
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm px-5 py-2.5"
+                    >
+                      추가하기
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowMenuForm(false)}
+                      className="bg-gray-200 dark:bg-slate-800 dark:text-slate-400 hover:bg-gray-300 text-gray-700 font-medium rounded-lg text-sm px-5 py-2.5"
+                    >
+                      취소
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <InputField
-              label="거래일"
-              id="transaction_date"
-              type="date"
-              value={selectedTransaction.transaction_date || new Date()}
-              className="bg-white border border-slate-200"
-              onChange={(e) => {
-                setSelectedTransaction((prev) => ({
-                  ...prev,
-                  transaction_date: e.target.value,
-                }));
-              }}
+
+            <div className="mt-4">
+              {selectedTransaction.menu_items?.length > 0 ? (
+                <>
+                  <label className="block text-md font-medium text-gray-700 dark:text-white mb-1">
+                    지출 금액
+                  </label>
+                  <div className="bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-slate-700 rounded-lg p-3 text-right">
+                    <span className="text-lg font-semibold text-blue-700 dark:text-blue-500">
+                      {(
+                        selectedTransaction.transaction_amount || 0
+                      ).toLocaleString()}
+                      원
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <InputField
+                  label="지출금액"
+                  id="transaction_amount"
+                  type="number"
+                  value={selectedTransaction.transaction_amount || 0}
+                  className="bg-white border border-slate-200"
+                  onChange={(e) => {
+                    setSelectedTransaction((prev) => ({
+                      ...prev,
+                      transaction_amount: parseFloat(e.target.value) || 0,
+                    }));
+                  }}
+                  required={true}
+                />
+              )}
+            </div>
+          </div>
+          <InputField
+            label="거래일"
+            id="transaction_date"
+            type="date"
+            value={selectedTransaction.transaction_date || new Date()}
+            className="bg-white border border-slate-200"
+            onChange={(e) => {
+              setSelectedTransaction((prev) => ({
+                ...prev,
+                transaction_date: e.target.value,
+              }));
+            }}
+            required={true}
+          />
+
+          {userCards.length >= 2 && (
+            <SelectField
+              label="사용 카드"
+              id="card_id"
+              value={selectedTransaction.card_id}
+              onChange={handleCardChange}
+              options={userCards.map((card) => ({
+                value: card._id,
+                label: card.card_number,
+              }))}
               required={true}
             />
+          )}
+        </div>
 
-            {userCards.length >= 2 && (
-              <SelectField
-                label="사용 카드"
-                id="card_id"
-                value={selectedTransaction.card_id}
-                onChange={handleCardChange}
-                options={userCards.map((card) => ({
-                  value: card._id,
-                  label: card.card_number,
-                }))}
-                required={true}
-              />
-            )}
-          </div>
-
-          <div className="flex flex-col gap-y-2 p-6 dark:bg-slate-800">
+        <div className="flex flex-col gap-y-2 p-6 dark:bg-slate-800">
+          <button
+            type="button"
+            onClick={handleSave}
+            className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700"
+          >
+            {isEditing ? "수정" : "추가"}
+          </button>
+          {!isEditing ? (
             <button
               type="button"
-              onClick={handleSave}
-              className="flex-1 w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700"
+              onClick={onClose}
+              className="py-3 rounded-lg text-gray-600 font-semibold dark:text-gray-400 dark:font-normal"
             >
-              {isEditing ? "수정" : "추가"}
+              닫기
             </button>
-            {!isEditing ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="py-3 rounded-lg text-gray-600 font-semibold dark:text-gray-400 dark:font-normal"
-              >
-                닫기
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleDeleteConfirm}
-                className="py-3 rounded-lg text-red-600 font-semibold dark:text-orange-400 dark:font-normal"
-              >
-                삭제
-              </button>
-            )}
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleDeleteConfirm}
+              className="py-3 rounded-lg text-red-600 font-semibold dark:text-orange-400 dark:font-normal"
+            >
+              삭제
+            </button>
+          )}
+        </div>
       </Drawer>
 
       <ConfirmModal
@@ -771,16 +854,16 @@ const TransactionDrawer = ({
 
       {isMenuLayerOpen && selectedMerchant && (
         <div className="menu-layer">
-            <input 
-                type="text" 
-                onChange={(e) => handleMenuSearch(e.target.value)}
-                placeholder="메뉴 검색..."
-            />
-            {filteredMenus.map(menu => (
-                <div key={menu._id} onClick={() => handleMenuSelect(menu)}>
-                    {menu.name}
-                </div>
-            ))}
+          <input
+            type="text"
+            onChange={(e) => handleMenuSearch(e.target.value)}
+            placeholder="메뉴 검색..."
+          />
+          {filteredMenus.map((menu) => (
+            <div key={menu._id} onClick={() => handleMenuSelect(menu)}>
+              {menu.name}
+            </div>
+          ))}
         </div>
       )}
     </>
