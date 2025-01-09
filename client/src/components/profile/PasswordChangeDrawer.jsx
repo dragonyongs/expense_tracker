@@ -20,7 +20,7 @@ const PasswordChangeDrawer = ({ isOpen, onClose, onSave, memberId, title, succes
     const [currentPassword, setCurrentPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     // const [fetchErrMsg, setFetchErrMsg] = useState('');
-    const isMobile = useMediaQuery('(max-width: 640px)');
+    const isMobile = useMediaQuery('(max-width:768px)');
     const viewportHeight = useViewportHeight();
     const styles = DRAWER_STYLES(isMobile, viewportHeight);
 

@@ -1,17 +1,12 @@
-export const DRAWER_SIZE = {
-    mobile: '100%',
-    desktop: '576px',
-};
-
-export const DRAWER_STYLES = (viewportHeight) => ({
-    mobile: {
-        width: DRAWER_SIZE.mobile,
+export const DRAWER_STYLES = (isMobile, viewportHeight) => ({
+    mobile: isMobile ? {
+        width: '100%',
         height: `${viewportHeight - 50}px`,
-    },
-    desktop: {
+    } : {},
+    desktop: !isMobile ? {
         left: '50%',
         marginLeft: '-50px',
-        width: DRAWER_SIZE.desktop,
+        width: '576px',
         height: 'calc(100vh - 145px)',
-    },
+    } : {},
 });

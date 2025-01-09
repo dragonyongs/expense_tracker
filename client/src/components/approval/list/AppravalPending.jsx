@@ -171,7 +171,7 @@ const AppravalPending = ({ isEditing, isApprover = false, isLoading }) => {
     };
 
     return (
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 pt-4 px-4 pb-16">
             {data.map((item) => {
                 const statusStyles = getStatusStyles(item.status);
                 

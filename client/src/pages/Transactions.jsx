@@ -371,7 +371,7 @@ const Transactions = () => {
                 </div>
 
                 {/* 트랜잭션 목록 */}
-                <div className='flow-root'>                  
+                <div className='flow-root pb-20'>                  
                     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700">
 
                         <div className="flex items-center justify-between mb-4">

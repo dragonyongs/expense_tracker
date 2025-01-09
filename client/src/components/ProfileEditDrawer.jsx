@@ -13,6 +13,8 @@ import { FaChevronDown } from "react-icons/fa";
 import { LuTrash } from "react-icons/lu";
 import { formatDateForInput } from '../utils/dateUtils';
 import useDrawerTheme from '../hooks/useDrawerTheme';
+import { DRAWER_STYLES } from '../styles/drawerStyles';
+
 
 const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose, onSave, isOpen }) => {
     useDrawerTheme(isOpen);
@@ -65,20 +67,22 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
         }
     }, [isOpen, userData]);
 
-    const isMobile = useMediaQuery('(max-width: 1024px)');
+    const isMobile = useMediaQuery('(max-width: 768px)');
     const viewportHeight = useViewportHeight();
-    const drawerSize = isMobile ? '100%' : '576px';
-    const mobileStyle = {
-        width: '100%',
-        height: `${viewportHeight - 50}px`,
-    };
+    const styles = DRAWER_STYLES(isMobile, viewportHeight);
 
-    const desktopStyle = {
-        left: '50%',
-        marginLeft: "-50px",
-        width: drawerSize,
-        height: 'calc( 100vh - 145px)',
-    };
+    // const drawerSize = isMobile ? '100%' : '576px';
+    // const mobileStyle = {
+    //     width: '100%',
+    //     height: `${viewportHeight - 50}px`,
+    // };
+
+    // const desktopStyle = {
+    //     left: '50%',
+    //     marginLeft: "-50px",
+    //     width: drawerSize,
+    //     height: 'calc( 100vh - 145px)',
+    // };
     
 
     // 데이터가 없으면 로딩 상태를 표시
@@ -247,7 +251,7 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
     };
 
     return (
-        <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' className="rounded-tr-lg rounded-tl-lg" style={isMobile ? mobileStyle : desktopStyle}>
+        <Drawer open={isOpen} onClose={onClose} duration='300' direction='bottom' className="rounded-tr-lg rounded-tl-lg" style={isMobile ? styles.mobile : styles.desktop}>
                 <div className="flex justify-between py-4 px-6 dark:bg-slate-800">
                     <h5 className="text-lg font-bold dark:text-slate-200">{title}</h5>
                     <button onClick={onClose} className='text-2xl dark:text-slate-300 mb-4'>

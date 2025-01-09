@@ -77,7 +77,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
   );
 
   return (
-    <div className="flex flex-col pb-2 xl:px-4">
+    <div className="flex flex-col pb-20 xl:px-4">
       <div className="flex justify-between items-center mt-8 mb-2 px-6">
         <h3 className="font-semibold text-2xl dark:text-slate-400 dark:font-normal">
           최근 결제

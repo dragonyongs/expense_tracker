@@ -97,7 +97,7 @@ const Profile = () => {
 
     return (
         <>
-            <div className={`transition-all ${(isOpen || isPasswordOpen) && 'pt-4 dark:bg-slate-800'}`}>
+            <div className={`transition-all pb-20 ${(isOpen || isPasswordOpen) && 'pt-4 dark:bg-slate-800'}`}>
                 <header className={`flex justify-between items-center py-4 pl-6 pr-3 dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
                     <div className='text-2xl' >
                         <span className='font-semibold'>프로필</span>

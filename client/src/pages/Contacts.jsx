@@ -162,7 +162,7 @@ function Contacts() {
                     <span className="font-semibold">연락망</span>
                 </div>
             </header>
-            <div className="pb-6 px-4 space-y-3">
+            <div className="pb-24 px-4 space-y-3">
 
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center bg-white rounded-lg h-drawer-screen">
