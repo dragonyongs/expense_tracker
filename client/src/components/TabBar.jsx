@@ -5,96 +5,102 @@ import { RxAvatar } from "react-icons/rx";
 import { PiStamp, PiAddressBookTabsLight } from "react-icons/pi";
 import { GoCreditCard } from "react-icons/go";
 
-const TabBarComponent = () => {
+const NAVIGATION_ITEMS = [
+    {
+        path: '/',
+        label: '홈',
+        icon: GoHome,
+        roles: ['ALL']
+    },
+    {
+        path: '/approval',
+        label: '신청',
+        icon: PiStamp,
+        roles: ['member', 'admin']
+    },
+    {
+        path: '/transactions',
+        label: '내카드',
+        icon: GoCreditCard,
+        roles: ['member', 'admin']
+    },
+    {
+        path: '/contacts',
+        label: '연락망',
+        icon: PiAddressBookTabsLight,
+        roles: ['member', 'admin']
+    },
+    {
+        path: '/profile',
+        label: '프로필',
+        icon: RxAvatar,
+        roles: ['member', 'admin']
+    }
+];
+
+const TabBarComponent = ({ userRole = 'member' }) => {
     const location = useLocation();
     const navigate = useNavigate();
-
-    // const isIOS = () => {
-    //     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    // };
-
+    
     const isSafari = () => {
         return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     };
 
-    // const isSafariIOS = isIOS() && isSafari();
-
-    const handleHome = () => {
-        navigate('/');
-    };
-    const handleProfile = () => {
-        navigate('/profile');
-    };
-    const handleApproval= () => {
-        navigate('/approval');
-    };
-    
-    const handleTransactions = () => {
-        navigate('/transactions');
-    };
-    const hadleContacts = () => {
-        navigate('/contacts');
-    };
-
-    // 현재 경로에 따라 탭의 색상을 결정하는 함수
     const isActiveTab = (path) => {
         if (path === '/admin') {
-            return location.pathname.startsWith('/admin');
+        return location.pathname.startsWith('/admin');
         }
         return location.pathname === path;
     };
 
+    const NavButton = memo(({ item }) => {
+        const Icon = item.icon;
+        
+        return (
+        <button
+            type="button"
+            className={`flex flex-col items-center transition-all duration-200 group ${
+            isActiveTab(item.path)
+                ? "text-blue-600 font-semibold dark:text-blue-500"
+                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            }`}
+            onClick={() => navigate(item.path)}
+            aria-label={item.label}
+        >
+            <div className="flex items-center justify-center w-8 h-8 relative">
+                {/* {isActiveTab(item.path) && (
+                    <div className="absolute -top-2 w-full h-[2px] bg-blue-600 rounded-full" />
+                )} */}
+                <Icon className="text-2xl transition-transform group-hover:scale-110" />
+            </div>
+            <span className="text-sm mt-0.5">{item.label}</span>
+        </button>
+        );
+    });
+    
+    NavButton.displayName = 'NavButton';
+
+    const filteredNavItems = NAVIGATION_ITEMS.filter(item => 
+        item.roles.includes('ALL') || item.roles.includes(userRole)
+    );
+
     return (
-        <nav className={`z-50 bg-white shadow-md pt-2 px-6 flex justify-between border-t border-slate-100 dark:bg-slate-800 dark:border-slate-700 ${!isSafari() ? 'pb-4' : 'pb-7'}`}>
-            <button type="button" className={`flex flex-col items-center ${isActiveTab('/') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleHome}>
-                <div className='flex items-center justify-center w-8 h-8'>
-                    <GoHome className="text-2xl" />
-                </div>
-                <span className="text-sm">홈</span>
-            </button>
-
-            {/* {memberRoles.includes(user?.role) && ( */}
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/approval') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleApproval}>
-                    <div className='flex items-center justify-center w-8 h-8'>
-                        <PiStamp className="text-2xl" />
-                    </div>
-                    <span className="text-sm">신청</span>
-                </button>
-            {/* )} */}
-
-            {/* {memberRoles.includes(user?.role) && ( */}
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/transactions') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleTransactions}>
-                    <div className='flex items-center justify-center w-8 h-8'>
-                        <GoCreditCard className="text-2xl" />
-                    </div>
-                    <span className="text-sm">내카드</span>
-                </button>
-            {/* )} */}
-
-            {/* {memberRoles.includes(user?.role) && ( */}
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/contacts') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={hadleContacts}>
-                    <div className='flex items-center justify-center w-8 h-8'>
-                        <PiAddressBookTabsLight className="text-2xl" />
-                    </div>
-                    <span className="text-sm">연락망</span>
-                </button>
-            {/* )} */}
-
-            {/* {memberRoles.includes(user?.role) && ( */}
-                <button type="button" className={`flex flex-col items-center ${isActiveTab('/profile') ? 'text-blue-600 font-semibold dark:text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} onClick={handleProfile}>
-                    <div className='flex items-center justify-center w-8 h-8'>
-                        <RxAvatar className="text-2xl" />
-                    </div>
-                    <span className="text-sm">프로필</span>
-                </button>
-            {/* )} */}
+        <nav 
+        className={`z-50 fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md 
+        shadow-lg pt-2 px-6 flex justify-between 
+        border-t border-slate-100 
+        dark:bg-slate-800/80 dark:border-slate-700 
+        ${!isSafari() ? "pb-4" : "pb-7"} 
+        transition-colors duration-300`}
+        >
+        {filteredNavItems.map((item) => (
+            <NavButton key={item.path} item={item} />
+        ))}
         </nav>
     );
 };
 
 const TabBar = memo(TabBarComponent);
-
-// displayName 설정
 TabBar.displayName = "TabBar";
 
 export default TabBar;

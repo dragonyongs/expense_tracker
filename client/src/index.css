@@ -71,3 +71,7 @@ html {
         opacity: 0;
     }
 }
+
+.draggable {
+    touch-action: none; /* 기본 터치 동작 방지 */
+}

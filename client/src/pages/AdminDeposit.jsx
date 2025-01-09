@@ -26,7 +26,7 @@ const AdminDeposit = () => {
             member_name: "",
             card_id: "",
             merchant_name: "",
-            menu_name: "",
+            menu_items: [],
             transaction_date: "",
             transaction_amount: "", 
             transaction_type: "",
@@ -166,7 +166,7 @@ const AdminDeposit = () => {
                 member_name: "",
                 card_id: "",
                 merchant_name: "",
-                menu_name: "",
+                menu_items: [],
                 transaction_date: "",
                 transaction_amount: "", 
                 transaction_type: "",
@@ -235,7 +235,6 @@ const AdminDeposit = () => {
                     const teamMembersCount = calculateUniqueTeamMembersCount(state.accounts);
                     const updatedCards = calculateTeamDepositAmount([cardData], teamMembersCount);
                     depositAmount = updatedCards[0]?.depositAmount || 0;
-                    console.log('!isDeductedOpen', depositAmount);
                 } else if (selectedDeposit.deposit_type === "TransportationDeposit") {
                     depositAmount = parseFloat(selectedDeposit.transaction_amount);
                 }
@@ -251,14 +250,19 @@ const AdminDeposit = () => {
 
             const transactionData = {
                 card_id: selectedCardId,
-                transaction_amount: depositAmount,
                 merchant_name: "관리자",
-                menu_name: selectedDeposit?.menu_name || menuNameDefault,
+                menu_items: [{
+                    name: state.selectedDeposit?.menu_items[0]?.name || menuNameDefault,
+                    price: depositAmount,
+                    quantity: 1
+                }],
                 transaction_type: transactionType,
                 deposit_type: selectedDeposit?.deposit_type,
                 is_deducted: isDeductedOpen,
                 transaction_date: selectedDeposit?.transaction_date || new Date(),
             };
+
+            console.log('transactionData', transactionData);
 
             if (isEditing) {
                 await axios.put(
@@ -283,8 +287,14 @@ const AdminDeposit = () => {
             ...prev,
             selectedDeposit: {
                 ...prev.selectedDeposit,
-                deposit_type: newDepositType
-            }
+                deposit_type: newDepositType,
+                menu_items: [{
+                    name: "", // 기본값으로 빈 문자열 설정
+                    price: 0, // 기본값으로 가격 0 설정
+                    quantity: 1 // 기본값으로 수량 1 설정
+            }],
+            transaction_amount: 0 // 기본값으로 초기화
+        }
         }));
 
         const { accounts, selectedUserId, selectedUser } = state;
@@ -364,20 +374,29 @@ const AdminDeposit = () => {
             const currentMonthName = new Date().toLocaleString("ko-KR", { month: "long" });
             const userName = selectedUser?.member_name || '';
             const teamName = selectedUser?.team_id?.team_name || "팀";
-            let depositName = "";
+            let depositItems = []; // menu_items 배열로 변경
 
             if (newDepositType === "RegularDeposit") {
-                depositName = `${userName}님 ${currentMonthName} ${teamName} 팀비`;
+                depositItems.push({
+                    name: `${userName}님 ${currentMonthName} ${teamName} 팀비`, // name 속성
+                    price: depositAmount, // 자동으로 계산된 depositAmount 사용
+                    quantity: 1 // 기본값으로 수량 1 설정
+                });
             } else if (newDepositType === "TeamFund") {
-                depositName = `${currentMonthName} ${teamName} 팀운영비`;
+                depositItems.push({
+                    name: `${currentMonthName} ${teamName} 팀운영비`, // name 속성
+                    price: depositAmount, // 자동으로 계산된 depositAmount 사용
+                    quantity: 1 // 기본값으로 수량 1 설정
+                });
             }
 
+            // menu_items에 depositItems 할당
             setState(prev => ({
                 ...prev,
                 selectedDeposit: {
                     ...prev.selectedDeposit,
-                    transaction_amount: depositAmount,
-                    menu_name: depositName,
+                    menu_items: depositItems, // depositItems를 menu_items에 할당
+                    transaction_amount: depositAmount // 계산된 depositAmount로 업데이트
                 }
             }));
         } catch (error) {
@@ -500,15 +519,14 @@ const AdminDeposit = () => {
                             ) : (
                                 <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {state.deposits.map(deposit => (
-                                        <li key={deposit._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(deposit)}
->
+                                        <li key={deposit._id} className='py-3 sm:py-4 cursor-pointer' onClick={() => handleOpenDrawer(deposit)}>
                                             <div className="flex items-center py-2">
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-md font-medium text-gray-900 truncate dark:text-white">
                                                     {new Date(deposit.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} {deposit.merchant_name} {deposit.transaction_type}
                                                     </p>
                                                     <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                                                        {deposit.menu_name}
+                                                        {deposit.menu_items.map(item => item.name).join(', ')}
                                                     </p>
                                                 </div>
                                                 <div className="text-base text-gray-900 dark:text-white">
@@ -689,17 +707,21 @@ const AdminDeposit = () => {
                         <InputField
                             label="입금명"
                             id="menu_name"
-                            value={state.selectedDeposit?.menu_name || ""}
+                            value={state.selectedDeposit?.menu_items?.[0]?.name || ""}
                             className={"bg-white border border-slate-200"}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                                const newMenuItems = state.selectedDeposit.menu_items || [{ name: "", price: 0, quantity: 1 }]; // 기본값 설정
                                 setState(prevState => ({
                                     ...prevState,
                                     selectedDeposit: {
                                         ...prevState.selectedDeposit,
-                                        menu_name: e.target.value,
+                                        menu_items: [{
+                                            ...newMenuItems[0], // 기존 객체를 유지
+                                            name: e.target.value, // name만 수정
+                                        }],
                                     },
-                                }))
-                            }
+                                }));
+                            }}
                             placeholder="입급명 입력"
                             disabled={!state.selectedDeposit.deposit_type}
                         />

@@ -15,13 +15,13 @@ function Index() {
     
     return (
         <>
-            <header className={`flex flex-col mb-4 pt-4 px-6 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
-                <h1 className="text-2xl font-medium mb-2">
+            <header className={`flex flex-col pt-4 bg-white dark:text-white dark:bg-slate-800 dark:text-slate-200'}`}>
+                <h1 className="px-6 text-2xl font-medium mb-2">
                     <span className='font-semibold'>결재</span>
                 </h1>
                 <ApprovalTabs activeTab={activeTab} setActiveTab={setActiveTab} isApprover={isApprover} />
             </header>
-            <div className='flex flex-col gap-y-3 px-3 pb-4 dark:bg-slate-800'>
+            <div className='flex flex-col gap-y-3 pb-4 dark:bg-slate-800'>
                 {isLoading ? ( 
                     <MutatingDots
                         visible={true}

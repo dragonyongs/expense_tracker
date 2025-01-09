@@ -99,15 +99,45 @@ const SampleForm = ({ onClose }) => {
     return null;
   };
 
+  // const handleTouchStart = (index) => {
+  //   setDraggingItem(index);
+  // };
+  
+  // const handleTouchMove = (e) => {
+  //   e.preventDefault(); // 스크롤 방지
+  //   const touchLocation = e.touches[0];
+  //   console.log("Touch move:", touchLocation.clientX, touchLocation.clientY);
+  // };
+  
+  // const handleTouchEnd = (index) => {
+  //   console.log("Dropped on index:", index, "Dragging item:", draggingItem);
+  //   if (draggingItem !== null) {
+  //     const items = [...columns.approvers.items];
+  //     const draggedItem = items[draggingItem];
+  
+  //     items.splice(draggingItem, 1);
+  //     items.splice(index, 0, draggedItem);
+  
+  //     setColumns((prev) => ({
+  //       ...prev,
+  //       approvers: { ...prev.approvers, items },
+  //     }));
+  //     setDraggingItem(null);
+  //   }
+  // };
+  
   const handleDragStart = (index) => {
+    console.log('handleDragStart');
     setDraggingItem(index);
   };
 
   const handleDragOver = (e) => {
+    console.log('handleDragOver');
     e.preventDefault(); // 기본 동작(드롭 금지)을 방지
   };
 
   const handleDrop = (index) => {
+    console.log('handleDrop');
     if (draggingItem === null) return;
 
     const items = [...columns.approvers.items];
@@ -127,7 +157,7 @@ const SampleForm = ({ onClose }) => {
 
   return (
     <>
-      <div className="space-y-6 h-dateFilter-screen overflow-y-auto">
+      <div className="space-y-6 h-dateFilter-screen overflow-y-auto" >
         <div className="flex justify-between items-start sticky top-0 bg-white z-10 pb-4 border-b">
           <h5 className="text-xl font-bold">연차 신청서</h5>
           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" onClick={onClose}>
@@ -154,8 +184,11 @@ const SampleForm = ({ onClose }) => {
                 {columns.approvers.items.map((item, index) => (
                   <div
                     key={item.id}
-                    className="border rounded-lg bg-white"
+                    className="border rounded-lg bg-white draggable"
                     draggable
+                    // onTouchStart={() => handleTouchStart(index)}
+                    // onTouchMove={handleTouchMove}
+                    // onTouchEnd={() => handleTouchEnd(index)}
                     onDragStart={() => handleDragStart(index)}
                     onDragOver={handleDragOver}
                     onDrop={() => handleDrop(index)}

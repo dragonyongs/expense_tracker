@@ -7,6 +7,7 @@ const ApprovalApply = ({ onClose }) => {
   // 상태 관리
   const [isOpen, setIsOpen] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState(null);
+  const [activeTab, setActiveTab] = useState('vacation');
 
   // 카드 클릭 이벤트 핸들러
   const handleCardClick = (item) => {
@@ -30,42 +31,48 @@ const ApprovalApply = ({ onClose }) => {
       id: "vacation",
       title: "내 휴가",
       items: [
-        { 
-          id: "annual", 
-          name: "연차", 
+        {
+          id: "annual",
+          name: "연차",
           description: "15일",
           icon: "☂️",
-          component: <SampleForm onClose={handleCloseDrawer}/>
+          iconColor: "text-blue-500",
+          component: <SampleForm onClose={handleCloseDrawer} />
         },
-        { 
-          id: "replacement", 
-          name: "대체휴가", 
+        {
+          id: "replacement",
+          name: "대체휴가",
           description: "신청시 지급",
-          icon: "🎹"
+          icon: "🔄",
+          iconColor: "text-green-500"
         },
-        { 
-          id: "holiday", 
-          name: "휴일포함 휴가", 
+        {
+          id: "holiday",
+          name: "휴일포함 휴가",
           description: "신청 시 30일 지급",
-          icon: "😊"
+          icon: "📅",
+          iconColor: "text-purple-500"
         },
-        { 
-          id: "birthday", 
-          name: "생일 반차", 
+        {
+          id: "birthday",
+          name: "생일 반차",
           description: "매년 4시간 지급",
-          icon: "🎂"
+          icon: "🎂",
+          iconColor: "text-pink-500"
         },
-        { 
-          id: "military", 
-          name: "군소집훈련", 
+        {
+          id: "military",
+          name: "군소집훈련",
           description: "신청시 지급",
-          icon: "⛺"
+          icon: "⛺",
+          iconColor: "text-gray-500"
         },
-        { 
-          id: "sick", 
-          name: "병가", 
+        {
+          id: "sick",
+          name: "병가",
           description: "신청시 지급",
-          icon: "💊"
+          icon: "🏥",
+          iconColor: "text-red-500"
         }
       ]
     },
@@ -73,72 +80,91 @@ const ApprovalApply = ({ onClose }) => {
       id: "certificate",
       title: "증명서",
       items: [
-        { 
-          id: "employment", 
-          name: "재직증명서", 
+        {
+          id: "employment",
+          name: "재직증명서",
           description: "재직 증명",
-          icon: "📄"
+          icon: "📄",
+          iconColor: "text-blue-500"
         },
-        { 
-          id: "salary", 
-          name: "급여증명서", 
+        {
+          id: "salary",
+          name: "급여증명서",
           description: "급여 증명",
-          icon: "💰"
+          icon: "💰",
+          iconColor: "text-green-500"
         },
-        { 
-          id: "career", 
-          name: "경력증명서", 
+        {
+          id: "career",
+          name: "경력증명서",
           description: "경력 사항 증명",
-          icon: "📋"
+          icon: "📋",
+          iconColor: "text-purple-500"
         },
-        { 
-          id: "education", 
-          name: "교육이수증명서", 
+        {
+          id: "education",
+          name: "교육이수증명서",
           description: "교육 이수 증명",
-          icon: "🎓"
+          icon: "🎓",
+          iconColor: "text-yellow-500"
         },
-        { 
-          id: "income", 
-          name: "소득증명서", 
+        {
+          id: "income",
+          name: "소득증명서",
           description: "근로소득 증명",
-          icon: "💵"
+          icon: "💵",
+          iconColor: "text-indigo-500"
         }
       ]
     }
   ];
 
   return (
-    <div className="p-6">
-      {categories.map((category) => (
-        <div key={category.id} className="mb-8">
-          {/* 카테고리 제목 */}
-          <h2 className="text-2xl font-bold mb-4 dark:text-slate-400">{category.title}</h2>
-          
-          {/* 카드 리스트 */}
-          <div className="grid grid-cols-2 gap-4">
-            {category.items.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer dark:bg-slate-700"
-                onClick={() => handleCardClick(item)}
-              >
-                {/* 아이콘과 텍스트 */}
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl">{item.icon}</span>
-                  <div>
-                    <h3 className="text-lg font-semibold dark:text-slate-400">{item.name}</h3>
-                    <p className="text-gray-600 dark:text-slate-500">{item.description}</p>
-                  </div>
-                </div>
-                {/* 신청하기 버튼 */}
-                <button className="w-full mt-4 px-4 py-2 text-sm font-medium text-blue-600 dark:text-slate-500 bg-blue-50 dark:bg-slate-900 rounded-md hover:bg-blue-100 dark:hover:bg-slate-800 transition-colors duration-200">
-                  신청하기
-                </button>
-              </div>
-            ))}
-          </div>
+    <div className="">
+        {/* Header */}
+        {/* <div className="mb-6">
+          <div className="text-2xl font-bold">전자결재</div>
+        </div> */}
+
+        {/* Tabs */}
+        <div className="flex gap-4 mb-6 pt-4 px-6 border-b bg-white">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              className={`pb-2 ${
+                activeTab === category.id
+                  ? "text-blue-500 border-b-2 border-blue-500"
+                  : "text-gray-400"
+              }`}
+              onClick={() => setActiveTab(category.id)}
+            >
+              {category.title}
+            </button>
+          ))}
         </div>
-      ))}
+        <div className="px-4">
+        {/* Cards Grid */}
+        {categories.map(
+          (category) =>
+            category.id === activeTab && (
+              <div key={category.id} className="grid grid-cols-2 gap-4">
+                {category.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+                    onClick={() => handleCardClick(item)}
+                  >
+                    <h3 className="text-lg font-bold mb-1">{item.name}</h3>
+                    <p className="text-sm text-gray-500 mb-4">{item.description}</p>
+                    <div className={`text-2xl ${item.iconColor}`}>
+                      <span>{item.icon}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+        )}
+        </div>
 
       {/* Drawer */}
       <Drawer
