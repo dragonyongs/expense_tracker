@@ -86,7 +86,7 @@ const TabBarComponent = ({ userRole = 'member' }) => {
 
     return (
         <nav 
-        className={`z-50 fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md 
+        className={`z-50 absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md 
         shadow-lg pt-2 px-6 flex justify-between 
         border-t border-slate-100 
         dark:bg-slate-800/80 dark:border-slate-700 

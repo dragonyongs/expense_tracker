@@ -75,3 +75,10 @@ html {
 .draggable {
     touch-action: none; /* 기본 터치 동작 방지 */
 }
+
+.draggable.dragging {
+    opacity: 0.8;
+    transform: scale(1.05);
+    z-index: 1000;
+    position: relative; /* 드래그된 요소가 제대로 보이도록 설정 */
+}

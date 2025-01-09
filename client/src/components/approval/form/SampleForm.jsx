@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
 import { TbUserPlus } from "react-icons/tb";
 
@@ -9,8 +9,27 @@ const SampleForm = ({ onClose }) => {
   const [morningEndTime, setMorningEndTime] = useState("13:00");
   const [afternoonStartTime, setAfternoonStartTime] = useState("14:00");
   const [afternoonEndTime, setAfternoonEndTime] = useState("18:00");
-  const [draggingItem, setDraggingItem] = useState(null); // 드래그 중인 항목 저장
-  const [showInput, setShowInput] = useState(false); // 입력 필드 표시 상태 추가
+  const [draggingItem, setDraggingItem] = useState(null);
+  const [showInput, setShowInput] = useState(false);
+  const [touchOffset, setTouchOffset] = useState({ x: 0, y: 0 });
+  const dragItemRef = useRef(null);
+
+  useEffect(() => {
+    const handleTouchStart = (e) => {
+      e.preventDefault(); // 이제 문제가 발생하지 않음
+      // 여기에 이벤트 처리 코드 작성
+    };
+  
+    // 이벤트 리스너 등록 (passive: false로 설정)
+    const element = document.getElementById("test"); // 예시: 특정 엘리먼트
+    element.addEventListener("touchstart", handleTouchStart, { passive: false });
+  
+    // 클린업
+    return () => {
+      element.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, []);
+  
 
   const [columns, setColumns] = useState({
     approvers: {
@@ -99,59 +118,160 @@ const SampleForm = ({ onClose }) => {
     return null;
   };
 
-  // const handleTouchStart = (index) => {
-  //   setDraggingItem(index);
-  // };
+  const handleTouchStart = (e, index) => {
+    // 현재 활성화된 터치가 있는지 확인
+    const touch = e.changedTouches ? e.changedTouches[0] : e.touches[0];
+    if (!touch) return;
   
-  // const handleTouchMove = (e) => {
-  //   e.preventDefault(); // 스크롤 방지
-  //   const touchLocation = e.touches[0];
-  //   console.log("Touch move:", touchLocation.clientX, touchLocation.clientY);
-  // };
+    const item = e.currentTarget;
+    const rect = item.getBoundingClientRect();
   
-  // const handleTouchEnd = (index) => {
-  //   console.log("Dropped on index:", index, "Dragging item:", draggingItem);
-  //   if (draggingItem !== null) {
-  //     const items = [...columns.approvers.items];
-  //     const draggedItem = items[draggingItem];
+    // 터치 오프셋 계산
+    setTouchOffset({
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
+    });
   
-  //     items.splice(draggingItem, 1);
-  //     items.splice(index, 0, draggedItem);
-  
-  //     setColumns((prev) => ({
-  //       ...prev,
-  //       approvers: { ...prev.approvers, items },
-  //     }));
-  //     setDraggingItem(null);
-  //   }
-  // };
-  
-  const handleDragStart = (index) => {
-    console.log('handleDragStart');
     setDraggingItem(index);
+    dragItemRef.current = item;
+  
+    // 드래그 아이템 스타일 설정
+    item.style.position = 'fixed';
+    item.style.zIndex = 1000;
+    item.style.width = `${rect.width}px`;
+    item.style.opacity = '0.9';
+    item.style.transform = 'scale(1.05)';
+    item.style.transition = 'transform 0.2s ease';
+  
+    // 기본 동작을 방지하여 드래그 효과를 적용
+    // e.preventDefault();
+  };
+  
+  const handleTouchMove = (e) => {
+    if (dragItemRef.current && draggingItem !== null) {
+        const touch = e.targetTouches ? e.targetTouches[0] : null; // targetTouches가 있는지 확인
+
+        if (!touch) return; // 터치가 없으면 리턴
+
+        dragItemRef.current.style.left = `${touch.clientX - touchOffset.x}px`;
+        dragItemRef.current.style.top = `${touch.clientY - touchOffset.y}px`;
+    }
+  };
+  
+  const handleTouchEnd = (e) => {
+    if (draggingItem !== null && dragItemRef.current) {
+      const touch = e.changedTouches ? e.changedTouches[0] : null; // changedTouches 확인
+  
+      if (!touch) return; // 터치가 없으면 리턴
+  
+      const draggableItems = [...document.querySelectorAll('.draggable')];
+      let targetIndex = draggingItem;
+  
+      // 가장 가까운 위치를 찾아서 드래그된 아이템을 삽입
+      draggableItems.forEach((item, index) => {
+        if (index !== draggingItem) {
+          const rect = item.getBoundingClientRect();
+          const centerY = rect.top + rect.height / 2;
+  
+          if (touch.clientY < centerY && index < draggingItem) {
+            targetIndex = index;
+          } else if (touch.clientY > centerY && index > draggingItem) {
+            targetIndex = index;
+          }
+        }
+      });
+  
+      // 아이템 순서 업데이트
+      const items = [...columns.approvers.items];
+      const [draggedItem] = items.splice(draggingItem, 1);
+      items.splice(targetIndex, 0, draggedItem);
+  
+      setColumns(prev => ({
+        ...prev,
+        approvers: { ...prev.approvers, items }
+      }));
+  
+      // 스타일 초기화
+      dragItemRef.current.style.position = '';
+      dragItemRef.current.style.zIndex = '';
+      dragItemRef.current.style.top = '';
+      dragItemRef.current.style.left = '';
+      dragItemRef.current.style.width = '';
+      dragItemRef.current.style.opacity = '';
+      dragItemRef.current.style.transform = '';
+      dragItemRef.current.style.transition = '';
+  
+      setDraggingItem(null);
+      dragItemRef.current = null;
+    }
+  
+    e.preventDefault(); // 기본 동작을 방지하여 드래그 완료 후 UI를 업데이트
+  };
+
+  // 공통 함수: 아이템 재정렬
+  const reorderItems = (sourceIndex, targetIndex) => {
+    const items = [...columns.approvers.items];
+    const [removed] = items.splice(sourceIndex, 1);
+    items.splice(targetIndex, 0, removed);
+    setColumns(prev => ({
+      ...prev,
+      approvers: { ...prev.approvers, items }
+    }));
+  };
+
+  // 드래그 시작 시 공통 스타일 적용
+  const applyDragStyles = (element) => {
+    element.classList.add('dragging');
+    element.style.opacity = '0.9';
+    element.style.transform = 'scale(1.02)';
+    element.style.transition = 'transform 0.2s ease';
+  };
+
+  // 드래그 종료 시 공통 스타일 제거
+  const removeDragStyles = (element) => {
+    element.classList.remove('dragging');
+    element.style.opacity = '';
+    element.style.transform = '';
+    element.style.transition = '';
+  };
+
+  // 데스크탑 드래그 이벤트 핸들러
+  const handleDragStart = (e, index) => {
+    dragItemRef.current = e.target;
+    setDraggingItem(index);
+    applyDragStyles(e.target);
   };
 
   const handleDragOver = (e) => {
-    console.log('handleDragOver');
-    e.preventDefault(); // 기본 동작(드롭 금지)을 방지
+    e.preventDefault();
+    const draggable = document.querySelector('.dragging');
+    if (!draggable) return;
+
+    const container = e.currentTarget.parentNode;
+    const siblings = [...container.querySelectorAll('.draggable:not(.dragging)')];
+    
+    const nextSibling = siblings.find(sibling => {
+      const rect = sibling.getBoundingClientRect();
+      return e.clientY < rect.top + rect.height / 2;
+    });
+
+    if (nextSibling) {
+      container.insertBefore(draggable, nextSibling);
+    } else {
+      container.appendChild(draggable);
+    }
   };
 
-  const handleDrop = (index) => {
-    console.log('handleDrop');
-    if (draggingItem === null) return;
+  const handleDragEnd = (e, index) => {
+    const draggable = document.querySelector('.dragging');
+    if (!draggable) return;
 
-    const items = [...columns.approvers.items];
-    const draggedItem = items[draggingItem];
-
-    // 드래그 중인 항목을 제거하고 새로운 위치에 삽입
-    items.splice(draggingItem, 1);
-    items.splice(index, 0, draggedItem);
-
-    setColumns((prev) => ({
-      ...prev,
-      approvers: { ...prev.approvers, items },
-    }));
-
+    removeDragStyles(draggable);
+    
+    if (draggingItem !== index) {
+      reorderItems(draggingItem, index);
+    }
+    
     setDraggingItem(null);
   };
 
@@ -165,7 +285,7 @@ const SampleForm = ({ onClose }) => {
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4" id="test">
           <div className="flex justify-between items-center">
             <label className="text-sm font-medium text-gray-700">
               결재 라인
@@ -183,16 +303,16 @@ const SampleForm = ({ onClose }) => {
               <div className="space-y-2 p-4 rounded-lg bg-gray-50">
                 {columns.approvers.items.map((item, index) => (
                   <div
-                    key={item.id}
-                    className="border rounded-lg bg-white draggable"
-                    draggable
-                    // onTouchStart={() => handleTouchStart(index)}
-                    // onTouchMove={handleTouchMove}
-                    // onTouchEnd={() => handleTouchEnd(index)}
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={handleDragOver}
-                    onDrop={() => handleDrop(index)}
-                  >
+                  key={item?.id}
+                  className={`border rounded-lg bg-white draggable ${draggingItem === index ? 'dragging' : ''}`}
+                  draggable
+                  onTouchStart={(e) => handleTouchStart(e, index)}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={(e) => handleTouchEnd(e, index)}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDragEnd(e, index)}
+                >
                     <div className="flex items-center justify-between p-3">
                       <div className="flex items-center gap-3">
                         <div className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
@@ -202,11 +322,11 @@ const SampleForm = ({ onClose }) => {
                           {index + 1}
                         </span>
                         <span className="text-gray-900 font-medium">
-                          {item.name}
+                          {item?.name}
                         </span>
                       </div>
                       <button
-                        onClick={() => handleRemoveApprover(item.id)}
+                        onClick={() => handleRemoveApprover(item?.id)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <MdClose size={20} />
