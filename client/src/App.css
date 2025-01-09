@@ -1,9 +1,7 @@
 @font-face {
   font-family: "Pretendard";
-  src: url("../node_modules/pretendard/dist/Pretendard-Regular.woff2")
-      format("woff2"),
-    url("../node_modules/pretendard/dist/Pretendard-Regular.woff")
-      format("woff");
+  src: url("../node_modules/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2") format("woff2"),
+       url("../node_modules/pretendard/dist/web/static/woff/Pretendard-Regular.woff") format("woff");
   font-weight: normal;
   font-style: normal;
 }

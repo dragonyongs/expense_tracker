@@ -12,6 +12,7 @@ export default defineConfig({
             return 'vendor';
           }
         },
+        assetFileNames: 'assets/[name].[ext]',
       },
     },
   },
@@ -23,14 +24,7 @@ export default defineConfig({
       REACT_APP_DEV_BASE_URL: process.env.VITE_DEV_BASE_URL,
     }
   },
-  module: {
-    rules: [
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
-        type: 'asset/resource',
-      },
-    ],
-  },
+  
   plugins: [
     react(),
     VitePWA({
