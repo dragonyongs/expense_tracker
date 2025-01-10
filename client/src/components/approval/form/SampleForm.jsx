@@ -383,11 +383,11 @@ const SampleForm = ({ onClose }) => {
                 {showInput && (
                   <div className="border rounded-lg bg-white">
                     <div className="flex items-center justify-between p-3 w-full">
-                      <div className="flex items-center gap-3 flex-1 min-w-0"> {/* flex-1과 min-w-0 추가 */}
-                        <div className="text-blue-600 flex-shrink-0"> {/* flex-shrink-0 추가 */}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="text-blue-600 flex-shrink-0">
                           <TbUserPlus size={24} />
                         </div>
-                        <div className="flex-1 min-w-0"> {/* input을 감싸는 div 추가 */}
+                        <div className="flex-1 min-w-0"> 
                           <input
                             type="text"
                             value={newApprover}
@@ -412,8 +412,8 @@ const SampleForm = ({ onClose }) => {
                           e.preventDefault();
                           handleRemoveNewApprover();
                         }}
-                        className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2" {/* flex-shrink-0과 ml-2 추가 */}
-                      >
+                        className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2" 
+                      > 
                         <MdClose size={20} />
                       </button>
                     </div>
