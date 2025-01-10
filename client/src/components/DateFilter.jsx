@@ -14,7 +14,7 @@ function DateFilter({ title, onDateSelect, className}) {
     const [dates, setDates] = useState([]);
     const isMobile = useMediaQuery('(max-width: 768px)');
     const viewportHeight = useViewportHeight();
-    const styles = DRAWER_STYLES(viewportHeight);
+    const styles = DRAWER_STYLES(isMobile, viewportHeight);
 
     useEffect(() => {
         generateDates();
