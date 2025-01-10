@@ -382,23 +382,25 @@ const SampleForm = ({ onClose }) => {
 
                 {showInput && (
                   <div className="border rounded-lg bg-white">
-                    <div className="flex items-center justify-between p-3">
-                      <div className="flex items-center gap-3">
-                        <div className="text-blue-600">
+                    <div className="flex items-center justify-between p-3 w-full">
+                      <div className="flex items-center gap-3 flex-1 min-w-0"> {/* flex-1과 min-w-0 추가 */}
+                        <div className="text-blue-600 flex-shrink-0"> {/* flex-shrink-0 추가 */}
                           <TbUserPlus size={24} />
                         </div>
-                        <input
-                          type="text"
-                          value={newApprover}
-                          onChange={(e) => setNewApprover(e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter" && newApprover.trim()) {
-                              handleAddApprover();
-                            }
-                          }}
-                          placeholder="결재자 이름 입력"
-                          className="text-gray-900 font-medium p-1 border rounded"
-                        />
+                        <div className="flex-1 min-w-0"> {/* input을 감싸는 div 추가 */}
+                          <input
+                            type="text"
+                            value={newApprover}
+                            onChange={(e) => setNewApprover(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter" && newApprover.trim()) {
+                                handleAddApprover();
+                              }
+                            }}
+                            placeholder="결재자 이름 입력"
+                            className="w-full text-gray-900 font-medium p-1 border rounded"
+                          />
+                        </div>
                       </div>
                       <button
                         onClick={(e) => {
@@ -410,13 +412,14 @@ const SampleForm = ({ onClose }) => {
                           e.preventDefault();
                           handleRemoveNewApprover();
                         }}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2" {/* flex-shrink-0과 ml-2 추가 */}
                       >
                         <MdClose size={20} />
                       </button>
                     </div>
                   </div>
                 )}
+                
               </div>
             </div>
         </div>
