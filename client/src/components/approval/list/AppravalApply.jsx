@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
-import Drawer from 'react-modern-drawer';
-import 'react-modern-drawer/dist/index.css';
-import SampleForm from '../form/SampleForm';
+import React, { useState } from "react";
+import Drawer from "react-modern-drawer";
+import "react-modern-drawer/dist/index.css";
+import SampleForm from "../form/SampleForm";
 // import { Calendar, FileText } from 'lucide-react';
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { RxFileText } from "react-icons/rx";
 
-
 const ApprovalApply = ({ onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState(null);
-  const [activeTab, setActiveTab] = useState('vacation');
+  const [activeTab, setActiveTab] = useState("vacation");
 
   const handleCardClick = (item) => {
     if (item.component) {
@@ -28,10 +27,10 @@ const ApprovalApply = ({ onClose }) => {
 
   // 탭 아이콘 가져오기
   const getTabIcon = (id) => {
-    switch(id) {
-      case 'vacation':
+    switch (id) {
+      case "vacation":
         return <IoCalendarClearOutline className="w-5 h-5" />;
-      case 'certificate':
+      case "certificate":
         return <RxFileText className="w-5 h-5" />;
       default:
         return null;
@@ -48,7 +47,7 @@ const ApprovalApply = ({ onClose }) => {
           name: "연차",
           description: "15일",
           icon: "☂️",
-          component: <SampleForm onClose={handleCloseDrawer} />
+          component: <SampleForm onClose={handleCloseDrawer} />,
         },
         {
           id: "replacement",
@@ -79,8 +78,8 @@ const ApprovalApply = ({ onClose }) => {
           name: "병가",
           description: "신청시 지급",
           icon: "🏥",
-        }
-      ]
+        },
+      ],
     },
     {
       id: "certificate",
@@ -115,9 +114,9 @@ const ApprovalApply = ({ onClose }) => {
           name: "소득증명서",
           description: "근로소득 증명",
           icon: "💵",
-        }
-      ]
-    }
+        },
+      ],
+    },
   ];
 
   return (
@@ -130,8 +129,8 @@ const ApprovalApply = ({ onClose }) => {
             onClick={() => setActiveTab(category.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
               activeTab === category.id
-                ? 'bg-blue-50 text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-50'
+                ? "bg-blue-50 text-blue-600 shadow-sm"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
           >
             {getTabIcon(category.id)}
@@ -141,7 +140,7 @@ const ApprovalApply = ({ onClose }) => {
       </div>
 
       {/* 개선된 카드 그리드 */}
-      <div className="p-4">
+      <div className="pt-4 pb-20 px-4">
         {categories.map(
           (category) =>
             category.id === activeTab && (
@@ -152,15 +151,17 @@ const ApprovalApply = ({ onClose }) => {
                     onClick={() => handleCardClick(item)}
                     className="flex flex-col items-start gap-4 p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-left"
                   >
-                    <div
-                      className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50"
-                    >
-                      <span className="text-2xl">{item.icon}</span>
-                    </div>
                     <div className="flex flex-col">
-                      <span className="font-medium text-gray-900">{item.name}</span>
-                      <span className="text-sm text-gray-500">{item.description}</span>
+                      <span className="font-medium text-gray-900">
+                        {item.name}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {item.description}
+                      </span>
                     </div>
+                    {/* <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50"> */}
+                    <span className="text-2xl">{item.icon}</span>
+                    {/* </div> */}
                   </button>
                 ))}
               </div>
@@ -175,7 +176,9 @@ const ApprovalApply = ({ onClose }) => {
         direction="right"
         size={360}
       >
-        {selectedComponent || <p className="text-gray-600">내용을 불러오는 중입니다...</p>}
+        {selectedComponent || (
+          <p className="text-gray-600">내용을 불러오는 중입니다...</p>
+        )}
       </Drawer>
     </div>
   );
