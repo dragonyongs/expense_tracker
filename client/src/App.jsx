@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Routes, Route, useLocation, Router } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import setScreenHeight from './utils/setScreenHeight';
@@ -9,10 +9,10 @@ import { AvatarProvider } from './context/AvatarContext';
 import { MobileProvider } from './context/MobileContext';
 import { DarkModeProvider } from './context/DarkModeContext';
 import { ThemeProvider } from './context/ThemeColorContext';
+import debounce from 'lodash.debounce';
 
 import './App.css';
 
-// const Signin = React.lazy(() => import('./pages/Signin'));
 const NewSignin = React.lazy(() => import('./pages/NewSignin'));
 const Signup = React.lazy(() => import('./pages/Signup'));
 const Pending = React.lazy(() => import('./pages/Pending'));
@@ -32,141 +32,79 @@ const AdminCard = React.lazy(() => import('./pages/AdminCard'));
 const AdminDeposit = React.lazy(() => import('./pages/AdminDeposit'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
-const App = () => {   
+const ProtectedRouteWrapper = ({ roles, children }) => (
+    <ProtectedRoute requiredRoles={roles}>{children}</ProtectedRoute>
+);
+
+const Providers = ({ children }) => (
+    <AuthProvider>
+        <MobileProvider>
+            <DarkModeProvider>
+                <ThemeProvider>
+                    <AvatarProvider>{children}</AvatarProvider>
+                </ThemeProvider>
+            </DarkModeProvider>
+        </MobileProvider>
+    </AuthProvider>
+);
+
+const App = () => {
     useEffect(() => {
         const registerServiceWorker = async () => {
-            if ('serviceWorker' in navigator) {
-                try {
-                    const registration = await navigator.serviceWorker.register('/sw.js');
-                    console.log('Service Worker registered with scope:', registration.scope);
-                } catch (error) {
-                    console.error('Service Worker registration failed:', error);
-                }
+            if (!('serviceWorker' in navigator)) return;
+
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.debug('Service Worker registered:', registration.scope);
+            } catch (error) {
+                console.warn('Service Worker registration failed:', error);
             }
         };
-    
+
         registerServiceWorker();
     }, []);
 
-    React.useEffect(() => {
+    useEffect(() => {
+        const handleResize = debounce(() => setScreenHeight(), 100);
         setScreenHeight();
-        window.addEventListener('resize', setScreenHeight);
-        return () => window.removeEventListener('resize', setScreenHeight);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
-    
+
     return (
-        <AuthProvider>
+        <Providers>
             <Suspense fallback={<Loading />}>
-                <MobileProvider>
-                    <DarkModeProvider>
-                        <ThemeProvider>
-                            <AvatarProvider>
-                                <Routes>
-                                    <Route path="/" element={<Layout />}>
-                                        {/* public routes */}
-                                        <Route path="signin" element={<NewSignin />} />
-                                        <Route path="signup" element={<Signup />} />
-                                        <Route path="pending" element={<Pending />} />
+                <Routes>
+                    <Route path="/" element={<Layout />}>
+                        {/* Public routes */}
+                        <Route path="signin" element={<NewSignin />} />
+                        <Route path="signup" element={<Signup />} />
+                        <Route path="pending" element={<Pending />} />
 
-                                        {/* protected routes */}
-                                        <Route path="/" element={
-                                            <ProtectedRoute>
-                                                <Dashboard />
-                                            </ProtectedRoute>
-                                        } />
+                        {/* Protected routes */}
+                        <Route path="/" element={<ProtectedRouteWrapper><Dashboard /></ProtectedRouteWrapper>} />
+                        <Route path="/transactions" element={<ProtectedRouteWrapper><Transactions /></ProtectedRouteWrapper>} />
+                        <Route path="/teams" element={<ProtectedRouteWrapper><Teams /></ProtectedRouteWrapper>} />
+                        <Route path="/approval" element={<ProtectedRouteWrapper><Approval /></ProtectedRouteWrapper>} />
+                        <Route path="/contacts" element={<ProtectedRouteWrapper><Contacts /></ProtectedRouteWrapper>} />
+                        <Route path="/profile" element={<ProtectedRouteWrapper><Profile /></ProtectedRouteWrapper>} />
 
-                                        <Route path="/transactions" element={
-                                            <ProtectedRoute>
-                                                <Transactions />
-                                            </ProtectedRoute>
-                                        } />
+                        {/* Admin routes */}
+                        <Route path="/admin" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'hr_admin', 'ms_admin']}><Admin /></ProtectedRouteWrapper>} />
+                        <Route path="/admin/members" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'hr_admin']}><AdminMembers /></ProtectedRouteWrapper>} />
+                        <Route path="/admin/profiles" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'hr_admin']}><AdminProfiles /></ProtectedRouteWrapper>} />
+                        <Route path="/admin/departments" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'hr_admin']}><AdminDepartments /></ProtectedRouteWrapper>} />
+                        <Route path="/admin/teams" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'hr_admin']}><AdminTeams /></ProtectedRouteWrapper>} />
+                        <Route path="/admin/account" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'ms_admin']}><AdminAccount /></ProtectedRouteWrapper>} />
+                        <Route path="/admin/card" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'ms_admin']}><AdminCard /></ProtectedRouteWrapper>} />
+                        <Route path="/admin/deposit" element={<ProtectedRouteWrapper roles={['super_admin', 'admin', 'ms_admin']}><AdminDeposit /></ProtectedRouteWrapper>} />
 
-                                        <Route path="/teams" element={
-                                            <ProtectedRoute>
-                                                <Teams />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        <Route path="/approval" element={
-                                            <ProtectedRoute>
-                                                <Approval />
-                                            </ProtectedRoute>
-                                        } />
-
-
-                                        <Route path='/contacts' element= {
-                                            <ProtectedRoute>
-                                                <Contacts />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        <Route path='/profile' element= {
-                                            <ProtectedRoute>
-                                                <Profile />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        {/* 관리자만 접근 가능 */}
-                                        <Route path="/admin" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin', 'ms_admin']}>
-                                                <Admin />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        {/* 관리자와 인사관리자 접근 가능 */}
-                                        <Route path="/admin/members" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
-                                                <AdminMembers />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        <Route path="/admin/profiles" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
-                                                <AdminProfiles />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        <Route path="/admin/departments" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
-                                                <AdminDepartments />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        <Route path="/admin/teams" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'hr_admin']}>
-                                                <AdminTeams />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        {/* 관리자와 경지관리자 접근 가능 */}
-                                        <Route path="/admin/account" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
-                                                <AdminAccount />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        <Route path="/admin/card" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
-                                                <AdminCard />
-                                            </ProtectedRoute>
-                                        } />
-                                        
-                                        <Route path="/admin/deposit" element={
-                                            <ProtectedRoute requiredRoles={['super_admin', 'admin', 'ms_admin']}>
-                                                <AdminDeposit />
-                                            </ProtectedRoute>
-                                        } />
-
-                                        {/* catch all */}
-                                        <Route path="*" element={<NotFound />} />
-                                    </Route>
-                                </Routes>
-                            </AvatarProvider>
-                        </ThemeProvider>
-                    </DarkModeProvider>
-                </MobileProvider>
+                        {/* Catch all */}
+                        <Route path="*" element={<NotFound />} />
+                    </Route>
+                </Routes>
             </Suspense>
-        </AuthProvider>
+        </Providers>
     );
 };
 
