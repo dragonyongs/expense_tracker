@@ -172,7 +172,6 @@ const ApprovalApply = ({ onClose }) => {
         onClose={handleCloseDrawer}
         direction="right"
         size={360}
-        className="p-6"
       >
         {selectedComponent || <p className="text-gray-600">내용을 불러오는 중입니다...</p>}
       </Drawer>
