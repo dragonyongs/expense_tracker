@@ -9,6 +9,8 @@ const SampleForm = ({ onClose }) => {
     const [morningEndTime, setMorningEndTime] = useState("13:00");
     const [afternoonStartTime, setAfternoonStartTime] = useState("14:00");
     const [afternoonEndTime, setAfternoonEndTime] = useState("18:00");
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState(startDate);
     const [draggingItem, setDraggingItem] = useState(null);
     const [showInput, setShowInput] = useState(false);
     const [touchOffset, setTouchOffset] = useState({ x: 0, y: 0 });
@@ -16,8 +18,8 @@ const SampleForm = ({ onClose }) => {
 
     useEffect(() => {
         const handleTouchStart = (e) => {
-        e.preventDefault(); // 이제 문제가 발생하지 않음
-        // 여기에 이벤트 처리 코드 작성
+            e.preventDefault(); // 이제 문제가 발생하지 않음
+            // 여기에 이벤트 처리 코드 작성
         };
 
         // 이벤트 리스너 등록 (passive: false로 설정)
@@ -26,7 +28,7 @@ const SampleForm = ({ onClose }) => {
 
         // 클린업
         return () => {
-        element.removeEventListener("touchstart", handleTouchStart);
+            element.removeEventListener("touchstart", handleTouchStart);
         };
     }, []);
 
@@ -48,8 +50,8 @@ const SampleForm = ({ onClose }) => {
         setColumns((prev) => ({
             ...prev,
             approvers: {
-            ...prev.approvers,
-            items: [...prev.approvers.items, newItem],
+                ...prev.approvers,
+                items: [...prev.approvers.items, newItem],
             },
         }));
         setNewApprover("");
@@ -74,49 +76,95 @@ const SampleForm = ({ onClose }) => {
 
     const renderTimeInputs = () => {
         if (leaveType === "오전반차" || leaveType === "오후반차") {
-        return (
-            <div className="bg-white mt-4">
-            <div className="flex gap-4">
-                <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700">시작 시간</label>
-                <input
-                    type="time"
-                    value={leaveType === "오전반차" ? morningStartTime : afternoonStartTime}
-                    min={leaveType === "오전반차" ? "09:00" : "14:00"}
-                    max={leaveType === "오전반차" ? "13:00" : "18:00"}
-                    onChange={(e) => {
-                    if (leaveType === "오전반차") {
-                        setMorningStartTime(e.target.value);
-                    } else {
-                        setAfternoonStartTime(e.target.value);
-                    }
-                    }}
-                    className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+    
+            return (
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mt-6">
+                    <div className="space-y-4">
+                        <div className="flex flex-col w-full">
+                            <label className="text-sm font-medium text-gray-700 mb-2">시작 시간</label>
+                            <input
+                                type="time"
+                                value={leaveType === "오전반차" ? morningStartTime : afternoonStartTime}
+                                min={leaveType === "오전반차" ? "09:00" : "14:00"}
+                                max={leaveType === "오전반차" ? "13:00" : "18:00"}
+                                onChange={(e) => {
+                                    if (leaveType === "오전반차") {
+                                        setMorningStartTime(e.target.value);
+                                    } else {
+                                        setAfternoonStartTime(e.target.value);
+                                    }
+                                }}
+                                className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                            />
+                        </div>
+                        <div className="flex flex-col w-full">
+                            <label className="text-sm font-medium text-gray-700 mb-2">종료 시간</label>
+                            <input
+                                type="time"
+                                value={leaveType === "오전반차" ? morningEndTime : afternoonEndTime}
+                                min={leaveType === "오전반차" ? "09:00" : "14:00"}
+                                max={leaveType === "오전반차" ? "13:00" : "18:00"}
+                                onChange={(e) => {
+                                    if (leaveType === "오전반차") {
+                                        setMorningEndTime(e.target.value);
+                                    } else {
+                                        setAfternoonEndTime(e.target.value);
+                                    }
+                                }}
+                                className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700">종료 시간</label>
-                <input
-                    type="time"
-                    value={leaveType === "오전반차" ? morningEndTime : afternoonEndTime}
-                    min={leaveType === "오전반차" ? "09:00" : "14:00"}
-                    max={leaveType === "오전반차" ? "13:00" : "18:00"}
-                    onChange={(e) => {
-                    if (leaveType === "오전반차") {
-                        setMorningEndTime(e.target.value);
-                    } else {
-                        setAfternoonEndTime(e.target.value);
-                    }
-                    }}
-                    className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                </div>
-            </div>
-            </div>
-        );
+            );
         }
         return null;
     };
+    // const renderTimeInputs = () => {
+    //     if (leaveType === "오전반차" || leaveType === "오후반차") {
+    //     return (
+    //         <div className="bg-white mt-4">
+    //         <div className="flex gap-4">
+    //             <div className="flex flex-col">
+    //             <label className="text-sm font-medium text-gray-700">시작 시간</label>
+    //             <input
+    //                 type="time"
+    //                 value={leaveType === "오전반차" ? morningStartTime : afternoonStartTime}
+    //                 min={leaveType === "오전반차" ? "09:00" : "14:00"}
+    //                 max={leaveType === "오전반차" ? "13:00" : "18:00"}
+    //                 onChange={(e) => {
+    //                 if (leaveType === "오전반차") {
+    //                     setMorningStartTime(e.target.value);
+    //                 } else {
+    //                     setAfternoonStartTime(e.target.value);
+    //                 }
+    //                 }}
+    //                 className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    //             />
+    //             </div>
+    //             <div className="flex flex-col">
+    //             <label className="text-sm font-medium text-gray-700">종료 시간</label>
+    //             <input
+    //                 type="time"
+    //                 value={leaveType === "오전반차" ? morningEndTime : afternoonEndTime}
+    //                 min={leaveType === "오전반차" ? "09:00" : "14:00"}
+    //                 max={leaveType === "오전반차" ? "13:00" : "18:00"}
+    //                 onChange={(e) => {
+    //                 if (leaveType === "오전반차") {
+    //                     setMorningEndTime(e.target.value);
+    //                 } else {
+    //                     setAfternoonEndTime(e.target.value);
+    //                 }
+    //                 }}
+    //                 className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    //             />
+    //             </div>
+    //         </div>
+    //         </div>
+    //     );
+    //     }
+    //     return null;
+    // };
 
     const handleTouchStart = (e, index) => {
         // 현재 활성화된 터치가 있는지 확인
@@ -292,6 +340,26 @@ const SampleForm = ({ onClose }) => {
         setDraggingItem(null);
     };
 
+    // 오늘 날짜를 가져오는 유틸 함수
+    const getTodayString = () => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    };
+    
+    const handleStartDateChange = (e) => {
+        const newStartDate = e.target.value;
+        setStartDate(newStartDate);
+        // 시작일이 종료일보다 늦으면 종료일을 시작일로 설정
+        if (endDate && newStartDate > endDate) {
+            setEndDate(newStartDate);
+        }
+    };
+
+    const validateEndDate = (selectedEndDate) => {
+        const today = new Date().toISOString().split("T")[0];
+        return selectedEndDate >= startDate && selectedEndDate >= today; // 유효성 검사 결과 반환
+    };
+
     return (
         <>
             <div className="flex justify-between items-start sticky top-0 bg-white z-10 pt-4 px-4 border-b">
@@ -431,48 +499,62 @@ const SampleForm = ({ onClose }) => {
                         <input
                             type="date"
                             name="date_start"
-                            className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onChange={handleStartDateChange}
+                            value={startDate}
+                            min={getTodayString()} // 오늘 이전 날짜 선택 방지
                         />
                         <input
                             type="date"
                             name="date_end"
-                            className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={endDate}
+                            min={startDate || getTodayString()} // 시작일이나 오늘 날짜 중 더 늦은 날짜를 최소값으로 설정
+                            onChange={(e) => {
+                                const selectedEndDate = e.target.value;
+                                if (validateEndDate(selectedEndDate)) {
+                                    setEndDate(selectedEndDate);
+                                } else {
+                                    alert("종료일은 시작일 이후로 선택해야 합니다.");
+                                    setEndDate(startDate); // alert 후 시작일로 리셋
+                                }
+                            }}
                         />
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">종류</label>
-                <ul className="flex gap-4 mt-2">
-                    {["하루종일", "오전반차", "오후반차"].map((type) => (
-                    <li key={type}>
-                        <button
-                        onClick={() => setLeaveType(type)}
-                        className={`px-4 py-2 rounded-full transition-all ${
-                            leaveType === type
-                            ? "bg-blue-50 text-blue-600 shadow-md shadow-blue-100 border border-blue-100"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-transparent border-transparent"
-                        }`}
-                        >
-                        {type}
-                        </button>
-                    </li>
-                    ))}
-                </ul>
-                <div className="mt-4">
-                    {renderTimeInputs()}
-                </div>
+                    <label className="block text-sm font-medium text-gray-700">종류</label>
+                    <ul className="flex gap-4 mt-2">
+                        {["하루종일", "오전반차", "오후반차"].map((type) => (
+                        <li key={type}>
+                            <button
+                            onClick={() => setLeaveType(type)}
+                            className={`px-4 py-2 rounded-full transition-all ${
+                                leaveType === type
+                                ? "bg-blue-50 text-blue-600 shadow-md shadow-blue-100 border border-blue-100"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-transparent border-transparent"
+                            }`}
+                            >
+                            {type}
+                            </button>
+                        </li>
+                        ))}
+                    </ul>
+                    <div className="mt-4">
+                        {renderTimeInputs()}
+                    </div>
                 </div>
 
                 <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                    사유
-                </label>
-                <textarea
-                    className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="3"
-                    placeholder="휴가 사유를 입력해주세요"
-                ></textarea>
+                    <label className="block text-sm font-medium text-gray-700">
+                        사유
+                    </label>
+                    <textarea
+                        className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        rows="3"
+                        placeholder="휴가 사유를 입력해주세요"
+                    ></textarea>
                 </div>
             </div>
 
