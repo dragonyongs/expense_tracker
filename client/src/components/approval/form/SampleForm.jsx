@@ -303,33 +303,54 @@ const SampleForm = ({ onClose }) => {
         </div>
 
         <div className="space-y-4" id="test">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-medium text-gray-700">
-              결재 라인
-            </label>
-            <button
-              className="text-blue-600 text-sm hover:text-blue-700 transition-colors"
-              onClick={() => setShowInput(true)}
-            >
-              + 결재자 추가
-            </button>
-          </div>
-          <div className="space-y-6 overflow-y-auto">
+            <div className="flex justify-between items-center">
+                <label className="text-sm font-medium text-gray-700">
+                  결재 라인
+                </label>
+                <button
+                  className="text-blue-600 text-sm hover:text-blue-700 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowInput(true);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setShowInput(true);
+                  }}
+                >
+                  + 결재자 추가
+                </button>
+            </div>
+
             {/* 결재 라인 */}
             <div className="space-y-4">
               <div className="space-y-2 p-4 rounded-lg bg-gray-50">
-                {columns.approvers.items.map((item, index) => (
+              {columns.approvers.items.map((item, index) => (
                   <div
-                  key={item?.id}
-                  className={`border rounded-lg bg-white draggable ${draggingItem === index ? 'dragging' : ''}`}
-                  draggable
-                  onTouchStart={(e) => handleTouchStart(e, index)}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={(e) => handleTouchEnd(e, index)}
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDragEnd(e, index)}
-                >
+                    key={item?.id}
+                    className={`border rounded-lg bg-white draggable ${draggingItem === index ? 'dragging' : ''}`}
+                    draggable="true"
+                    onTouchStart={(e) => {
+                      // 삭제 버튼이나 추가 버튼을 터치했을 때는 드래그 시작하지 않음
+                      if (e.target.closest('button')) {
+                        return;
+                      }
+                      handleTouchStart(e, index);
+                    }}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onDragStart={(e) => {
+                      // 삭제 버튼이나 추가 버튼을 클릭했을 때는 드래그 시작하지 않음
+                      if (e.target.closest('button')) {
+                        e.preventDefault();
+                        return;
+                      }
+                      handleDragStart(e, index);
+                    }}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                  >
                     <div className="flex items-center justify-between p-3">
                       <div className="flex items-center gap-3">
                         <div className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
@@ -343,7 +364,14 @@ const SampleForm = ({ onClose }) => {
                         </span>
                       </div>
                       <button
-                        onClick={() => handleRemoveApprover(item?.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveApprover(item?.id);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          handleRemoveApprover(item?.id);
+                        }}
                         className="text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <MdClose size={20} />
@@ -351,13 +379,12 @@ const SampleForm = ({ onClose }) => {
                     </div>
                   </div>
                 ))}
+
                 {showInput && (
-                  <div
-                    className="border rounded-lg bg-white"
-                  >
+                  <div className="border rounded-lg bg-white">
                     <div className="flex items-center justify-between p-3">
                       <div className="flex items-center gap-3">
-                        <div className="text-blue-600 cursor-grab active:cursor-grabbing">
+                        <div className="text-blue-600">
                           <TbUserPlus size={24} />
                         </div>
                         <input
@@ -374,7 +401,15 @@ const SampleForm = ({ onClose }) => {
                         />
                       </div>
                       <button
-                        onClick={handleRemoveNewApprover}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveNewApprover();
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleRemoveNewApprover();
+                        }}
                         className="text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <MdClose size={20} />
@@ -384,7 +419,6 @@ const SampleForm = ({ onClose }) => {
                 )}
               </div>
             </div>
-          </div>
         </div>
 
         <div className="space-y-2">
