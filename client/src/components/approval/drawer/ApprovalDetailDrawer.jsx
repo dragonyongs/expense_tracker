@@ -38,6 +38,12 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
         // 여기에 실제 반려 처리 로직 추가
     };
 
+    const handleApprove = () => {
+        // 승인 처리 로직 추가
+        console.log('승인 요청:', selectedItem);
+        onApprove(selectedItem.id); // 서버에 승인 요청
+    };
+
     return (
     <>
         <Drawer
@@ -147,12 +153,11 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
             </div>
             <div className="space-y-3 p-4">
                 {/* 결재권자의 경우 노출, 현재 단계 자신의 승인 단계 일때만 노출 조건 필요 */}
-                {/* 조건: 결재권자인경우 진행중인경우 */}
                 {isApprover && selectedItem.status === '진행중' && <div className='flex justify-between gap-x-2'> 
                     <button className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition-colors" onClick={() => setIsRejectionModalOpen(true)}>
                         반려
                     </button>
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors">
+                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors" onClick={handleApprove}>
                         승인
                     </button>
                 </div>}
