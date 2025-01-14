@@ -152,7 +152,7 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
 
             return axios.post(apiUrl, requestData)
                 .then(response => {
-                    console.log('Added item response:', response.data);
+                    // console.log('Added item response:', response.data);
                     return response;
                 })
                 .catch(error => {
@@ -168,7 +168,7 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
     
             return axios.put(url, data)
                 .then(response => {
-                    console.log('Update successful:', response.data);
+                    // console.log('Update successful:', response.data);
                     return response;
                 })
                 .catch(error => {
@@ -462,7 +462,7 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
                                 {isLoading ? <ThreeDots color='#ffffff' width={'40px'} height={'auto'} /> : "저장"}
                             </button>
                         </div>
-                        <button type="button" onClick={onClose} className="w-full text-slate-600 dark:text-orange-300">
+                        <button type="button" onClick={onClose} className="w-full min-h-10 text-slate-600 dark:text-orange-300">
                             취소
                         </button>
                     </div>

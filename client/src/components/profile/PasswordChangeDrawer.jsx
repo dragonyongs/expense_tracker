@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Drawer from 'react-modern-drawer';
 import 'react-modern-drawer/dist/index.css';
-import axios from "../../services/axiosInstance"; 
-import { API_URLS } from '../../services/apiUrls';
+// import axios from "../../services/axiosInstance"; 
+// import { API_URLS } from '../../services/apiUrls';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useViewportHeight from '../../hooks/useViewportHeight';
 import InputField from '../../components/InputField';

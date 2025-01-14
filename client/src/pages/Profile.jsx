@@ -180,7 +180,7 @@ const Profile = () => {
                         }
                     </div>
                     {isLoading ? ( 
-                        <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
+                        <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white dark:bg-slate-800 rounded-lg shadow-sm'>
                             <div className="flex flex-col items-center justify-center">
                                     <MutatingDots
                                         visible={true}
