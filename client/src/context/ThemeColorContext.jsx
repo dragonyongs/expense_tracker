@@ -3,7 +3,8 @@ import { useDarkMode } from './DarkModeContext';
 import { useLocation } from 'react-router-dom';
 
 const ThemeColorContext = createContext();
-const specialPaths = ['/contacts', '/profile', '/approval', '/transactions', '/teams']; // 특별 경로
+const typeAPaths = ['/contacts', '/profile'];
+const typeBPaths = ['/approval', '/transactions', '/teams'];
 
 export const ThemeProvider = ({ children }) => {
     const { isDarkMode } = useDarkMode();
@@ -21,9 +22,11 @@ export const ThemeProvider = ({ children }) => {
     const getDefaultThemeColor = () => {
         if (location.pathname === '/') {
             return '#0433FF';
-        } else if (specialPaths.includes(location.pathname)) {
+        } else if (typeAPaths.includes(location.pathname)) {
             return isDarkMode ? '#1e293b' : '#dce8f5';
-        } else {
+        } else if (typeBPaths.includes(location.pathname)) {
+            return isDarkMode ? '#1e293b' : '#FFFFFF';
+        }else {
             return '#FFFFFF';
         }
     };
