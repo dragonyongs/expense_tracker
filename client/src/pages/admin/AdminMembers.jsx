@@ -455,7 +455,7 @@ const AdminMembers = () => {
     return (
         <>
             <AdminHeader />
-            <div className="p-4 sm:p-6">
+            <div className="pt-4 px-4 pb-20 sm:pt-6 sm:px-6 sm:pb-28">
                 <AdminMemberToolbar
                     selectedCategory={selectedCategory}
                     categoryCounts={{ pending: pendingMembersCount, resigned: resignedMembersCount, filtered: filteredMembersCount }}

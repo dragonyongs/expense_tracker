@@ -102,7 +102,7 @@ const AdminTab = () => {
             >
                 <ul
                     ref={tabRef}
-                    className="flex flex-nowrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400"
+                    className="flex flex-nowrap -mb-px text-md font-medium text-center text-gray-500 dark:text-gray-400"
                 >
                     {tabs.map((tab) => (
                         <li

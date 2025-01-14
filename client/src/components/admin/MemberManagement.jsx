@@ -182,6 +182,7 @@ const MemberManagement = ({
                                     label: status.status_description,
                                 }))}
                                 onManageClick={() => setIsStatusDrawerOpen(true)}
+                                required
                             />
 
                             <SelectField
@@ -194,6 +195,7 @@ const MemberManagement = ({
                                     label: role.role_description,
                                 }))}
                                 onManageClick={() => setIsRolesDrawerOpen(true)}
+                                required
                             />
                         </div>
 
@@ -214,6 +216,7 @@ const MemberManagement = ({
                 isOpen={isStatusDrawerOpen}
                 onClose={() => setIsStatusDrawerOpen(false)}
                 name="status"
+                apiUrl="/api/statuses"
                 onSelect={(status) => handleInputChange('status_id', status)}
                 onSaveComplete={fetchAllData}
             />
@@ -223,6 +226,7 @@ const MemberManagement = ({
                 isOpen={isRolesDrawerOpen}
                 onClose={() => setIsRolesDrawerOpen(false)}
                 name="role"
+                apiUrl="/api/roles"
                 onSelect={(role) => handleInputChange('role_id', role)}
                 onSaveComplete={fetchAllData}
             />

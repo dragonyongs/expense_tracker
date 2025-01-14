@@ -78,7 +78,7 @@ function AdminProfiles() {
     return (
         <>
             <AdminHeader />
-            <div className='flex flex-col p-4 justify-center mt-8'>
+            <div className='flex flex-col pt-4 px-4 pb-24 justify-center mt-4'>
                 <div className='flex justify-center mb-4'>
                     <SearchInput onSearch={handleSearch} className="w-full max-w-md" />
                 </div>

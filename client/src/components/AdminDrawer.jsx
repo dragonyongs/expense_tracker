@@ -11,9 +11,9 @@ const AdminDrawer = ({ isOpen, onClose, apiUrl, name, onSelect, onSaveComplete }
     const [newItemName, setNewItemName] = useState('');
     const [newItemDescription, setNewItemDescription] = useState('');
     const [pendingSaves, setPendingSaves] = useState([]);
-    
     useEffect(() => {
         if (isOpen) {
+            console.log('apiUrl', apiUrl);
             axios.get(apiUrl)
                 .then(response => setOptions(response.data))
                 .catch(err => console.error(err));
