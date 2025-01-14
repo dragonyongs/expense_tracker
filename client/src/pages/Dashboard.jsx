@@ -45,6 +45,7 @@ const Dashboard = () => {
     const [userCards, setUserCards] = useState([]);
     const [teamFund, setTeamFund] = useState(0);
     const [errMsg, setErrMsg] = useState('');
+    const [cacheNotification, setCacheNotification] = useState(''); // 캐시 알림 상태 추가
 
     const { fetchData: fetchTransactions, isLoading: isLoadingTransactions, error: transactionError } = useFetchData(async () => {
         const response = await axios.get(API_URLS.TRANSACTIONS);
@@ -64,6 +65,25 @@ const Dashboard = () => {
             }
         }
     });
+
+    // 서비스 워커 메시지 수신
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === "CACHE_USED") {
+                    setCacheNotification(`캐시된 데이터를 사용 중입니다: ${event.data.url}`);
+                }
+            });
+        }
+    }, []);
+
+    // 캐시 알림 자동 숨김
+    useEffect(() => {
+        if (cacheNotification) {
+            const timer = setTimeout(() => setCacheNotification(''), 5000); // 5초 후 알림 사라짐
+            return () => clearTimeout(timer);
+        }
+    }, [cacheNotification]);
 
     useEffect(() => {
         fetchTransactions();
@@ -117,6 +137,11 @@ const Dashboard = () => {
         <>
             <Header />
             <div className='flex flex-col w-full'>  
+                {cacheNotification && (
+                    <div className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded shadow-md">
+                        {cacheNotification}
+                    </div>
+                )}
                 {user.role === 'super_admin' ? (
                     <div className='p-8'>
                         <p>{user.role}</p>

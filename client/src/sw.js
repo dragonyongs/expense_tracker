@@ -32,6 +32,44 @@ self.addEventListener("activate", (event) => {
     );
 });
 
+self.addEventListener("fetch", (event) => {
+    const url = new URL(event.request.url);
+
+    // chrome-extension 요청 무시
+    if (url.protocol === 'chrome-extension:') return;
+
+    if (url.pathname.startsWith("/api/")) {
+        event.respondWith(
+            (async () => {
+                try {
+                    const response = await fetch(event.request);
+                    if (response.ok) {
+                        return response;
+                    }
+                } catch (error) {
+                    console.log("Using cached data due to network error");
+                    const cachedResponse = await caches.match(event.request);
+
+                    if (cachedResponse) {
+                        // 캐시 사용 알림 메시지 전송
+                        self.clients.matchAll().then((clients) => {
+                            clients.forEach((client) =>
+                                client.postMessage({
+                                    type: "CACHE_USED",
+                                    url: event.request.url,
+                                })
+                            );
+                        });
+                        return cachedResponse;
+                    }
+                }
+
+                return caches.match('/offline.html');
+            })()
+        );
+    }
+});
+
 // API 응답 캐싱
 async function cacheApiResponse(request, response) {
     try {
