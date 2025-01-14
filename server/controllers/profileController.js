@@ -46,7 +46,8 @@ exports.getProfiles = async (req, res) => {
                 select: 'member_name email team_id role_id status_id rank position',
                 populate: [
                     { path: 'team_id', select: 'team_name' },
-                    { path: 'role_id', select: 'role_name' }
+                    { path: 'role_id', select: 'role_name' },
+                    { path: 'status_id', select: 'status_name' }
                 ]
             })
             .populate('phones', 'phone_type phone_name phone_number extension')

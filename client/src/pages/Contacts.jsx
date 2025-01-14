@@ -200,11 +200,19 @@ function Contacts() {
                                             const { city } = getWorkCity(contact.addresses);
 
                                             const formerEmployee = contact?.member_id?.role_id?.role_name === 'former_employee';
-
+                                            const hiredMember = contact?.member_id?.status_id?.status_name === 'hired';
+                                            const entryDate = contact.dates?.find((date) => date.date_type === 'entry')?.date;
+                                            const formattedEntryDate = entryDate
+                                                ? new Date(entryDate).toLocaleDateString('ko-KR', {
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                })
+                                                : null;
+                                            const isFutureDate = entryDate && new Date(entryDate) > new Date();
                                             return (
                                                 <li
                                                     key={contact._id}
-                                                    className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : ''}`}
+                                                    className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : '' }`}
                                                     onClick={() => handleOpenDrawer(contact)}
                                                 >
                                                     <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
@@ -219,6 +227,11 @@ function Contacts() {
                                                             {contact?.member_id?.member_name} <span className="font-normal">{contact?.member_id?.rank}</span>{' '}
                                                             {extension && <span className="dark:text-blue-300">({extension})</span>}
                                                             {city && city !== '서울' && <span className="text-blue-700 dark:text-blue-300">({city})</span>}
+                                                            {hiredMember && isFutureDate && formattedEntryDate && (
+                                                                <span className="inline-block ml-2 text-blue-500 text-sm font-normal">
+                                                                    ({`입사 예정일: ${formattedEntryDate}`})
+                                                                </span>
+                                                            )}
                                                         </p>
                                                     </div>
                                                     <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">

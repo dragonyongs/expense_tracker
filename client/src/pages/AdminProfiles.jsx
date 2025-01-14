@@ -91,13 +91,26 @@ function AdminProfiles() {
                             const hasAddresses = Array.isArray(profile.addresses) && profile.addresses.length > 0;
                             const hasDates = Array.isArray(profile.dates) && profile.dates.length > 0;
 
+                            const entryDate = profile.dates?.find(date => date.date_type === 'entry')?.date;
+                            const formattedEntryDate = entryDate
+                                ? new Date(entryDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+                                : null;
+                            const isFutureDate = entryDate && new Date(entryDate) > new Date();
+
                             return (
                                 <li
                                     key={profile._id}
                                     onClick={() => handleOpenDrawer(profile)}
                                     className={`flex items-center gap-x-4 py-3 px-4 sm:py-4 sm:px-6 cursor-pointer active:bg-gray-50 dark:active:bg-slate-500 dark:text-slate-300 ${formerEmployee && 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'}`}
                                 >
-                                    <span className="flex-1 text-sm sm:text-base">{profile?.member_id?.member_name}</span>
+                                    <span className="flex-1 text-sm sm:text-base">
+                                        {profile?.member_id?.member_name}
+                                        {isFutureDate && formattedEntryDate && (
+                                            <span className="ml-2 text-blue-500 text-sm font-normal">
+                                                ({`입사 예정일: ${formattedEntryDate}`})
+                                            </span>
+                                        )}
+                                    </span>
                                     <div className="flex justify-between items-center gap-x-2">
                                         {!hasPhones && <span className='flex gap-x-1 items-center text-lg'><TbPhoneOff /></span>}
                                         {!hasAddresses && <span className='flex gap-x-1 items-center text-lg'><TbAddressBookOff /></span>}

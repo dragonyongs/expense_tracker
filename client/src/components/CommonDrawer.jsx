@@ -14,7 +14,7 @@ const CommonDrawer = ({ isOpen, onClose, title,  children, className }) => {
     return (
         <Drawer open={isOpen} onClose={onClose} className="h-real-screen" duration="300" direction="right" size={drawerSize}>
             <div
-                className={`${className} flex justify-between py-2 px-4 dark:bg-slate-800`}
+                className={`${className} flex justify-between py-2 px-4`}
             >
                 <h5 className="text-lg font-bold dark:text-slate-300">{title}</h5>
                 <button onClick={onClose}>

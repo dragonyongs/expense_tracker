@@ -104,7 +104,7 @@ const Profile = () => {
                     </div>
                 </header>
                 <div className='flex flex-col gap-y-3 px-4 pb-4 dark:bg-slate-800'>
-                    <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white rounded-lg shadow-sm'>
+                    <div className='relative flex flex-col gap-y-4 p-6 w-full bg-white dark:bg-slate-700 rounded-lg shadow-sm'>
                         {isLoading ? ( 
                                 <div className="flex flex-col items-center justify-center">
                                     <MutatingDots
@@ -121,7 +121,7 @@ const Profile = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500'>
+                                    <div className='absolute top-6 right-6 flex gap-x-1 items-center text-md text-slate-500 dark:text-slate-400'>
                                     {days > 0 && <AiOutlineHistory className='w-5 h-5'/> }
                                     {years >= 2 
                                             ? `입사 ${years}년차` 
@@ -130,20 +130,20 @@ const Profile = () => {
                                     <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
                                         <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
                                     </div>
-                                    <div className='font-bold text-3xl'>
+                                    <div className='font-bold dark:font-medium text-3xl dark:text-slate-300'>
                                         {user.name}
                                     </div>
 
                                     <div>
-                                        <p className='text-slate-500'><span className='font-semibold text-slate-800'>StarRich Advisor</span>
+                                        <p className='text-slate-500 dark:text-slate-300'><span className='font-semibold dark:font-medium text-slate-800 dark:text-slate-200'>StarRich Advisor</span>
                                             <span className='pl-2 pr-1'>{data.member?.team_id?.team_name}</span>
                                             {data.member?.position === '팀장' ||  data.member?.position === '파트장' ? (
                                                 data.member.position
                                             ) : data.member.rank}
                                         </p>
-                                        <p className='text-slate-500'>{data.introduction || ''}</p>
+                                        <p className='text-slate-500 dark:text-slate-400'>{data.introduction || ''}</p>
                                     </div>
-                                    <div className='flex flex-col space-y-1 font-normal text-md'>
+                                    <div className='flex flex-col space-y-1 font-normal text-md dark:text-slate-300'>
                                         {birthdayDates.length > 0 && (
                                             <div className='flex items-center gap-x-2'>
                                                 <LuCake /> {birthdayDates.map((date, index) => (
@@ -172,8 +172,8 @@ const Profile = () => {
                                         </div>
                                     </div>
                                     <div className='flex gap-x-3 mt-4'>
-                                        <button onClick={handleOpenPasswordDrawer} className='w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100'>비밀번호 변경</button>
-                                        <button onClick={handleOpenDrawer} className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 font-semibold text-blue-700 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:border-blue-800 dark:text-blue-800 dark:active:bg-slate-600 dark:active:text-slate-400'><TbUserEdit />프로필 수정</button>
+                                        <button onClick={handleOpenPasswordDrawer} className='w-full py-3 border border-blue-700 dark:border-blue-800 font-semibold text-blue-700 dark:text-blue-600 dark:bg-slate-800 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100'>비밀번호 변경</button>
+                                        <button onClick={handleOpenDrawer} className='flex justify-center items-center gap-x-2 p-3 w-full py-3 border border-blue-700 dark:border-blue-800 font-semibold text-blue-700 dark:text-blue-600 dark:bg-slate-800 rounded-md active:bg-blue-50 active:border-blue-100 active:text-blue-400 disabled:border-slate-300 disabled:text-slate-400 disabled:bg-slate-100 dark:active:bg-slate-600 dark:active:text-slate-400'><TbUserEdit />프로필 수정</button>
                                     </div>
                                 </>
                             )
