@@ -455,12 +455,12 @@ const AdminMembers = () => {
     return (
         <>
             <AdminHeader />
-            <div className="pt-4 px-4 pb-20 sm:pt-6 sm:px-6 sm:pb-28">
+            <div className="pt-4 px-4 pb-24 sm:pt-6 sm:px-6 sm:pb-28">
                 <AdminMemberToolbar
                     selectedCategory={selectedCategory}
                     categoryCounts={{ pending: pendingMembersCount, resigned: resignedMembersCount, filtered: filteredMembersCount }}
                     onCategorySelect={handleCategoryChange}
-                    onAddMember={handleAddMember}
+                    onAddMember={handleAddMember}ㅋ
                     onUpload={() => setIsUploadOpen(true)}
                     onDownload={handleDownload}
                 />

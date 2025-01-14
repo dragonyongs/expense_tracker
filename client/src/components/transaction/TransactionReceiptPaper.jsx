@@ -117,7 +117,7 @@ const TransactionReceiptPaper = forwardRef(
                     <span>{item.name || '미기입'}</span>
                     <div className="flex space-x-4">
                       <span className="font-mono">{item.quantity}</span>
-                      <span className="font-mono">{(item.price * item.quantity).toLocaleString()}</span>
+                      <span className="font-mono min-w-14 text-right">{(item.price * item.quantity).toLocaleString()}</span>
                     </div>
                   </div>
                 ))}
