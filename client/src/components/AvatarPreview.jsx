@@ -7,15 +7,21 @@ const AvatarPreview = ({ shape, avatarConfig, isLoading, className="w-24 h-24" }
         return <div>Loading...</div>;
     }
 
-    if (!avatarConfig || Object.keys(avatarConfig).length === 0) {
+    if (isLoading || !avatarConfig || !avatarConfig.faceColor) {
         return <div>Loading avatar...</div>;
     }
-
+    
     return (
         <div className="avatar-preview">
-            <Avatar className={className} {...avatarConfig} shape={shape} />
+            <Avatar 
+                className={className} 
+                {...avatarConfig} 
+                faceColor={avatarConfig.faceColor || randomSkinTone()} // faceColor 보장
+                shape={shape} 
+            />
         </div>
     );
+    
 };
 
 export default AvatarPreview;

@@ -83,16 +83,23 @@ export const AvatarProvider = ({ children }) => {
                 setIsLoading(true); // 로딩 시작
             try {
                 const avatarData = await getAvatar(currentMemberId);
-                const mergedConfig = { ...genConfig(), ...avatarData };
-                setAvatarConfig(mergedConfig); // ID에 해당하는 아바타 정보 가져오기
+                const mergedConfig = { 
+                    ...genConfig(), 
+                    ...avatarData, 
+                    faceColor: avatarData.faceColor || randomSkinTone() // faceColor 기본값 지정
+                };
+                setAvatarConfig(mergedConfig); 
             } catch (error) {
                 console.error('아바타 데이터 가져오기 실패:', error);
-                setAvatarConfig(genConfig()); 
+                setAvatarConfig({
+                    ...genConfig(),
+                    faceColor: randomSkinTone() // 기본값으로 랜덤 스킨톤 추가
+                }); 
             } finally {
                 setIsLoading(false); // 로딩 종료
             }
         };
-
+    
         fetchAvatarData();
     }, [currentMemberId]);
 
