@@ -10,13 +10,12 @@ const AvatarPreview = ({ shape, avatarConfig, isLoading, className="w-24 h-24" }
     if (isLoading || !avatarConfig || !avatarConfig.faceColor) {
         return <div>Loading avatar...</div>;
     }
-    
     return (
         <div className="avatar-preview">
             <Avatar 
                 className={className} 
                 {...avatarConfig} 
-                faceColor={avatarConfig.faceColor || randomSkinTone()} // faceColor 보장
+                faceColor={avatarConfig.faceColor}
                 shape={shape} 
             />
         </div>

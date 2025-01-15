@@ -22,7 +22,6 @@ const Profile = () => {
     const { user } = useContext(AuthContext);
     const [successMsg, setSuccessMsg] = useState('');
     const [errMsg, setErrMsg] = useState('');
-
     // 초기 상태 정의
     const [isOpen, setIsOpen] = useState(false);
     const [isPasswordOpen, setIsPasswordOpen] = useState(false);
@@ -128,7 +127,7 @@ const Profile = () => {
                                             : (days > 0 && `입사 ${days}일차`)}
                                     </div>
                                     <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
-                                        <AvatarPreview avatarConfig={avatarConfig} shape="rounded" /> 
+                                        <AvatarPreview avatarConfig={avatarConfig} isLoading={isLoading} shape="rounded" /> 
                                     </div>
                                     <div className='font-bold dark:font-medium text-3xl dark:text-slate-300'>
                                         {user.name}

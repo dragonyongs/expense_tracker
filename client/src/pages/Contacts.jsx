@@ -6,8 +6,8 @@ import CommonDrawer from '../components/CommonDrawer';
 import AvatarPreview from '../components/AvatarPreview';
 import { genConfig } from 'react-nice-avatar';
 import { MutatingDots } from 'react-loader-spinner';
-import { formatDateToKorean, isTodayBirthday, calculateYearsSinceEntry } from '../utils/dateUtils';
-import { renderContactIcon, renderContactLabel, renderDateIcon, renderDateLabel, renderAddressIcon, renderAddressLabel } from '../utils/profileRenderUtils';
+import { formatDateToKorean, calculateYearsSinceEntry } from '../utils/dateUtils';
+import { renderContactLabel, renderDateLabel, renderAddressLabel } from '../utils/profileRenderUtils';
 import { filterDataBySearchTerm } from '../utils/search';
 import SearchInput from '../components/SearchInput';
 
@@ -106,9 +106,15 @@ function Contacts() {
     };
     
     const groupByTeam = (contacts) => {
+        if (!Array.isArray(contacts) || contacts.length === 0) {
+            // 빈 배열이거나 유효하지 않은 입력을 처리
+            return { "미지정팀": [] };
+        }
+    
+        // 1. 연락처 정렬 (정렬 로직은 외부 함수로 추출된 상태로 가정)
         const sortedContacts = sortContacts(contacts);
-
-        // 그룹화 작업
+    
+        // 2. 그룹화 작업
         const grouped = sortedContacts.reduce((groups, contact) => {
             const teamName = contact?.member_id?.team_id?.team_name || "미지정팀";
             groups[teamName] = groups[teamName] || [];
@@ -116,7 +122,7 @@ function Contacts() {
             return groups;
         }, {});
     
-        // 우선순위 팀 정렬
+        // 3. 그룹 정렬 우선순위 로직
         const sortedGroupKeys = Object.keys(grouped).sort((a, b) => {
             const priorityA = priorityTeams.indexOf(a);
             const priorityB = priorityTeams.indexOf(b);
@@ -125,21 +131,20 @@ function Contacts() {
             if (priorityA !== -1 && priorityB !== -1) {
                 return priorityA - priorityB;
             }
-            // 배열에 없는 팀은 우선순위 팀 다음에 알파벳순 정렬
+            // 우선순위 팀이 아닌 경우 알파벳순 정렬
             if (priorityA !== -1) return -1;
             if (priorityB !== -1) return 1;
             return a.localeCompare(b);
         });
     
-        // 우선순위에 맞게 그룹 재구성
-        const sortedGroupedContacts = {};
-        sortedGroupKeys.forEach((key) => {
-            sortedGroupedContacts[key] = grouped[key];
-        });
+        // 4. 정렬된 그룹 생성
+        const sortedGroupedContacts = sortedGroupKeys.reduce((result, key) => {
+            result[key] = grouped[key];
+            return result;
+        }, {});
     
         return sortedGroupedContacts;
     };
-
 
     const handleSearch = (field, term) => {
         setSearchTerm(term);
@@ -154,7 +159,7 @@ function Contacts() {
 
     const groupedContacts = useMemo(() => groupByTeam(filteredContacts), [filteredContacts]);
     const isNoResults = groupedContacts && Object.keys(groupedContacts).length === 0;
-    
+
     return (
         <>
             <header className="flex justify-between items-center py-4 px-6 dark:text-white dark:bg-slate-800">
@@ -211,16 +216,26 @@ function Contacts() {
                                             const isFutureDate = entryDate && new Date(entryDate) > new Date();
                                             return (
                                                 <li
-                                                    key={contact._id}
+                                                    key={contact._id || Math.random()}
                                                     className={`flex items-center gap-x-4 py-3 sm:py-4 cursor-pointer active:scale-98 active:bg-gray-50 dark:active:bg-slate-500 active:px-2 active:rounded-md dark:text-slate-300 ${formerEmployee ? 'text-slate-300' : '' }`}
                                                     onClick={() => handleOpenDrawer(contact)}
                                                 >
                                                     <div className="overflow-hidden flex justify-center items-center w-10 h-10 bg-white border border-slate-200 dark:border-slate-500 rounded-full dark:text-slate-500 dark:bg-slate-700">
-                                                        {contact?.avatar_id ? (
-                                                            <AvatarPreview avatarConfig={ contact?.avatar_id } shape="circle" className={`w-10 h-10 ${formerEmployee ? 'opacity-40' : ''}`} />
-                                                        ) : (
-                                                            <AvatarPreview avatarConfig={ genConfig() } shape="circle" className="w-10 h-10"/>
-                                                        )}
+                                                    {contact.avatar_id ? (
+                                                        <AvatarPreview
+                                                            avatarConfig={contact.avatar_id}
+                                                            shape="circle"
+                                                            isLoading={isLoading}
+                                                            className="w-10 h-10"
+                                                        />
+                                                    ) : (
+                                                        <AvatarPreview
+                                                            avatarConfig={genConfig()} // 기본값
+                                                            isLoading={isLoading}
+                                                            shape="circle"
+                                                            className="w-10 h-10"
+                                                        />
+                                                    )}
                                                     </div>
                                                     <div className="flex-1">
                                                         <p className="text-lg">
