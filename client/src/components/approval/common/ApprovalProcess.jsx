@@ -1,6 +1,9 @@
 import ApprovalStep from './ApprovalStep';
 
 const ApprovalProcess = ({ selectedItem }) => {
+
+    console.log('selectedItem', selectedItem);
+
     return (
         <div className="space-y-4">
             <h6 className="font-medium text-gray-700">결재 프로세스</h6>

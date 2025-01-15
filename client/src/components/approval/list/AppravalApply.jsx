@@ -6,10 +6,14 @@ import SampleForm from "../form/SampleForm";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { RxFileText } from "react-icons/rx";
 
-const ApprovalApply = ({ onClose }) => {
+const ApprovalApply = ({ onClose, activeTab, setActiveTab, onSubmit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState(null);
-  const [activeTab, setActiveTab] = useState("vacation");
+  const [subActiveTab, setSubActiveTab] = useState("vacation");
+
+  // const handleSubmit = (data) => {
+  //   console.log('requestData', data);
+  // };
 
   const handleCardClick = (item) => {
     if (item.component) {
@@ -47,7 +51,7 @@ const ApprovalApply = ({ onClose }) => {
           name: "연차",
           description: "15일",
           icon: "☂️",
-          component: <SampleForm onClose={handleCloseDrawer} />,
+          component: <SampleForm onClose={handleCloseDrawer} setActiveTab={setActiveTab} onSubmit={onSubmit} />,
         },
         {
           id: "replacement",
@@ -128,7 +132,7 @@ const ApprovalApply = ({ onClose }) => {
             key={category.id}
             onClick={() => setActiveTab(category.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-              activeTab === category.id
+              subActiveTab === category.id
                 ? "bg-blue-50 text-blue-600 shadow-sm"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
@@ -143,7 +147,7 @@ const ApprovalApply = ({ onClose }) => {
       <div className="pt-4 pb-20 px-4">
         {categories.map(
           (category) =>
-            category.id === activeTab && (
+            category.id === subActiveTab && (
               <div key={category.id} className="grid grid-cols-2 gap-4">
                 {category.items.map((item) => (
                   <button

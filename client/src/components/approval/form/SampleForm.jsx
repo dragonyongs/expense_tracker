@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
 import { TbUserPlus } from "react-icons/tb";
 
-const SampleForm = ({ onClose }) => {
+const SampleForm = ({ onClose, setActiveTab, onSubmit }) => {
     const [leaveType, setLeaveType] = useState("하루종일");
     const [newApprover, setNewApprover] = useState("");
     const [morningStartTime, setMorningStartTime] = useState("09:00");
@@ -18,22 +18,29 @@ const SampleForm = ({ onClose }) => {
     const dragItemRef = useRef(null);
     const [approvers, setApprovers] = useState([]); // 결재자 목록 상태 추가
     const [reason, setReason] = useState(""); // 사유 상태 추가
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const handleTouchStart = (e) => {
-        e.preventDefault(); // 이제 문제가 발생하지 않음
-        // 여기에 이벤트 처리 코드 작성
+            // input 요소가 아닌 경우에만 기본 동작 방지
+            if (!e.target.closest("input, textarea, select")) {
+                e.preventDefault();
+            }
         };
-
-        // 이벤트 리스너 등록 (passive: false로 설정)
-        const element = document.getElementById("applyPerson"); // 예시: 특정 엘리먼트
-        element.addEventListener("touchstart", handleTouchStart, {
-        passive: false,
-        });
-
+    
+        // 이벤트 리스너 등록
+        const element = document.getElementById("applyPerson"); // 특정 엘리먼트
+        if (element) {
+            element.addEventListener("touchstart", handleTouchStart, {
+                passive: false,
+            });
+        }
+    
         // 클린업
         return () => {
-        element.removeEventListener("touchstart", handleTouchStart);
+            if (element) {
+                element.removeEventListener("touchstart", handleTouchStart);
+            }
         };
     }, []);
 
@@ -326,6 +333,7 @@ const SampleForm = ({ onClose }) => {
     const handleStartDateChange = (e) => {
         const newStartDate = e.target.value;
         setStartDate(newStartDate);
+        setEndDate(newStartDate);
 
         // 시작일이 종료일보다 늦으면 종료일을 시작일로 설정
         if (endDate && newStartDate > endDate) {
@@ -360,30 +368,44 @@ const SampleForm = ({ onClose }) => {
     };
 
     // 신청 버튼 클릭 시 실행될 함수
-    const handleSubmit = () => {
-        // 연차 신청 데이터 객체 생성
-        const requestData = {
-            id: Date.now(), // 임시 ID 생성
-            date_start: startDate + "T" + morningStartTime, // 시작일과 시간 결합
-            date_end: endDate + "T" + afternoonEndTime, // 종료일과 시간 결합
-            type: "연차", // 연차 종류
-            name: "홍길동", // 신청자 이름 (예시로 하드코딩, 실제로는 사용자 입력 필요)
-            status: "진행중", // 초기 상태
-            reason, // 사유
-            approvalProcess: columns.approvers.items.map((approver, index) => ({
-                step: index,
-                role: "결재자", // 역할은 필요에 따라 수정
-                name: approver.name,
-                status: "pending" // 초기 상태
-            })),
-            attachments: [], // 첨부파일 (필요 시 추가)
-            createdAt: new Date().toISOString() // 생성일
-        };
+    const handleSubmit = (e) => {
+        try {
+            e.preventDefault();
 
-        // 콘솔에 출력
-        console.log("연차 신청 데이터:", requestData);
-
-        // 필요 시 이후 처리 (API 호출 등) 추가
+            // 연차 신청 데이터 객체 생성
+            const requestData = {
+                id: Date.now(), // 임시 ID 생성
+                date_start: startDate + "T" + morningStartTime, // 시작일과 시간 결합
+                date_end: endDate + "T" + afternoonEndTime, // 종료일과 시간 결합
+                type: "연차", // 연차 종류
+                name: "홍길동", // 신청자 이름 (예시로 하드코딩, 실제로는 사용자 입력 필요)
+                status: "진행중", // 초기 상태
+                reason, // 사유
+                position: "팀장",
+                department: "퍼블리싱팀",
+                approvalProcess: columns.approvers.items.map((approver, index) => ({
+                    step: index,
+                    role: "결재자", // 역할은 필요에 따라 수정
+                    name: approver.name,
+                    status: "approved" // 초기 상태
+                })),
+                attachments: [], // 첨부파일 (필요 시 추가)
+                createdAt: new Date().toISOString() // 생성일
+            };
+    
+            // 콘솔에 출력
+            if (typeof onSubmit === 'function') {
+                onSubmit(requestData); 
+            }
+    
+            console.log('SampleForm - requestData', requestData);
+            // 드로우 닫기 및 탭 변경
+            onClose(); // 드로우 닫기
+            setActiveTab('approval-list'); // 탭을 신청 내역으로 변경
+        } catch (error) {
+            console.log(error);
+            setError(error);
+        }
     };
 
     return (
@@ -480,41 +502,41 @@ const SampleForm = ({ onClose }) => {
 
                 {showInput && (
                     <div className="border rounded-lg bg-white">
-                    <div className="flex items-center justify-between p-3 w-full">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="text-blue-600 flex-shrink-0">
-                            <TbUserPlus size={24} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <input
-                            type="text"
-                            value={newApprover}
-                            onChange={(e) => setNewApprover(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === "Enter" && newApprover.trim()) {
-                                handleAddApprover();
-                                }
+                        <div className="flex items-center justify-between p-3 w-full">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="text-blue-600 flex-shrink-0">
+                                    <TbUserPlus size={24} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <input
+                                    type="text"
+                                    value={newApprover}
+                                    onChange={(e) => setNewApprover(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === "Enter" && newApprover.trim()) {
+                                            handleAddApprover();
+                                        }
+                                    }}
+                                    placeholder="결재자 이름 입력"
+                                    className="w-full text-gray-900 font-medium p-1 border rounded"
+                                    />
+                                </div>
+                            </div>
+                            <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveNewApprover();
                             }}
-                            placeholder="결재자 이름 입력"
-                            className="w-full text-gray-900 font-medium p-1 border rounded"
-                            />
+                            onTouchEnd={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleRemoveNewApprover();
+                            }}
+                            className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2"
+                            >
+                                <MdClose size={20} />
+                            </button>
                         </div>
-                        </div>
-                        <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveNewApprover();
-                        }}
-                        onTouchEnd={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            handleRemoveNewApprover();
-                        }}
-                        className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2"
-                        >
-                        <MdClose size={20} />
-                        </button>
-                    </div>
                     </div>
                 )}
                 </div>

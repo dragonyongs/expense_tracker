@@ -8,7 +8,7 @@ import {
 } from "../../../utils/approval";
 import ApprovalDetailDrawer from "../drawer/ApprovalDetailDrawer";
 
-const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
+const ApprovalList = ({ data, isEditing, isApprover = false, isLoading }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -22,6 +22,12 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
     setIsOpen(false);
   };
 
+  const sortedData = [...data].sort((a, b) => {
+    const createdAtDiff = new Date(b.createdAt) - new Date(a.createdAt);
+    if (createdAtDiff !== 0) return createdAtDiff;
+    return new Date(b.date_start) - new Date(a.date_start);
+  });
+
   const handleApprove = () => {
     /* 승인 처리 로직 */
   };
@@ -31,45 +37,6 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
   const handleModify = () => {
     /* 수정 작업 로직 */
   };
-
-  const data = [
-    {
-      id: 2,
-      date_start: "2025-01-15T10:00:00",
-      date_end: "2025-01-15T19:00:00",
-      type: "연차",
-      name: "홍길동",
-      position: "팀장",
-      status: "진행중",
-      reason: "연차 사용",
-      message: "",
-      department: "퍼블리싱팀",
-      approvalProcess: [
-        { step: 0, role: "신청자", name: "홍길동", status: "approved" },
-        { step: 1, role: "팀장", name: "홍길동", status: "approved" },
-        { step: 2, role: "본부장", name: "이혜숙", status: "pending" },
-      ],
-      createdAt: "2025-01-06T13:10:13",
-    },
-    {
-      id: 1,
-      date_start: "2024-12-12T10:00:00",
-      date_end: "2024-12-12T19:00:00",
-      type: "연차",
-      name: "홍길동",
-      position: "팀장",
-      status: "완료",
-      reason: "연차 사용",
-      message: "",
-      department: "퍼블리싱팀",
-      approvalProcess: [
-        { step: 0, role: "신청자", name: "홍길동", status: "approved" },
-        { step: 1, role: "팀장", name: "홍길동", status: "approved" },
-        { step: 2, role: "본부장", name: "이혜숙", status: "approved" },
-      ],
-      createdAt: "2024-12-10T10:30:33",
-    },
-  ];
 
   const getStatusStyles = (status) => {
     const baseStyles = "relative flex items-center";
@@ -95,7 +62,7 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
 
   return (
     <div className="space-y-4 pt-4 px-4 pb-16">
-      {data.map((item) => {
+      {sortedData.map((item) => {
         const statusStyles = getStatusStyles(item.status);
         
         return (
@@ -140,13 +107,13 @@ const ApprovalList = ({ isEditing, isApprover = false, isLoading }) => {
                 <div className="flex items-center gap-2">
                   <MdPerson className="w-4 h-4 text-gray-400" />
                   <span className="text-md text-gray-900">
-                    {`${item.name} ${item.position}`}
+                    {`${item.name} ${item.position ? item.position : '테스트'}`}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MdPeople className="w-4 h-4 text-gray-400" />
                   <span className="text-md text-gray-600">
-                    {item.department}
+                    {item.department ? item.department : '테스트팀' }
                   </span>
                 </div>
               </div>
