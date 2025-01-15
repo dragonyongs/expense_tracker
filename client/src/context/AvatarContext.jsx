@@ -80,20 +80,22 @@ export const AvatarProvider = ({ children }) => {
     useEffect(() => {
         const fetchAvatarData = async () => {
             if (!currentMemberId) return; // ID가 없으면 중단
-                setIsLoading(true); // 로딩 시작
+            setIsLoading(true); // 로딩 시작
             try {
                 const avatarData = await getAvatar(currentMemberId);
                 const mergedConfig = { 
                     ...genConfig(), 
                     ...avatarData, 
-                    faceColor: avatarData.faceColor || randomSkinTone() // faceColor 기본값 지정
+                    faceColor: avatarData.faceColor || randomSkinTone(), // faceColor 기본값 지정
+                    face: avatarData.face || 'defaultFace', // 기본 얼굴 설정
                 };
                 setAvatarConfig(mergedConfig); 
             } catch (error) {
                 console.error('아바타 데이터 가져오기 실패:', error);
                 setAvatarConfig({
                     ...genConfig(),
-                    faceColor: randomSkinTone() // 기본값으로 랜덤 스킨톤 추가
+                    faceColor: randomSkinTone(), // 기본값으로 랜덤 스킨톤 추가
+                    face: 'defaultFace', // 기본 얼굴 설정
                 }); 
             } finally {
                 setIsLoading(false); // 로딩 종료
