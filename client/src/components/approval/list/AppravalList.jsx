@@ -31,9 +31,16 @@ const ApprovalList = ({ data, isEditing, isApprover = false, isLoading }) => {
   const handleApprove = () => {
     /* 승인 처리 로직 */
   };
-  const handleReject = () => {
-    /* 반려 처리 로직 */
+
+  const handleReject = (id, message) => {
+      console.log(`Rejected ID: ${id}, Message: ${message}`);
+      // 상태 업데이트 또는 API 호출
+      const updatedData = data.map((item) =>
+          item.id === id ? { ...item, status: '반려', rejectionMessage: message } : item
+      );
+      // setData(updatedData); // 필요 시 상태를 업데이트
   };
+
   const handleModify = () => {
     /* 수정 작업 로직 */
   };
@@ -56,9 +63,16 @@ const ApprovalList = ({ data, isEditing, isApprover = false, isLoading }) => {
           dot: `${dotStyles} bg-green-600`,
           border: `${borderStyle} border-green-500`
         };
-      // ... other status cases ...
+      default:
+        // 기본 스타일 반환 (예상치 못한 status 값)
+        return {
+          container: `${baseStyles} text-gray-600`,
+          dot: `${dotStyles} bg-gray-400`,
+          border: `${borderStyle} border-gray-300`
+        };
     }
   };
+  
 
   return (
     <div className="space-y-4 pt-4 px-4 pb-16">
@@ -123,13 +137,14 @@ const ApprovalList = ({ data, isEditing, isApprover = false, isLoading }) => {
       })}
 
       <ApprovalDetailDrawer
-        selectedItem={selectedItem}
-        isOpen={isOpen}
-        onClose={handleCloseDrawer}
-        onApprove={() => {}}
-        onReject={() => {}}
-        onModify={() => {}}
-        isApprover={isApprover}
+          selectedItem={selectedItem}
+          isOpen={isOpen}
+          onClose={handleCloseDrawer}
+          onApprove={() => handleApprove(selectedItem.id)}
+          onReject={(id, message) => handleReject(id, message)} // 메시지와 ID를 받을 수 있도록 설정
+          isApprover={isApprover}
+          isEditing={isEditing}
+          isLoading={isLoading}
       />
     </div>
   );

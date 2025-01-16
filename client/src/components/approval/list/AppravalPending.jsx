@@ -33,8 +33,8 @@ const AppravalPending = ({ data, onUpdateStatus, isEditing, isApprover = false, 
     };
 
     // 반려 처리 로직
-    const handleReject = (id) => {
-        onUpdateStatus(id, "rejected", currentApproverName, currentStep); // 부모 상태 변경 함수 호출
+    const handleReject = (id, message) => {
+        onUpdateStatus(id, "rejected", currentApproverName, currentStep, message); // 부모 상태 변경 함수 호출
         handleCloseDrawer();
     };
 
@@ -275,7 +275,7 @@ const AppravalPending = ({ data, onUpdateStatus, isEditing, isApprover = false, 
                     isOpen={isOpen}
                     onClose={handleCloseDrawer}
                     onApprove={() => handleApprove(selectedItem.id)}
-                    onReject={() => handleReject(selectedItem.id)}
+                    onReject={(id, message) => handleReject(id, message)} 
                     isApprover={isApprover}
                     isEditing={isEditing}
                     isLoading={isLoading}

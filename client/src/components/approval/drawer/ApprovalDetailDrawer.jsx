@@ -35,9 +35,10 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
 
     const handleReject = (message) => {
         console.log('Rejection message:', message);
-        // 여기에 실제 반려 처리 로직 추가
+        onReject(selectedItem.id, message); // 서버와 연동하여 반려 처리
+        setIsRejectionModalOpen(false);
     };
-
+    
     const handleApprove = () => {
         // 승인 처리 로직 추가
         console.log('승인 요청:', selectedItem);
@@ -187,7 +188,7 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
                 onConfirm={handleReject}
                 title="반려 사유"
                 description="반려 사유를 입력해주세요."
-                confirmText="반려"
+                confirmText="반려" 
                 confirmColor="red"
             />
             </>

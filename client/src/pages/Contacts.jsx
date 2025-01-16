@@ -106,10 +106,10 @@ function Contacts() {
     };
     
     const groupByTeam = (contacts) => {
-        if (!Array.isArray(contacts) || contacts.length === 0) {
-            // 빈 배열이거나 유효하지 않은 입력을 처리
-            return { "미지정팀": [] };
-        }
+        // if (!Array.isArray(contacts) || contacts.length === 0) {
+        //     // 빈 배열이거나 유효하지 않은 입력을 처리
+        //     return { "미지정팀": [] };
+        // }
     
         // 1. 연락처 정렬 (정렬 로직은 외부 함수로 추출된 상태로 가정)
         const sortedContacts = sortContacts(contacts);

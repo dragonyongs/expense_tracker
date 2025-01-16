@@ -78,6 +78,7 @@ function Index() {
     };
 
     const handleUpdateStatus = (id, newStatus, approverName, currentStep, rejectionMessage = "") => {
+        console.log(id, newStatus, approverName, currentStep, rejectionMessage);
         setSampleData((prevData) =>
             prevData.map((item) => {
                 if (item.id === id) {
@@ -88,30 +89,32 @@ function Index() {
                             : process
                     );
     
+                    // 반려 상태인지 확인
+                    const isRejected = updatedApprovalProcess.some((p) => p.status === "rejected");
+    
                     // 모든 단계가 approved인지 확인
-                    const isAllApproved = updatedApprovalProcess.every(
-                        (p) => p.status === "approved"
-                    );
+                    const isAllApproved = updatedApprovalProcess.every((p) => p.status === "approved");
     
                     // 새로운 상태 계산
-                    const updatedStatus =
-                        newStatus === "rejected"
-                            ? "반려"
-                            : isAllApproved
-                            ? "완료"
-                            : "진행중";
+                    const updatedStatus = isRejected
+                        ? "반려"
+                        : isAllApproved
+                        ? "완료"
+                        : "진행중";
     
                     return {
                         ...item,
                         status: updatedStatus,
-                        message: newStatus === "rejected" ? rejectionMessage : item.message, // 반려 메시지 반영
+                        message: isRejected ? rejectionMessage : item.message, // 반려 메시지 반영
                         approvalProcess: updatedApprovalProcess,
                     };
                 }
+    
                 return item;
             })
         );
     };
+    
 
     return (
         <>
