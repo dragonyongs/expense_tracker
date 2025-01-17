@@ -10,7 +10,7 @@ import { IoIosArrowDown } from 'react-icons/io';
 import RejectionModal from '../../RejectionModal';
 import MessageModal from '../../common/MessageModal';
 
-const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReject, onModify, isApprover, isEditing, isLoading }) => {
+const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReject, onModify, isApprover, setIsEditing, isLoading }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
     const [fileOpen, setFileOpen] = useState(false);
@@ -34,16 +34,18 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
     };
 
     const handleReject = (message) => {
-        console.log('Rejection message:', message);
         onReject(selectedItem.id, message); // 서버와 연동하여 반려 처리
         setIsRejectionModalOpen(false);
     };
     
     const handleApprove = () => {
-        // 승인 처리 로직 추가
-        console.log('승인 요청:', selectedItem);
         onApprove(selectedItem.id); // 서버에 승인 요청
     };
+
+    const handleModify = () => {
+        onModify(selectedItem);
+        setIsEditing(true);
+    }
 
     return (
     <>
@@ -109,6 +111,13 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
                             {selectedItem.status}
                         </span>
                     </div>
+
+                    {selectedItem.message.length !== 0 && (
+                    <div className="flex justify-between items-start">
+                        <span className="text-gray-600">반려 사유</span>
+                        <span className="text-right max-w-[200px]">{selectedItem.message}</span>
+                    </div>
+                    )}
                 </div>
 
                 {/* 첨부파일 */}
@@ -166,7 +175,7 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
                 {/* 신청자와 해당 신청서와 동일인물인 경우에 노출로 관리자는 노출되면 안됨 */}
                 {/* 조건: 신청자인 경우, 상태가 반려인 경우만 노출(결재권자X) */}
                 {!isApprover && selectedItem.status === '반려' && (
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors">
+                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors" onClick={handleModify}>
                         수정하기
                     </button>
                 )}

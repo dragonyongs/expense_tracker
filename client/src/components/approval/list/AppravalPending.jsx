@@ -8,7 +8,7 @@ import {
 } from "../../../utils/approval";
 import ApprovalDetailDrawer from "../drawer/ApprovalDetailDrawer";
 
-const AppravalPending = ({ data, onUpdateStatus, isEditing, isApprover = false, isLoading }) => {
+const AppravalPending = ({ data, onUpdateStatus, setEditing, isApprover = false, isLoading }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -37,6 +37,10 @@ const AppravalPending = ({ data, onUpdateStatus, isEditing, isApprover = false, 
         onUpdateStatus(id, "rejected", currentApproverName, currentStep, message); // 부모 상태 변경 함수 호출
         handleCloseDrawer();
     };
+
+    const handleModify = () => {
+        setEditing(true);
+    }
 
     // const mockupData = [
     //     {
@@ -276,9 +280,10 @@ const AppravalPending = ({ data, onUpdateStatus, isEditing, isApprover = false, 
                     onClose={handleCloseDrawer}
                     onApprove={() => handleApprove(selectedItem.id)}
                     onReject={(id, message) => handleReject(id, message)} 
+                    onModify={() => handleModify(selectedItem)}
                     isApprover={isApprover}
-                    isEditing={isEditing}
                     isLoading={isLoading}
+                    setEditing={setEditing}
                 />
             )}
         </div>

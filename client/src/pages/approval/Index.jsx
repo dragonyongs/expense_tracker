@@ -11,6 +11,7 @@ function Index() {
     const [isApprover, setIsApprover] = useState(true);
     const [isPublish, setIsPublish] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isFormOpen, setIsFormOpen] = useState(false);
     const [errMsg, setErrMsg] = useState('');
     const [smapleData, setSampleData] = useState( [
         {
@@ -76,45 +77,56 @@ function Index() {
     const handleSubmit = (data) => {
         setSampleData((prevData) => [...prevData, data]);
     };
-
+    
     const handleUpdateStatus = (id, newStatus, approverName, currentStep, rejectionMessage = "") => {
-        console.log(id, newStatus, approverName, currentStep, rejectionMessage);
         setSampleData((prevData) =>
             prevData.map((item) => {
                 if (item.id === id) {
-                    // approvalProcess 업데이트 로직
-                    const updatedApprovalProcess = item.approvalProcess.map((process) =>
-                        process.step === currentStep && process.name === approverName
-                            ? { ...process, status: newStatus }
-                            : process
-                    );
+                    // `approvalProcess` 업데이트 로직
+                    const updatedApprovalProcess = item.approvalProcess.map((process) => {
+                        if (process.step === currentStep && process.name === approverName) {
+                            return { ...process, status: newStatus }; // 현재 단계의 상태 업데이트
+                        }
+                        if (process.step > currentStep) {
+                            return { ...process, status: "pending" }; // 이후 단계는 대기 상태로
+                        }
+                        return process; // 나머지는 그대로 유지
+                    });
     
-                    // 반려 상태인지 확인
+                    // 상태 판별 로직
                     const isRejected = updatedApprovalProcess.some((p) => p.status === "rejected");
-    
-                    // 모든 단계가 approved인지 확인
                     const isAllApproved = updatedApprovalProcess.every((p) => p.status === "approved");
     
-                    // 새로운 상태 계산
-                    const updatedStatus = isRejected
-                        ? "반려"
-                        : isAllApproved
-                        ? "완료"
-                        : "진행중";
+                    let updatedStatus = item.status;
+    
+                    if (isRejected) {
+                        updatedStatus = "반려";
+    
+                        // 단계별 반려 처리
+                        if (currentStep === 2) {
+                            // 본부장이 반려한 경우
+                            updatedApprovalProcess[1].status = "pending"; // 팀장은 다시 진행 중으로
+                        } else if (currentStep === 1) {
+                            // 팀장이 반려한 경우
+                            updatedApprovalProcess[0].status = "pending"; // 신청자는 진행 중으로
+                        }
+                    } else if (isAllApproved) {
+                        updatedStatus = "완료";
+                    } else {
+                        updatedStatus = "진행중";
+                    }
     
                     return {
                         ...item,
                         status: updatedStatus,
-                        message: isRejected ? rejectionMessage : item.message, // 반려 메시지 반영
+                        message: isRejected ? rejectionMessage : item.message, // 반려 메시지 업데이트
                         approvalProcess: updatedApprovalProcess,
                     };
                 }
-    
                 return item;
             })
         );
     };
-    
 
     return (
         <>

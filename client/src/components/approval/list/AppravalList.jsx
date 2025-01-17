@@ -7,9 +7,13 @@ import {
   TypeBadge,
 } from "../../../utils/approval";
 import ApprovalDetailDrawer from "../drawer/ApprovalDetailDrawer";
+import Drawer from "react-modern-drawer";
+import "react-modern-drawer/dist/index.css";
+import SampleForm from '../../../components/approval/form/SampleForm';
 
-const ApprovalList = ({ data, isEditing, isApprover = false, isLoading }) => {
+const ApprovalList = ({ data, isApprover = false, isLoading }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const handleOpenDrawer = (item) => {
@@ -43,7 +47,12 @@ const ApprovalList = ({ data, isEditing, isApprover = false, isLoading }) => {
 
   const handleModify = () => {
     /* 수정 작업 로직 */
+    console.log(selectedItem);
   };
+
+  const handleEditCloseDrawer = () => {
+    setIsEditing(false);
+  }
 
   const getStatusStyles = (status) => {
     const baseStyles = "relative flex items-center";
@@ -142,10 +151,27 @@ const ApprovalList = ({ data, isEditing, isApprover = false, isLoading }) => {
           onClose={handleCloseDrawer}
           onApprove={() => handleApprove(selectedItem.id)}
           onReject={(id, message) => handleReject(id, message)} // 메시지와 ID를 받을 수 있도록 설정
+          onModify={() => handleModify()}
+          setIsEditing={setIsEditing}
           isApprover={isApprover}
-          isEditing={isEditing}
           isLoading={isLoading}
       />
+
+      {/* Drawer */}
+      <Drawer
+        open={isEditing}
+        onClose={handleEditCloseDrawer}
+        direction="right"
+        size={360}
+      >
+        {
+          <SampleForm
+            onClose={handleEditCloseDrawer}
+            selectedItem={selectedItem}
+          /> || (
+            <p className="text-gray-600">내용을 불러오는 중입니다...</p>
+        )}
+      </Drawer>
     </div>
   );
 };

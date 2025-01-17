@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
 import { TbUserPlus } from "react-icons/tb";
 
-const SampleForm = ({ onClose, setActiveTab, onSubmit }) => {
+const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
     const [leaveType, setLeaveType] = useState("하루종일");
     const [newApprover, setNewApprover] = useState("");
     const [morningStartTime, setMorningStartTime] = useState("09:00");
@@ -19,6 +19,10 @@ const SampleForm = ({ onClose, setActiveTab, onSubmit }) => {
     const [approvers, setApprovers] = useState([]); // 결재자 목록 상태 추가
     const [reason, setReason] = useState(""); // 사유 상태 추가
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        console.log('SampleForm', selectedItem);
+    }, [selectedItem]);
 
     useEffect(() => {
         const handleTouchStart = (e) => {
@@ -553,14 +557,14 @@ const SampleForm = ({ onClose, setActiveTab, onSubmit }) => {
                 name="date_start"
                 className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={handleStartDateChange}
-                value={startDate}
+                value={selectedItem.date_start || startDate}
                 min={getTodayString()} // 오늘 이전 날짜 선택 방지
                 />
                 <input
                 type="date"
                 name="date_end"
                 className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={endDate}
+                value={selectedItem.date_end || endDate}
                 min={startDate || getTodayString()} // 시작일이나 오늘 날짜 중 더 늦은 날짜를 최소값으로 설정
                 onChange={handleEndDateChange}
                 onBlur={validateEndDateOnBlur}
@@ -600,7 +604,7 @@ const SampleForm = ({ onClose, setActiveTab, onSubmit }) => {
                 className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows="3"
                 placeholder="휴가 사유를 입력해주세요"
-                value={reason}
+                value={selectedItem.reason || reason}
                 onChange={(e) => setReason(e.target.value)} // 사유 입력 처리
             ></textarea>
             </div>
