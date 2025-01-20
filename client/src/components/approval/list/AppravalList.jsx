@@ -42,12 +42,14 @@ const ApprovalList = ({ data, isApprover = false, isLoading }) => {
       const updatedData = data.map((item) =>
           item.id === id ? { ...item, status: '반려', rejectionMessage: message } : item
       );
+    console.log('updatedData', updatedData);
+
       // setData(updatedData); // 필요 시 상태를 업데이트
   };
 
-  const handleModify = () => {
+  const handleModify = (item) => {
     /* 수정 작업 로직 */
-    console.log(selectedItem);
+    console.log('handleModify-item', item);
   };
 
   const handleEditCloseDrawer = () => {
@@ -151,7 +153,7 @@ const ApprovalList = ({ data, isApprover = false, isLoading }) => {
           onClose={handleCloseDrawer}
           onApprove={() => handleApprove(selectedItem.id)}
           onReject={(id, message) => handleReject(id, message)} // 메시지와 ID를 받을 수 있도록 설정
-          onModify={() => handleModify()}
+          onModify={(item) => handleModify(item)}
           setIsEditing={setIsEditing}
           isApprover={isApprover}
           isLoading={isLoading}

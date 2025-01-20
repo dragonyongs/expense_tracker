@@ -2,23 +2,37 @@ import React, { useState, useRef, useEffect } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
 import { TbUserPlus } from "react-icons/tb";
 
-const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
-    const [leaveType, setLeaveType] = useState("하루종일");
-    const [newApprover, setNewApprover] = useState("");
+const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) => {
+
     const [morningStartTime, setMorningStartTime] = useState("09:00");
     const [morningEndTime, setMorningEndTime] = useState("13:00");
     const [afternoonStartTime, setAfternoonStartTime] = useState("14:00");
     const [afternoonEndTime, setAfternoonEndTime] = useState("18:00");
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState(startDate);
+    const [startDate, setStartDate] = useState(selectedItem?.date_start || "");
+    const [endDate, setEndDate] = useState(selectedItem?.date_end || "");
+    const [leaveType, setLeaveType] = useState(selectedItem?.leaveType || "하루종일");
     const [isPartialLeaveVisible, setIsPartialLeaveVisible] = useState(false); // "오전반차", "오후반차" 활성화 여부
     const [draggingItem, setDraggingItem] = useState(null);
     const [showInput, setShowInput] = useState(false);
     const [touchOffset, setTouchOffset] = useState({ x: 0, y: 0 });
     const dragItemRef = useRef(null);
-    const [approvers, setApprovers] = useState([]); // 결재자 목록 상태 추가
-    const [reason, setReason] = useState(""); // 사유 상태 추가
+    const [approvers, setApprovers] = useState(selectedItem?.approvers || []);
+    const [reason, setReason] = useState(selectedItem?.reason || "");
     const [error, setError] = useState("");
+    // const [columns, setColumns] = useState({
+    //     approvers: {
+    //     name: "결재자 목록",
+    //     items: [
+    //         { id: "1", name: "홍길동", rank: '', position: '' , member_id: '' },
+    //         { id: "2", name: "이혜숙", rank: '', position: '' , member_id: '' },
+    //         { id: "3", name: "김광열", rank: '', position: '' , member_id: '' },
+    //     ],
+    //     },
+    // });
+    const [newApprover, setNewApprover] = useState("");
+
+    // 신규/수정 모드 구분
+    const isEditing = Boolean(selectedItem);
 
     useEffect(() => {
         console.log('SampleForm', selectedItem);
@@ -48,40 +62,16 @@ const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
         };
     }, []);
 
-    const [columns, setColumns] = useState({
-        approvers: {
-        name: "결재자 목록",
-        items: [
-            { id: "1", name: "001 팀장" },
-            { id: "2", name: "002 본부장" },
-            { id: "3", name: "003 대표" },
-        ],
-        },
-    });
-
     const handleAddApprover = () => {
         if (newApprover.trim()) {
-        const newItem = { id: String(Date.now()), name: newApprover };
-        setColumns((prev) => ({
-            ...prev,
-            approvers: {
-            ...prev.approvers,
-            items: [...prev.approvers.items, newItem],
-            },
-        }));
-        setNewApprover("");
+            setApprovers([...approvers, { id: Date.now(), name: newApprover }]);
+            setNewApprover("");
         setShowInput(false); // 입력 필드 숨김
         }
     };
 
     const handleRemoveApprover = (id) => {
-        setColumns((prev) => ({
-        ...prev,
-        approvers: {
-            ...prev.approvers,
-            items: prev.approvers.items.filter((item) => item.id !== id),
-        },
-        }));
+        setApprovers(approvers.filter((approver) => approver.id !== id));
     };
 
     const handleRemoveNewApprover = () => {
@@ -155,8 +145,8 @@ const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
 
         // 터치 오프셋 계산
         setTouchOffset({
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top,
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top,
         });
 
         setDraggingItem(index);
@@ -335,24 +325,18 @@ const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
     };
 
     const handleStartDateChange = (e) => {
-        const newStartDate = e.target.value;
-        setStartDate(newStartDate);
-        setEndDate(newStartDate);
-
-        // 시작일이 종료일보다 늦으면 종료일을 시작일로 설정
-        if (endDate && newStartDate > endDate) {
-        setEndDate(newStartDate);
+        setStartDate(e.target.value);
+        if (endDate && e.target.value > endDate) {
+            setEndDate(e.target.value);
         }
     };
 
     const handleEndDateChange = (e) => {
-        const selectedEndDate = e.target.value;
-
         // 입력 중간값을 검증하지 않음
-        setEndDate(selectedEndDate);
+        setEndDate(e.target.value);
 
         // 종료일 변경 시 바로 시작일과 동일 여부 확인
-        setIsPartialLeaveVisible(startDate === selectedEndDate);
+        setIsPartialLeaveVisible(startDate === e.target.value);
     };
 
     const validateEndDateOnBlur = () => {
@@ -374,41 +358,43 @@ const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
     // 신청 버튼 클릭 시 실행될 함수
     const handleSubmit = (e) => {
         try {
-            e.preventDefault();
-
+            e.preventDefault(); // 기본 폼 제출 동작 방지
+        
             // 연차 신청 데이터 객체 생성
             const requestData = {
-                id: Date.now(), // 임시 ID 생성
-                date_start: startDate + "T" + morningStartTime, // 시작일과 시간 결합
-                date_end: endDate + "T" + afternoonEndTime, // 종료일과 시간 결합
+                id: isEditing ? selectedItem.id : Date.now(), // 수정 시 기존 ID 사용, 신규 신청은 새로운 ID 생성
+                date_start: startDate + "T" + (morningStartTime || "09:00:00"), // 시작일과 시간 결합
+                date_end: endDate + "T" + (afternoonEndTime || "18:00:00"), // 종료일과 시간 결합
                 type: "연차", // 연차 종류
                 name: "홍길동", // 신청자 이름 (예시로 하드코딩, 실제로는 사용자 입력 필요)
-                status: "진행중", // 초기 상태
+                status: isEditing ? selectedItem.status : "진행중", // 수정 시 기존 상태 유지
                 reason, // 사유
-                position: "팀장",
-                department: "퍼블리싱팀",
-                approvalProcess: columns.approvers.items.map((approver, index) => ({
-                    step: index,
-                    role: "결재자", // 역할은 필요에 따라 수정
-                    name: approver.name,
-                    status: "approved" // 초기 상태
+                message: selectedItem?.message || "", // 기존 메시지가 있으면 유지
+                position: "팀장", // 신청자 직급 (하드코딩, 실제로는 사용자 정보 필요)
+                department: "퍼블리싱팀", // 신청자 부서 (하드코딩, 실제로는 사용자 정보 필요)
+                approvalProcess: approvers.map((approver, index) => ({
+                step: index,
+                role: "결재자", // 역할 (필요에 따라 수정 가능)
+                name: approver.name,
+                status: "approved", // 초기 상태
                 })),
-                attachments: [], // 첨부파일 (필요 시 추가)
-                createdAt: new Date().toISOString() // 생성일
+                attachments: selectedItem?.attachments || [], // 기존 첨부파일 유지
+                createdAt: isEditing ? selectedItem.createdAt : new Date().toISOString(), // 수정 시 기존 생성일 유지
             };
-    
-            // 콘솔에 출력
-            if (typeof onSubmit === 'function') {
-                onSubmit(requestData); 
+        
+            // 데이터 전달 및 처리
+            if (typeof onSubmit === "function") {
+                onSubmit(requestData); // 상위 컴포넌트로 데이터 전달
             }
-    
-            console.log('SampleForm - requestData', requestData);
+        
+            console.log("SampleForm - requestData", requestData);
+        
             // 드로우 닫기 및 탭 변경
             onClose(); // 드로우 닫기
-            setActiveTab('approval-list'); // 탭을 신청 내역으로 변경
-        } catch (error) {
-            console.log(error);
-            setError(error);
+            setActiveTab("approval-list"); // 탭을 신청 내역으로 변경
+            } catch (error) {
+            console.error("Error in handleSubmit:", error);
+            setError(error); // 오류 상태 업데이트
         }
     };
 
@@ -448,7 +434,7 @@ const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
             {/* 결재 라인 */}
             <div className="space-y-4">
                 <div className="space-y-2 p-4 rounded-lg bg-gray-50">
-                {columns.approvers.items.map((item, index) => (
+                {approvers.map((item, index) => (
                     <div
                     key={item?.id}
                     className={`border rounded-lg bg-white draggable ${
@@ -557,14 +543,14 @@ const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
                 name="date_start"
                 className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onChange={handleStartDateChange}
-                value={selectedItem.date_start || startDate}
+                value={startDate}
                 min={getTodayString()} // 오늘 이전 날짜 선택 방지
                 />
                 <input
                 type="date"
                 name="date_end"
                 className="p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={selectedItem.date_end || endDate}
+                value={endDate}
                 min={startDate || getTodayString()} // 시작일이나 오늘 날짜 중 더 늦은 날짜를 최소값으로 설정
                 onChange={handleEndDateChange}
                 onBlur={validateEndDateOnBlur}
@@ -604,7 +590,7 @@ const SampleForm = ({ selectedItem, onClose, setActiveTab, onSubmit }) => {
                 className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows="3"
                 placeholder="휴가 사유를 입력해주세요"
-                value={selectedItem.reason || reason}
+                value={reason || selectedItem?.reason}
                 onChange={(e) => setReason(e.target.value)} // 사유 입력 처리
             ></textarea>
             </div>
