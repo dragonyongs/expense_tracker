@@ -73,10 +73,6 @@ function Index() {
         },
     ]);
 
-    useEffect(() => {
-        console.log(activeTab);
-    }, [activeTab]);
-
     const handleSubmit = (data) => {
         setSampleData((prevData) => [...prevData, data]);
     };

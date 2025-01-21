@@ -228,7 +228,7 @@ const AppravalPending = ({ data, onUpdateStatus, setEditing, isApprover = false,
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-x-3">
                                                 <div className="text-lg font-medium text-gray-900">
-                                                    <TypeBadge type={item.type} />
+                                                    <TypeBadge type={item.formType} />
                                                 </div>
                                                 <div className="flex items-center gap-2 text-gray-600">
                                                     <MdCalendarToday className="w-4 h-4 text-gray-400" />

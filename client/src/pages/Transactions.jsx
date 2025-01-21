@@ -151,7 +151,6 @@ const Transactions = () => {
     useEffect(() => {
         if (selectedCardId) {
             const updatedBalance = calculateBalance(selectedCardId, selectedYear, selectedMonth);
-            console.log('updatedBalance', updatedBalance);
             setCardBalance(updatedBalance);
         }
     }, [selectedCardId, selectedYear, selectedMonth, transactions]);
