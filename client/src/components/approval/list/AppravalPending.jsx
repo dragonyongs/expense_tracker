@@ -199,67 +199,66 @@ const AppravalPending = ({ data, onUpdateStatus, setEditing, isApprover = false,
                     </p>
                 </div>
             ) : (
-                <div className="w-full">
-                    {filteredData.map((item) => {
+                    filteredData.map((item) => {
                         const statusStyles = getStatusStyles(item.status);
                         
                         return (
-                            <div
-                                key={item.id}
-                                className={`bg-white rounded-lg ${statusStyles.border} shadow hover:shadow-lg transition-all duration-200 cursor-pointer`}
-                                onClick={() => handleOpenDrawer(item)}
-                            >
-                                <div className="p-4 space-y-3">
-                                    {/* Status Header */}
-                                    <div className="flex items-center justify-between">
-                                        <div className={statusStyles.container}>
-                                            <span className={statusStyles.dot}></span>
-                                            <span className="text-sm font-medium">
-                                                {item.status === '진행중' && item.approvalProcess 
-                                                    ? `${item.approvalProcess[item.approvalProcess.length - 1].name} ${item.approvalProcess[item.approvalProcess.length - 1].role} 결재중`
-                                                    : item.status}
-                                            </span>
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                            {formatCreatedAt(item.createdAt)} 신청
-                                        </div>
-                                    </div>
-
-                                    {/* Title & Date */}
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-x-3">
-                                            <div className="text-lg font-medium text-gray-900">
-                                                <TypeBadge type={item.type} />
-                                            </div>
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <MdCalendarToday className="w-4 h-4 text-gray-400" />
-                                                <span className="text-sm">
-                                                    {formatDateRange(item.date_start, item.date_end, item.type)}
+                            <div key={item.id} className="w-full">
+                                <div
+                                    className={`bg-white rounded-lg ${statusStyles.border} shadow hover:shadow-lg transition-all duration-200 cursor-pointer`}
+                                    onClick={() => handleOpenDrawer(item)}
+                                >
+                                    <div className="p-4 space-y-3">
+                                        {/* Status Header */}
+                                        <div className="flex items-center justify-between">
+                                            <div className={statusStyles.container}>
+                                                <span className={statusStyles.dot}></span>
+                                                <span className="text-sm font-medium">
+                                                    {item.status === '진행중' && item.approvalProcess 
+                                                        ? `${item.approvalProcess[item.approvalProcess.length - 1].name} ${item.approvalProcess[item.approvalProcess.length - 1].role} 결재중`
+                                                        : item.status}
                                                 </span>
                                             </div>
+                                            <div className="text-xs text-gray-500">
+                                                {formatCreatedAt(item.createdAt)} 신청
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* User Info */}
-                                    <div className="flex items-center gap-4 pt-1">
-                                        <div className="flex items-center gap-2">
-                                            <MdPerson className="w-4 h-4 text-gray-400" />
-                                            <span className="text-md text-gray-900">
-                                                {item.name}
-                                            </span>
+                                        {/* Title & Date */}
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-x-3">
+                                                <div className="text-lg font-medium text-gray-900">
+                                                    <TypeBadge type={item.type} />
+                                                </div>
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <MdCalendarToday className="w-4 h-4 text-gray-400" />
+                                                    <span className="text-sm">
+                                                        {formatDateRange(item.date_start, item.date_end, item.type)}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <MdPeople className="w-4 h-4 text-gray-400" />
-                                            <span className="text-md text-gray-600">
-                                                {item.department}
-                                            </span>
+
+                                        {/* User Info */}
+                                        <div className="flex items-center gap-4 pt-1">
+                                            <div className="flex items-center gap-2">
+                                                <MdPerson className="w-4 h-4 text-gray-400" />
+                                                <span className="text-md text-gray-900">
+                                                    {item.name}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <MdPeople className="w-4 h-4 text-gray-400" />
+                                                <span className="text-md text-gray-600">
+                                                    {item.department}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         );
-                    })}
-                </div>
+                    })
             )}
             {/* <ApprovalDetailDrawer
                 selectedItem={selectedItem}

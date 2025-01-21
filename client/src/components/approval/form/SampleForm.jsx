@@ -1,15 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
 import { TbUserPlus } from "react-icons/tb";
-
+import { AuthContext } from '../../../context/AuthProvider';
 const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) => {
-
+    const { user } = useContext(AuthContext);
     const [morningStartTime, setMorningStartTime] = useState("09:00");
     const [morningEndTime, setMorningEndTime] = useState("13:00");
     const [afternoonStartTime, setAfternoonStartTime] = useState("14:00");
     const [afternoonEndTime, setAfternoonEndTime] = useState("18:00");
     const [startDate, setStartDate] = useState(selectedItem?.date_start || "");
     const [endDate, setEndDate] = useState(selectedItem?.date_end || "");
+    const [formType, setFormType] = useState(selectedItem?.formType || "");
     const [leaveType, setLeaveType] = useState(selectedItem?.leaveType || "하루종일");
     const [isPartialLeaveVisible, setIsPartialLeaveVisible] = useState(false); // "오전반차", "오후반차" 활성화 여부
     const [draggingItem, setDraggingItem] = useState(null);
@@ -19,23 +20,19 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
     const [approvers, setApprovers] = useState(selectedItem?.approvers || []);
     const [reason, setReason] = useState(selectedItem?.reason || "");
     const [error, setError] = useState("");
-    // const [columns, setColumns] = useState({
-    //     approvers: {
-    //     name: "결재자 목록",
-    //     items: [
-    //         { id: "1", name: "홍길동", rank: '', position: '' , member_id: '' },
-    //         { id: "2", name: "이혜숙", rank: '', position: '' , member_id: '' },
-    //         { id: "3", name: "김광열", rank: '', position: '' , member_id: '' },
-    //     ],
-    //     },
-    // });
     const [newApprover, setNewApprover] = useState("");
 
     // 신규/수정 모드 구분
-    const isEditing = Boolean(selectedItem);
+    // const isEditing = Boolean(selectedItem);
 
     useEffect(() => {
-        console.log('SampleForm', selectedItem);
+        if (selectedItem) {
+            setStartDate(selectedItem.date_start?.split("T")[0] || "");
+            setEndDate(selectedItem.date_end?.split("T")[0] || "");
+            setLeaveType(selectedItem.leaveType || "하루종일");
+            setReason(selectedItem.reason || "");
+            setApprovers(selectedItem.approvalProcess?.slice(1) || []); // 첫 번째 신청자를 제외한 결재자들
+        }
     }, [selectedItem]);
 
     useEffect(() => {
@@ -64,7 +61,7 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
 
     const handleAddApprover = () => {
         if (newApprover.trim()) {
-            setApprovers([...approvers, { id: Date.now(), name: newApprover }]);
+            setApprovers([...approvers, { id: Date.now(), name: newApprover.trim() }]);
             setNewApprover("");
         setShowInput(false); // 입력 필드 숨김
         }
@@ -359,40 +356,44 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
     const handleSubmit = (e) => {
         try {
             e.preventDefault(); // 기본 폼 제출 동작 방지
-        
-            // 연차 신청 데이터 객체 생성
-            const requestData = {
-                id: isEditing ? selectedItem.id : Date.now(), // 수정 시 기존 ID 사용, 신규 신청은 새로운 ID 생성
-                date_start: startDate + "T" + (morningStartTime || "09:00:00"), // 시작일과 시간 결합
-                date_end: endDate + "T" + (afternoonEndTime || "18:00:00"), // 종료일과 시간 결합
-                type: "연차", // 연차 종류
-                name: "홍길동", // 신청자 이름 (예시로 하드코딩, 실제로는 사용자 입력 필요)
-                status: isEditing ? selectedItem.status : "진행중", // 수정 시 기존 상태 유지
-                reason, // 사유
-                message: selectedItem?.message || "", // 기존 메시지가 있으면 유지
-                position: "팀장", // 신청자 직급 (하드코딩, 실제로는 사용자 정보 필요)
-                department: "퍼블리싱팀", // 신청자 부서 (하드코딩, 실제로는 사용자 정보 필요)
-                approvalProcess: approvers.map((approver, index) => ({
-                step: index,
-                role: "결재자", // 역할 (필요에 따라 수정 가능)
-                name: approver.name,
-                status: "approved", // 초기 상태
-                })),
-                attachments: selectedItem?.attachments || [], // 기존 첨부파일 유지
-                createdAt: isEditing ? selectedItem.createdAt : new Date().toISOString(), // 수정 시 기존 생성일 유지
+    
+            const proposer = {
+                step: 0,
+                role: "신청자",
+                name: user.name,
+                role_id: user.role_id, 
+                position: user.position, 
+                member_id: user.member_id,
+                status: "approved",
             };
-        
+    
+            const requestData = {
+                id: selectedItem?.id || Date.now(),
+                date_start: startDate + "T" + (morningStartTime || "09:00:00"),
+                date_end: endDate + "T" + (afternoonEndTime || "18:00:00"),
+                formType: formType,
+                leaveType: leaveType,
+                reason,
+                approvalProcess: [proposer, ...approvers.map((approver, index) => ({
+                    step: index + 1,
+                    role: "결재자",
+                    name: approver.name,
+                    id: approver.id,
+                    status: "pending",
+                }))],
+            };
+    
             // 데이터 전달 및 처리
             if (typeof onSubmit === "function") {
                 onSubmit(requestData); // 상위 컴포넌트로 데이터 전달
             }
-        
+    
             console.log("SampleForm - requestData", requestData);
-        
+    
             // 드로우 닫기 및 탭 변경
             onClose(); // 드로우 닫기
             setActiveTab("approval-list"); // 탭을 신청 내역으로 변경
-            } catch (error) {
+        } catch (error) {
             console.error("Error in handleSubmit:", error);
             setError(error); // 오류 상태 업데이트
         }
@@ -434,61 +435,67 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
             {/* 결재 라인 */}
             <div className="space-y-4">
                 <div className="space-y-2 p-4 rounded-lg bg-gray-50">
-                {approvers.map((item, index) => (
-                    <div
-                    key={item?.id}
-                    className={`border rounded-lg bg-white draggable ${
-                        draggingItem === index ? "dragging" : ""
-                    }`}
-                    draggable="true"
-                    onTouchStart={(e) => {
-                        // 삭제 버튼이나 추가 버튼을 터치했을 때는 드래그 시작하지 않음
-                        if (e.target.closest("button")) {
-                        return;
-                        }
-                        handleTouchStart(e, index);
-                    }}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                    onDragStart={(e) => {
-                        // 삭제 버튼이나 추가 버튼을 클릭했을 때는 드래그 시작하지 않음
-                        if (e.target.closest("button")) {
-                        e.preventDefault();
-                        return;
-                        }
-                        handleDragStart(e, index);
-                    }}
-                    onDragOver={handleDragOver}
-                    onDragEnd={handleDragEnd}
-                    >
-                    <div className="flex items-center justify-between p-3">
-                        <div className="flex items-center gap-3">
-                        <div className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
-                            <MdDragIndicator size={24} />
-                        </div>
-                        <span className="flex items-center justify-center bg-blue-100 text-blue-800 rounded-full w-5 h-5 font-medium text-xs">
-                            {index + 1}
-                        </span>
-                        <span className="text-gray-900 font-medium">
-                            {item?.name}
-                        </span>
-                        </div>
-                        <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveApprover(item?.id);
-                        }}
-                        onTouchEnd={(e) => {
-                            e.stopPropagation();
-                            handleRemoveApprover(item?.id);
-                        }}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                {approvers.length > 0 ? (
+                    approvers.map((item, index) => (
+                        <div
+                            key={item?.id || `approver-${index}`}
+                            className={`border rounded-lg bg-white draggable ${
+                                draggingItem === index ? "dragging" : ""
+                            }`}
+                            draggable="true"
+                            onTouchStart={(e) => {
+                                // 삭제 버튼이나 추가 버튼을 터치했을 때는 드래그 시작하지 않음
+                                if (e.target.closest("button")) {
+                                    return;
+                                }
+                                handleTouchStart(e, index);
+                            }}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            onDragStart={(e) => {
+                                // 삭제 버튼이나 추가 버튼을 클릭했을 때는 드래그 시작하지 않음
+                                if (e.target.closest("button")) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                                handleDragStart(e, index);
+                            }}
+                            onDragOver={handleDragOver}
+                            onDragEnd={handleDragEnd}
                         >
-                        <MdClose size={20} />
-                        </button>
+                            <div className="flex items-center justify-between p-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
+                                        <MdDragIndicator size={24} />
+                                    </div>
+                                    <span className="flex items-center justify-center bg-blue-100 text-blue-800 rounded-full w-5 h-5 font-medium text-xs">
+                                        {index + 1}
+                                    </span>
+                                    <span className="text-gray-900 font-medium">
+                                        {item?.name}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveApprover(item?.id);
+                                    }}
+                                    onTouchEnd={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveApprover(item?.id);
+                                    }}
+                                    className="text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                    <MdClose size={20} />
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    !showInput && <div className="text-gray-500 text-center p-3">
+                        결재자를 추가하세요.
                     </div>
-                    </div>
-                ))}
+                )}
 
                 {showInput && (
                     <div className="border rounded-lg bg-white">
@@ -590,7 +597,7 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
                 className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows="3"
                 placeholder="휴가 사유를 입력해주세요"
-                value={reason || selectedItem?.reason}
+                value={reason}
                 onChange={(e) => setReason(e.target.value)} // 사유 입력 처리
             ></textarea>
             </div>
