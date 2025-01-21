@@ -1,10 +1,8 @@
-import React, { useEffect, useRef, useState, useContext, useCallback } from 'react';
-// import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthProvider';
 import { API_URLS } from '../services/apiUrls';
 import axios from "../services/axiosInstance"; 
 import FlipCard from '../components/FlipCard';
-import { IoAddCircleOutline } from "react-icons/io5";
 import { MdOutlinePayment } from "react-icons/md";
 import { TbPigMoney } from "react-icons/tb";
 import { MutatingDots } from 'react-loader-spinner';
@@ -21,11 +19,7 @@ const Transactions = () => {
     const { user } = useContext(AuthContext);
     const [cards, setCards] = useState([]);
     const [depositType, setDepositType] = useState('');
-    // const [expenseCard, setExpenseCard] = useState('TeamCard'); // 기본값: 팀카드
     const [expenseType, setExpenseType] = useState('RegularExpense'); // 기본값: 일반 지출
-    // const expenceCardRef = useRef(null);
-    // const expenceTypeRef = useRef(null);
-    // const expenceMerchantRef = useRef(null);
     const [cardBalance, setCardBalance] = useState(0);
     const [teamFund, setTeamFund] = useState(0);
     const [errMsg, setErrMsg] = useState('');
@@ -47,7 +41,6 @@ const Transactions = () => {
     const [selectedCardId, setSelectedCardId] = useState(''); // 현재 선택된 카드 ID
     const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
-    // const [isDateOpen, setIsDateOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [userCards, setUserCards] = useState([]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -155,6 +148,14 @@ const Transactions = () => {
         }
     }
 
+    useEffect(() => {
+        if (selectedCardId) {
+            const updatedBalance = calculateBalance(selectedCardId, selectedYear, selectedMonth);
+            console.log('updatedBalance', updatedBalance);
+            setCardBalance(updatedBalance);
+        }
+    }, [selectedCardId, selectedYear, selectedMonth, transactions]);
+    
     const resetTransaction = () => ({
         card_id: userCards[0]?._id || "",
         transaction_date: new Date().toISOString().split('T')[0],
@@ -317,7 +318,24 @@ const Transactions = () => {
             }
         },
     };
+
+    const calculateBalance = (cardId, year, month) => {
+        const filteredTransactions = transactions.filter(
+            (tx) => tx.card_id._id === cardId && 
+                    new Date(tx.transaction_date).getFullYear() === Number(year) && 
+                    new Date(tx.transaction_date).getMonth() + 1 === Number(month)
+        );
+
+        const totalDeposits = filteredTransactions
+            .filter(tx => tx.transaction_type === 'income')
+            .reduce((sum, tx) => sum + tx.transaction_amount, 0);
     
+        const totalExpenses = filteredTransactions
+            .filter(tx => tx.transaction_type === 'expense')  // && !tx.is_deducted
+            .reduce((sum, tx) => sum + tx.transaction_amount, 0);
+    
+        return totalDeposits - totalExpenses;
+    };
     
     return (
         <>
@@ -352,14 +370,14 @@ const Transactions = () => {
                         ) : (
                             <Slider {...sliderSettings}>
                                 {userCardsWithTotals.map(card => {
-                                    const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
+                                    // const currentBalanceWithRollover = card.balance + (card.rollover_amount || 0) + (card.team_fund || 0); // 이월 금액 포함한 잔액 계산
                                     return (
                                         <FlipCard
                                             key={card._id} 
                                             userName={user.name}
                                             cardNumber={card.card_number}
                                             totalSpent={Number(card.totalSpent)}
-                                            currentBalance={currentBalanceWithRollover}
+                                            currentBalance={cardBalance}
                                             rolloverAmount={Number(card.rollover_amount)}
                                         />
                                     );

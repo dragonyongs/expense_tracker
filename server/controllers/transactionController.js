@@ -307,7 +307,6 @@ exports.getTransactionById = async (req, res) => {
 
 exports.updateTransaction = async (req, res) => {
   try {
-    // console.log('Update Transaction Request Body:', req.body); // 요청 데이터 로깅
 
     const {
       merchant_name,
@@ -324,9 +323,6 @@ exports.updateTransaction = async (req, res) => {
 
     const sanitizedMerchantName = sanitizeInput(merchant_name);
 
-    // menu_items 검증 및 로깅
-    // console.log('Received menu_items:', menu_items);
-
     // menu_items가 있는 경우 transaction_amount 재계산
     const transaction_amount =
       menu_items?.length > 0
@@ -341,8 +337,6 @@ exports.updateTransaction = async (req, res) => {
           }, 0)
         : undefined;
 
-    // console.log('Calculated transaction_amount:', transaction_amount);
-
     const updateData = {
       merchant_name: sanitizedMerchantName,
       menu_items: menu_items || [], // 빈 배열이라도 업데이트
@@ -351,13 +345,9 @@ exports.updateTransaction = async (req, res) => {
       ...(expense_type && { expense_type }),
     };
 
-    // console.log('Update Data:', updateData); // 업데이트 데이터 로깅
-
     const transaction = await Transaction.findById(req.params.id);
     if (!transaction)
       return res.status(404).json({ message: "Transaction not found" });
-
-    // console.log('Previous Transaction:', transaction); // 기존 트랜잭션 로깅
 
     const card = await Card.findById(transaction.card_id);
     if (!card) return res.status(404).json({ message: "Card not found" });
@@ -366,13 +356,10 @@ exports.updateTransaction = async (req, res) => {
     const newAmount = transaction_amount;
     const difference = newAmount - previousAmount;
 
-    // console.log('Amount Difference:', difference); // 금액 차이 로깅
-
     // 금액이 변경된 경우에만 잔액 조정 로직 실행
     if (difference !== 0) {
       const previousExpenseType = transaction.expense_type;
-      const isExpenseTypeChanged =
-        expense_type && expense_type !== previousExpenseType;
+      // const isExpenseTypeChanged = expense_type && expense_type !== previousExpenseType;
 
       if (transaction_type === "expense") {
         // (1) 이전 금액 복구 로직
@@ -381,14 +368,12 @@ exports.updateTransaction = async (req, res) => {
           transaction.teamFundDeducted > 0
         ) {
           card.team_fund += transaction.teamFundDeducted;
+        } else if (previousExpenseType === "RegularExpense") {
+          card.balance += previousAmount;
         }
 
         if (transaction.rolloverAmounted > 0) {
           card.rollover_amount += transaction.rolloverAmounted;
-        }
-
-        if (previousExpenseType === "RegularExpense" || !isExpenseTypeChanged) {
-          card.balance += previousAmount;
         }
 
         // (2) 새로운 금액 차감 로직
