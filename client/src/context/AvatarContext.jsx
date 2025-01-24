@@ -31,7 +31,7 @@ export const AvatarProvider = ({ children }) => {
     const [avatarConfig, setAvatarConfig] = useState({
         sex: 'man',
         shape: 'circle',
-        faceColor: randomSkinTone(),
+        faceColor: '#e3a984', //randomSkinTone() 초기화 체크로 주석처리
         earSize: 'small',
         hairColor: randomColor(),
         hairStyle: 'normal',
