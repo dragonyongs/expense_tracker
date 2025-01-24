@@ -27,28 +27,11 @@ export const AvatarProvider = ({ children }) => {
     const { user } = useContext(AuthContext); // 로그인한 사용자 정보
     const isAdmin = ['admin', 'hr_admin', 'super_admin'].includes(user?.role);
 
-    const [selectedMemberId, setSelectedMemberId] = useState(null); // 관리자가 선택한 사용자 ID
-    const [avatarConfig, setAvatarConfig] = useState({
-        sex: 'man',
-        shape: 'circle',
-        faceColor: '#e3a984', //randomSkinTone() 초기화 체크로 주석처리
-        earSize: 'small',
-        hairColor: randomColor(),
-        hairStyle: 'normal',
-        hatColor: randomColor(),
-        hatStyle: 'none',
-        eyeStyle: 'circle',
-        glassesStyle: 'none',
-        noseStyle: 'short',
-        mouthStyle: 'laugh',
-        shirtStyle: 'hoody',
-        eyeBrowStyle: 'up',
-        shirtColor: randomColor(),
-        bgColor: randomColor(),
-        isGradient: false,
-    });
+    const [selectedMemberId, setSelectedMemberId] = useState(null); // 관리자가 선택한 유저 ID
+    const [avatarConfig, setAvatarConfig] = useState(null); // 접속자의 기본 아바타 설정
+    const [targetAvatarConfig, setTargetAvatarConfig] = useState(null); // 관리자가 수정하려는 타겟 유저의 아바타 설정
     const [isLoading, setIsLoading] = useState(false);
-
+    
     const currentMemberId = useMemo(() => {
         return isAdmin ? selectedMemberId || user?.member_id : user?.member_id;
     }, [isAdmin, selectedMemberId, user]);
@@ -65,56 +48,64 @@ export const AvatarProvider = ({ children }) => {
         earSize: ['small', 'big'],
         glassesStyle: ['none', 'round', 'square'],
     };
-
     const generateRandomColor = useCallback(() => randomColor(), []);
     const generateRandomSkinTone = useCallback(() => randomSkinTone(), []);
 
-    const fetchAvatarData = useCallback(async () => {
-        if (!currentMemberId) return;
+    const fetchAvatarData = useCallback(async (memberId = currentMemberId) => {
+        if (!memberId) return;
+        console.log('memberId', memberId);
+        
         setIsLoading(true);
         try {
-            const avatarData = await getAvatar(currentMemberId);
+            const avatarData = await getAvatar(memberId);
             const mergedConfig = {
-                ...genConfig(),
-                ...avatarData,
+                ...genConfig(), // 기본 아바타 설정
+                ...avatarData, // 서버에서 가져온 데이터 병합
                 faceColor: avatarData.faceColor || randomSkinTone(),
-                face: avatarData.face || 'defaultFace',
             };
-            setAvatarConfig(mergedConfig);
+            if (isAdmin && memberId !== user?.member_id) {
+                setTargetAvatarConfig(mergedConfig); // 관리자가 타겟 유저 수정 시
+            } else {
+                setAvatarConfig(mergedConfig); // 접속자 기본 아바타
+            }
         } catch (error) {
-            console.error('아바타 데이터 가져오기 실패:', error);
-            setAvatarConfig({
-                ...genConfig(),
-                faceColor: randomSkinTone(),
-                face: 'defaultFace',
-            });
+            console.error('아바타 데이터를 불러오는 데 실패:', error);
         } finally {
             setIsLoading(false);
         }
-    }, [currentMemberId]);
+    }, [currentMemberId, isAdmin, user]);
 
     useEffect(() => {
-        if (!currentMemberId && user?.member_id) {
-            setSelectedMemberId(user.member_id);
+        // 초기 로드: 로그인한 사용자 데이터를 가져오기
+        if (user?.member_id) {
+            fetchAvatarData(user.member_id);
         }
-    }, [user?.member_id, currentMemberId]);
-
+    }, [user, isAdmin]);  // user와 isAdmin 상태가 변경될 때만 호출
+    
     useEffect(() => {
-        fetchAvatarData();
-    }, [fetchAvatarData]);
+        // 관리자가 선택한 사용자 데이터 가져오기
+        if (isAdmin && selectedMemberId) {
+            fetchAvatarData(selectedMemberId);
+        }
+    }, [isAdmin, selectedMemberId]);  // isAdmin 또는 selectedMemberId가 변경될 때만 호출
+    
+    
+    const handleTargetAvatarChange = (key, value) => {
+        if (!isAdmin) return;
+        setTargetAvatarConfig((prevConfig) => ({ ...prevConfig, [key]: value }));
+    };
 
+    
     const handleSelectUser = (memberId) => {
         if (!isAdmin) return;
         setSelectedMemberId(memberId);
     };
 
-    const resetSelectedUser = () => setSelectedMemberId(null);
-
-    const setAdminMode = (memberId) => setSelectedMemberId(memberId);
-    const resetAdminMode = () => setSelectedMemberId(null);
-
-    const updateAvatarConfig = (key, value) => {
-        setAvatarConfig((prevConfig) => ({ ...prevConfig, [key]: value }));
+    const generateRandomAvatar = () => {
+        setAvatarConfig({
+            ...genConfig(),
+            faceColor: randomSkinTone(),
+        });
     };
 
     const randomizeColor = (key) => {
@@ -127,42 +118,72 @@ export const AvatarProvider = ({ children }) => {
         });
     };
 
+    // 스타일 변경 로직 (관리자와 접속자 구분)
     const handleStyleChange = (styleKey) => {
-        const currentStyle = avatarConfig[styleKey];
-        const styleOptions = stylesConfig[styleKey];
-        const nextStyle = styleOptions[(styleOptions.indexOf(currentStyle) + 1) % styleOptions.length];
-        setAvatarConfig((prevConfig) => ({ ...prevConfig, [styleKey]: nextStyle }));
+        if (isAdmin && selectedMemberId) {
+            // 관리자가 선택한 유저의 아바타 수정
+            setTargetAvatarConfig((prevConfig) => {
+                const currentStyle = prevConfig[styleKey];
+                const styleOptions = stylesConfig[styleKey];
+                const nextStyle =
+                    styleOptions[(styleOptions.indexOf(currentStyle) + 1) % styleOptions.length];
+                return { ...prevConfig, [styleKey]: nextStyle };
+            });
+        } else {
+            // 접속자 자신의 아바타 수정
+            setAvatarConfig((prevConfig) => {
+                const currentStyle = prevConfig[styleKey];
+                const styleOptions = stylesConfig[styleKey];
+                const nextStyle =
+                    styleOptions[(styleOptions.indexOf(currentStyle) + 1) % styleOptions.length];
+                return { ...prevConfig, [styleKey]: nextStyle };
+            });
+        }
     };
 
     const handleStyleAndColorChange = (styleKey, colorKey) => {
-        const nextStyle = stylesConfig[styleKey][(stylesConfig[styleKey].indexOf(avatarConfig[styleKey]) + 1) % stylesConfig[styleKey].length];
-        setAvatarConfig((prevConfig) => ({
-            ...prevConfig,
-            [styleKey]: nextStyle,
-            [colorKey]: generateRandomColor(),
-        }));
-    };
-
-    const generateRandomAvatar = () => {
-        setAvatarConfig({
-            ...genConfig(),
-            faceColor: randomSkinTone(),
-        });
+        if (isAdmin && selectedMemberId) {
+            // 관리자가 선택한 유저의 아바타 수정
+            setTargetAvatarConfig((prevConfig) => {
+                const nextStyle =
+                    stylesConfig[styleKey][
+                        (stylesConfig[styleKey].indexOf(prevConfig[styleKey]) + 1) %
+                            stylesConfig[styleKey].length
+                    ];
+                return {
+                    ...prevConfig,
+                    [styleKey]: nextStyle,
+                    [colorKey]: generateRandomColor(),
+                };
+            });
+        } else {
+            // 접속자 자신의 아바타 수정
+            setAvatarConfig((prevConfig) => {
+                const nextStyle =
+                    stylesConfig[styleKey][
+                        (stylesConfig[styleKey].indexOf(prevConfig[styleKey]) + 1) %
+                            stylesConfig[styleKey].length
+                    ];
+                return {
+                    ...prevConfig,
+                    [styleKey]: nextStyle,
+                    [colorKey]: generateRandomColor(),
+                };
+            });
+        }
     };
 
     const value = {
         avatarConfig,
+        isAdmin,
+        setSelectedMemberId,
+        fetchAvatarData,
+        handleTargetAvatarChange,
         randomizeColor,
         handleStyleChange,
         handleStyleAndColorChange,
         generateRandomAvatar,
-        isAdmin,
         handleSelectUser,
-        resetSelectedUser,
-        setAdminMode,
-        resetAdminMode,
-        updateAvatarConfig,
-        currentMemberId,
     };
 
     if (isLoading) {

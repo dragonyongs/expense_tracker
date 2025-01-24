@@ -16,9 +16,8 @@ import useDrawerTheme from '../hooks/useDrawerTheme';
 import { DRAWER_STYLES } from '../styles/drawerStyles';
 
 
-const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose, onSave, isOpen }) => {
+const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, onSave, isOpen }) => {
     useDrawerTheme(isOpen);
-
     const [profile, setProfile] = useState({
         phones: [],
         addresses: [],
@@ -28,7 +27,7 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
         profileId: '',
     });
     
-    const { avatarConfig, setAdminMode, resetAdminMode } = useContext(AvatarContext);
+    const { avatarConfig, setSelectedMemberId } = useContext(AvatarContext);
     const { 
         deletedItems,
         handleAddItem, 
@@ -45,45 +44,37 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
     const targetMemberId = memberId;
 
     useEffect(() => {
-        if (isOpen && memberId) {
-            setAdminMode(memberId); // 관리자인 경우 선택한 사용자 ID 설정
-        }
-        if (!isOpen) {
-            resetAdminMode(); // 닫힐 때 관리자 모드 초기화
-        }
-    }, [isOpen, memberId, setAdminMode, resetAdminMode]);
-
-    useEffect(() => {
-        if (isOpen && userData) {
+        if (isOpen && selectedProfile) {
             setProfile({
-                phones: userData.phones || [],
-                addresses: userData.addresses || [],
-                dates: userData.dates || [],
-                avatarId: userData.avatarId || {},
-                introduction: userData.introduction || '',
-                profileId: profileId,
+                phones: selectedProfile.phones || [],
+                addresses: selectedProfile.addresses || [],
+                dates: selectedProfile.dates || [],
+                avatarId: selectedProfile.avatar_id || {},
+                introduction: selectedProfile.introduction || '',
+                profileId: selectedProfile?._id,
             });
+
+            const selectedMemberId = selectedProfile?.member_id?._id;
+            // selectedMemberId가 변경되는 조건을 명확히 설정
+            if (selectedMemberId !== memberId) {
+                setSelectedMemberId(memberId); // 상태가 변경될 때만 호출
+            }
+    
             setIsLoading(false);
         }
-    }, [isOpen, userData]);
+    }, [isOpen, selectedProfile, memberId]);
+    
+
+    useEffect(() => {
+        setProfile({
+            ...profile,
+            avatarId: avatarConfig
+        });
+    },[avatarConfig])
 
     const isMobile = useMediaQuery('(max-width: 768px)');
     const viewportHeight = useViewportHeight();
     const styles = DRAWER_STYLES(isMobile, viewportHeight);
-
-    // const drawerSize = isMobile ? '100%' : '576px';
-    // const mobileStyle = {
-    //     width: '100%',
-    //     height: `${viewportHeight - 50}px`,
-    // };
-
-    // const desktopStyle = {
-    //     left: '50%',
-    //     marginLeft: "-50px",
-    //     width: drawerSize,
-    //     height: 'calc( 100vh - 145px)',
-    // };
-    
 
     // 데이터가 없으면 로딩 상태를 표시
     if (isLoading) {
@@ -106,14 +97,6 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
     const handleUpdateContact = (index, field, value) => handleUpdateItem('phones', index, field, value);
     const handleUpdateAddress = (index, field, value) => handleUpdateItem('addresses', index, field, value);
     const handleUpdateDates = (index, field, value) => handleUpdateItem('dates', index, field, value);
-
-    const handleAvatarChange = (updatedAvatar) => {
-        setProfile((prev) => ({
-            ...prev,
-            avatar: updatedAvatar,
-        }));
-    };
-    
 
     const processItems = (items, currentItems, apiUrl, deletedItems, memberId, itemType) => {
         // 1. 신규 아이템 필터링
@@ -220,8 +203,9 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
             if (hasError) return;
     
             let avatarId = profile.avatarId?._id; 
-            if (Object.keys(avatarConfig).length > 0) {
-                const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${targetMemberId}`, avatarConfig);
+
+            if (Object.keys(profile.avatarId).length > 0) {
+                const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${targetMemberId}`, profile.avatarId);
                 if (!avatarResponse || !avatarResponse.data) {
                     throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
                 }
@@ -231,15 +215,15 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
             await Promise.all([
                 axios.put(`${API_URLS.PROFILES}/${profile.profileId}`, { 
                     avatar_id: avatarId, 
-                    profile_id: profile.profileId, 
+                    profile_id: profile.profileId?._id,
                     introduction: profile.introduction,
                 }),
-                ...processItems(profile.phones, userData.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId, 'phones'),
-                ...processItems(profile.addresses, userData.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId, 'addresses'),
-                ...processItems(profile.dates, userData.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId, 'dates'),
+                ...processItems(profile.phones, selectedProfile.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId, 'phones'),
+                ...processItems(profile.addresses, selectedProfile.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId, 'addresses'),
+                ...processItems(profile.dates, selectedProfile.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId, 'dates'),
             ]);
 
-            setProfile(profile); // 여기서 profile이 올바르게 업데이트되었는지 확인
+            setProfile(profile);
             await onSave();
         } catch (error) {
             console.error('저장 오류:', error);
@@ -262,8 +246,8 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
                     <div className={`overflow-y-auto no-scrollbar ${isMobile ? 'h-profileDrawerMobile-screen' : 'h-profileDrawer-screen'} pb-6 px-6`}>
                         <div className="flex flex-col items-center mb-4">
                             <AvatarComponent
-                                avatarConfig={profile.avatar} // 초기값 전달
-                                onAvatarChange={handleAvatarChange} // 변경 핸들러 전달
+                                memberId={memberId}
+                                profileAvatar={profile.avatarId}
                             />
                         </div>
 
@@ -379,14 +363,14 @@ const ProfileEditDrawer = memo((({ userData, memberId, profileId, title, onClose
                                             </div>
                                             <div className='flex space-x-2'>
                                                 <input
-                                                        type="text"
-                                                        value={address.address_line2 || ''}
-                                                        onChange={(e) => handleUpdateAddress(index, 'address_line2', e.target.value)}
-                                                        className="w-3/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
-                                                        placeholder="세부 주소 입력"
-                                                        autoComplete='off'
-                                                        required
-                                                    />
+                                                    type="text"
+                                                    value={address.address_line2 || ''}
+                                                    onChange={(e) => handleUpdateAddress(index, 'address_line2', e.target.value)}
+                                                    className="w-3/6 flex-1 py-2 px-3 bg-slate-100 rounded-md border border-slate-200 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder:text-slate-500"
+                                                    placeholder="세부 주소 입력"
+                                                    autoComplete='off'
+                                                    required
+                                                />
                                                 <input
                                                     type="text"
                                                     value={address.postal_code || ''}

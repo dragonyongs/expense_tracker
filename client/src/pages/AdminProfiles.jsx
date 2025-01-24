@@ -41,7 +41,7 @@ function AdminProfiles() {
     
     useEffect(() => {
         fetchProfiles();
-    }, [isEditDrawerOpen]);
+    }, [isEditDrawerOpen, isProfileOpen]);
 
     const handleSearch = (field, term) => {
         const filtered = filterDataBySearchTerm(profiles, field, term);
@@ -55,6 +55,7 @@ function AdminProfiles() {
     };
 
     const handleCloseDrawer = () => {
+        fetchProfiles();
         setIsProfileOpen(false);
     };
 
@@ -224,8 +225,7 @@ function AdminProfiles() {
                 isOpen={isEditDrawerOpen}
                 title={"프로필 편집"}
                 memberId={selectedProfile?.member_id?._id}
-                profileId={selectedProfile?._id}
-                userData={selectedProfile}
+                selectedProfile={selectedProfile}
                 onSave={handleSave}
                 onClose={handleCloseEditDrawer}
             />

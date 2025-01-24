@@ -20,15 +20,18 @@ const Loading = ({ type = "ColorRing" }) => {
       case 'ColorRing':
       default:
         return (
-          <ColorRing
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="color-ring-loading"
-            wrapperStyle={{}}
-            wrapperClass="color-ring-wrapper"
-            colors={['#0433FF', '#2A57FF', '#7A9FFF', '#1E4CFF', '#0056B3']}
-          />
+          <div className='flex flex-col justify-center items-center'>
+            <ColorRing
+              visible={true}
+              height="80"
+              width="80"
+              ariaLabel="color-ring-loading"
+              wrapperStyle={{}}
+              wrapperClass="color-ring-wrapper"
+              colors={['#0433FF', '#2A57FF', '#7A9FFF', '#1E4CFF', '#0056B3']}
+            />
+            <p>서버 활성화중...</p>
+          </div>
         );
     }
   };
