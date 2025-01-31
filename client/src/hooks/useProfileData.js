@@ -21,7 +21,7 @@ const useProfileData = (userId, setProfile) => {
     }, [userId]);
 
     const [data, setData] = useState({
-        member: {},
+        member_id: {},
         introduction: '',
         phones: [],
         addresses: [],
@@ -74,7 +74,7 @@ const useProfileData = (userId, setProfile) => {
             });
 
             const profileData = {
-                member: memberRes.data || {},
+                member_id: memberRes.data || {},
                 introduction: profileRes.data?.introduction || '',
                 phones: sortedPhones || [],
                 addresses: addressesRes.data || [],

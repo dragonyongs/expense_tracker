@@ -17,7 +17,7 @@ import PasswordChangeDrawer from '../components/profile/PasswordChangeDrawer';
 import useProfileData from '../hooks/useProfileData';
 
 const Profile = () => {
-    const { avatarConfig } = useContext(AvatarContext);
+    const { targetAvatarConfig } = useContext(AvatarContext);
     const [ profileData, setProfileData ] = useState({});
     const { user } = useContext(AuthContext);
     const [successMsg, setSuccessMsg] = useState('');
@@ -127,7 +127,7 @@ const Profile = () => {
                                             : (days > 0 && `입사 ${days}일차`)}
                                     </div>
                                     <div className='flex justify-center items-center w-24 h-24 bg-slate-100 rounded-xl overflow-hidden'>
-                                        <AvatarPreview avatarConfig={avatarConfig} isLoading={isLoading} shape="rounded" /> 
+                                        <AvatarPreview avatarConfig={targetAvatarConfig} isLoading={isLoading} shape="rounded" /> 
                                     </div>
                                     <div className='font-bold dark:font-medium text-3xl dark:text-slate-300'>
                                         {user.name}
@@ -135,10 +135,10 @@ const Profile = () => {
 
                                     <div>
                                         <p className='text-slate-500 dark:text-slate-300'><span className='font-semibold dark:font-medium text-slate-800 dark:text-slate-200'>StarRich Advisor</span>
-                                            <span className='pl-2 pr-1'>{data.member?.team_id?.team_name}</span>
-                                            {data.member?.position === '팀장' ||  data.member?.position === '파트장' ? (
-                                                data.member.position
-                                            ) : data.member.rank}
+                                            <span className='pl-2 pr-1'>{data.member_id?.team_id?.team_name}</span>
+                                            {data.member_id?.position === '팀장' ||  data.member_id?.position === '파트장' ? (
+                                                data.member_id.position
+                                            ) : data.member_id.rank}
                                         </p>
                                         <p className='text-slate-500 dark:text-slate-400'>{data.introduction || ''}</p>
                                     </div>
@@ -270,7 +270,7 @@ const Profile = () => {
                 title={"프로필 수정"}
                 memberId={memberId}
                 profileId={profileData.profileId}
-                userData={profileData}
+                selectedProfile={profileData}
                 onSave={handleSave}
                 onClose={handleCloseDrawer}
             />

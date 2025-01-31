@@ -2,9 +2,9 @@ import React from 'react';
 import Avatar from 'react-nice-avatar';
 
 const AvatarPreview = ({ shape, avatarConfig, isLoading, className = "w-24 h-24" }) => {
-
+    
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <div className='flex justify-center items-center'><p>Loading...</p></div>;
     }
 
     if (!avatarConfig || !avatarConfig.faceColor) {

@@ -2,17 +2,12 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AvatarContext } from '../context/AvatarContext';
 import AvatarPreview from './AvatarPreview';
 
-const AvatarComponent = ({profileAvatar}) => {
-    const { avatarConfig, randomizeColor, handleStyleChange, handleStyleAndColorChange, generateRandomAvatar, isLoading } = useContext(AvatarContext); // isLoading 추가
-    const [ updateAvatar, setUpdateAvatar] = useState(profileAvatar);
-
-    useEffect(() => {
-        setUpdateAvatar(profileAvatar);
-    }, [profileAvatar])
+const AvatarComponent = ({memberId, profileAvatar}) => {
+    const { avatarConfig, targetAvatarConfig, randomizeColor, handleStyleChange, handleStyleAndColorChange, generateRandomAvatar, isLoading } = useContext(AvatarContext);
 
     const renderStyleButton = (styleKey, label) => (
         <button 
-            onClick={() => handleStyleChange(styleKey)} 
+            onClick={() => handleStyleChange(styleKey)}
             className="px-4 py-2 bg-white border border-gray-400 text-gray-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400"
         >
             {label}
@@ -28,9 +23,12 @@ const AvatarComponent = ({profileAvatar}) => {
         </button>
     );
 
+    // console.log('AvatarComponent-profileAvatar', profileAvatar);
+    // console.log('AvatarComponent-memberId', memberId);
+
     return (
         <>
-            <AvatarPreview avatarConfig={updateAvatar} shape="circle" isLoading={isLoading} />  {/* isLoading 전달 */}
+            <AvatarPreview avatarConfig={profileAvatar} shape="circle" isLoading={isLoading} />  {/* isLoading 전달 */}
 
             <div className="flex gap-2 mt-4 flex-wrap justify-start mb-4">
                 <button onClick={generateRandomAvatar} className="px-4 py-2 bg-white border border-blue-500 text-blue-600 rounded-md dark:bg-slate-600 dark:border-transparent dark:text-slate-400">

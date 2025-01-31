@@ -15,8 +15,9 @@ import { formatDateForInput } from '../utils/dateUtils';
 import useDrawerTheme from '../hooks/useDrawerTheme';
 import { DRAWER_STYLES } from '../styles/drawerStyles';
 
-
 const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, onSave, isOpen }) => {
+    const selectedMemberId = selectedProfile?.member_id?._id || memberId;
+
     useDrawerTheme(isOpen);
     const [profile, setProfile] = useState({
         phones: [],
@@ -27,7 +28,11 @@ const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, on
         profileId: '',
     });
     
-    const { avatarConfig, setSelectedMemberId } = useContext(AvatarContext);
+    const { setSelectedMemberId } = useContext(AvatarContext);
+    const { targetAvatarConfig } = useContext(AvatarContext);
+
+    // const { selectedAvatar, setSelectedAvatar } = useState({});
+
     const { 
         deletedItems,
         handleAddItem, 
@@ -36,42 +41,52 @@ const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, on
         handleDaumPostCode,
         setDeletedItems,
         error 
-    } = useProfileData(memberId, setProfile);
+    } = useProfileData(selectedMemberId, setProfile);
 
     const [isLoading, setIsLoading] = useState(false);
     const [errMsg, setErrMsg] = useState('');
 
-    const targetMemberId = memberId;
+    // const targetMemberId = memberId;
 
     useEffect(() => {
         if (isOpen && selectedProfile) {
+            // console.log('selectedProfile.member_id', selectedProfile?.member_id?._id);
+            console.log('selectedProfile', selectedProfile);
+            setSelectedMemberId(memberId);
+
             setProfile({
                 phones: selectedProfile.phones || [],
                 addresses: selectedProfile.addresses || [],
                 dates: selectedProfile.dates || [],
                 avatarId: selectedProfile.avatar_id || {},
                 introduction: selectedProfile.introduction || '',
-                profileId: selectedProfile?._id,
+                profileId: selectedProfile._id || selectedProfile.profileId,
             });
 
-            const selectedMemberId = selectedProfile?.member_id?._id;
+            // const selectedMemberId = selectedProfile?.member_id?._id;
             // selectedMemberId가 변경되는 조건을 명확히 설정
-            if (selectedMemberId !== memberId) {
-                setSelectedMemberId(memberId); // 상태가 변경될 때만 호출
-            }
+            // if (selectedMemberId !== memberId) {
+            //     console.log('selectedMemberId !== memberId', selectedMemberId, memberId);
+            //     setSelectedAvatar(selectedProfile.avatar_id);
+            //     setSelectedMemberId(memberId); // 상태가 변경될 때만 호출
+            // }
+            // console.log('ProfileEditDrawer-selectedProfile', selectedProfile);
     
             setIsLoading(false);
         }
     }, [isOpen, selectedProfile, memberId]);
     
+    // useEffect(() => {
+    //     setProfile(prevProfile => ({
+    //         ...prevProfile,
+    //         avatarId: profile.avatarId
+    //     }));
 
-    useEffect(() => {
-        setProfile({
-            ...profile,
-            avatarId: avatarConfig
-        });
-    },[avatarConfig])
+    //     console.log('update-profile.avatarId', profile.avatarId);
 
+    // }, [avatarConfig, targetAvatarConfig]);
+    
+    
     const isMobile = useMediaQuery('(max-width: 768px)');
     const viewportHeight = useViewportHeight();
     const styles = DRAWER_STYLES(isMobile, viewportHeight);
@@ -203,27 +218,29 @@ const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, on
             if (hasError) return;
     
             let avatarId = profile.avatarId?._id; 
-
             if (Object.keys(profile.avatarId).length > 0) {
-                const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${targetMemberId}`, profile.avatarId);
+                const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${selectedMemberId}`, targetAvatarConfig);
                 if (!avatarResponse || !avatarResponse.data) {
                     throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
                 }
                 avatarId = avatarResponse.data._id;
+                console.log('avatarId', avatarId);
+
             }
     
             await Promise.all([
                 axios.put(`${API_URLS.PROFILES}/${profile.profileId}`, { 
                     avatar_id: avatarId, 
-                    profile_id: profile.profileId?._id,
+                    profile_id: profile.profileId,
                     introduction: profile.introduction,
                 }),
-                ...processItems(profile.phones, selectedProfile.phones || [], API_URLS.PHONES, deletedItems.phones, targetMemberId, 'phones'),
-                ...processItems(profile.addresses, selectedProfile.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, targetMemberId, 'addresses'),
-                ...processItems(profile.dates, selectedProfile.dates || [], API_URLS.DATES, deletedItems.dates, targetMemberId, 'dates'),
+                ...processItems(profile.phones, selectedProfile.phones || [], API_URLS.PHONES, deletedItems.phones, selectedMemberId, 'phones'),
+                ...processItems(profile.addresses, selectedProfile.addresses || [], API_URLS.ADDRESSES, deletedItems.addresses, selectedMemberId, 'addresses'),
+                ...processItems(profile.dates, selectedProfile.dates || [], API_URLS.DATES, deletedItems.dates, selectedMemberId, 'dates'),
             ]);
 
             setProfile(profile);
+
             await onSave();
         } catch (error) {
             console.error('저장 오류:', error);
@@ -247,7 +264,7 @@ const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, on
                         <div className="flex flex-col items-center mb-4">
                             <AvatarComponent
                                 memberId={memberId}
-                                profileAvatar={profile.avatarId}
+                                profileAvatar={targetAvatarConfig} //avatarConfig
                             />
                         </div>
 

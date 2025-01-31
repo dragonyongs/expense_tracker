@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axios from "../services/axiosInstance";
 import { API_URLS } from '../services/apiUrls';
 import AdminHeader from '../components/AdminHeader';
@@ -8,8 +8,11 @@ import ProfileEditDrawer from '../components/ProfileEditDrawer';
 import { TbAddressBookOff, TbCalendarOff, TbPhoneOff } from "react-icons/tb";
 import { filterDataBySearchTerm } from '../utils/search';
 import AvatarPreview from '../components/AvatarPreview';
+import { AvatarContext } from '../context/AvatarContext';
 
 function AdminProfiles() {
+    const { targetAvatarConfig } = useContext(AvatarContext);
+    
     const [profiles, setProfiles] = useState([]);
     const [avatar, setAvatar] = useState({});
     const [selectedProfile, setSelectedProfile] = useState(null);
@@ -220,15 +223,16 @@ function AdminProfiles() {
                 >
                     프로필 수정
                 </button>
+                <ProfileEditDrawer
+                    isOpen={isEditDrawerOpen}
+                    title={"프로필 편집"}
+                    memberId={selectedProfile?.member_id?._id}
+                    selectedProfile={selectedProfile}
+                    onSave={handleSave}
+                    onClose={handleCloseEditDrawer}
+                />
             </AdminProfileDrawer>
-            <ProfileEditDrawer
-                isOpen={isEditDrawerOpen}
-                title={"프로필 편집"}
-                memberId={selectedProfile?.member_id?._id}
-                selectedProfile={selectedProfile}
-                onSave={handleSave}
-                onClose={handleCloseEditDrawer}
-            />
+
         </>
     );
 }
