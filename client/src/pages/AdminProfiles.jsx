@@ -11,8 +11,6 @@ import AvatarPreview from '../components/AvatarPreview';
 import { AvatarContext } from '../context/AvatarContext';
 
 function AdminProfiles() {
-    const { targetAvatarConfig } = useContext(AvatarContext);
-    
     const [profiles, setProfiles] = useState([]);
     const [avatar, setAvatar] = useState({});
     const [selectedProfile, setSelectedProfile] = useState(null);
@@ -39,6 +37,15 @@ function AdminProfiles() {
             console.error("Error fetching profiles:", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchAvatar = async (memberId) => {
+        try {
+            const { data } = await axios.get(`${API_URLS.AVATARS}/${memberId}`);
+            setAvatar(data);
+        } catch (error) {
+            console.error("Error fetching avatar:", error);
         }
     };
     
@@ -71,8 +78,12 @@ function AdminProfiles() {
         setIsEditDrawerOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         try {
+            await fetchProfiles(); 
+            if (selectedProfile?.member_id?._id) {
+                await fetchAvatar(selectedProfile.member_id._id);
+            }
             handleCloseEditDrawer();
         } catch (error) {
             console.error("Error saving profile:", error);
@@ -223,16 +234,16 @@ function AdminProfiles() {
                 >
                     프로필 수정
                 </button>
-                <ProfileEditDrawer
-                    isOpen={isEditDrawerOpen}
-                    title={"프로필 편집"}
-                    memberId={selectedProfile?.member_id?._id}
-                    selectedProfile={selectedProfile}
-                    onSave={handleSave}
-                    onClose={handleCloseEditDrawer}
-                />
-            </AdminProfileDrawer>
 
+            </AdminProfileDrawer>
+            <ProfileEditDrawer
+                isOpen={isEditDrawerOpen}
+                title={"프로필 편집"}
+                memberId={selectedProfile?.member_id?._id}
+                selectedProfile={selectedProfile}
+                onSave={handleSave}
+                onClose={handleCloseEditDrawer}
+            />
         </>
     );
 }

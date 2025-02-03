@@ -59,7 +59,7 @@ const randomSkinTone = () => {
         if (!memberId) return;
         try {
             const avatarData = await getAvatar(memberId);
-            console.log('avatarData', avatarData);
+            // console.log('avatarData', avatarData);
             // if (isAdmin && memberId !== user?.member_id) {
                 setTargetAvatarConfig(avatarData);
             // } else {

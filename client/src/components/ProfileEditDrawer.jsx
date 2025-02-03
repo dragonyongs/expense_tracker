@@ -51,14 +51,14 @@ const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, on
     useEffect(() => {
         if (isOpen && selectedProfile) {
             // console.log('selectedProfile.member_id', selectedProfile?.member_id?._id);
-            console.log('selectedProfile', selectedProfile);
+            // console.log('selectedProfile', selectedProfile);
             setSelectedMemberId(memberId);
 
             setProfile({
                 phones: selectedProfile.phones || [],
                 addresses: selectedProfile.addresses || [],
                 dates: selectedProfile.dates || [],
-                avatarId: selectedProfile.avatar_id || {},
+                avatarId: (selectedProfile.avatar_id || selectedProfile.avatarId) || {},
                 introduction: selectedProfile.introduction || '',
                 profileId: selectedProfile._id || selectedProfile.profileId,
             });
@@ -217,17 +217,17 @@ const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, on
     
             if (hasError) return;
     
-            let avatarId = profile.avatarId?._id; 
-            if (Object.keys(profile.avatarId).length > 0) {
+            let avatarId = profile?.avatarId?._id;
+            // console.log('avatarId', avatarId);
+
+            if (avatarId) {
                 const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${selectedMemberId}`, targetAvatarConfig);
                 if (!avatarResponse || !avatarResponse.data) {
-                    throw new Error('아바타 정보를 저장하는 데 실패했습니다.');
+                    throw new Error('기존 아바타 정보를 저장하는 데 실패했습니다.');
                 }
                 avatarId = avatarResponse.data._id;
-                console.log('avatarId', avatarId);
-
             }
-    
+            
             await Promise.all([
                 axios.put(`${API_URLS.PROFILES}/${profile.profileId}`, { 
                     avatar_id: avatarId, 

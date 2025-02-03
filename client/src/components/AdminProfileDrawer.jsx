@@ -3,25 +3,13 @@ import Drawer from 'react-modern-drawer';
 import 'react-modern-drawer/dist/index.css';
 import useMediaQuery from '../hooks/useMediaQuery';
 import useViewportHeight from '../hooks/useViewportHeight';
+import { DRAWER_STYLES } from '../styles/drawerStyles';
 import { MdClose } from 'react-icons/md';
 
 const AdminProfileDrawer = ({ isOpen, onClose, title, children }) =>  {
     const isMobile = useMediaQuery('(max-width: 1024px)');
     const viewportHeight = useViewportHeight();
-
-    const drawerSize = isMobile ? '100%' : '576px';
-
-    const mobileStyle = {
-        width: '100%',
-        height: `${viewportHeight - 50}px`,
-    };
-
-    const desktopStyle = {
-        left: '50%',
-        marginLeft: "-50px",
-        width: drawerSize,
-        height: 'calc( 100vh - 145px)',
-    };
+    const styles = DRAWER_STYLES(isMobile, viewportHeight);
 
     return (
         <Drawer 
@@ -30,7 +18,7 @@ const AdminProfileDrawer = ({ isOpen, onClose, title, children }) =>  {
             duration='300' 
             direction='bottom' 
             className="rounded-t-xl overflow-hidden" 
-            style={isMobile ? mobileStyle : desktopStyle}
+            style={isMobile ? styles.mobile : styles.desktop}
         >
              {/* Header */}
             <div className='flex justify-between items-center w-full h-12 bg-emerald-600 px-6'>
