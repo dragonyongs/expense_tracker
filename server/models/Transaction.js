@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 
 const menuItemSchema = new mongoose.Schema({
+    deposit_type: { 
+        type: String, 
+        enum: ['RegularDeposit', 'TransportationDeposit', 'TeamFund', 'AdditionalDeposit'], 
+        required: function() {
+            const parent = this.ownerDocument();
+            return parent?.transaction_type === 'income';
+        }
+    },
     name: { type: String },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true, default: 1 }
@@ -14,13 +22,6 @@ const transactionSchema = new mongoose.Schema({
     menu_items: [menuItemSchema],
     transaction_amount: { type: Number, required: true },
     transaction_type: { type: String, enum: ['expense', 'income'], required: true },
-    deposit_type: { 
-        type: String, 
-        enum: ['RegularDeposit', 'TransportationDeposit', 'TeamFund', 'AdditionalDeposit'], 
-        required: function() {
-            return this.transaction_type === 'income';
-        }
-    },
     expense_card: { 
         type: String, 
         enum: ['TeamCard', 'OvertimeMealCard'], // 현재는 팀카드만 사용
@@ -47,6 +48,17 @@ transactionSchema.pre('save', function(next) {
         this.transaction_amount = this.menu_items.reduce((total, item) => {
             return total + (item.price * item.quantity);
         }, 0);
+    }
+    next();
+});
+
+transactionSchema.pre('validate', function(next) {
+    if (this.transaction_type === 'income' && this.menu_items) {
+        for (const item of this.menu_items) {
+            if (!item.deposit_type) {
+                return next(new Error(`deposit_type is required for income transactions`));
+            }
+        }
     }
     next();
 });

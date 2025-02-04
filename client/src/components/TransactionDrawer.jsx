@@ -39,7 +39,6 @@ const TransactionDrawer = ({
     rolloverAmounted: 0,
     teamFundDeducted: 0,
     is_deducted: false,
-    deposit_type: "",
   });
   const [expenseType, setExpenseType] = useState("RegularExpense");
   const [userPosition, setUserPosition] = useState("");
@@ -216,12 +215,6 @@ const TransactionDrawer = ({
         expense_type: selectedTransaction.expense_type || "RegularExpense",
         is_deducted: false,
       };
-
-      console.log("updatedTransaction", updatedTransaction);
-      console.log(
-        "Saving transaction with menu items:",
-        updatedTransaction.menu_items
-      );
 
       if (isEditing) {
         await onSave(updatedTransaction);
