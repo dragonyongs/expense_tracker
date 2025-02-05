@@ -589,17 +589,15 @@ const useDepositManagement = (API_URLS) => {
                 price: transactionAmount,
                 quantity: 1,
                 }];
-        
+
             const transactionData = {
                 card_id: selectedCardId,
                 merchant_name: "관리자",
                 menu_items: menuItems,
                 transaction_type: transactionType,
                 is_deducted: isDeductedOpen,
-                transaction_date: selectedDeposit?.transaction_date || new Date(),
+                transaction_date: selectedDeposit?.transaction_date || new Date().toISOString().split("T")[0],
             };
-        
-            console.log("transactionData", isEditing, transactionData);
         
             if (isEditing) {
             await axios.put(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`, transactionData);

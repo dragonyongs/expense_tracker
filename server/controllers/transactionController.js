@@ -73,7 +73,7 @@ exports.createTransaction = async (req, res) => {
   } = req.body;
 
   // 기본 유효성 검사
-  if (!card_id || !transaction_date || !transaction_type || !expense_type || !merchant_name.trim()) {
+  if (!card_id || !transaction_date || !transaction_type || transaction_type === "expense" && !expense_type || !merchant_name.trim()) {
     return res.status(400).json({ error: "필수 값이 누락되었습니다." });
   }
 
@@ -154,6 +154,7 @@ exports.createTransaction = async (req, res) => {
     card.rollover_amount = card.rollover_amount || 0;
 
     const saveTransactionAndCard = async (transactionData, card) => {
+
       const transaction = new Transaction(transactionData);
       await transaction.save();
       await card.save();
@@ -208,6 +209,7 @@ exports.createTransaction = async (req, res) => {
         card: card.toObject(),
       });
     } else if (transaction_type === "income") {
+
       menu_items.forEach(item => {
         const { deposit_type, price, quantity } = item;
         const itemAmount = price * quantity;

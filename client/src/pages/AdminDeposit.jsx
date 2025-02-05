@@ -215,7 +215,7 @@ const AdminDeposit = () => {
                                 <label
                                     htmlFor={`deposit_type_${index}`}
                                     className={`${isChecked ? 'peer-checked:border-blue-600 peer-checked:text-blue-600' : ''} 
-                                        inline-flex flex-col space-y-2 items-center justify-between w-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} dark:hover:text-gray-300 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 peer-disabled:bg-slate-50 peer-disabled:text-gray-300`}
+                                        inline-flex flex-col space-y-2 items-center justify-between w-full h-full p-3 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'} dark:hover:text-gray-300 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 peer-disabled:bg-slate-50 peer-disabled:text-gray-300`}
                                 >
                                     <div className="block w-full">
                                         <div className="w-full text-md font-semibold">{depositLabels[depositType]}</div>
