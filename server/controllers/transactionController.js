@@ -253,7 +253,6 @@ exports.createTransaction = async (req, res) => {
   }
 };
 
-
 exports.getTransactionById = async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id);
@@ -276,6 +275,8 @@ exports.updateTransaction = async (req, res) => {
       expense_type,
     } = req.body;
 
+    console.log('req.body', req.body);
+
     const sanitizeInput = (input) =>
       input === undefined || input === null
         ? undefined
@@ -287,12 +288,6 @@ exports.updateTransaction = async (req, res) => {
     const transaction_amount =
       menu_items?.length > 0
         ? menu_items.reduce((total, item) => {
-            console.log(
-              "Calculating item:",
-              item,
-              "amount:",
-              item.price * item.quantity
-            );
             return total + item.price * item.quantity;
           }, 0)
         : undefined;

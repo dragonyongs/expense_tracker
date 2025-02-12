@@ -81,6 +81,7 @@ const AdminMembers = () => {
                 updatedMember.password = password;
             }
             if (isEditing) {
+                console.log('isEditing-selectedMember', selectedMember);
                 await updateMember(selectedMember);
             } else {
                 await addMember(selectedMember);

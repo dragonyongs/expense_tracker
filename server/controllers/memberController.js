@@ -31,8 +31,7 @@ exports.createMember = async (req, res) => {
 
 
         let statusId = status_id || (await Status.findOne({ status_name: 'pending' }))._id;
-        console.log('statusId', statusId);
-        let roleId = role_id || (await Role.findOne({ role_name: '사용자' }))._id;
+        let roleId = role_id || (await Role.findOne({ role_name: 'member' }))._id;
 
         // 새로운 멤버 생성
         const newMember = await Member.create({

@@ -84,6 +84,7 @@ function AdminProfiles() {
             if (selectedProfile?.member_id?._id) {
                 await fetchAvatar(selectedProfile.member_id._id);
             }
+
             handleCloseEditDrawer();
         } catch (error) {
             console.error("Error saving profile:", error);

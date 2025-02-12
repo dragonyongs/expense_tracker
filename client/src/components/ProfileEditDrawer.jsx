@@ -216,11 +216,10 @@ const ProfileEditDrawer = memo((({ selectedProfile, memberId, title, onClose, on
             });
     
             if (hasError) return;
-    
-            let avatarId = profile?.avatarId?._id;
-            // console.log('avatarId', avatarId);
 
-            if (avatarId) {
+            let avatarId = profile?.avatarId?._id;
+
+            if (!avatarId) {
                 const avatarResponse = await axios.put(`${API_URLS.AVATARS}/${selectedMemberId}`, targetAvatarConfig);
                 if (!avatarResponse || !avatarResponse.data) {
                     throw new Error('기존 아바타 정보를 저장하는 데 실패했습니다.');

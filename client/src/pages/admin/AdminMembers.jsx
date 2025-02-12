@@ -65,7 +65,7 @@ const AdminMembers = () => {
     };
 
     const handleAddMember = () => {
-        setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '', is_admin_created: true, is_password_reset: true });
+        setSelectedMember({ member_name: '', email: '', password: '', position: '', rank: '', role_id: '', status_id: '', team_id: '', is_admin_created: true, is_password_reset: true });
         setIsEditing(false);
         setIsOpen(true);
     };

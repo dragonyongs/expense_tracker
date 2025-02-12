@@ -36,17 +36,18 @@ const upsertAvatar = async (req, res) => {
 // 아바타 가져오기
 const getAvatarByMemberId = async (req, res) => {
     const { memberId } = req.params;
-
     try {
         const avatar = await Avatar.findOne({ member_id: memberId });
+        // avatar가 없으면 빈 객체를 반환
         if (!avatar) {
-            return res.status(404).json({ error: 'Avatar not found' });
+            return res.status(200).json({}); // 404 대신 빈 객체 반환
         }
         res.status(200).json(avatar);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
+
 
 module.exports = {
     upsertAvatar,

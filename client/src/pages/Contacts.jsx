@@ -10,6 +10,7 @@ import { formatDateToKorean, calculateYearsSinceEntry } from '../utils/dateUtils
 import { renderContactLabel, renderDateLabel, renderAddressLabel } from '../utils/profileRenderUtils';
 import { filterDataBySearchTerm } from '../utils/search';
 import SearchInput from '../components/SearchInput';
+import { FiPhone } from "react-icons/fi";
 
 function Contacts() {
     const [contacts, setContacts] = useState([]); // 전체 데이터를 저장
@@ -320,8 +321,9 @@ function Contacts() {
                             {selectedContact?.phones && selectedContact.phones.map(phone => (
                                 <li key={phone._id} className="grid grid-cols-4 w-full p-3">
                                     <span className="pl-2 font-semibold">{renderContactLabel(phone.phone_type)}</span>
-                                    <span className="col-span-3">
+                                    <span className="col-span-3 flex justify-between">
                                         {phone.phone_number} {phone.phone_type === 'company_phone' && phone.extension && `(내선: ${phone.extension})`}
+                                        {phone.phone_type !== "fax" && <a href={`tel:${phone.phone_number}`}><FiPhone className='w-4 h-4' /></a>}
                                     </span>
                                 </li>
                             ))}
