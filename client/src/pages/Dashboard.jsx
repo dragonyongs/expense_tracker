@@ -16,11 +16,13 @@ const Dashboard = () => {
     const [errMsg, setErrMsg] = useState('');
     const [confettiTrigger, setConfettiTrigger] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchTransactions = async () => {
         try {
             const response = await axios.get(API_URLS.TRANSACTIONS);
             setTransactions(response.data);
+            setIsLoading(false);
         } catch (error) {
             setErrMsg(error.response?.data?.message || '오류가 발생했습니다.');
         }
@@ -116,6 +118,7 @@ const Dashboard = () => {
                             userCards={userCards}
                             errMsg={errMsg}
                             setErrMsg={setErrMsg}
+                            isLoading={isLoading}
                         />
                     </div>
                 )}
