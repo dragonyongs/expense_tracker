@@ -215,7 +215,7 @@ const AppravalPending = ({ data, onUpdateStatus, setEditing, isApprover = false,
                                                 <span className={statusStyles.dot}></span>
                                                 <span className="text-sm font-medium">
                                                     {item.status === '진행중' && item.approvalProcess 
-                                                        ? `${item.approvalProcess[item.approvalProcess.length - 1].name} ${item.approvalProcess[item.approvalProcess.length - 1].role} 결재중`
+                                                        ? `${item.approvalProcess[item.approvalProcess.length - 1].name} ${item.approvalProcess[item.approvalProcess.length - 1].position} 결재중`
                                                         : item.status}
                                                 </span>
                                             </div>

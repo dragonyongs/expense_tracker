@@ -49,9 +49,9 @@ const ApprovalApply = ({ onClose, activeTab, setActiveTab, onSubmit }) => {
         {
           id: "annual",
           name: "연차",
-          description: "15일",
+          description: "15일", // 남은 실제 연차 표시
           icon: "☂️",
-          component: <SampleForm onClose={handleCloseDrawer} setActiveTab={setActiveTab} onSubmit={onSubmit} />,
+          component: <SampleForm onClose={handleCloseDrawer} setActiveTab={setActiveTab} formType={"연차"} onSubmit={onSubmit} />,
         },
         {
           id: "replacement",
@@ -125,12 +125,11 @@ const ApprovalApply = ({ onClose, activeTab, setActiveTab, onSubmit }) => {
 
   return (
     <div className="bg-gray-50 min-h-content-screen">
-      {/* 개선된 탭 네비게이션 */}
       <div className="flex gap-1 p-2 bg-white sticky top-0 shadow-sm">
         {categories.map((category) => (
           <button
             key={category.id}
-            onClick={() => setActiveTab(category.id)}
+            onClick={() => setSubActiveTab(category.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
               subActiveTab === category.id
                 ? "bg-blue-50 text-blue-600 shadow-sm"
@@ -143,10 +142,8 @@ const ApprovalApply = ({ onClose, activeTab, setActiveTab, onSubmit }) => {
         ))}
       </div>
 
-      {/* 개선된 카드 그리드 */}
       <div className="pt-4 pb-20 px-4">
-        {categories.map(
-          (category) =>
+        {categories.map((category) =>
             category.id === subActiveTab && (
               <div key={category.id} className="grid grid-cols-2 gap-4">
                 {category.items.map((item) => (

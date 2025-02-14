@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useContext } from "react";
 import { MdClose, MdDragIndicator } from "react-icons/md";
 import { TbUserPlus } from "react-icons/tb";
 import { AuthContext } from '../../../context/AuthProvider';
-const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) => {
+const SampleForm = ({ selectedItem = null, formType, onClose, setActiveTab, onSubmit }) => {
     const { user } = useContext(AuthContext);
     const [morningStartTime, setMorningStartTime] = useState("09:00");
     const [morningEndTime, setMorningEndTime] = useState("13:00");
@@ -10,7 +10,7 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
     const [afternoonEndTime, setAfternoonEndTime] = useState("18:00");
     const [startDate, setStartDate] = useState(selectedItem?.date_start || "");
     const [endDate, setEndDate] = useState(selectedItem?.date_end || "");
-    const [formType, setFormType] = useState(selectedItem?.formType || "");
+    // const [formType, setFormType] = useState(selectedItem?.formType || "");
     const [leaveType, setLeaveType] = useState(selectedItem?.leaveType || "하루종일");
     const [isPartialLeaveVisible, setIsPartialLeaveVisible] = useState(false); // "오전반차", "오후반차" 활성화 여부
     const [draggingItem, setDraggingItem] = useState(null);
@@ -173,11 +173,11 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
     };
 
     const updateItemOrder = (draggingIndex, targetIndex) => {
-        const items = [...columns.approvers.items];
+        const items = [...newApprover.approvers.items];
         const [draggedItem] = items.splice(draggingIndex, 1);
         items.splice(targetIndex, 0, draggedItem);
 
-        setColumns((prev) => ({
+        setNewApprover((prev) => ({
         ...prev,
         approvers: { ...prev.approvers, items },
         }));
@@ -221,14 +221,14 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
     // 스타일 초기화 함수
     const resetDragStyles = () => {
         if (dragItemRef.current) {
-        dragItemRef.current.style.position = "";
-        dragItemRef.current.style.zIndex = "";
-        dragItemRef.current.style.top = "";
-        dragItemRef.current.style.left = "";
-        dragItemRef.current.style.width = "";
-        dragItemRef.current.style.opacity = "";
-        dragItemRef.current.style.transform = "";
-        dragItemRef.current.style.transition = "";
+            dragItemRef.current.style.position = "";
+            dragItemRef.current.style.zIndex = "";
+            dragItemRef.current.style.top = "";
+            dragItemRef.current.style.left = "";
+            dragItemRef.current.style.width = "";
+            dragItemRef.current.style.opacity = "";
+            dragItemRef.current.style.transform = "";
+            dragItemRef.current.style.transition = "";
         }
     };
 
@@ -262,7 +262,7 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
 
         const container = e.currentTarget.parentNode;
         const siblings = [
-        ...container.querySelectorAll(".draggable:not(.dragging)"),
+            ...container.querySelectorAll(".draggable:not(.dragging)"),
         ];
 
         const nextSibling = siblings.find((sibling) => {
@@ -271,9 +271,9 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
         });
 
         if (nextSibling) {
-        container.insertBefore(draggable, nextSibling);
+            container.insertBefore(draggable, nextSibling);
         } else {
-        container.appendChild(draggable);
+            container.appendChild(draggable);
         }
     };
 
@@ -339,8 +339,8 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
     const validateEndDateOnBlur = () => {
         // 모든 값이 입력 완료된 후 유효성 검사 실행
         if (!validateEndDate(endDate)) {
-        alert("종료일은 시작일 이후로 선택해야 합니다.");
-        setEndDate(startDate); // alert 후 종료일을 시작일로 리셋
+            alert("종료일은 시작일 이후로 선택해야 합니다.");
+            setEndDate(startDate); // alert 후 종료일을 시작일로 리셋
         }
 
         // 시작일과 종료일이 같은지 판단하여 상태 업데이트
@@ -357,6 +357,11 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
         try {
             e.preventDefault(); // 기본 폼 제출 동작 방지
     
+            if (approvers.length <= 0) {
+                setError('결재권자를 추가 하세요.');
+                return;
+            }
+
             const proposer = {
                 step: 0,
                 role: "신청자",
@@ -366,21 +371,27 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
                 member_id: user.member_id,
                 status: "approved",
             };
-    
+
             const requestData = {
                 id: selectedItem?.id || Date.now(),
                 date_start: startDate + "T" + (morningStartTime || "09:00:00"),
-                date_end: endDate + "T" + (afternoonEndTime || "18:00:00"),
+                date_end: (endDate || startDate) + "T" + (afternoonEndTime || "18:00:00"),
                 formType: formType,
                 leaveType: leaveType,
+                name: user.name,
+                position: user.position,
                 reason,
+                message: "",
+                status: "진행중",
                 approvalProcess: [proposer, ...approvers.map((approver, index) => ({
-                    step: index + 1,
-                    role: "결재자",
-                    name: approver.name,
                     id: approver.id,
+                    step: index + 1,
+                    role: "결재권자",
+                    position: "미입력",
+                    name: approver.name,
                     status: "pending",
                 }))],
+                createdAt: new Date().toISOString().split("T")[0],
             };
     
             // 데이터 전달 및 처리
@@ -393,6 +404,7 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
             // 드로우 닫기 및 탭 변경
             onClose(); // 드로우 닫기
             setActiveTab("approval-list"); // 탭을 신청 내역으로 변경
+            setError("");
         } catch (error) {
             console.error("Error in handleSubmit:", error);
             setError(error); // 오류 상태 업데이트
@@ -411,133 +423,136 @@ const SampleForm = ({ selectedItem = null, onClose, setActiveTab, onSubmit }) =>
             </button>
         </div>
         <div className="px-6 space-y-6 h-drawer-screen overflow-y-auto">
-            <div id="applyPerson" className="space-y-4 mt-4">
-            <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">
-                결재 라인
-                </label>
-                <button
-                className="text-blue-600 text-sm hover:text-blue-700 transition-colors"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    setShowInput(true);
-                }}
-                onTouchEnd={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setShowInput(true);
-                }}
-                >
-                + 결재자 추가
-                </button>
+            <div className="pt-4">
+                <p className="text-red-600"> {error.length > 0 && error} </p>
             </div>
+            <div id="applyPerson" className="space-y-4 mt-4">
+                <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium text-gray-700">
+                    결재 라인
+                    </label>
+                    <button
+                    className="text-blue-600 text-sm hover:text-blue-700 transition-colors"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowInput(true);
+                    }}
+                    onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setShowInput(true);
+                    }}
+                    >
+                    + 결재자 추가
+                    </button>
+                </div>
 
-            {/* 결재 라인 */}
-            <div className="space-y-4">
-                <div className="space-y-2 p-4 rounded-lg bg-gray-50">
-                {approvers.length > 0 ? (
-                    approvers.map((item, index) => (
-                        <div
-                            key={item?.id || `approver-${index}`}
-                            className={`border rounded-lg bg-white draggable ${
-                                draggingItem === index ? "dragging" : ""
-                            }`}
-                            draggable="true"
-                            onTouchStart={(e) => {
-                                // 삭제 버튼이나 추가 버튼을 터치했을 때는 드래그 시작하지 않음
-                                if (e.target.closest("button")) {
-                                    return;
-                                }
-                                handleTouchStart(e, index);
-                            }}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            onDragStart={(e) => {
-                                // 삭제 버튼이나 추가 버튼을 클릭했을 때는 드래그 시작하지 않음
-                                if (e.target.closest("button")) {
-                                    e.preventDefault();
-                                    return;
-                                }
-                                handleDragStart(e, index);
-                            }}
-                            onDragOver={handleDragOver}
-                            onDragEnd={handleDragEnd}
-                        >
-                            <div className="flex items-center justify-between p-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
-                                        <MdDragIndicator size={24} />
+                {/* 결재 라인 */}
+                <div className="space-y-4">
+                    <div className="space-y-2 p-4 rounded-lg bg-gray-50">
+                    {approvers.length > 0 ? (
+                        approvers.map((item, index) => (
+                            <div
+                                key={item?.id || `approver-${index}`}
+                                className={`border rounded-lg bg-white draggable ${
+                                    draggingItem === index ? "dragging" : ""
+                                }`}
+                                draggable="true"
+                                onTouchStart={(e) => {
+                                    // 삭제 버튼이나 추가 버튼을 터치했을 때는 드래그 시작하지 않음
+                                    if (e.target.closest("button")) {
+                                        return;
+                                    }
+                                    handleTouchStart(e, index);
+                                }}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={handleTouchEnd}
+                                onDragStart={(e) => {
+                                    // 삭제 버튼이나 추가 버튼을 클릭했을 때는 드래그 시작하지 않음
+                                    if (e.target.closest("button")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    handleDragStart(e, index);
+                                }}
+                                onDragOver={handleDragOver}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <div className="flex items-center justify-between p-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
+                                            <MdDragIndicator size={24} />
+                                        </div>
+                                        <span className="flex items-center justify-center bg-blue-100 text-blue-800 rounded-full w-5 h-5 font-medium text-xs">
+                                            {index + 1}
+                                        </span>
+                                        <span className="text-gray-900 font-medium">
+                                            {item?.name}
+                                        </span>
                                     </div>
-                                    <span className="flex items-center justify-center bg-blue-100 text-blue-800 rounded-full w-5 h-5 font-medium text-xs">
-                                        {index + 1}
-                                    </span>
-                                    <span className="text-gray-900 font-medium">
-                                        {item?.name}
-                                    </span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveApprover(item?.id);
+                                        }}
+                                        onTouchEnd={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveApprover(item?.id);
+                                        }}
+                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <MdClose size={20} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        !showInput && <div className="text-gray-500 text-center p-3">
+                            결재자를 추가하세요.
+                        </div>
+                    )}
+
+                    {showInput && (
+                        <div className="border rounded-lg bg-white">
+                            <div className="flex items-center justify-between p-3 w-full">
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="text-blue-600 flex-shrink-0">
+                                        <TbUserPlus size={24} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <input
+                                        type="text"
+                                        value={newApprover}
+                                        onChange={(e) => setNewApprover(e.target.value)}
+                                        onKeyPress={(e) => {
+                                            if (e.key === "Enter" && newApprover.trim()) {
+                                                handleAddApprover();
+                                            }
+                                        }}
+                                        placeholder="결재자 이름 입력"
+                                        className="w-full text-gray-900 font-medium p-1 border rounded"
+                                        />
+                                    </div>
                                 </div>
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleRemoveApprover(item?.id);
-                                    }}
-                                    onTouchEnd={(e) => {
-                                        e.stopPropagation();
-                                        handleRemoveApprover(item?.id);
-                                    }}
-                                    className="text-gray-400 hover:text-red-500 transition-colors"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveNewApprover();
+                                }}
+                                onTouchEnd={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    handleRemoveNewApprover();
+                                }}
+                                className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2"
                                 >
                                     <MdClose size={20} />
                                 </button>
                             </div>
                         </div>
-                    ))
-                ) : (
-                    !showInput && <div className="text-gray-500 text-center p-3">
-                        결재자를 추가하세요.
+                    )}
                     </div>
-                )}
-
-                {showInput && (
-                    <div className="border rounded-lg bg-white">
-                        <div className="flex items-center justify-between p-3 w-full">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="text-blue-600 flex-shrink-0">
-                                    <TbUserPlus size={24} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <input
-                                    type="text"
-                                    value={newApprover}
-                                    onChange={(e) => setNewApprover(e.target.value)}
-                                    onKeyPress={(e) => {
-                                        if (e.key === "Enter" && newApprover.trim()) {
-                                            handleAddApprover();
-                                        }
-                                    }}
-                                    placeholder="결재자 이름 입력"
-                                    className="w-full text-gray-900 font-medium p-1 border rounded"
-                                    />
-                                </div>
-                            </div>
-                            <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveNewApprover();
-                            }}
-                            onTouchEnd={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                handleRemoveNewApprover();
-                            }}
-                            className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-2"
-                            >
-                                <MdClose size={20} />
-                            </button>
-                        </div>
-                    </div>
-                )}
                 </div>
-            </div>
             </div>
 
             <div className="space-y-2">

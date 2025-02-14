@@ -7,7 +7,7 @@ import AppravalApply from '../../components/approval/list/AppravalApply';
 import AppravalPending from '../../components/approval/list/AppravalPending';
 
 function Index() {
-    const [activeTab, setActiveTab] = useState('approval-list');
+    const [activeTab, setActiveTab] = useState('approval-apply');
     const [isApprover, setIsApprover] = useState(true);
     const [isPublish, setIsPublish] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
@@ -27,9 +27,9 @@ function Index() {
             message: "",
             department: "퍼블리싱팀",
             approvalProcess: [
-                { step: 0, role: "신청자", name: "홍길동", status: "approved" },
-                { step: 1, role: "팀장", name: "홍길동", status: "approved" },
-                { step: 2, role: "본부장", name: "고길동", status: "pending" },
+                { step: 0, role: "신청자", name: "홍길동", position: "팀원", status: "approved" },
+                { step: 1, role: "결재권자", name: "홍길동", position: "팀장", status: "approved" },
+                { step: 2, role: "결재권자", name: "고길동", position: "본부장", status: "pending" },
             ],
             createdAt: "2025-01-16T10:00:03",
         },
@@ -46,9 +46,9 @@ function Index() {
             message: "",
             department: "퍼블리싱팀",
             approvalProcess: [
-                { step: 0, role: "신청자", name: "홍길동", status: "approved" },
-                { step: 1, role: "팀장", name: "홍길동", status: "approved" },
-                { step: 2, role: "본부장", name: "고길동", status: "approved" },
+                { step: 0, role: "신청자", name: "홍길동", position: "팀원", status: "approved" },
+                { step: 1, role: "결재권자", name: "홍길동", position: "팀장", status: "approved" },
+                { step: 2, role: "결재권자", name: "고길동", position: "본부장",status: "pending" },
             ],
             createdAt: "2025-01-06T13:10:13",
         },
@@ -65,9 +65,9 @@ function Index() {
             message: "",
             department: "퍼블리싱팀",
             approvalProcess: [
-                { step: 0, role: "신청자", name: "홍길동", status: "approved" },
-                { step: 1, role: "팀장", name: "홍길동", status: "approved" },
-                { step: 2, role: "본부장", name: "이혜숙", status: "approved" },
+                { step: 0, role: "신청자", name: "홍길동", position: "팀원", status: "approved" },
+                { step: 1, role: "팀장", name: "홍길동", position: "팀장", status: "approved" },
+                { step: 2, role: "본부장", name: "이혜숙", position: "본부장", status: "approved" },
             ],
             createdAt: "2024-12-10T10:30:33",
         },

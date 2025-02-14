@@ -17,7 +17,7 @@ const ApprovalStep = ({ step, isActive, isCompleted }) => {
             </div>
             <div className="flex flex-col">
                 <span className="text-sm font-medium">{step.name}</span>
-                <span className="text-xs text-gray-500">{step.role}</span>
+                <span className="text-xs text-gray-500">{step.position}</span>
             </div>
             {step.status === 'approved' && (
                 <div className="absolute -right-2 top-2">
