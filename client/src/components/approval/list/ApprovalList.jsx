@@ -11,7 +11,7 @@ import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 import SampleForm from '../../../components/approval/form/SampleForm';
 
-const ApprovalList = ({ data, isApprover = false, isLoading }) => {
+const ApprovalList = ({ data, isApprover = false, isLoading, onUpdateData }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -26,10 +26,11 @@ const ApprovalList = ({ data, isApprover = false, isLoading }) => {
     setIsOpen(false);
   };
 
-  const handleEdit = (data) => {
-    console.log('handleEdit', data);
-    // setSelectedItem(data);
-  }
+  const handleEdit = (updatedData) => {
+    console.log('handleEdit', updatedData);
+    onUpdateData(updatedData); // 수정된 데이터 상위 컴포넌트로 전달
+    setSelectedItem(updatedData);
+};
 
   const sortedData = [...data].sort((a, b) => {
     const createdAtDiff = new Date(b.createdAt) - new Date(a.createdAt);
@@ -175,6 +176,7 @@ const ApprovalList = ({ data, isApprover = false, isLoading }) => {
           <SampleForm
             onClose={handleEditCloseDrawer}
             selectedItem={selectedItem}
+            formType={selectedItem?.formType}
             onSubmit={handleEdit}
           /> || (
             <p className="text-gray-600">내용을 불러오는 중입니다...</p>

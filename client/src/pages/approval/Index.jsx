@@ -2,9 +2,9 @@ import React, { useState, useEffect, useContext } from 'react'
 import { MutatingDots } from 'react-loader-spinner';
 import { LuConstruction } from "react-icons/lu";
 import ApprovalTabs from '../../components/approval/tabs/ApprovalTabs';
-import AppravalList from '../../components/approval/list/AppravalList';
-import AppravalApply from '../../components/approval/list/AppravalApply';
-import AppravalPending from '../../components/approval/list/AppravalPending';
+import ApprovalList from '../../components/approval/list/ApprovalList';
+import ApprovalApply from '../../components/approval/list/ApprovalApply';
+import ApprovalPending from '../../components/approval/list/ApprovalPending';
 
 function Index() {
     const [activeTab, setActiveTab] = useState('approval-apply');
@@ -75,6 +75,12 @@ function Index() {
 
     const handleSubmit = (data) => {
         setSampleData((prevData) => [...prevData, data]);
+    };
+    
+    const handleUpdateData = (updatedItem) => {
+        setSampleData((prevData) =>
+            prevData.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+        );
     };
     
     const handleUpdateStatus = (id, newStatus, approverName, currentStep, rejectionMessage = "") => {
@@ -153,13 +159,13 @@ function Index() {
                     isPublish ? (
                         <div>
                             {activeTab === 'approval-list' && (
-                                <AppravalList data={smapleData} /> 
+                                <ApprovalList data={smapleData} onUpdateData={handleUpdateData} /> 
                             )}
                             {activeTab === 'approval-pending' && (
-                                <AppravalPending data={smapleData} onUpdateStatus={handleUpdateStatus} isApprover={isApprover}/>
+                                <ApprovalPending data={smapleData} onUpdateStatus={handleUpdateStatus} isApprover={isApprover}/>
                             )}
                             {activeTab === 'approval-apply' && (
-                                <AppravalApply onSubmit={handleSubmit} setActiveTab={setActiveTab}/>
+                                <ApprovalApply onSubmit={handleSubmit} setActiveTab={setActiveTab}/>
                             )}
                         </div>
                     ) : (

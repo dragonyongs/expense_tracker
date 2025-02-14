@@ -43,6 +43,7 @@ const ApprovalDetailDrawer = ({ selectedItem, isOpen, onClose, onApprove, onReje
     };
 
     const handleModify = () => {
+        console.log('handleModify-selectedItem', selectedItem);
         onModify(selectedItem);
         setIsEditing(true);
     }

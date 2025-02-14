@@ -8,7 +8,7 @@ import {
 } from "../../../utils/approval";
 import ApprovalDetailDrawer from "../drawer/ApprovalDetailDrawer";
 
-const AppravalPending = ({ data, onUpdateStatus, setEditing, isApprover = false, isLoading }) => {
+const ApprovalPending = ({ data, onUpdateStatus, setEditing, isApprover = false, isLoading }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -289,4 +289,4 @@ const AppravalPending = ({ data, onUpdateStatus, setEditing, isApprover = false,
     );
 };
 
-export default AppravalPending;
+export default ApprovalPending;

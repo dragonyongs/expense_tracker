@@ -391,7 +391,7 @@ const SampleForm = ({ selectedItem = null, formType, onClose, setActiveTab, onSu
                     name: approver.name,
                     status: "pending",
                 }))],
-                createdAt: new Date().toISOString().split("T")[0],
+                createdAt: new Date().toISOString().split("T")[0] + 'T00:00:00',
             };
     
             // 데이터 전달 및 처리
