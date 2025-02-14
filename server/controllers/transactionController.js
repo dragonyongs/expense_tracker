@@ -711,7 +711,7 @@ exports.getMenuForMerchant = async (req, res) => {
   };
 
   try {
-    const transactions = await Transaction.find(query);
+    const transactions = await Transaction.find(query).sort({ transaction_date: -1 });
 
     const menuCount = transactions.reduce((acc, transaction) => {
       // menu_items 배열이 있는 경우에만 처리
@@ -719,6 +719,7 @@ exports.getMenuForMerchant = async (req, res) => {
         transaction.menu_items.forEach((item) => {
           if (item.name && item.name.trim() !== "") {
             const key = item.name;
+
             if (!acc[key]) {
               acc[key] = {
                 name: item.name,
@@ -726,7 +727,9 @@ exports.getMenuForMerchant = async (req, res) => {
                 count: 0,
               };
             }
+
             acc[key].count += 1;
+            
           }
         });
       } else if (transaction.menu_name) {

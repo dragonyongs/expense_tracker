@@ -27,9 +27,9 @@ const ApprovalList = ({ data, isApprover = false, isLoading, onUpdateData }) => 
   };
 
   const handleEdit = (updatedData) => {
-    console.log('handleEdit', updatedData);
-    onUpdateData(updatedData); // 수정된 데이터 상위 컴포넌트로 전달
+    onUpdateData(updatedData);
     setSelectedItem(updatedData);
+    setIsOpen(false)
 };
 
   const sortedData = [...data].sort((a, b) => {
