@@ -66,6 +66,7 @@ const AdminCard = () => {
 
     // 수정 모드로 모달 열기
     const handleOpenDrawer = (cards) => {
+        console.log("cards : ", cards);
         setSelectedCard(cards);
         setIsEditing(true);
         setSelectUserPosition(cards?.member_id?.position);
@@ -324,6 +325,16 @@ const AdminCard = () => {
                                     type="number"
                                     value={selectedCard.rollover_amount}
                                     onChange={(e) => setSelectedCard({ ...selectedCard, rollover_amount: e.target.value })}
+                                    placeholder=""
+                                    disabled={!isEditing}
+                                />
+
+                                <InputField 
+                                    label="팀 운영비" 
+                                    id="team_fund"
+                                    type="number"
+                                    value={selectedCard.team_fund}
+                                    onChange={(e) => setSelectedCard({ ...selectedCard, team_fund: e.target.value })}
                                     placeholder=""
                                     disabled={!isEditing}
                                 />

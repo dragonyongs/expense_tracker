@@ -238,36 +238,6 @@ const useDepositManagement = (API_URLS) => {
             // 상태 업데이트: currentMenuItem 설정
             setCurrentMenuItem(newDepositItem);
 
-            // setState(prevState => {
-            //     const existingItemIndex = prevState.selectedDeposit.menu_items.findIndex(
-            //         item => item.deposit_type === selectedType && item.name === newDepositItem.name
-            //     );
-    
-            //     let updatedMenuItems;
-            //     if (existingItemIndex !== -1) {
-            //         updatedMenuItems = prevState.selectedDeposit.menu_items.map((item, index) => 
-            //             index === existingItemIndex 
-            //                 ? { ...item, quantity: item.quantity + 1 }
-            //                 : item
-            //         );
-            //     } else {
-            //         updatedMenuItems = [...prevState.selectedDeposit.menu_items, newDepositItem];
-            //     }
-    
-            //     const totalAmount = updatedMenuItems.reduce((sum, item) => {
-            //         return sum + (Number(item.price) * item.quantity);
-            //     }, 0);
-    
-            //     return {
-            //         ...prevState,
-            //         selectedDeposit: {
-            //             ...prevState.selectedDeposit,
-            //             menu_items: updatedMenuItems,
-            //             transaction_amount: totalAmount
-            //         }
-            //     };
-            // });
-    
         } catch (error) {
             console.error("트랜잭션 데이터 로드 실패", error);
         }
@@ -437,67 +407,6 @@ const useDepositManagement = (API_URLS) => {
         setState(prev => ({ ...prev, errMsg: "삭제 중 오류가 발생했습니다." }));
         }
     };
-    
-    // const handleDelete = async () => {
-    //     try {
-    //         const { selectedDeposit } = state;
-
-    //         if (!selectedDeposit || !selectedDeposit._id) {
-    //             setState(prev => ({ ...prev, errMsg: "선택된 입금 내역이 유효하지 않습니다." }));
-    //             return;
-    //         }
-
-    //         const response = await axios.get(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
-    //         const depositData = response.data;
-            
-    //         const depositDate = new Date(depositData.transaction_date);
-    //         const depositAmount = parseFloat(depositData.transaction_amount);
-
-    //         const cardResponse = await axios.get(`${API_URLS.CARDS}/${depositData.card_id}`);
-    //         const cardData = cardResponse.data;
-    //         let updatedBalance = parseFloat(cardData.balance);
-    //         let rolloverAmount = parseFloat(cardData.rollover_amount);
-    //         const isTeamFund = depositData.deposit_type === 'TeamFund';
-
-    //         const transactionsResponse = await axios.get(`${API_URLS.CARD_TRANSACTIONS}/${depositData.card_id}`);
-    //         const transactions = transactionsResponse.data;
-
-    //         const hasPostDepositTransactions = transactions.some(transaction => {
-    //             const transactionDate = new Date(transaction.transaction_date);
-    //             return transactionDate > depositDate && transaction.transaction_type === 'expense';
-    //         });
-
-    //         if (hasPostDepositTransactions) {
-    //             setState(prev => ({ ...prev, errMsg: "이 입금 이후에 사용된 내역이 있어 삭제할 수 없습니다." }));
-    //             return;
-    //         }
-
-    //         if (isTeamFund) {
-    //             let updatedTeamFund = Math.max(parseFloat(cardData.team_fund) - depositAmount, 0);
-    //             await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
-    //                 team_fund: updatedTeamFund,
-    //             });
-    //         } else {
-    //             if (updatedBalance - depositAmount < 0) {
-    //                 const remainingAmountToDeduct = depositAmount - updatedBalance;
-    //                 updatedBalance = 0;
-    //                 rolloverAmount = Math.max(rolloverAmount - remainingAmountToDeduct, 0);
-    //             } else {
-    //                 updatedBalance -= depositAmount;
-    //             }
-
-    //             await axios.put(`${API_URLS.CARDS}/${depositData.card_id}`, {
-    //                 balance: updatedBalance,
-    //                 rollover_amount: rolloverAmount,
-    //             });
-    //         }
-
-    //         await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`);
-    //         setState(prev => ({ ...prev, isDeleteConfirmOpen: false, errMsg: "", isOpen: false }));
-    //     } catch (error) {
-    //         setState(prev => ({ ...prev, errMsg: "삭제 중 오류가 발생했습니다." }));
-    //     }
-    // };
 
     const handleUserChange = async (e) => {
         const changeUserId = e.target.value;
@@ -566,8 +475,8 @@ const useDepositManagement = (API_URLS) => {
             const { selectedUserId, selectedCardId, selectedDeposit, isDeductedOpen, isEditing } = state;
         
             if (!selectedUserId || !selectedCardId || !selectedDeposit.transaction_amount) {
-            setState(prev => ({ ...prev, errMsg: "모든 필드를 채워주세요." }));
-            return;
+                setState(prev => ({ ...prev, errMsg: "모든 필드를 채워주세요." }));
+                return;
             }
         
             const transactionAmount = parseFloat(selectedDeposit.transaction_amount);
@@ -577,17 +486,17 @@ const useDepositManagement = (API_URLS) => {
         
             // menu_items 배열이 유효한 경우 기존 값 유지, 없으면 기본값 사용
             const menuItems = selectedDeposit.menu_items?.length
-            ? selectedDeposit.menu_items.map(item => ({
-                deposit_type: item.deposit_type,
-                name: item.name || (item.deposit_type === "TeamFund" ? "팀 운영비" : "월 잔액 충전"),
-                price: parseFloat(item.price),
-                quantity: parseInt(item.quantity, 10) || 1,
-                }))
-            : [{
-                deposit_type: selectedDeposit.deposit_type,
-                name: selectedDeposit.deposit_type === "TeamFund" ? "팀 운영비" : "월 잔액 충전",
-                price: transactionAmount,
-                quantity: 1,
+                ? selectedDeposit.menu_items.map(item => ({
+                        deposit_type: item.deposit_type,
+                        name: item.name || (item.deposit_type === "TeamFund" ? "팀 운영비" : "월 잔액 충전"),
+                        price: parseFloat(item.price),
+                        quantity: parseInt(item.quantity, 10) || 1,
+                    }))
+                : [{
+                    deposit_type: selectedDeposit.deposit_type,
+                    name: selectedDeposit.deposit_type === "TeamFund" ? "팀 운영비" : "월 잔액 충전",
+                    price: transactionAmount,
+                    quantity: 1,
                 }];
 
             const transactionData = {
@@ -598,11 +507,11 @@ const useDepositManagement = (API_URLS) => {
                 is_deducted: isDeductedOpen,
                 transaction_date: selectedDeposit?.transaction_date || new Date().toISOString().split("T")[0],
             };
-        
+
             if (isEditing) {
-            await axios.put(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`, transactionData);
+                await axios.put(`${API_URLS.TRANSACTIONS}/${selectedDeposit._id}`, transactionData);
             } else {
-            await axios.post(API_URLS.TRANSACTIONS, transactionData);
+                await axios.post(API_URLS.TRANSACTIONS, transactionData);
             }
         
             await fetchData(`${API_URLS.DEPOSITS}/${currentYear}/${currentMonth}`, "deposits");
