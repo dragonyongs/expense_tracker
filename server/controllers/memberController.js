@@ -63,7 +63,11 @@ exports.createMember = async (req, res) => {
             newMember._id,
             { profile_id: newProfile._id },
             { new: true }
-        );
+        )
+        .populate('status_id', 'status_name')
+        .populate('team_id', 'team_name')
+        .populate('role_id', 'role_name')
+        .lean();
 
         res.status(201).json({ member: newMember, profile: newProfile }); // 멤버와 프로필 정보 반환
     } catch (err) {
