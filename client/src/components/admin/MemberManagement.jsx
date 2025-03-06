@@ -1,4 +1,4 @@
-import React, { useEffect, useState }from 'react';
+import React, { useState }from 'react';
 import MemberList from './MemberList';
 import CommonDrawer from '../CommonDrawer';
 import AdminDrawer from '../AdminDrawer';
@@ -38,10 +38,6 @@ const MemberManagement = ({
     const [newPassword, setNewPassword] = useState('');
     const [resetPassword, setResetPassword] = useState('');
     
-    useEffect(() => {
-        console.log("memebers: ", members);
-    },[members])
-
     const handleInputChange = (field, value) => {
         if(field === 'password') {
             setNewPassword(value);

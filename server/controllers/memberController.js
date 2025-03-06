@@ -231,7 +231,6 @@ exports.updateMember = async (req, res) => {
             .lean();
         if (!member) return res.status(404).json({ error: 'Member not found' });
 
-        console.log(member)
         res.json(member);
     } catch (err) {
         res.status(400).json({ error: err.message });

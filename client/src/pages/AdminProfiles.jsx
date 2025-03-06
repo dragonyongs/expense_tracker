@@ -191,8 +191,8 @@ function AdminProfiles() {
                         <div className="space-y-2">
                             {selectedProfile.addresses.map((address) => (
                                 <div key={address._id} className="flex justify-between items-center">
-                                    <span className="text-gray-600">{address.address_name}</span>
-                                    <p className="text-gray-900 mt-1">
+                                    <span className="text-gray-600 flex-2">{address.address_name}</span>
+                                    <p className="text-gray-900 mt-1 flex-8">
                                         {address.address_line1}, {address.address_line2}
                                         <span className="text-gray-500 ml-1">({address.postal_code})</span>
                                     </p>

@@ -44,8 +44,6 @@ const useAdminMembers = () => {
 
     const updateMember = async (updatedMember) => {
         try {
-            console.log('updateMember', updatedMember);
-
             const response = await axios.put(`${API_URLS.MEMBERS}/${updatedMember._id}`, updatedMember);
             setMembers((prevMembers) =>
                 prevMembers.map((member) =>
