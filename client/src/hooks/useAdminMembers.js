@@ -68,7 +68,6 @@ const useAdminMembers = () => {
 
     const deleteMember = async (memberId) => {
         try {
-            console.log('memberId', memberId);
             await axios.delete(`${API_URLS.MEMBERS}/${memberId}`);
             setMembers((prevMembers) =>
                 prevMembers.filter((member) => member._id !== memberId)
@@ -92,10 +91,10 @@ const useAdminMembers = () => {
     const filterMembers = (category) => {
         if (isLoading) return;
 
-        const allPending = members.filter((member) => member.status_id.status_name === 'pending');
-        const allResigned = members.filter((member) => member.status_id.status_name === 'resigned');
+        const allPending = members.filter((member) => member.status_id?.status_name === 'pending');
+        const allResigned = members.filter((member) => member.status_id?.status_name === 'resigned');
 
-        let filtered = members.filter((member) => member.role_id.role_name !== 'super_admin' && member.status_id.status_name !== 'resigned');
+        let filtered = members.filter((member) => member.role_id?.role_name !== 'super_admin' && member.status_id?.status_name !== 'resigned');
         if (category === '요청') filtered = allPending;
         if (category === '퇴사') filtered = allResigned;
 

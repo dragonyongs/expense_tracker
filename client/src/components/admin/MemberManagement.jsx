@@ -19,6 +19,7 @@ const MemberManagement = ({
     onMemberSelect,
     onCloseDrawer,
     onSave,
+    onDelete,
     errMsg,
     isStatusDrawerOpen,
     isRolesDrawerOpen,
@@ -203,9 +204,14 @@ const MemberManagement = ({
                             <button type="button" onClick={onSave} className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-md px-5 py-3 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 {isEditing ? '수정' : '추가'}
                             </button>
-                            <button type="button" onClick={onCloseDrawer} className="w-full text-slate-600 dark:text-slate-400">
-                                안할래요
-                            </button>
+                            <div className="flex">
+                                <button type="button" onClick={onDelete} className='w-1/2 text-red-500'>
+                                    삭제
+                                </button>
+                                <button type="button" onClick={onCloseDrawer} className="w-1/2 text-slate-600 dark:text-slate-400">
+                                    안할래요
+                                </button>
+                            </div>
                         </div>
                     </form>
                 )}

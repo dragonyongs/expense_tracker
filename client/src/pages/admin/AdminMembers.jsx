@@ -70,6 +70,12 @@ const AdminMembers = () => {
         setIsOpen(true);
     };
 
+    const handleDeleteMember = () => {
+        deleteMember(selectedMember._id)
+        setIsEditing(false);
+        setIsOpen(false);
+    }
+
     const handleDownload = () => {
         window.location.href = API_URLS.MEMBERS_BACKUP;
     };
@@ -481,6 +487,7 @@ const AdminMembers = () => {
                     onMemberSelect={handleMemberSelect}
                     onCloseDrawer={handleCloseDrawer}
                     onSave={handleSave}
+                    onDelete={handleDeleteMember}
                     setIsStatusDrawerOpen={setIsStatusDrawerOpen}
                     setIsRolesDrawerOpen={setIsRolesDrawerOpen}
                     deleteMember={deleteMember}
