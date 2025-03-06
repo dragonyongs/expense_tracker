@@ -66,16 +66,16 @@ exports.createMember = async (req, res) => {
         )
 
         // 관계 데이터 포함하여 멤버 정보 조회
-        // const populatedMember = await Member.findById(newMember._id)
-        // .populate('status_id', 'status_name')
-        // .populate('team_id', 'team_name')
-        // .populate('role_id', 'role_name')
-        // .lean();
+        const populatedMember = await Member.findById(newMember._id)
+            .populate('status_id', 'status_name')
+            .populate('team_id', 'team_name')
+            .populate('role_id', 'role_name')
+            .lean();
 
         // 멤버와 프로필 정보 반환
         // res.status(201).json({ member: newMember, profile: newProfile });
 
-        res.status(201).json(newMember);
+        res.status(201).json(populatedMember);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
