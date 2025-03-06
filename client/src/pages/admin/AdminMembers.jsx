@@ -460,7 +460,7 @@ const AdminMembers = () => {
                     selectedCategory={selectedCategory}
                     categoryCounts={{ pending: pendingMembersCount, resigned: resignedMembersCount, filtered: filteredMembersCount }}
                     onCategorySelect={handleCategoryChange}
-                    onAddMember={handleAddMember}ㅋ
+                    onAddMember={handleAddMember}
                     onUpload={() => setIsUploadOpen(true)}
                     onDownload={handleDownload}
                 />

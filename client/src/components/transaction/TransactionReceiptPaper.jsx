@@ -73,7 +73,7 @@ const TransactionReceiptPaper = forwardRef(
         <div className="flex justify-center font-mono">
           <div
             ref={ref}
-            className="max-w-lg shadow-xl bg-white dark:bg-slate-900 relative border border-gray-100 dark:border-transparent dark:text-gray-300"
+            className="max-w-lg shadow-xl print:shadow-none bg-white dark:bg-slate-900 relative border border-gray-100 print:border-gray-200 dark:border-transparent dark:text-gray-300"
           >
             {/* Top torn edge effect */}
             <div

@@ -201,8 +201,7 @@ exports.changePassword = async (req, res) => {
 
 exports.updateMember = async (req, res) => {
     try {
-        const { password, status_id, ...otherData } = req.body;  // 상태값도 포함
-
+        const { password, ...otherData } = req.body;  // 상태값도 포함
         let updateMemberData = { ...otherData };  // 나머지 데이터는 그대로 처리
 
         // 비밀번호 업데이트 처리
@@ -224,15 +223,15 @@ exports.updateMember = async (req, res) => {
             updateMemberData.password = existingMember.password;
         }
 
-        // 상태값 업데이트 (만약 전달된 상태가 있다면)
-        if (status_id) {
-            updateMemberData.status_id = status_id;
-        }
-
         // DB 업데이트
-        const member = await Member.findByIdAndUpdate(req.params.id, updateMemberData, { new: true });
+        const member = await Member.findByIdAndUpdate(req.params.id, updateMemberData, { new: true })
+            .populate('status_id', 'status_name')
+            .populate('team_id', 'team_name')
+            .populate('role_id', 'role_name')
+            .lean();
         if (!member) return res.status(404).json({ error: 'Member not found' });
 
+        console.log(member)
         res.json(member);
     } catch (err) {
         res.status(400).json({ error: err.message });

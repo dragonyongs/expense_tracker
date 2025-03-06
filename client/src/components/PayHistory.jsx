@@ -171,7 +171,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
         direction="right"
         size={drawerSize}
       >
-        <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen bg-slate-50 dark:bg-slate-800">
+        <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen bg-slate-50 print:bg-white dark:bg-slate-800">
           <TransactionReceiptPaper
             ref={transactionRef}
             transaction={selectedTransaction}
