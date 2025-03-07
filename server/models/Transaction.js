@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const menuItemSchema = new mongoose.Schema({
     deposit_type: { 
         type: String, 
-        enum: ['RegularDeposit', 'TransportationDeposit', 'TeamFund', 'AdditionalDeposit'], 
+        enum: ['RegularDeposit', 'TransportationDeposit', 'TeamFund', 'AdditionalDeposit'], // TeamFund > TeamFundDeposit으로 변경해야함 (기존 데이터)
         required: function() {
             const parent = this.ownerDocument();
             return parent?.transaction_type === 'income';
@@ -11,11 +11,16 @@ const menuItemSchema = new mongoose.Schema({
     },
     name: { type: String },
     price: { type: Number, required: true },
-    quantity: { type: Number, required: true, default: 1 }
+    quantity: { type: Number, required: true, default: 1 },
+    // 새 필드: 메뉴별 지출 사용자와 이체 여부
+    member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'MemberId', required: true },
+    is_transfer: { type: Boolean, default: false }
 });
 
 const transactionSchema = new mongoose.Schema({
     card_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true },
+    // 새 필드: 거래를 기록한 지출자(본인)
+    recorded_by: { type: mongoose.Schema.Types.ObjectId, ref: 'MemberId', required: true },
     transaction_date: { type: Date, required: true },
     merchant_name: { type: String, required: true },
     menu_name: { type: String },

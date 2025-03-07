@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../context/AuthProvider";
 import axios from "../services/axiosInstance";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
@@ -11,7 +12,6 @@ import { MdClose } from "react-icons/md";
 import { API_URLS } from "../services/apiUrls";
 import useDrawerTheme from "../hooks/useDrawerTheme";
 import ConfirmModal from "./common/ConfirmModal";
-import { IoRibbonOutline } from "react-icons/io5";
 
 const TransactionDrawer = ({
   isOpen,
@@ -24,7 +24,6 @@ const TransactionDrawer = ({
   cardBalance,
   teamFund,
   errMsg,
-  // setErrMsg,
 }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState({
@@ -45,7 +44,6 @@ const TransactionDrawer = ({
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [merchantSuggestions, setMerchantSuggestions] = useState([]);
   const [menuSuggestions, setMenuSuggestions] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
   const [currentMenuItem, setCurrentMenuItem] = useState({
     name: "",
     price: "",
@@ -56,8 +54,33 @@ const TransactionDrawer = ({
   const [selectedMerchant, setSelectedMerchant] = useState(null);
   const [isMerchantLayerOpen, setIsMerchantLayerOpen] = useState(false);
   const [filteredMenus, setFilteredMenus] = useState([]);
+  const [editingUserIndex, setEditingUserIndex] = useState(null);
+  const [userSearchValue, setUserSearchValue] = useState('');
+  const [userSuggestions, setUserSuggestions] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext);
 
   useDrawerTheme(isOpen);
+  
+  const fetchData = async (url) => {
+    try {
+        const response = await axios.get(url, { withCredentials: true });
+        const fetchedAccounts = response.data;
+        const userSearch = fetchedAccounts
+            .flatMap((account) => account.cards)
+            .filter((card) => card.card_type === 'TeamCard' && card.position !== '팀장');
+        setAccounts(userSearch); // 이제 userSearch는 배열입니다.
+    } catch (error) {
+        console.error(`Error fetching data from ${url}:`, error);
+    } finally {
+        setLoading(false);
+    }
+};
+
+  useEffect(() => {
+    fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${user.member_id}`);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -188,41 +211,41 @@ const TransactionDrawer = ({
     }
   };
 
+  const formatDate = (date) => new Date(date).toISOString().split("T")[0];
+
   const handleSave = async () => {
     try {
-      // 메뉴가 비어 있을 경우 기본 메뉴 항목 추가
       const menuItems =
         selectedTransaction.menu_items.length > 0
-          ? selectedTransaction.menu_items
+          ? selectedTransaction.menu_items.map((item) => ({
+              ...item,
+              member_id: item.member_id || user.member_id, // 사용자 키값 반영
+              // member_name: item.member_name || null,
+            }))
           : [
               {
                 name: "",
-                price: selectedTransaction.transaction_amount || 0, // 트랜잭션 금액을 price로 설정
+                price: selectedTransaction.transaction_amount || 0,
                 quantity: 1,
+                member_id: null,
+                // member_name: null,
               },
             ];
 
       const updatedTransaction = {
         ...selectedTransaction,
         menu_items: menuItems,
-        card_id: selectedTransaction.card_id,
-        transaction_date: new Date(selectedTransaction.transaction_date)
-          .toISOString()
-          .split("T")[0],
-        merchant_name: selectedTransaction.merchant_name,
+        transaction_date: formatDate(selectedTransaction.transaction_date),
         transaction_type: "expense",
         expense_card: selectedTransaction.expense_card || "TeamCard",
         expense_type: selectedTransaction.expense_type || "RegularExpense",
         is_deducted: false,
+        recorded_by: user.member_id,
       };
 
-      if (isEditing) {
-        await onSave(updatedTransaction);
-      } else {
-        await onSave(updatedTransaction);
-      }
+      await onSave(updatedTransaction);
 
-      // 저장 후 초기화
+      // 저장 후 상태 초기화
       setSelectedTransaction({
         card_id: "",
         transaction_date: "",
@@ -231,7 +254,9 @@ const TransactionDrawer = ({
         expense_card: "",
         expense_type: "",
         menu_items: [],
+        recorded_by: null,
       });
+
       setCurrentMenuItem({ name: "", price: 0, quantity: 1 });
       setErrorMessage("");
 
@@ -242,57 +267,15 @@ const TransactionDrawer = ({
     }
   };
 
-  // const handleSave = async () => {
-  //   try {
-  //     const updatedTransaction = {
-  //       ...selectedTransaction,
-  //       menu_items: [
-  //         ...(selectedTransaction.menu_items || []),
-  //         ...(currentMenuItem.name && currentMenuItem.price ? [{ name: currentMenuItem.name, price: currentMenuItem.price, quantity: currentMenuItem.quantity }] : []),
-  //       ],
-  //       card_id: selectedTransaction.card_id,
-  //       transaction_date: new Date(selectedTransaction.transaction_date).toISOString().split("T")[0],
-  //       merchant_name: selectedTransaction.merchant_name,
-  //       transaction_type: "expense",
-  //       expense_card: selectedTransaction.expense_card || "TeamCard",
-  //       expense_type: selectedTransaction.expense_type || "RegularExpense",
-  //       is_deducted: false,
-  //     };
-  //     console.log('updatedTransaction', updatedTransaction);
-  //     console.log('Saving transaction with menu items:', updatedTransaction.menu_items);
-
-  //     if (isEditing) {
-  //       await onSave(updatedTransaction);
-  //     } else {
-  //       await onSave(updatedTransaction);
-  //     }
-
-  //     // 저장 후 초기화
-  //     setSelectedTransaction({
-  //       card_id: '',
-  //       transaction_date: '',
-  //       merchant_name: '',
-  //       transaction_type: 'expense',
-  //       expense_card: '',
-  //       expense_type: '',
-  //       menu_items: [],
-  //     });
-  //     setCurrentMenuItem({ name: '', price: 0, quantity: 1 });
-  //     setErrorMessage('');
-
-  //     onClose();
-  //   } catch (error) {
-  //     console.error('Error saving transaction:', error);
-  //     setErrorMessage(error.message || "오류가 발생했습니다.");
-  //   }
-  // };
-
   const handleMerchantInputChange = async (e) => {
-    const value = e.target.value;
-    setSelectedTransaction((prev) => ({
-      ...prev,
-      merchant_name: value,
-    }));
+    const value = e.target.value.trim(); // 공백 제거
+    setSelectedTransaction((prev) => ({ ...prev, merchant_name: value }));
+
+    if (!value) {
+      setMerchantSuggestions([]);
+      setMenuSuggestions([]);
+      return;
+    }
 
     if (value.length > 1) {
       try {
@@ -302,12 +285,6 @@ const TransactionDrawer = ({
         console.error("검색 오류:", error);
         setMerchantSuggestions([]);
       }
-    } else {
-      setMerchantSuggestions([]);
-    }
-
-    if (value.length === 0) {
-      setMenuSuggestions([]);
     }
   };
 
@@ -393,16 +370,6 @@ const TransactionDrawer = ({
     });
   };
 
-  // const handleMerchantSelect = (merchant) => {
-  //   setSelectedTransaction({
-  //     ...selectedTransaction,
-  //     merchant_name: merchant.name,
-  //   });
-  //   setSelectedMerchant(merchant);
-  //   setIsMenuLayerOpen(true);
-  //   setIsMerchantLayerOpen(false);
-  // };
-
   const handleMenuSelect = (menu) => {
     const newMenuItem = {
       name: menu.name,
@@ -426,6 +393,57 @@ const TransactionDrawer = ({
       );
       setFilteredMenus(filtered);
     }
+  };
+
+  // 검색 인풋 변경 핸들러: 입력값에 따라 사용자 목록 필터링
+  const handleUserSearchChange = (e) => {
+    const value = e.target.value;
+    setUserSearchValue(value);
+    if (value.trim() === '') {
+      setUserSuggestions([]);
+      return;
+    }
+    const filtered = accounts.filter((account) =>
+      account.member_name.toLowerCase().includes(value.toLowerCase())
+    );
+    setUserSuggestions(filtered);
+  };
+
+  // 사용자가 자동완성 리스트에서 선택했을 때 호출되는 함수
+  // index는 현재 편집 중인 메뉴 항목의 인덱스, user는 선택한 사용자 객체
+  const handleUserSelect = (index, user) => {
+
+    setSelectedTransaction((prev) => {
+      const updatedItems = [...prev.menu_items];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        member_id: user.member_id,           // 사용자 id 저장
+        member_name: user.member_name, // 선택된 사용자 이름 (표시용)
+      };
+      return {
+        ...prev,
+        menu_items: updatedItems,
+      };
+    });
+    // 검색 관련 상태 초기화
+    setUserSearchValue('');
+    setUserSuggestions([]);
+    setEditingUserIndex(null);
+  };
+
+  const handleUserRemove = (index) => {
+    setSelectedTransaction((prev) => {
+      const updatedItems = [...prev.menu_items];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        member_id: null,       // 사용자 제거
+        member_name: null,   // 표시용 사용자 이름 제거
+      };
+      return {
+        ...prev,
+        menu_items: updatedItems,
+      };
+    });
   };
 
   const isMobile = useMediaQuery("(max-width: 640px)");
@@ -630,27 +648,67 @@ const TransactionDrawer = ({
               ) : (
                 <ul className="space-y-2 mb-4">
                   {selectedTransaction.menu_items.map((item, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-700 rounded-lg"
-                    >
-                      <div className="flex-1">
-                        <span className="font-medium dark:text-slate-300">
-                          {item.name || "미기입"}
-                        </span>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {item.price.toLocaleString()}원 × {item.quantity}개 ={" "}
-                          {(item.price * item.quantity).toLocaleString()}원
-                        </div>
+                  <li key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                    <div className="flex-1">
+                      <span className="font-medium dark:text-slate-300">
+                        {item.name || "미기입"}
+                      </span>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {item.price.toLocaleString()}원 × {item.quantity}개 = {(item.price * item.quantity).toLocaleString()}원
                       </div>
-                      <button
-                        onClick={() => handleRemoveMenuItem(index)}
-                        className="text-red-500 hover:text-red-700 p-1"
-                      >
-                        <MdClose />
-                      </button>
-                    </li>
-                  ))}
+                      {/* 사용자 정보가 없으면 "사용자 추가" 링크 표시 */}
+                      {item.member_id ? (
+                        <div className="flex items-center gap-2">
+                          <div className="text-green-500 text-sm">
+                            지출 사용자: {item.member_name || "선택됨"}
+                          </div>
+                          <button
+                            onClick={() => handleUserRemove(index)}
+                            className="text-red-500 text-xs underline"
+                          >
+                            취소
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-blue-500 text-sm cursor-pointer" onClick={() => setEditingUserIndex(index)}>
+                          사용자 추가
+                        </div>
+                      )}
+
+                    </div>
+                    <button onClick={() => handleRemoveMenuItem(index)} className="text-red-500 hover:text-red-700 p-1">
+                      <MdClose />
+                    </button>
+                  </li>
+                  
+                ))}
+                {editingUserIndex !== null && (
+                    <div className="mt-2">
+                      <InputField
+                        label="사용자 선택"
+                        id="user_search"
+                        value={userSearchValue}
+                        onChange={handleUserSearchChange}
+                        placeholder="사용자 검색..."
+                      />
+                      {userSuggestions.length > 0 && (
+                        <ul className="absolute z-10 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                          {userSuggestions.map((user, idx) => (
+                            <li
+                              key={idx}
+                              className="cursor-pointer py-2 px-4 hover:bg-blue-100"
+                              onClick={() => {
+                                handleUserSelect(editingUserIndex, user);
+                                setEditingUserIndex(null);
+                              }}
+                            >
+                              {user.member_name} ({user.position})
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
                 </ul>
               )}
 
@@ -872,7 +930,6 @@ TransactionDrawer.propTypes = {
   isEditing: PropTypes.bool.isRequired,
   onDelete: PropTypes.func.isRequired,
   errMsg: PropTypes.string,
-  // setErrMsg: PropTypes.func,
   cardBalance: PropTypes.number.isRequired,
   teamFund: PropTypes.number.isRequired,
   drawerColor: PropTypes.string,

@@ -22,8 +22,8 @@ const addressRoutes = require('./routes/addressRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const avatarRoutes = require('./routes/avatarRoutes');
 
-// const { fixMenuItems } = require('./migrations/2025-01-07-migrate-transaction-fixed');
-// fixMenuItems(); 
+// const { migrateTransactions } = require('./migrations/2025-03-07-migrate-transaction-menu-user');
+// migrateTransactions(); 
 
 const app = express();
 app.use(cookieParser());

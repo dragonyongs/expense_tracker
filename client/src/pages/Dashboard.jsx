@@ -62,6 +62,7 @@ const Dashboard = () => {
             transaction_amount: newTransaction.transaction_amount,
             transaction_date: newTransaction.transaction_date,
             is_deducted: false,
+            recorded_by: newTransaction.recorded_by,
         };
 
         try {

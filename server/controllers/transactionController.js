@@ -60,7 +60,6 @@ exports.getCardTransactions = async (req, res) => {
 };
 
 exports.createTransaction = async (req, res) => {
-  // 요청으로부터 필요한 값 추출
   const {
     card_id,
     expense_card,
@@ -70,9 +69,9 @@ exports.createTransaction = async (req, res) => {
     transaction_date,
     transaction_type,
     menu_items,
+    recorded_by,
   } = req.body;
 
-  // 필수 값 검증 (transaction_amount는 클라이언트에서 전달하지 않고 계산함)
   if (
     !card_id ||
     !transaction_date ||
@@ -235,6 +234,7 @@ exports.createTransaction = async (req, res) => {
         teamFundDeducted,
         rolloverAmounted,
         is_deducted,
+        recorded_by,
       };
 
       const transaction = await saveTransactionAndCard(transactionData, card);
@@ -257,6 +257,7 @@ exports.createTransaction = async (req, res) => {
         expense_type,
         expense_card,
         is_deducted: false,
+        recorded_by,
       };
 
       const transaction = await saveTransactionAndCard(transactionData, card);
@@ -296,8 +297,6 @@ exports.updateTransaction = async (req, res) => {
       transaction_type,
       expense_type,
     } = req.body;
-
-    console.log('req.body', req.body);
 
     const sanitizeInput = (input) =>
       input === undefined || input === null

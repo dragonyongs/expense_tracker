@@ -229,55 +229,56 @@ const Transactions = () => {
         }
     };
 
-    const handleSave = async (updatedTransaction) => {
-        try {
-            setErrMsg('');
+    // const handleSave = async (updatedTransaction) => {
+    //     try {
+    //         setErrMsg('');
+    //         console.log(user)
+    //         const transactionData = {
+    //             card_id: updatedTransaction.card_id,
+    //             // recorded_by: user._id,
+    //             transaction_date: updatedTransaction.transaction_date,
+    //             merchant_name: updatedTransaction.merchant_name,
+    //             menu_items: updatedTransaction.menu_items,
+    //             transaction_type: "expense",
+    //             expense_card: updatedTransaction.expense_card,
+    //             expense_type: updatedTransaction.expense_type,
+    //             is_deducted: false,
+    //             transaction_amount: updatedTransaction.menu_items.reduce((sum, item) => 
+    //                 sum + (Number(item.price) * Number(item.quantity)), 0)
+    //         };
 
-            const transactionData = {
-                card_id: updatedTransaction.card_id,
-                transaction_date: updatedTransaction.transaction_date,
-                merchant_name: updatedTransaction.merchant_name,
-                menu_items: updatedTransaction.menu_items,
-                transaction_type: "expense",
-                expense_card: updatedTransaction.expense_card,
-                expense_type: updatedTransaction.expense_type,
-                is_deducted: false,
-                transaction_amount: updatedTransaction.menu_items.reduce((sum, item) => 
-                    sum + (Number(item.price) * Number(item.quantity)), 0)
-            };
+    //         if (isEditing) {
+    //             await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
+    //         } else {
+    //             await axios.post(API_URLS.TRANSACTIONS, transactionData);
+    //         }
 
-            if (isEditing) {
-                await axios.put(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`, transactionData);
-            } else {
-                await axios.post(API_URLS.TRANSACTIONS, transactionData);
-            }
+    //         await fetchTransactionsForMonth(selectedYear, selectedMonth);
+    //         await fetchCards();
+    //         handleCloseDrawer();
 
-            await fetchTransactionsForMonth(selectedYear, selectedMonth);
-            await fetchCards();
-            handleCloseDrawer();
-
-        } catch (error) {
-            const errorMsg = handleError(error);
-            console.log('errorMsg', errorMsg);
-            setErrMsg(errorMsg);
-        }
-    };
+    //     } catch (error) {
+    //         const errorMsg = handleError(error);
+    //         console.log('errorMsg', errorMsg);
+    //         setErrMsg(errorMsg);
+    //     }
+    // };
     
 
-    const handleDelete = async () => {
-        try {
-            await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
-            await fetchTransactionsForMonth(selectedYear, selectedMonth);
-            await fetchCards();
+    // const handleDelete = async () => {
+    //     try {
+    //         await axios.delete(`${API_URLS.TRANSACTIONS}/${selectedTransaction._id}`);
+    //         await fetchTransactionsForMonth(selectedYear, selectedMonth);
+    //         await fetchCards();
     
-            setIsDeleteConfirmOpen(false);
-            handleCloseDrawer();
-        } catch (error) {
-            const errorMsg = handleError(error);
-            console.log('errorMsg', errorMsg);
-            setErrMsg(errorMsg);
-        }
-    };
+    //         setIsDeleteConfirmOpen(false);
+    //         handleCloseDrawer();
+    //     } catch (error) {
+    //         const errorMsg = handleError(error);
+    //         console.log('errorMsg', errorMsg);
+    //         setErrMsg(errorMsg);
+    //     }
+    // };
 
     const groupedTransactions = filteredTransactions.reduce((acc, transaction) => {
         const transactionDate = new Date(transaction.transaction_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
@@ -464,14 +465,14 @@ const Transactions = () => {
                 <TransactionDrawer
                     isOpen={isOpen}
                     onClose={handleCloseDrawer}
-                    onSave={handleSave}
                     userCards={userCards} // 카드 정보
                     isEditing={isEditing} // 트랜잭션 수정 모드가 아님
                     transactionData={selectedTransaction} // 새로운 트랜잭션 데이터
                     errMsg={errMsg} // 에러 메시지
                     cardBalance={cardBalance} // 카드 잔액 (롤오버 금액과 팀 펀드를 포함한 잔액)
                     teamFund={teamFund || 0} // 팀 펀드 (부모에서 전달)
-                    onDelete={handleDelete} 
+                    // onSave={handleSave}
+                    // onDelete={handleDelete} 
                 />
             </div>
         </>
