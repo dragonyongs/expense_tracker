@@ -15,7 +15,8 @@ export const getExpenseLabel = (expenseType) => {
 };
 
 const TransactionReceiptPaper = forwardRef(
-  ({ transaction, cardNumber, cardUser, onClose }, ref) => {
+  ({ transaction, cardNumber, cardUser, onClose, accountCards }, ref) => {
+    console.log(cardUser)
     const handleDownloadImage = async () => {
       if (ref.current && transaction) {
         try {
@@ -113,12 +114,19 @@ const TransactionReceiptPaper = forwardRef(
               {/* Order Details */}
               <div className="space-y-2">
                 {transaction.menu_items.map((item, index) => (
-                  <div key={index} className="flex justify-between">
-                    <span>{item.name || '미기입'}</span>
-                    <div className="flex space-x-4">
-                      <span className="font-mono">{item.quantity}</span>
-                      <span className="font-mono min-w-14 text-right">{(item.price * item.quantity).toLocaleString()}</span>
+                  <div key={index} >
+                    <div className="flex justify-between">
+                      <span>{item.name || '미기입'}</span>
+                      <div className="flex space-x-4">
+                        <span className="font-mono">{item.quantity}</span>
+                        <span className="font-mono min-w-14 text-right">{(item.price * item.quantity).toLocaleString()}</span>
+                      </div>
                     </div>
+                    {accountCards && item.member_id && cardUser._id !== item.member_id && 
+                      <div>
+                        <p>↳ {accountCards.find((card) => card.member_id === item.member_id)?.member_name}</p>
+                      </div>
+                    }
                   </div>
                 ))}
               </div>

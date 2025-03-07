@@ -9,18 +9,44 @@ import PropTypes from "prop-types";
 import TransactionReceiptPaper from "./transaction/TransactionReceiptPaper";
 import useMediaQuery from "../hooks/useMediaQuery";
 import useDrawerTheme from "../hooks/useDrawerTheme";
+import { API_URLS } from '../services/apiUrls';
+import axios from "../services/axiosInstance"; 
 
 const PayHistory = ({ transactions, userCards, isLoading }) => {
   const [isTransactionReceiptOpen, setTransactionReceiptOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState("");
   const [selectedCardNumber, setSelectedCardNumber] = useState("");
   const [selectedCardUser, setSelectedCardUser] = useState({});
+  const [selectedCards, setSelectedCards] = useState([]);
   const isMobile = useMediaQuery("(max-width: 640px)");
   const drawerSize = isMobile ? "100%" : "375px";
   const transactionRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
   useDrawerTheme(isTransactionReceiptOpen);
 
+  const fetchData = async (url) => {
+    try {
+      const response = await axios.get(url, { withCredentials: true });
+      const fetchedDatas = response.data;
+      const filterCards = fetchedDatas
+        .flatMap((account) => account.cards)
+        .filter((card) => card.card_type === 'TeamCard');
+        setSelectedCards(filterCards);
+    } catch (error) {
+        console.error(`Error fetching data from ${url}:`, error);
+    } finally {
+        setLoading(false);
+    }
+};
+
+  useEffect(() => {
+
+    if ( selectedTransaction) {
+      fetchData(`${API_URLS.ACCOUNTS_WITH_CARDS}/${userCards[0].member_id?._id}`);
+    }
+  }, [selectedTransaction]);
+      
   useEffect(() => {
     if (selectedTransaction) {
       const foundCard = userCards.find(
@@ -174,6 +200,7 @@ const PayHistory = ({ transactions, userCards, isLoading }) => {
         <div className="flex w-full flex-col gap-6 overflow-y-auto h-drawer-screen bg-slate-50 print:bg-white dark:bg-slate-800">
           <TransactionReceiptPaper
             ref={transactionRef}
+            accountCards={selectedCards}
             transaction={selectedTransaction}
             cardNumber={selectedCardNumber}
             cardUser={selectedCardUser}

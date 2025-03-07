@@ -69,8 +69,8 @@ const TransactionDrawer = ({
         const fetchedAccounts = response.data;
         const userSearch = fetchedAccounts
             .flatMap((account) => account.cards)
-            .filter((card) => card.card_type === 'TeamCard' && card.position !== '팀장');
-        setAccounts(userSearch); // 이제 userSearch는 배열입니다.
+            .filter((card) => card.card_type === 'TeamCard' && card.position === user.position);
+        setAccounts(userSearch);
     } catch (error) {
         console.error(`Error fetching data from ${url}:`, error);
     } finally {
@@ -446,6 +446,10 @@ const TransactionDrawer = ({
     });
   };
 
+  const toggleEditingUser = (index) => {
+    setEditingUserIndex(prevIndex => (prevIndex === index ? null : index));
+  };
+
   const isMobile = useMediaQuery("(max-width: 640px)");
   const drawerSize = isMobile ? "100%" : "375px";
 
@@ -657,10 +661,10 @@ const TransactionDrawer = ({
                         {item.price.toLocaleString()}원 × {item.quantity}개 = {(item.price * item.quantity).toLocaleString()}원
                       </div>
                       {/* 사용자 정보가 없으면 "사용자 추가" 링크 표시 */}
-                      {item.member_id ? (
+                      {item.member_name ? (
                         <div className="flex items-center gap-2">
-                          <div className="text-green-500 text-sm">
-                            지출 사용자: {item.member_name || "선택됨"}
+                          <div className="text-green-600 text-sm">
+                            지출 사용자: {item.member_name|| "본인"}
                           </div>
                           <button
                             onClick={() => handleUserRemove(index)}
@@ -670,8 +674,8 @@ const TransactionDrawer = ({
                           </button>
                         </div>
                       ) : (
-                        <div className="text-blue-500 text-sm cursor-pointer" onClick={() => setEditingUserIndex(index)}>
-                          사용자 추가
+                        <div className="text-blue-500 text-sm cursor-pointer" onClick={() => toggleEditingUser(index)}>
+                          {editingUserIndex === null ? '사용자 추가' : '사용자 선택 취소'}
                         </div>
                       )}
 
