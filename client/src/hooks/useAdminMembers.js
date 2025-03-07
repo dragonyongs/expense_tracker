@@ -4,6 +4,7 @@ import { API_URLS } from '../services/apiUrls';
 
 const useAdminMembers = () => {
     const [members, setMembers] = useState([]);
+    const [profiles, setProfiles] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [roles, setRoles] = useState([]);
     const [teams, setTeams] = useState([]);
@@ -78,6 +79,18 @@ const useAdminMembers = () => {
         }
     };
 
+    const deleteProfile = async (profileId) => {
+        try {
+            await axios.delete(`${API_URLS.PROFILES}/${profileId}`);
+            setProfiles((prevProfiles) =>
+                prevProfiles.filter((profile) => profile._id !== profileId)
+            );
+        } catch (error) {
+            console.error('Error deleting profile:', error);
+            setErrMsg(error.message || '프로필을 삭제하는 중 문제가 발생했습니다.');
+        }
+    }
+
     useEffect(() => {
         fetchAllData();
     }, []);
@@ -121,6 +134,7 @@ const useAdminMembers = () => {
         updateMember, // 멤버 업데이트 함수
         addMember,    // 멤버 추가 함수
         deleteMember, // 멤버 삭제 함수
+        deleteProfile,
     };
 };
 

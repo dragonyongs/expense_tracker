@@ -21,6 +21,7 @@ const AdminMembers = () => {
         updateMember,
         addMember,
         deleteMember,
+        deleteProfile,
         errMsg: hookErrMsg,
     } = useAdminMembers();
 
@@ -71,7 +72,8 @@ const AdminMembers = () => {
     };
 
     const handleDeleteMember = () => {
-        deleteMember(selectedMember._id)
+        deleteMember(selectedMember._id);
+        deleteProfile(selectedMember.profile_id);
         setIsEditing(false);
         setIsOpen(false);
     }

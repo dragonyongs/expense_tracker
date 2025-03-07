@@ -175,7 +175,9 @@ exports.updateProfile = async (req, res) => {
 
 exports.deleteProfile= async (req, res) => {
     try {
-        res.status(201).json('deleteProfile');
+        const profile = await Profile.findByIdAndDelete(req.params.id);
+        if (!profile) return res.status(404).json({ error: 'Profile not fonund'} );
+        res.json({ message: 'Profile deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
